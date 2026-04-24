@@ -1,0 +1,175 @@
+//
+// Pastel Theme Mode
+//
+
+$theme-pastel-colors: (
+    "primary": #b983ff,
+    // pastel violet – bright but soft
+    "secondary": #85e3ff,
+    // sky blue – airy and playful
+    "success": #a0e7a0,
+    // mint green – fresh and calming
+    "info": #b5d8ff,
+    // soft blue – informative, gentle
+    "warning": #ffd580,
+    // pastel orange – warm pop
+    "danger": #ff8aae,
+    // pink-red – emotional but sweet
+    "purple": #d8b4f8,
+    // lavender – youthful and dreamy
+    "light": #f0f4f8, // light blue-gray – fresh and corporate
+);
+
+@if $theme-pastel ==true {
+    @font-face {
+        font-family: "Montserrat";
+        src: url("/fonts/Montserrat.ttf") format("ttf");
+        font-weight: 100 900;
+        font-style: normal;
+        font-display: swap;
+    }
+    @font-face {
+        font-family: "Montserrat";
+        src: url("/fonts/Montserrat.ttf") format("ttf");
+        font-weight: 100 900;
+        font-style: italic;
+        font-display: swap;
+    }
+
+    html[data-skin="pastel"] {
+        --#{$prefix}font-sans-serif: "Montserrat", sans-serif;
+
+        --#{$prefix}body-bg: #f8f3fa;
+
+        --#{$prefix}font-weight-medium: 500;
+        --#{$prefix}font-weight-semibold: 700;
+        --#{$prefix}font-weight-bold: 700;
+
+        --#{$prefix}font-size-xxs: 11px;
+        --#{$prefix}font-size-xs: 12px;
+        --#{$prefix}font-size-base: 13px;
+        --#{$prefix}font-size-md: 14px;
+        --#{$prefix}font-size-lg: 16px;
+        --#{$prefix}font-size-xl: 18px;
+        --#{$prefix}font-size-xxl: 20px;
+
+        --#{$prefix}chart-primary: #b983ff;
+        --#{$prefix}chart-primary-rgb: #{to-rgb(#b983ff)};
+        --#{$prefix}chart-secondary: #a0e7a0;
+        --#{$prefix}chart-secondary-rgb: #{to-rgb(#a0e7a0)};
+        --#{$prefix}chart-gray: #e9eaeb;
+        --#{$prefix}chart-gray-rgb: #{to-rgb(#e9eaeb)};
+        --#{$prefix}chart-dark: #ff8aae;
+        --#{$prefix}chart-dark-rgb: #{to-rgb(#ff8aae)};
+
+        --#{$prefix}theme-card-box-shadow: 0px 1px 4px 0px #b983ff3a;
+
+        @each $name, $value in $theme-pastel-colors {
+            --#{$prefix}#{$name}: #{$value};
+        }
+
+        @each $name, $value in $theme-pastel-colors {
+            --#{$prefix}#{$name}-rgb: #{to-rgb($value)};
+        }
+
+        @each $name, $value in $theme-pastel-colors {
+            --#{$prefix}#{$name}-bg-subtle: #{rgba($value, 0.15)};
+        }
+
+        @each $name, $value in $theme-pastel-colors {
+            --#{$prefix}#{$name}-border-subtle: #{rgba($value, 0.3)};
+        }
+
+        @each $name, $value in $theme-pastel-colors {
+            --#{$prefix}#{$name}-text-emphasis: #{shade-color($value, 25%)};
+        }
+
+        // Background Light left-sidebar
+        &[data-sidenav-color="light"] {
+            --#{$prefix}sidenav-bg: #{$white};
+            --#{$prefix}sidenav-border-color: #{$gray-200};
+            --#{$prefix}sidenav-item-color: #63666a;
+            --#{$prefix}sidenav-item-hover-color: #23303c;
+            --#{$prefix}sidenav-item-hover-bg: #f3f4f6;
+            --#{$prefix}sidenav-item-active-color: #23303c;
+            --#{$prefix}sidenav-item-active-bg: #f3f4f6;
+            --#{$prefix}sidenav-item-border-color: #{$gray-200};
+        }
+
+        // Dark Left Sidebar
+        &[data-sidenav-color="dark"] {
+            --#{$prefix}sidenav-bg: #1c1d28;
+            --#{$prefix}sidenav-border-color: #1c1d28;
+            --#{$prefix}sidenav-item-color: #6c7889;
+            --#{$prefix}sidenav-item-hover-color: #bccee4;
+            --#{$prefix}sidenav-item-hover-bg: #22232c;
+            --#{$prefix}sidenav-item-active-color: #ced6df;
+            --#{$prefix}sidenav-item-active-bg: #20222e;
+            --#{$prefix}sidenav-item-border-color: #2d3c4a;
+        }
+
+        // Dark Mode
+        &[data-bs-theme="dark"][data-sidenav-color="dark"],
+        &[data-bs-theme="dark"][data-sidenav-color="light"] {
+            --#{$prefix}sidenav-bg: #1e1f27;
+            --#{$prefix}sidenav-border-color: #2c2d38;
+            --#{$prefix}sidenav-item-color: #6c7889;
+            --#{$prefix}sidenav-item-hover-color: #bccee4;
+            --#{$prefix}sidenav-item-hover-bg: #22232c;
+            --#{$prefix}sidenav-item-active-color: #ced6df;
+            --#{$prefix}sidenav-item-active-bg: #22232c;
+            --#{$prefix}sidenav-item-border-color: #293036;
+        }
+
+        // Light Topbar
+        &[data-topbar-color="light"] {
+            --#{$prefix}topbar-bg: #ffffff;
+            --#{$prefix}topbar-item-color: #63666a;
+            --#{$prefix}topbar-item-hover-color: #{$primary};
+            --#{$prefix}topbar-search-bg: transparent;
+            --#{$prefix}topbar-search-border: #e7e9eb;
+        }
+
+        // Dark Topbar
+        &[data-topbar-color="dark"] {
+            --#{$prefix}topbar-bg: #252630;
+            --#{$prefix}topbar-item-color: #adb5bf;
+            --#{$prefix}topbar-item-hover-color: #e0eeff;
+            --#{$prefix}topbar-search-bg: #2d2e3c;
+            --#{$prefix}topbar-search-border: #2d2e3c;
+        }
+
+        // Topbar (Dark Mode)
+        &[data-bs-theme="dark"][data-topbar-color="light"],
+        &[data-bs-theme="dark"][data-topbar-color="dark"] {
+            --#{$prefix}topbar-bg: #252630;
+            --#{$prefix}topbar-item-color: #adb5bf;
+            --#{$prefix}topbar-item-hover-color: #e0eeff;
+            --#{$prefix}topbar-search-bg: #2d2e3c;
+            --#{$prefix}topbar-search-border: #2d2e3c;
+        }
+    }
+
+    @if $enable-dark-mode {
+        @include color-mode(dark, true) {
+            &[data-skin="pastel"] {
+                --#{$prefix}body-bg: #{#17181e};
+                --#{$prefix}body-bg-rgb: #{to-rgb(#17181e)};
+
+                --#{$prefix}border-color: #252630;
+
+                --#{$prefix}secondary-bg: #{#1b1c22};
+                --#{$prefix}secondary-bg-rgb: #{to-rgb(#1b1c22)};
+
+                --#{$prefix}light: #252630;
+                --#{$prefix}light-rgb: #{to-rgb(#252630)};
+                --#{$prefix}light-bg-subtle: rgba(#{to-rgb(#252630)}, 0.4);
+                --#{$prefix}dark: #4b4d5c;
+                --#{$prefix}dark-rgb: #{to-rgb(#4b4d5c)};
+                --#{$prefix}box-shadow: #{0px 0px 30px rgba(0, 0, 0, 0.3)};
+                --#{$prefix}theme-card-box-shadow: #{0px 0px 30px
+                    rgba(0, 0, 0, 0.3)};
+            }
+        }
+    }
+}

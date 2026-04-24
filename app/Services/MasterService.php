@@ -1,0 +1,207 @@
+<?php
+
+namespace App\Services;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Spatie\Permission\Models\Role;
+
+class MasterService
+{
+  // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
+  public function datatable(string $master, Request $request)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
+
+    // ---------- Ambil semua data jenis master ----------
+    $query = $modelClass::query();
+    if (!empty($modules['with'])) {
+      $query->with($modules['with']);
+    }
+
+    // ---------- Terapkan filter untuk tanggal pada data ----------
+    $this->applyDateFilter($query, $request);
+
+    // ---------- Terapkan filter khusus pada data ----------
+    $this->applyMasterFilter($query, $master, $request);
+
+    // ---------- Handle search pada kolom data ----------
+    if ($request->filled('search')) {
+      $search = $request->search;
+      $columns = $this->getSearchableColumns($modelClass);
+
+      $query->where(function ($q) use ($search, $columns) {
+        foreach ($columns as $column) {
+          $q->orWhere($column, 'like', "%{$search}%");
+        }
+      });
+    }
+
+    // ---------- Urutkan data master ----------
+    if ($request->filled('sort_by')) {
+      $query->orderBy(
+        $request->sort_by,
+        $request->sort_dir ?? 'asc'
+      );
+    }
+
+    // ---------- Tampilkan data ke tabel frontend ----------
+    return $query->paginate($request->get('per_page', 10));
+  }
+  // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
+
+  // ---------- Fungsi untuk submit data berdasarkan jenis master :begin ----------
+  public function submitData(string $master, Request $request)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
+
+    // ---------- Mulai transaksi database :begin----------
+    DB::beginTransaction();
+    try {
+      // ---------- Ambil model & data fillable ----------
+      $model = new $modelClass;
+      $data = $request->only($model->getFillable());
+
+      // ---------- Kondisi khusus untuk insert user ----------
+      if ($model instanceof \App\Models\User) {
+        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
+        if (empty($data['email']) && !empty($data['username'])) {
+          $data['email'] = strtolower($data['username']) . '@licabloodbank.com';
+        }
+
+        // ---------- Insert data ke database ----------
+        $created = $modelClass::create($data);
+
+        // ---------- Tambahkan role secara spatie ke user yang baru ditambahkan ----------
+        if ($request->filled('role')) {
+          $roleName = Role::findById($request->role);
+          $created->syncRoles($roleName->name);
+        }
+      } else {
+        // ---------- Insert data master lainnya seperti biasa ----------
+        $created = $modelClass::create($data);
+      }
+      DB::commit();
+      // ---------- Mulai transaksi database :end ----------
+
+      // ---------- Masukkan ke log untuk success ----------
+      globalLogger(
+        'info',
+        `New data for master $master inserted successfully!`,
+        [
+          'master' => $master,
+          'id' => $created->id,
+          'payload' => $created,
+        ],
+        200,
+        'masteradd'
+      );
+
+      // ---------- Lempar sukses respon ke frontend ----------
+      return response()->json([
+        'message' => `New data for master $master inserted successfully!`,
+        'data' => $created
+      ]);
+    } catch (\Throwable $e) {
+      // ---------- Batalkan transaksi database jika ada error ----------
+      DB::rollBack();
+
+      // ---------- Masukkan ke log untuk error ----------
+      globalLogger(
+        'error',
+        `New data for master $master failed to insert!`,
+        [
+          'master' => $master,
+          'error' => $e->getMessage(),
+        ],
+        500,
+        'masteradd'
+      );
+
+      // ---------- Lempar error respon ke frontend ----------
+      return response()->json([
+        'message' => `New data for master $master failed to insert!`,
+      ], 500);
+    }
+  }
+  // ---------- Fungsi untuk submit data berdasarkan jenis master :end ----------
+
+  // ---------- Helper: mengambil data config master.php :begin ----------
+  private function getMasterConfig($master = null)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = config('master');
+    // ---------- Lempar 404 jika jenis master tidak ada di config ----------
+    abort_unless(isset($modules[$master]), 404);
+    // ---------- Kembalikan data sesuai key $master ----------
+    if ($master !== null) {
+      abort_unless(isset($modules[$master]), 404);
+      return $modules[$master];
+    }
+    // ---------- Kembalikan semua isi config ----------
+    return $modules;
+  }
+  // ---------- Helper: mengambil data config master.php :end ----------
+
+  // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :begin ----------
+  private function getSearchableColumns($model)
+  {
+    return (new $model)->getFillable();
+  }
+  // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :end ----------
+
+  // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
+  protected function applyDateFilter($query, Request $request)
+  {
+    // ---------- Terima data start_date & end_date dari frontend ----------
+    $start = $request->start_date;
+    $end = $request->end_date;
+
+    if ($start && $end) {
+      try {
+        // ---------- Format data tanggal menjadi d-m-Y H:i ----------
+        $startDate = Carbon::createFromFormat('d-m-Y', $start)->startOfDay();
+        $endDate = Carbon::createFromFormat('d-m-Y', $end)->endOfDay();
+
+        // ---------- Cek apakah kolom ada atau tidak ----------
+        $table = $query->getModel()->getTable();
+
+        // ---------- Jalankan filter data ----------
+        if (Schema::hasColumn($table, 'created_at')) {
+          $query->whereBetween('created_at', [$startDate, $endDate]);
+        }
+      } catch (\Exception $e) {
+        logger()->error('Date filter error: ' . $e->getMessage());
+      }
+    }
+  }
+  // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
+
+  // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :begin ----------
+  protected function applyMasterFilter($query, string $master, Request $request)
+  {
+    switch ($master) {
+      case 'user':
+        $this->filterUser($query, $request);
+        break;
+    }
+  }
+  // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :end ----------
+
+  // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :begin ----------
+  protected function filterUser($query, Request $request)
+  {
+    if ($request->filled('role')) {
+      $query->role($request->role);
+    }
+  }
+  // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
+
+
+}
