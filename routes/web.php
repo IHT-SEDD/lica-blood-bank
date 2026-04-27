@@ -71,7 +71,9 @@ Route::middleware('auth')->group(function () {
     Route::prefix('master')->name('master.')->middleware(['role:superadmin'])->controller(MasterController::class)->group(function () {
         Route::get('{master}', 'index')->where('master', implode('|', array_keys(config('master'))))->name('index');
         Route::get('{master}/data', 'datatable')->where('master', implode('|', array_keys(config('master'))))->name('datatable');
+        Route::get('{master}/data/{id}', 'getDataById')->where('master', implode('|', array_keys(config('master'))))->name('get-data');
         Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data');
+        Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
     });
 
     // --------------------------------------------------------------------------

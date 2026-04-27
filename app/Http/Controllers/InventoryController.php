@@ -21,7 +21,7 @@ class InventoryController extends Controller
     // Halaman stock in
     public function stockInIndex()
     {
-        return view('pages.inventory.stock-in.index');
+        return view('pages.inventory.sub-pages.stock-in.index');
     }
 
     // Halaman stock out
@@ -33,7 +33,7 @@ class InventoryController extends Controller
     // Halaman history order
     public function historyOrderIndex()
     {
-        return view('pages.inventory.history-order.index');
+        return view('pages.inventory.sub-pages.history-order.index');
     }
 
     /**

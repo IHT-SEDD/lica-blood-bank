@@ -28,6 +28,7 @@ class User extends Authenticatable
         'email',
         'email_verified_at',
         'password',
+        'is_active',
     ];
 
     /**
@@ -66,7 +67,7 @@ class User extends Authenticatable
         });
     }
 
-    // Buat peraturan validasi untuk model user
+    // Buat peraturan validasi untuk add data model user
     public static function rules($context = 'store', $id = null)
     {
         return match ($context) {
@@ -76,9 +77,9 @@ class User extends Authenticatable
                 'password' => 'required|min:5',
             ],
             'update' => [
-                'name' => 'string|required',
-                'username' => "string|required|unique:users,username,$id",
-                'password' => 'required|min:5',
+                'name' => 'sometimes|required|string',
+                'username' => "sometimes|required|string|unique:users,username,$id",
+                'password' => 'nullable|min:5',
             ]
         };
     }

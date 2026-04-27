@@ -68,6 +68,11 @@ class MasterService
       $model = new $modelClass;
       $data = $request->only($model->getFillable());
 
+      // ---------- Panggil hook sebelum insert jika ada ----------
+      if (method_exists($modelClass, 'beforeCreate')) {
+        $modelClass::beforeCreate($data);
+      }
+
       // ---------- Kondisi khusus untuk insert user ----------
       if ($model instanceof \App\Models\User) {
         // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
@@ -131,6 +136,131 @@ class MasterService
     }
   }
   // ---------- Fungsi untuk submit data berdasarkan jenis master :end ----------
+
+  // ---------- Fungsi untuk edit data berdasarkan jenis master :begin ----------
+  public function editData(string $master, Request $request, $id)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
+
+    // ---------- Mulai transaksi database :begin----------
+    DB::beginTransaction();
+    try {
+      // ---------- Ambil model ----------
+      $model = new $modelClass;
+
+      // ---------- Ambil data master ----------
+      $query = $modelClass::query();
+      $record = $query
+        ->where('id', $id)
+        ->orWhere('public_id', $id)
+        ->firstOrFail();
+
+      // ---------- Ambil hanya field yang dikirim (partial update) ----------
+      $data = array_filter(
+        $request->only($model->getFillable()),
+        fn($value) => !is_null($value) && $value !== ''
+      );
+
+      // Jangan update data password
+      if (array_key_exists('password', $data)) {
+        if (empty($data['password'])) {
+          unset($data['password']);
+        }
+      }
+
+      // ---------- Kondisi khusus untuk insert user ----------
+      if ($model instanceof \App\Models\User) {
+        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
+        if (
+          array_key_exists('email', $data) &&
+          empty($data['email']) &&
+          !empty($data['username'] ?? $record->username)
+        ) {
+          $data['email'] = strtolower($data['username'] ?? $record->username) . '@licabloodbank.com';
+        }
+      }
+
+      // ---------- Bandingkan perubahan data ----------
+      $isSame = true;
+      foreach ($data as $key => $value) {
+        $old = trim((string)$record->$key);
+        $new = trim((string)$value);
+
+        if ($old !== $new) {
+          $isSame = false;
+          break;
+        }
+      }
+
+      // ---------- Jika tidak ada perubahan ----------
+      if ($isSame) {
+        return response()->json([
+          'message' => "No data changes",
+          'data' => $record
+        ], 200);
+      }
+
+      // ---------- Hook before update data ----------
+      if (method_exists($modelClass, 'beforeUpdate')) {
+        $modelClass::beforeUpdate($data, $record);
+      }
+
+      // ---------- Update ----------
+      $record->update($data);
+
+
+      // ---------- Sync role ----------
+      if ($record instanceof \App\Models\User && $request->filled('role')) {
+        $roleName = \Spatie\Permission\Models\Role::findByName($request->role);
+        $record->syncRoles($roleName->name);
+      }
+
+      DB::commit();
+      // ---------- Mulai transaksi database :end ----------
+
+      // ---------- Masukkan ke log untuk success ----------
+      globalLogger(
+        'info',
+        "Data for master $master updated successfully!",
+        [
+          'master' => $master,
+          'id' => $record->id,
+          'payload' => $record,
+        ],
+        200,
+        'masterupdate'
+      );
+
+      // ---------- Lempar sukses respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master updated successfully!",
+        'data' => $record
+      ]);
+    } catch (\Throwable $e) {
+      // ---------- Batalkan transaksi database jika ada error ----------
+      DB::rollBack();
+
+      // ---------- Masukkan ke log untuk error ----------
+      globalLogger(
+        'error',
+        "Data for master $master failed to update!",
+        [
+          'master' => $master,
+          'error' => $e->getMessage(),
+        ],
+        500,
+        'masterupdate'
+      );
+
+      // ---------- Lempar error respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master failed to update!",
+      ], 500);
+    }
+  }
+  // ---------- Fungsi untuk edit data berdasarkan jenis master :end ----------
 
   // ---------- Helper: mengambil data config master.php :begin ----------
   private function getMasterConfig($master = null)
@@ -203,5 +333,32 @@ class MasterService
   }
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
 
+  // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
+  public function getDataById(string $master, $id)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
 
+    // ---------- Ambil data master ----------
+    $query = $modelClass::query();
+    if (!empty($modules['with'])) {
+      $query->with($modules['with']);
+    }
+
+    $dataMaster = $query
+      ->where(function ($q) use ($id) {
+        $q->where('id', $id)
+          ->orWhere('public_id', $id);
+      })
+      ->first();
+
+    if (!$dataMaster) {
+      return response()->json(['message' => 'Data not found'], 404);
+    }
+
+    // ---------- Lempar data ke frontend ----------
+    return $dataMaster;
+  }
+  // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
 }

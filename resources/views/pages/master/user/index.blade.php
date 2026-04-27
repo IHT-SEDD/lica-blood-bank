@@ -96,9 +96,14 @@
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Submit form</button>
+    <button class="btn btn-primary" type="submit">Add New User</button>
   </div>
 </form>
+@endsection
+
+@section('modal-content')
+@include('pages.master.user.partials.edit-data-modal')
+@include('pages.master.user.partials.delete-data-modal')
 @endsection
 
 @section('custom-scripts')

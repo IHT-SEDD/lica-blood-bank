@@ -1,5 +1,5 @@
 import TomSelect from "tom-select";
-import { GlobalPostForm, GlobalFormValidation } from "../../../app";
+import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
 // ---------- Select role dari tom-select untuk form add new data :begin ----------
 function SelectRole() {
@@ -67,7 +67,7 @@ function AddNewUser() {
     // ---------- Validasi inputan form :end ----------
 
     // ---------- Submit form ke url :begin ----------
-    new GlobalPostForm({
+    new GlobalSubmitForm({
         formId: "add_new_user",
         url: "/master/user",
         validator: AddNewUserValidation,
@@ -92,7 +92,71 @@ function AddNewUser() {
 }
 // ---------- Handle form penambahan user baru :begin ----------
 
+// ---------- Handle form pembaharuan data user :begin ----------
+function EditDataUser() {
+    // ---------- Validasi inputan form :begin ----------
+    const EditDataUserValidation = GlobalFormValidation.init(
+        "#edit_data_user",
+        {
+            name: {
+                validators: {
+                    notEmpty: {
+                        message: "Name is required",
+                    },
+                },
+            },
+            username: {
+                validators: {
+                    notEmpty: {
+                        message: "Username is required",
+                    },
+                },
+            },
+            role: {
+                validators: {
+                    notEmpty: {
+                        message: "Role is required",
+                    },
+                },
+            },
+        },
+    );
+    // ---------- Validasi inputan form :end ----------
+
+    // ---------- Submit form ke url :begin ----------
+    new GlobalSubmitForm({
+        formId: "edit_data_user",
+        url: () => {
+            const form = document.getElementById("edit_data_user");
+            return `/master/user/${form.dataset.id}`;
+        },
+        method: "PATCH",
+        validator: EditDataUserValidation,
+        onSuccess: (data) => {
+            notyf.success({
+                message: "Data user updated succesfully!",
+            });
+            window.dispatchEvent(new Event("master-user-reload"));
+            const modalEl = document.getElementById(
+                "edit_data_master_user_modal",
+            );
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        },
+        onError: (err) => {
+            notyf.error({
+                message: "Data user failed to update!",
+            });
+        },
+
+        resetOnSuccess: true,
+    });
+    // ---------- Submit form ke url :end ----------
+}
+// ---------- Handle form pembaharuan data user :begin ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     SelectRole();
     AddNewUser();
+    EditDataUser();
 });

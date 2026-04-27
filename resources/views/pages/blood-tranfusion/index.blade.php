@@ -1,26 +1,51 @@
 @extends('layouts.vertical', ['title' => 'Blood Tranfusion'])
 
+@section('styles')
+<style>
+  @media (min-width: 992px) {
+    .patient-data-border {
+      border-right: 1px solid #e5e7eb;
+    }
+  }
+</style>
+@endsection
+
 @section('content')
 {{-- Analytic :begin --}}
 <div class="row py-3">
-  {{-- Title & Date Range Picker :begin --}}
+  {{-- Title, Date Range Picker & Add New Blood Request :begin --}}
   <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
     {{-- Title --}}
     <h1 class="fw-bold">TRANFUSION</h1>
 
-    {{-- Date Range Picker --}}
-    <div>
-      <div class="input-group">
-        <span class="input-group-text" id="blood-tranfusion-date-filter">
-          <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
-        </span>
-        <input class="form-control blood-tranfusion-date-filter" aria-describedby="blood-tranfusion-date-filter"
-          data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-          placeholder="Choose date range" />
+    {{-- Date Range Picker & Add New Blood Request Button :begin --}}
+    <div class="d-flex align-items-center justify-content-center gap-2">
+      {{-- Date Range Picker --}}
+      <div>
+        <div class="input-group">
+          <span class="input-group-text" id="blood-tranfusion-date-filter">
+            <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
+          </span>
+          <input class="form-control blood-tranfusion-date-filter" aria-describedby="blood-tranfusion-date-filter"
+            data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
+            placeholder="Choose date range" />
+        </div>
       </div>
+
+      {{-- Button Add New Blood Request --}}
+      <button class="btn btn-info" data-bs-target="#add_blood_request_modal" data-bs-toggle="modal" type="button">
+        Add Blood Request
+      </button>
     </div>
+    {{-- Date Range Picker & Add New Blood Request Button :end --}}
+
+    {{-- Modal Add New Blood Request :begin --}}
+    <x-modal-layout id="add_blood_request_modal" size="modal-lg" title="Add New Blood Request">
+      @include('pages.blood-tranfusion.partials.form-add-blood-request')
+    </x-modal-layout>
+    {{-- Modal Add New Blood Request :end --}}
   </div>
-  {{-- Title & Date Range Picker :end --}}
+  {{-- Title, Date Range Picker & Add New Blood Request :end --}}
 
   {{-- Left Side :begin --}}
   <div class="col-xxl-5 col-md-6 col-12">
@@ -104,7 +129,7 @@
     {{-- Test List & Stock Blood :begin --}}
     <div class="row">
       {{-- Test List :begin --}}
-      <div class="col-xxl-7 col-md-6 col-12">
+      <div class="col-xxl-7 col-12">
         {{-- Test List :begin --}}
         <div class="card">
           {{-- Test List Header :begin --}}
@@ -127,7 +152,7 @@
       {{-- Test List :end --}}
 
       {{-- Blood Stock :begin --}}
-      <div class="col-xxl-5 col-md-6 col-12">
+      <div class="col-xxl-5 col-12">
         {{-- Blood Stock :begin --}}
         <div class="card">
           {{-- Blood Stock Header :begin --}}
@@ -158,7 +183,7 @@
 {{-- Timeline & History Test :begin --}}
 <div class="row">
   {{-- Timeline :begin --}}
-  <div class="col-xxl-8 col-md-6 col-12">
+  <div class="col-xxl-8 col-12">
     {{-- Timeline Card :begin --}}
     <div class="card">
       {{-- Timeline Header :begin --}}
@@ -181,7 +206,7 @@
   {{-- Timeline :end --}}
 
   {{-- History Test :begin --}}
-  <div class="col-xxl-4 col-md-6 col-12">
+  <div class="col-xxl-4 col-12">
     {{-- History Test Card :begin --}}
     <div class="card">
       {{-- History Test Header :begin --}}

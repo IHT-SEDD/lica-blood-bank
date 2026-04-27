@@ -13,7 +13,7 @@ class UtilityController extends Controller
     ) {}
 
     // Dynamic select data
-    public function selectData(Request $request, string $select)
+    public function selectData(Request $request, $select)
     {
         return response()->json(
             $this->service->getSelectData($request, $select)

@@ -1594,12 +1594,13 @@ export class GlobalAdvanceFlatpickr {
 }
 // ------------------------------ Advance Flatpickr for global config :end ------------------------------
 
-// ------------------------------ Global Config for Form with Method POST :begin ------------------------------
-export class GlobalPostForm {
-    // Mulai constructor untuk global config POST form
+// ------------------------------ Global Config for submit data Form :begin ------------------------------
+export class GlobalSubmitForm {
+    // Mulai constructor untuk global config submit data Form
     constructor({
         formId,
         url,
+        method = "POST",
         onSuccess = null,
         onError = null,
         beforeSubmit = null,
@@ -1608,6 +1609,7 @@ export class GlobalPostForm {
     }) {
         this.form = document.getElementById(formId);
         this.url = url;
+        this.method = method;
         this.onSuccess = onSuccess;
         this.onError = onError;
         this.beforeSubmit = beforeSubmit;
@@ -1623,7 +1625,7 @@ export class GlobalPostForm {
         this.init();
     }
 
-    // Mulai init instance untuk global config POST form
+    // Mulai init instance untuk global config submit data Form
     init() {
         this.form.addEventListener("submit", async (e) => {
             e.preventDefault();
@@ -1656,9 +1658,13 @@ export class GlobalPostForm {
         });
     }
 
-    // Mulai submit instance untuk global config POST form
+    // Mulai submit instance untuk global config submit data Form
     submit(formData) {
-        fetch(this.url, {
+        if (this.method !== "POST") {
+            formData.append("_method", this.method);
+        }
+
+        fetch(typeof this.url === "function" ? this.url() : this.url, {
             method: "POST",
             headers: {
                 "X-CSRF-TOKEN": document
@@ -1682,15 +1688,21 @@ export class GlobalPostForm {
 
                 if (this.resetOnSuccess) {
                     this.form.reset();
+
+                    this.form.querySelectorAll("select").forEach((el) => {
+                        if (el.tomselect) {
+                            el.tomselect.clear();
+                        }
+                    });
                 }
             })
             .catch((err) => {
                 if (this.onError) this.onError(err);
-                else console.error("GlobalPostForm Error:", err);
+                else console.error("GlobalSubmitForm Error:", err);
             });
     }
 }
-// ------------------------------ Global Config for Form with Method POST :end ------------------------------
+// ------------------------------ Global Config for submit data Form :end ------------------------------
 
 // ------------------------------ Global Config for Form Validation :begin ------------------------------
 export class GlobalFormValidation {
@@ -1821,3 +1833,169 @@ export class GlobalFormValidation {
     }
 }
 // ------------------------------ Global Config for Form Validation :end ------------------------------
+
+// ------------------------------ Global Config for Delete Data Confirmation :begin ------------------------------
+export class GlobalDeleteDataConfirmation {
+    // ------------------------------ Buat constructor untuk terima option dari client js ------------------------------
+    constructor(options = {}) {
+        this.buttonSelector = options.ButtonSelector || ".btn-delete";
+        this.dataAttributeID = options.DataAttributeID || "id";
+        this.urlFetchData = options.UrlFetchData || null;
+        this.modalConfirmID = options.ModalConfirmID || null;
+
+        // ------------------------------ Panggil init ------------------------------
+        this.init();
+    }
+
+    // ------------------------------ Mulai init ------------------------------
+    init() {
+        document.addEventListener("click", async (e) => {
+            // ------------------------------ Cari tombol berdasarkan selector ------------------------------
+            const btn = e.target.closest(this.buttonSelector);
+            if (!btn) return;
+
+            // ------------------------------ Cari data attribute dari tombol ------------------------------
+            const deleteId = btn.dataset[this.dataAttributeID];
+            if (!deleteId) {
+                if (window.notyf) {
+                    notyf.error({ message: "ID Data Not Found!" });
+                }
+                return;
+            }
+
+            // ------------------------------ Buat variabel untuk menampung data ------------------------------
+            let data = null;
+
+            try {
+                // ------------------------------ Kondisi jika membutuhkan fetch data ------------------------------
+                if (this.urlFetchData) {
+                    const url =
+                        typeof this.urlFetchData === "function"
+                            ? this.urlFetchData(deleteId)
+                            : this.urlFetchData.replace(":id", deleteId);
+
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    data = json.data;
+                }
+
+                // ------------------------------ Simpan instance biar bisa diakses dari luar ------------------------------
+                this.currentData = data;
+                this.currentId = deleteId;
+
+                // ------------------------------ Trigger event biar client bisa handle sendiri ------------------------------
+                document.dispatchEvent(
+                    new CustomEvent("delete:open", {
+                        detail: {
+                            data,
+                            id: deleteId,
+                            button: btn,
+                        },
+                    }),
+                );
+
+                // ------------------------------ Tampilkan modal ------------------------------
+                if (this.modalConfirmID) {
+                    const modalEl = document.getElementById(
+                        this.modalConfirmID,
+                    );
+
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                }
+            } catch (err) {
+                if (window.notyf) {
+                    notyf.error({ message: "Failed to load data!" });
+                }
+                console.error(err);
+            }
+        });
+    }
+}
+// ------------------------------ Global Config for Delete Data Confirmation :end ------------------------------
+
+// ------------------------------ Global Config for Edit Data :begin ------------------------------
+export class GlobalEditData {
+    constructor(options = {}) {
+        this.buttonSelector = options.ButtonSelector || ".btn-edit";
+        this.dataAttributeID = options.DataAttributeID || "id";
+        this.urlFetchData = options.UrlFetchData || null;
+        this.modalEditID = options.ModalEditID || null;
+        this.formSelector = options.FormSelector || null;
+
+        this.init();
+    }
+
+    init() {
+        document.addEventListener("click", async (e) => {
+            const btn = e.target.closest(this.buttonSelector);
+            if (!btn) return;
+
+            const editId = btn.dataset[this.dataAttributeID];
+
+            if (!editId) {
+                if (window.notyf) {
+                    notyf.error({ message: "ID Data Not Found!" });
+                }
+                return;
+            }
+
+            let data = null;
+
+            try {
+                // Fetch jika ada URL
+                if (this.urlFetchData) {
+                    const url =
+                        typeof this.urlFetchData === "function"
+                            ? this.urlFetchData(editId)
+                            : this.urlFetchData.replace(":id", editId);
+
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    data = json.data;
+                }
+
+                // Simpan ke instance (optional)
+                this.currentData = data;
+                this.currentId = editId;
+
+                // Trigger event biar client handle sendiri
+                document.dispatchEvent(
+                    new CustomEvent("edit:open", {
+                        detail: {
+                            data,
+                            id: editId,
+                            button: btn,
+                        },
+                    }),
+                );
+
+                // Set ID ke form (kalau ada)
+                if (this.formSelector && data) {
+                    const form = document.querySelector(this.formSelector);
+                    if (form) {
+                        form.dataset.id = data.public_id;
+                    }
+                }
+
+                // Show modal
+                if (this.modalEditID) {
+                    const modalEl = document.getElementById(this.modalEditID);
+
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                }
+            } catch (err) {
+                if (window.notyf) {
+                    notyf.error({ message: "Failed to load data!" });
+                }
+                console.error(err);
+            }
+        });
+    }
+}
+// ------------------------------ Global Config for Edit Data :end ------------------------------

@@ -8,18 +8,26 @@ use Illuminate\Support\Str;
 class UtilityService
 {
  // ---------- Fungsi mengambil data untuk dropdown select :begin ----------
- public function getSelectData(Request $request, string $select): array
+ public function getSelectData(Request $request, $select): array
  {
+  $select = Str::kebab($select);
+
   // ---------- Ambil data config utility.php ----------
   $modules = $this->getUtilityConfig($select);
-  $modelClass = $modules['model'];
-  $with = $this->normalizeWith($modules['with'] ?? []);
-  $labelField = $modules['label'];
+
+  // ---------- Handle enum / static data ----------
+  if (isset($modules['type']) && $modules['type'] === 'enum') {
+   return $this->getStaticSelectData($request, $select);
+  }
 
   // ---------- Lempar error jika data yang dibutuhkan kosong ----------
   if (!$modules || empty($modules['model']) || empty($modules['label'])) {
    abort(404, "Invalid select configuration [$select]");
   }
+
+  $modelClass = $modules['model'];
+  $with = $this->normalizeWith($modules['with'] ?? []);
+  $labelField = $modules['label'];
 
   // ---------- Ambil data dari model ----------
   $query = $modelClass::query()->with($with);
@@ -84,4 +92,41 @@ class UtilityService
   return $modules;
  }
  // ---------- Helper: mengambil data config utility.php :end ----------
+
+ // ---------- Helper: mengambil data statis :begin ----------
+ private function getStaticSelectData(Request $request, string $select): array
+ {
+  $search = strtolower($request->get('q', ''));
+
+  switch ($select) {
+   case 'blood-group':
+    $data = collect(\App\Enums\BloodGroup::toSelect());
+    break;
+   case 'blood-component':
+    $data = collect(\App\Enums\BloodComponent::toSelect());
+    break;
+   case 'blood-rhesus':
+    $data = collect(['+', '-'])->map(fn($item) => [
+     'id' => $item,
+     'text' => $item,
+    ]);
+    break;
+
+   default:
+    return ['results' => []];
+  }
+
+  // ---------- Optional: search ----------
+  if ($search) {
+   $data = $data->filter(
+    fn($item) =>
+    str_contains(strtolower($item['text']), $search)
+   );
+  }
+
+  return [
+   'results' => $data->values(),
+  ];
+ }
+ // ---------- Helper: mengambil data statis :begin ----------
 }

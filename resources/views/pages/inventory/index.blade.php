@@ -46,7 +46,7 @@
 
   {{-- Stats per Blood Group :begin --}}
   <div class="col-xxl-8 col-md-6 col-12">
-    @include('pages.inventory.partials.dashboard.blood-group-stats')
+    @include('pages.inventory.sub-pages.dashboard.blood-group-stats')
   </div>
   {{-- Stats per Blood Group :end --}}
 </div>
@@ -96,7 +96,7 @@
             {{-- Subtitle :end --}}
 
             {{-- Table :begin --}}
-            @include('pages.inventory.partials.dashboard.datatables.list-stock-table')
+            @include('pages.inventory.sub-pages.dashboard.datatables.list-stock-table')
             {{-- Table :end --}}
           </div>
 
@@ -110,7 +110,7 @@
             {{-- Subtitle :end --}}
 
             {{-- Table :begin --}}
-            @include('pages.inventory.partials.dashboard.datatables.list-expired-table')
+            @include('pages.inventory.sub-pages.dashboard.datatables.list-expired-table')
             {{-- Table :end --}}
           </div>
 
@@ -124,7 +124,7 @@
             {{-- Subtitle :end --}}
 
             {{-- Table :begin --}}
-            @include('pages.inventory.partials.dashboard.datatables.history-order-table')
+            @include('pages.inventory.sub-pages.dashboard.datatables.history-order-table')
             {{-- Table :end --}}
           </div>
         </div>
