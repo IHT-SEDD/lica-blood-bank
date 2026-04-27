@@ -131,6 +131,12 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/master-add-data.log'),
             'level' => 'debug',
+        ],
+
+        'masterupdate' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master-update-data.log'),
+            'level' => 'debug',
         ]
 
     ],

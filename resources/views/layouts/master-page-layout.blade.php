@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Master User'])
+@extends('layouts.vertical', ['title' => "Master $master"])
 
 @section('styles')
 @vite([
@@ -56,12 +56,14 @@
  </div>
  {{-- Form :end --}}
 </div>
+
+@yield('modal-content')
 @endsection
 
 @section('scripts')
 @vite([
-'resources/js/pages/master/' . $master . '/index.js',
-'resources/js/pages/master/' . $master . '/datatable.js'
+'resources/js/pages/master/' . $masterJS . '/index.js',
+'resources/js/pages/master/' . $masterJS . '/datatable.js'
 ])
 @yield('custom-scripts')
 @endsection

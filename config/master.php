@@ -1,10 +1,10 @@
 <?php
 
 return [
- 'user' => [
-  'view' => 'pages.master.user.index',
-  'model' => App\Models\User::class,
-  'with' => ['roles'],
+ 'blood-pack' => [
+  'view' => 'pages.master.blood-pack.index',
+  'model' => App\Models\BloodPack::class,
+  'with' => ['incomingBloods'],
  ],
  'role' => [
   'view' => 'pages.master.role.index',
@@ -17,9 +17,15 @@ return [
  'storage-rack' => [
   'view' => 'pages.master.storage-rack.index',
   'model' => App\Models\StorageRack::class,
-  'with' => ['storage'],
+  'with' => ['storages'],
  ],
- 'blood-pack' => [
-  'view' => 'pages.master.blood-pack.index',
+ 'user' => [
+  'view' => 'pages.master.user.index',
+  'model' => App\Models\User::class,
+  'with' => ['roles'],
+ ],
+ 'vendor' => [
+  'view' => 'pages.master.vendor.index',
+  'model' => App\Models\Vendor::class,
  ],
 ];
