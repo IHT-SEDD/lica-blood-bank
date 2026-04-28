@@ -1707,7 +1707,7 @@ export class GlobalSubmitForm {
 // ------------------------------ Global Config for Form Validation :begin ------------------------------
 export class GlobalFormValidation {
     // ------------------------------ Mulai static init ------------------------------
-    static init(formSelector, rules) {
+    static init(formSelector, initialRules = {}) {
         // ------------------------------ Ambil form element dengan selector ------------------------------
         const form = document.querySelector(formSelector);
 
@@ -1717,7 +1717,22 @@ export class GlobalFormValidation {
             return;
         }
 
+        // Simpan rules di variabel yang bisa dimutasi
+        let rules = { ...initialRules };
+
         return {
+            // ---------- Tambah field validasi secara dinamis :begin ----------
+            addField(fieldName, fieldRules) {
+                rules[fieldName] = fieldRules;
+            },
+            // ---------- Tambah field validasi secara dinamis :end ----------
+
+            // ---------- Hapus field validasi secara dinamis :begin ----------
+            removeField(fieldName) {
+                delete rules[fieldName];
+            },
+            // ---------- Hapus field validasi secara dinamis :end ----------
+
             validate: () => {
                 let isValid = true;
 
@@ -1754,9 +1769,7 @@ export class GlobalFormValidation {
                         input.addEventListener("change", () => {
                             const wrapper = input.closest(".ts-wrapper");
                             if (wrapper) wrapper.classList.remove("is-invalid");
-
                             input.classList.remove("is-invalid");
-
                             const feedback =
                                 input.parentNode.querySelector(
                                     ".invalid-feedback",
@@ -1999,3 +2012,85 @@ export class GlobalEditData {
     }
 }
 // ------------------------------ Global Config for Edit Data :end ------------------------------
+
+// ------------------------------ Global Config for Restore Data Confirmation :begin ------------------------------
+export class GlobalRestoreDataConfirmation {
+    // ------------------------------ Buat constructor untuk terima option dari client js ------------------------------
+    constructor(options = {}) {
+        this.buttonSelector = options.ButtonSelector || ".btn-restore";
+        this.dataAttributeID = options.DataAttributeID || "id";
+        this.urlFetchData = options.UrlFetchData || null;
+        this.modalConfirmID = options.ModalConfirmID || null;
+
+        // ------------------------------ Panggil init ------------------------------
+        this.init();
+    }
+
+    // ------------------------------ Mulai init ------------------------------
+    init() {
+        document.addEventListener("click", async (e) => {
+            // ------------------------------ Cari tombol berdasarkan selector ------------------------------
+            const btn = e.target.closest(this.buttonSelector);
+            if (!btn) return;
+
+            // ------------------------------ Cari data attribute dari tombol ------------------------------
+            const restoreId = btn.dataset[this.dataAttributeID];
+            if (!restoreId) {
+                if (window.notyf) {
+                    notyf.error({ message: "ID Data Not Found!" });
+                }
+                return;
+            }
+
+            // ------------------------------ Buat variabel untuk menampung data ------------------------------
+            let data = null;
+
+            try {
+                // ------------------------------ Kondisi jika membutuhkan fetch data ------------------------------
+                if (this.urlFetchData) {
+                    const url =
+                        typeof this.urlFetchData === "function"
+                            ? this.urlFetchData(restoreId)
+                            : this.urlFetchData.replace(":id", restoreId);
+
+                    const res = await fetch(url);
+                    const json = await res.json();
+                    data = json.data;
+                }
+
+                // ------------------------------ Simpan instance biar bisa diakses dari luar ------------------------------
+                this.currentData = data;
+                this.currentId = restoreId;
+
+                // ------------------------------ Trigger event biar client bisa handle sendiri ------------------------------
+                document.dispatchEvent(
+                    new CustomEvent("restore:open", {
+                        detail: {
+                            data,
+                            id: restoreId,
+                            button: btn,
+                        },
+                    }),
+                );
+
+                // ------------------------------ Tampilkan modal ------------------------------
+                if (this.modalConfirmID) {
+                    const modalEl = document.getElementById(
+                        this.modalConfirmID,
+                    );
+
+                    if (modalEl) {
+                        const modal = new bootstrap.Modal(modalEl);
+                        modal.show();
+                    }
+                }
+            } catch (err) {
+                if (window.notyf) {
+                    notyf.error({ message: "Failed to load data!" });
+                }
+                console.error(err);
+            }
+        });
+    }
+}
+// ------------------------------ Global Config for Restore Data Confirmation :end ------------------------------

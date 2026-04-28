@@ -82,4 +82,18 @@ class MasterController extends Controller
         return $this->service->editData($master, $request, $id);
     }
     // ---------- Fungsi untuk memperbaharui data dari database berdasarkan jenis master data dan id data :end ----------
+
+    // ---------- Fungsi untuk menghapus data dari database berdasarkan jenis master data dan id data :begin ----------
+    public function deleteData(Request $request, $master, $id)
+    {
+        return $this->service->deleteData($master, $id);
+    }
+    // ---------- Fungsi untuk menghapus data dari database berdasarkan jenis master data dan id data :end ----------
+
+    // ---------- Fungsi untuk memulihkan data yang udah dihapus dari database berdasarkan jenis master data dan id data :begin ----------
+    public function restoreData(Request $request, $master, $id)
+    {
+        return $this->service->restoreData($master, $id);
+    }
+    // ---------- Fungsi untuk memulihkan data yang udah dihapus dari database berdasarkan jenis master data dan id data :end ----------
 }

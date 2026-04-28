@@ -95,6 +95,7 @@
 @section('modal-content')
 @include('pages.master.vendor.partials.edit-data-modal')
 @include('pages.master.vendor.partials.delete-data-modal')
+@include('pages.master.vendor.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

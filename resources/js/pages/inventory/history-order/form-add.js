@@ -1,102 +1,17 @@
 import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
-// ---------- Init tom select ----------
-function initSelect(el, url) {
-    if (el.tomselect) return;
-
-    new TomSelect(el, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`${url}?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-
-// ---------- Init select pertama kali ----------
-function initAllSelects(container) {
-    container.find(".select-blood-group").each(function () {
-        initSelect(this, "/utility/select/blood-group");
-    });
-
-    container.find(".select-blood-rhesus").each(function () {
-        initSelect(this, "/utility/select/blood-rhesus");
-    });
-
-    container.find(".select-blood-component").each(function () {
-        initSelect(this, "/utility/select/blood-component");
-    });
-}
-
-// ---------- Perbaharui index inputan blood data ----------
-function reIndex(container) {
-    container.find(".blood-data-card").each(function (i) {
-        $(this)
-            .find("input, select")
-            .each(function () {
-                let name = $(this).attr("name");
-                if (!name) return;
-
-                let newName = name.replace(
-                    /blood_data\[\d+\]/,
-                    `blood_data[${i}]`,
-                );
-                $(this).attr("name", newName);
-            });
-    });
-}
-
-// ---------- Kosongkan inputan pada card bloo data ----------
-function resetCard(card) {
-    card.find("input").val("");
-    card.find("input[type=checkbox]").prop("checked", false);
-    card.find("select").val("");
-}
-
-// ---------- Isi inputan total quantity ----------
-function updateTotal() {
-    let total = 0;
-
-    $(".blood_quantity").each(function () {
-        total += parseInt($(this).val()) || 0;
-    });
-
-    $("#total_quantity").val(total);
-}
-
-function validateBloodData() {
-    let isValid = true;
-
-    $("#blood-data-container .blood-data-card").each(function () {
-        const fields = [
-            ".select-blood-group",
-            ".select-blood-rhesus",
-            ".select-blood-component",
-            ".blood_volume",
-            ".blood_quantity",
-        ];
-
-        fields.forEach((selector) => {
-            const el = $(this).find(selector);
-            const val = el.val();
-
-            if (!val) {
-                isValid = false;
-                el.addClass("is-invalid");
-            } else {
-                el.removeClass("is-invalid");
-            }
-        });
-    });
-
-    return isValid;
-}
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+const BloodDataInputsContainer = "blood_data_container";
+const AddBloodDataRowButton = "add_blood_data";
+const DeleteBloodDataRowButton = ".btn-delete-blood";
+const BloodDataRow = ".blood-data-row";
+const FormAddNewOrderSelector = "add_new_order";
+const PoNumberInputSelector = "po_number";
+const UrlPostNewOrder = "/inventory/history-order/new-order";
+const UrlGetNewPoNumber = "/inventory/history-order/new-po-number";
+const orderForm = HandleFormAddNewOrder();
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 
 // ---------- Select vendor dari tom-select untuk form add new data :begin ----------
 function SelectVendor() {
@@ -120,141 +35,377 @@ function SelectVendor() {
                     callback();
                 });
         },
+        onChange: async (vendorId) => {
+            // ---------- Reset inputan jika vendor dikosongkan ----------
+            if (!vendorId) {
+                document.getElementById("vendor-name").value = "";
+                document.getElementById("vendor-address").value = "";
+                return;
+            }
+
+            // ---------- Ambil data vendor berdasarkan id ----------
+            try {
+                const res = await fetch(`/utility/get/vendor/${vendorId}`);
+                const data = await res.json();
+
+                document.getElementById("vendor-name").value = data.name ?? "";
+                document.getElementById("vendor-address").value =
+                    data.address ?? "";
+            } catch (err) {
+                notyf.error({ message: "Failed to fetch vendor data!" });
+                console.error(err);
+            }
+        },
     });
 }
 // ---------- Select vendor dari tom-select untuk form add new data :begin ----------
 
-function AddNewOrder() {
-    // Ambil container blood data
-    const container = $("#blood-data-container");
+// ---------- Fungsi untuk mengelola form add new order :begin ----------
+function HandleFormAddNewOrder() {
+    // Mulai index blood data dari 0
+    let bloodIndex = 0;
+    const bloodDataContainer = document.getElementById(
+        BloodDataInputsContainer,
+    );
 
-    // Panggil select
-    initAllSelects(container);
+    const formValidation = GlobalFormValidation.init(
+        "#" + FormAddNewOrderSelector,
+        {
+            // ---------- Validasi field statis :begin ----------
+            po_number: {
+                validators: {
+                    notEmpty: {
+                        message: "PO Number is required",
+                    },
+                },
+            },
+            vendor_id: {
+                validators: {
+                    notEmpty: {
+                        message: "Vendor is required",
+                    },
+                },
+            },
+            // ---------- Validasi field statis :end ----------
+        },
+    );
 
-    // ---------- Validasi inputan form :begin ----------
-    const AddNewOrderValidation = GlobalFormValidation.init("#add_new_order", {
-        po_number: {
-            validators: {
-                notEmpty: {
-                    message: "PO number is required",
-                },
-            },
-        },
-        vendor_id: {
-            validators: {
-                notEmpty: {
-                    message: "Vendor is required",
-                },
-            },
-        },
-        total_quantity: {
-            validators: {
-                notEmpty: {
-                    message: "Total quantity is required",
-                },
-            },
-        },
-        blood_group: {
-            validators: {
-                notEmpty: {
-                    message: "Blood group is required",
-                },
-            },
-        },
-        blood_rhesus: {
-            validators: {
-                notEmpty: {
-                    message: "Blood rhesus is required",
-                },
-            },
-        },
-        blood_component: {
-            validators: {
-                notEmpty: {
-                    message: "Blood component is required",
-                },
-            },
-        },
-        blood_volume: {
-            validators: {
-                notEmpty: {
-                    message: "Blood volume is required",
-                },
-            },
-        },
-        blood_quantity: {
-            validators: {
-                notEmpty: {
-                    message: "Blood quantity is required",
-                },
-            },
-        },
-    });
-    // ---------- Validasi inputan form :end ----------
+    // Kosongkan isi container
+    bloodDataContainer.innerHTML = "";
+    // Bikin 1 baris default inputan
+    addBloodRow();
 
-    // Tambah card bloo data
-    $("#add_new_data").on("click", function (e) {
-        e.preventDefault();
-
-        let newCard = container.find(".blood-data-card").first().clone();
-
-        newCard.find("select").each(function () {
-            if (this.tomselect) {
-                this.tomselect.destroy();
-            }
+    // Tambahkan baris jika tombol add blood data di click
+    document
+        .getElementById(AddBloodDataRowButton)
+        .addEventListener("click", () => {
+            addBloodRow();
         });
 
-        resetCard(newCard);
+    // ---------- Fungsi untuk menambahkan baris blood data :begin ----------
+    function addBloodRow() {
+        const idx = bloodIndex++;
+        const row = document.createElement("div");
+        const titleRow = `${idx}# Blood Data`;
+        row.className = "card blood-data-row";
+        row.innerHTML = `<div class="card-header justify-content-between align-items-center">
+                <h6 class="card-title text-capitalize mb-0" id="blood_data[${idx}][title]">${titleRow}</h6>
+                <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button">Delete</button>
+            </div>
+            <div class="card-body">
+                <div class="col-12">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-lg-2 col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][blood_group]">Group <span class="text-danger">*</span></label>
+                            <select class="form-control" id="blood_data[${idx}][blood_group]" name="blood_data[${idx}][blood_group]" placeholder="Choose blood group..."></select>
+                        </div>
+                        <div class="col-lg-2 col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][blood_rhesus]">Rhesus <span class="text-danger">*</span></label>
+                            <select class="form-control" id="blood_data[${idx}][blood_rhesus]" name="blood_data[${idx}][blood_rhesus]" placeholder="Choose blood rhesus..."></select>
+                        </div>
+                        <div class="col-lg-2 col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][blood_component]">Component <span class="text-danger">*</span></label>
+                            <select class="form-control" id="blood_data[${idx}][blood_component]" name="blood_data[${idx}][blood_component]" placeholder="Choose blood component...">
+                            </select>
+                        </div>
+                        <div class="col-lg-2 col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][blood_volume]">Volume <span class="text-danger">*</span></label>
+                            <input class="form-control" id="blood_data[${idx}][blood_volume]" name="blood_data[${idx}][blood_volume]" placeholder="Blood volume" type="text" />
+                        </div>
+                        <div class="col-lg-2 col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][blood_quantity]">Quantity <span class="text-danger">*</span></label>
+                            <input class="form-control" id="blood_data[${idx}][blood_quantity]" name="blood_data[${idx}][blood_quantity]" placeholder="Blood quantity" type="text" />
+                        </div>
+                        <div class="col-lg-2 col-6">
+                            <div class="d-flex flex-wrap gap-1">
+                                <div class="form-check form-check-danger">
+                                    <input class="form-check-input" id="blood_data[${idx}][is_hiv]" name="blood_data[${idx}][is_hiv]" type="checkbox" />
+                                    <label class="form-check-label" for="blood_data[${idx}][is_hiv]">HIV?</label>
+                                </div>
+                                <div class="form-check form-check-danger">
+                                    <input class="form-check-input" id="blood_data[${idx}][is_hcv]" name="blood_data[${idx}][is_hcv]" type="checkbox" />
+                                    <label class="form-check-label" for="blood_data[${idx}][is_hcv]">HCV?</label>
+                                </div>
+                                <div class="form-check form-check-danger">
+                                    <input class="form-check-input" id="blood_data[${idx}][is_hbsag]" name="blood_data[${idx}][is_hbsag]" type="checkbox" />
+                                    <label class="form-check-label" for="blood_data[${idx}][is_hbsag]">HbsAG?</label>
+                                </div>
+                                <div class="form-check form-check-danger">
+                                    <input class="form-check-input" id="blood_data[${idx}][is_syphilis]" name="blood_data[${idx}][is_syphilis]" type="checkbox" />
+                                    <label class="form-check-label" for="blood_data[${idx}][is_syphilis]">Syphilis?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
 
-        container.append(newCard);
+        initBloodDataSelects(row, idx);
 
-        reIndex(container);
+        // Hapus baris jika tombol delete di click
+        row.querySelector(DeleteBloodDataRowButton).addEventListener(
+            "click",
+            () => {
+                deleteBloodRow(row);
+            },
+        );
 
-        initAllSelects(newCard);
-    });
+        bloodDataContainer.appendChild(row);
+        addBloodRowValidation(idx);
+        syncDeleteButtons();
+    }
+    // ---------- Fungsi untuk menambahkan baris blood data :end ----------
 
-    // Delete card
-    $(document).on("click", ".delete-card", function (e) {
-        e.preventDefault();
+    // ---------- Fungsi untuk inisialisasi Tom Select blood data :begin ----------
+    function initBloodDataSelects(row, idx) {
+        const selectConfigs = [
+            {
+                el: row.querySelector(
+                    `[name="blood_data[${idx}][blood_group]"]`,
+                ),
+                url: "/utility/select/blood-group",
+            },
+            {
+                el: row.querySelector(
+                    `[name="blood_data[${idx}][blood_rhesus]"]`,
+                ),
+                url: "/utility/select/blood-rhesus",
+            },
+            {
+                el: row.querySelector(
+                    `[name="blood_data[${idx}][blood_component]"]`,
+                ),
+                url: "/utility/select/blood-component",
+            },
+        ];
 
-        if ($(".blood-data-card").length > 1) {
-            $(this).closest(".blood-data-card").remove();
+        selectConfigs.forEach(({ el, url }) => {
+            if (!el) return;
+            new TomSelect(el, {
+                valueField: "id",
+                labelField: "text",
+                searchField: "text",
+                preload: true,
+                load: function (query, callback) {
+                    fetch(`${url}?q=${encodeURIComponent(query)}`)
+                        .then((res) => res.json())
+                        .then((json) => callback(json.results))
+                        .catch(() => callback());
+                },
+            });
+        });
+    }
+    // ---------- Fungsi untuk inisialisasi Tom Select blood data :end ----------
 
-            reIndex(container);
-            updateTotal();
-        } else {
-            notyf.error({ message: "Minimum 1 blood data!" });
+    // ---------- Fungsi untuk menambahkan validasi per baris blood data :begin ----------
+    function addBloodRowValidation(idx) {
+        const bloodFieldValidators = {
+            notEmpty: { message: "This field is required" },
+        };
+
+        const fields = [
+            `blood_data[${idx}][blood_group]`,
+            `blood_data[${idx}][blood_rhesus]`,
+            `blood_data[${idx}][blood_component]`,
+            `blood_data[${idx}][blood_volume]`,
+            `blood_data[${idx}][blood_quantity]`,
+        ];
+
+        fields.forEach((fieldName) => {
+            formValidation.addField(fieldName, {
+                validators: {
+                    notEmpty: bloodFieldValidators.notEmpty,
+                },
+            });
+        });
+    }
+    // ---------- Fungsi untuk menambahkan validasi per baris blood data :end ----------
+
+    // ---------- Fungsi untuk menghapus validasi per baris blood data :begin ----------
+    function removeBloodRowValidation(idx) {
+        const fields = [
+            `blood_data[${idx}][blood_group]`,
+            `blood_data[${idx}][blood_rhesus]`,
+            `blood_data[${idx}][blood_component]`,
+            `blood_data[${idx}][blood_volume]`,
+            `blood_data[${idx}][blood_quantity]`,
+        ];
+
+        fields.forEach((fieldName) => {
+            formValidation.removeField(fieldName);
+        });
+    }
+    // ---------- Fungsi untuk menghapus validasi per baris blood data :end ----------
+
+    // ---------- Fungsi untuk menghapus baris blood data :begin ----------
+    function deleteBloodRow(row) {
+        const bloodDataRows = bloodDataContainer.querySelectorAll(BloodDataRow);
+        if (bloodDataRows.length <= 1) {
+            notyf.error({
+                message: "Minimal 1 blood data!",
+            });
+            return;
+        }
+        const idx = row.dataset.idx;
+        removeBloodRowValidation(idx);
+        row.remove();
+        syncDeleteButtons();
+    }
+    // ---------- Fungsi untuk menghapus baris blood data :end ----------
+
+    // ---------- Fungsi untuk disable button delete jika sisa 1 :begin ----------
+    function syncDeleteButtons() {
+        const bloodDataRows = bloodDataContainer.querySelectorAll(BloodDataRow);
+        bloodDataRows.forEach((row) => {
+            const btn = row.querySelector(DeleteBloodDataRowButton);
+            btn.disabled = bloodDataRows.length <= 1;
+        });
+    }
+    // ---------- Fungsi untuk disable button delete jika sisa 1 :end ----------
+
+    // ---------- Fungsi untuk membuat array blood data :begin ----------
+    function getBloodData() {
+        const rows = bloodDataContainer.querySelectorAll(BloodDataRow);
+        const result = [];
+        rows.forEach((row) => {
+            result.push({
+                blood_group: row.querySelector('[name*="blood_group"]').value,
+                blood_rhesus: row.querySelector('[name*="blood_rhesus"]').value,
+                blood_component: row.querySelector('[name*="blood_component"]')
+                    .value,
+                blood_volume: row.querySelector('[name*="blood_volume"]').value,
+                blood_quantity: row.querySelector('[name*="blood_quantity"]')
+                    .value,
+                is_hiv: row.querySelector('[name*="is_hiv"]').checked,
+                is_hcv: row.querySelector('[name*="is_hcv"]').checked,
+                is_hbsag: row.querySelector('[name*="is_hbsag"]').checked,
+                is_syphilis: row.querySelector('[name*="is_syphilis"]').checked,
+            });
+        });
+        return result;
+    }
+    // ---------- Fungsi untuk membuat array blood data :end ----------
+
+    return { formValidation, getBloodData };
+}
+// ---------- Fungsi untuk mengelola form add new order :end ----------
+
+// ---------- Fungsi untuk generate PO Number :begin ----------
+function GeneratePoNumber() {
+    const poNumberInput = document.getElementById(PoNumberInputSelector);
+    if (!poNumberInput) return;
+
+    poNumberInput.addEventListener("click", async () => {
+        // Hindari generate ulang jika sudah ada nilai
+        if (poNumberInput.value) return;
+
+        try {
+            const res = await fetch(UrlGetNewPoNumber);
+            const data = await res.json();
+            poNumberInput.value = data;
+            notyf.success({
+                message: "PO Number Generated Successfully!",
+            });
+        } catch (err) {
+            notyf.error({
+                message: "Failed to generate PO Number!",
+            });
+            console.error(err);
         }
     });
+}
+// ---------- Fungsi untuk generate PO Number :end ----------
 
-    // Update value total_quantity
-    $(document).on("input", ".blood_quantity", function () {
-        updateTotal();
-    });
-
+// ---------- Fungsi untuk submit data form add new order :begin ----------
+function SubmitFormAddNewOrder() {
     new GlobalSubmitForm({
-        formId: "add_new_order",
-        url: "/inventory/history-order/new-order",
-        validator: AddNewOrderValidation,
-        beforeSubmit: () => {
-            if (!validateBloodData()) {
-                notyf.error({ message: "Please complete all blood data!" });
-                return false;
-            }
-            return true;
+        formId: FormAddNewOrderSelector,
+        url: UrlPostNewOrder,
+        method: "POST",
+        validator: orderForm.formValidation,
+        beforeSubmit: (formData) => {
+            const bloodData = orderForm.getBloodData();
+            bloodData.forEach((item, index) => {
+                formData.set(
+                    `blood_data[${index}][blood_group]`,
+                    item.blood_group,
+                );
+                formData.set(
+                    `blood_data[${index}][blood_rhesus]`,
+                    item.blood_rhesus,
+                );
+                formData.set(
+                    `blood_data[${index}][blood_component]`,
+                    item.blood_component,
+                );
+                formData.set(
+                    `blood_data[${index}][blood_volume]`,
+                    item.blood_volume,
+                );
+                formData.set(
+                    `blood_data[${index}][blood_quantity]`,
+                    item.blood_quantity,
+                );
+                formData.set(
+                    `blood_data[${index}][is_hiv]`,
+                    item.is_hiv ? 1 : 0,
+                );
+                formData.set(
+                    `blood_data[${index}][is_hcv]`,
+                    item.is_hcv ? 1 : 0,
+                );
+                formData.set(
+                    `blood_data[${index}][is_hbsag]`,
+                    item.is_hbsag ? 1 : 0,
+                );
+                formData.set(
+                    `blood_data[${index}][is_syphilis]`,
+                    item.is_syphilis ? 1 : 0,
+                );
+            });
+            return formData;
         },
-        onSuccess: () => {
-            notyf.success({ message: "Success!" });
-            window.dispatchEvent(new Event("history-order-reload"));
+        onSuccess: (data) => {
+            notyf.success({
+                message: "New order added successfully!",
+            });
+            console.log(data);
+            // contoh: reload datatable atau redirect
+            // window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
-        onError: () => {
-            notyf.error({ message: "Failed!" });
+        onError: (err) => {
+            notyf.error({
+                message: "Failed to add new order!",
+            });
+            console.error(err);
         },
         resetOnSuccess: true,
     });
 }
+// ---------- Fungsi untuk submit data form add new order :end ----------
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
     SelectVendor();
-    AddNewOrder();
+    GeneratePoNumber();
+    SubmitFormAddNewOrder(orderForm);
 });

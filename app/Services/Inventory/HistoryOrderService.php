@@ -1,113 +1,121 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Inventory;
 
+use App\Enums\OrderBloodStatus;
+use App\Models\OrderBlood;
+use App\Models\OrderBloodDetail;
+use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
-class MasterService
+class HistoryOrderService
 {
-  // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
-  public function datatable(string $master, Request $request)
+  // ---------- Fungsi untuk menampilkan data history order ke tabel :begin ----------
+  public function historyOrderTable(Request $request)
   {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
-    // ---------- Ambil semua data jenis master ----------
-    $excludeWithTrashed = ['role'];
-
-    if (in_array($master, $excludeWithTrashed)) {
-      $query = $modelClass::query();
-    } else {
-      $query = $modelClass::withTrashed();
-    }
-    if (!empty($modules['with'])) {
-      $query->with($modules['with']);
-    }
+    // ---------- Ambil data ----------
+    $query = OrderBlood::withTrashed()
+      ->with([
+        'vendors:id,public_id,name',
+        'orderBloods:id,public_id,order_blood_id,blood_group',
+      ]);
 
     // ---------- Terapkan filter untuk tanggal pada data ----------
     $this->applyDateFilter($query, $request);
 
-    // ---------- Terapkan filter khusus pada data ----------
-    $this->applyMasterFilter($query, $master, $request);
+    // ---------- Filter berdasarkan vendor ----------
+    if ($request->filled('vendor_id')) {
+      $query->whereHas('vendors', function ($q) use ($request) {
+        $q->where('public_id', $request->vendor_id);
+      });
+    }
+
+    // ---------- Filter berdasarkan status ----------
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    // ---------- Filter berdasarkan blood_group dari detail ----------
+    if ($request->filled('blood_group')) {
+      $query->whereHas('orderBloods', function ($q) use ($request) {
+        $q->where('blood_group', $request->blood_group);
+      });
+    }
 
     // ---------- Handle search pada kolom data ----------
     if ($request->filled('search')) {
       $search = $request->search;
-      $columns = $this->getSearchableColumns($modelClass);
-
-      $query->where(function ($q) use ($search, $columns) {
-        foreach ($columns as $column) {
-          $q->orWhere($column, 'like', "%{$search}%");
-        }
+      $query->where(function ($q) use ($search) {
+        $q->where('po_number', 'like', "%{$search}%")
+          ->orWhereHas('vendors', function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%");
+          })
+          ->orWhereHas('orderBloods', function ($q) use ($search) {
+            $q->where('blood_group', 'like', "%{$search}%");
+          });
       });
     }
 
-    // ---------- Urutkan data master ----------
+    // ---------- Urutkan data ----------
     if ($request->filled('sort_by')) {
       $query->orderBy(
         $request->sort_by,
         $request->sort_dir ?? 'asc'
       );
+    } else {
+      $query->latest();
     }
 
     // ---------- Tampilkan data ke tabel frontend ----------
     return $query->paginate($request->get('per_page', 10));
   }
-  // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
+  // ---------- Fungsi untuk menampilkan data history order ke tabel :end ----------
 
-  // ---------- Fungsi untuk submit data berdasarkan jenis master :begin ----------
-  public function submitData(string $master, Request $request)
+  // ---------- Fungsi untuk menambahkan data order baru :begin ----------
+  public function insertNewOrder(Request $request)
   {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
     try {
-      // ---------- Ambil model & data fillable ----------
-      $model = new $modelClass;
-      $data = $request->only($model->getFillable());
+      // ---------- Hitung total quantity dari semua blood data ----------
+      $totalQuantity = collect($request->blood_data)
+        ->sum(fn($item) => (int) $item['blood_quantity']);
 
-      // ---------- Panggil hook sebelum insert jika ada ----------
-      if (method_exists($modelClass, 'beforeCreate')) {
-        $modelClass::beforeCreate($data);
-      }
+      // ---------- Validasi PO Number ----------
+      $poNumberExists = OrderBlood::where('po_number', $request->po_number)->exists();
+      $poNumber = (!empty($request->po_number) && !$poNumberExists)
+        ? $request->po_number
+        : $this->generatePoNumber();
 
-      // ---------- Kondisi khusus untuk insert role ----------
-      if ($modelClass === \Spatie\Permission\Models\Role::class) {
-        if (empty($data['guard_name'])) {
-          $data['guard_name'] = 'web';
-        }
+      // ---------- Ambil id vendor berdasarkan public_id ----------
+      $vendorId = Vendor::where('public_id', $request->vendor_id)->value('id');
 
-        $created = $modelClass::create($data);
+      // ---------- Insert ke tabel order_bloods ----------
+      $newOrderData = OrderBlood::create([
+        'vendor_id' => $vendorId,
+        'po_number' => $poNumber,
+        'total_quantity' => $totalQuantity,
+        'status' => OrderBloodStatus::ORDER_CREATED,
+      ]);
 
-        // clear permission cache
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-      }
-
-      // ---------- Kondisi khusus untuk insert user ----------
-      elseif ($model instanceof \App\Models\User) {
-        if (empty($data['email']) && !empty($data['username'])) {
-          $data['email'] = strtolower($data['username']) . '@licabloodbank.com';
-        }
-
-        $created = $modelClass::create($data);
-
-        if ($request->filled('role')) {
-          $roleName = \Spatie\Permission\Models\Role::findById($request->role);
-          $created->syncRoles($roleName->name);
-        }
-      }
-
-      // ---------- Default insert ----------
-      else {
-        $created = $modelClass::create($data);
+      // ---------- Insert detail per blood data ----------
+      foreach ($request->blood_data as $item) {
+        OrderBloodDetail::create([
+          'order_blood_id' => $newOrderData->id,
+          'blood_group' => $item['blood_group'],
+          'rhesus' => $item['blood_rhesus'],
+          'blood_component' => $item['blood_component'],
+          'blood_volume' => $item['blood_volume'],
+          'quantity' => $item['blood_quantity'],
+          'is_hiv' => $item['is_hiv'] ?? false,
+          'is_hcv' => $item['is_hcv'] ?? false,
+          'is_hbsag' => $item['is_hbsag'] ?? false,
+          'is_syphilis' => $item['is_syphilis'] ?? false,
+        ]);
       }
       DB::commit();
       // ---------- Mulai transaksi database :end ----------
@@ -115,20 +123,19 @@ class MasterService
       // ---------- Masukkan ke log untuk success ----------
       globalLogger(
         'info',
-        `New data for master $master inserted successfully!`,
+        'New order data inserted succesfully!',
         [
-          'master' => $master,
-          'id' => $created->id,
-          'payload' => $created,
+          'id' => $newOrderData->id,
+          'payload' => $newOrderData,
         ],
         200,
-        'masteradd'
+        'neworderadd'
       );
 
       // ---------- Lempar sukses respon ke frontend ----------
       return response()->json([
-        'message' => `New data for master $master inserted successfully!`,
-        'data' => $created
+        'message' => 'New order data inserted succesfully!',
+        'data' => $newOrderData
       ]);
     } catch (\Throwable $e) {
       // ---------- Batalkan transaksi database jika ada error ----------
@@ -137,22 +144,22 @@ class MasterService
       // ---------- Masukkan ke log untuk error ----------
       globalLogger(
         'error',
-        `New data for master $master failed to insert!`,
+        'New order data failed to insert!',
         [
-          'master' => $master,
+          'payload' => $request->all(),
           'error' => $e->getMessage(),
         ],
         500,
-        'masteradd'
+        'neworderadd'
       );
 
       // ---------- Lempar error respon ke frontend ----------
       return response()->json([
-        'message' => `New data for master $master failed to insert!`,
+        'message' => 'New order data failed to insert!',
       ], 500);
     }
   }
-  // ---------- Fungsi untuk submit data berdasarkan jenis master :end ----------
+  // ---------- Fungsi untuk menambahkan data order baru :end ----------
 
   // ---------- Fungsi untuk edit data berdasarkan jenis master :begin ----------
   public function editData(string $master, Request $request, $id)
@@ -167,22 +174,12 @@ class MasterService
       // ---------- Ambil model ----------
       $model = new $modelClass;
 
-      // ---------- Konfigurasi khusus ----------
-      $useOnlyId = ['role'];
-
       // ---------- Ambil data master ----------
       $query = $modelClass::query();
-
-      $query->where(function ($q) use ($id, $master, $useOnlyId) {
-        if (in_array($master, $useOnlyId)) {
-          $q->where('id', $id);
-        } else {
-          $q->where('id', $id)
-            ->orWhere('public_id', $id);
-        }
-      });
-
-      $record = $query->firstOrFail();
+      $record = $query
+        ->where('id', $id)
+        ->orWhere('public_id', $id)
+        ->firstOrFail();
 
       // ---------- Ambil hanya field yang dikirim (partial update) ----------
       $data = array_filter(
@@ -199,6 +196,7 @@ class MasterService
 
       // ---------- Kondisi khusus untuk insert user ----------
       if ($model instanceof \App\Models\User) {
+        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
         if (
           array_key_exists('email', $data) &&
           empty($data['email']) &&
@@ -236,10 +234,6 @@ class MasterService
       // ---------- Update ----------
       $record->update($data);
 
-      // ---------- Handle role spatie ----------
-      if ($record instanceof \Spatie\Permission\Models\Role) {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-      }
 
       // ---------- Sync role ----------
       if ($record instanceof \App\Models\User && $request->filled('role')) {
@@ -302,35 +296,14 @@ class MasterService
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
     try {
-      // ---------- Konfigurasi khusus ----------
-      $useOnlyId = ['role'];
-
       // ---------- Ambil data master ----------
-      $query = $modelClass::query();
-
-      $query->where(function ($q) use ($id, $master, $useOnlyId) {
-        if (in_array($master, $useOnlyId)) {
-          $q->where('id', $id);
-        } else {
-          $q->where('id', $id)
-            ->orWhere('public_id', $id);
-        }
-      });
-
-      $record = $query->firstOrFail();
-
-      // ---------- Detach permission role ----------
-      if ($record instanceof \Spatie\Permission\Models\Role) {
-        $record->syncPermissions([]); // detach permissions
-      }
+      $record = $modelClass::query()
+        ->where('id', $id)
+        ->orWhere('public_id', $id)
+        ->firstOrFail();
 
       // ---------- Delete ----------
       $record->delete();
-
-      // ---------- Clear cache role ----------
-      if ($record instanceof \Spatie\Permission\Models\Role) {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-      }
 
       DB::commit();
       // ---------- Mulai transaksi database :end ----------
@@ -382,12 +355,6 @@ class MasterService
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
     $modelClass = $modules['model'];
-
-    if ($modelClass === \Spatie\Permission\Models\Role::class) {
-      return response()->json([
-        'message' => 'Role cannot be restored (no soft delete support)'
-      ], 400);
-    }
 
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
@@ -496,16 +463,6 @@ class MasterService
   }
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
 
-  // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :begin ----------
-  protected function applyMasterFilter($query, string $master, Request $request)
-  {
-    switch ($master) {
-      case 'user':
-        $this->filterUser($query, $request);
-        break;
-    }
-  }
-  // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :end ----------
 
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :begin ----------
   protected function filterUser($query, Request $request)
@@ -516,45 +473,21 @@ class MasterService
   }
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
 
-  // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
-  public function getDataById(string $master, $id)
+  // ---------- Fungsi untuk membuat po number :begin ----------
+  public function generatePoNumber(): string
   {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
-    // ---------- Konfigurasi khusus ----------
-    $excludeWithTrashed = ['role'];
-    $useOnlyId = ['role'];
-
-    // ---------- Ambil data master ----------
-    if (in_array($master, $excludeWithTrashed)) {
-      $query = $modelClass::query();
-    } else {
-      $query = $modelClass::withTrashed();
-    }
-
-    if (!empty($modules['with'])) {
-      $query->with($modules['with']);
-    }
-
-    $query->where(function ($q) use ($id, $master, $useOnlyId) {
-      if (in_array($master, $useOnlyId)) {
-        $q->where('id', $id);
-      } else {
-        $q->where('id', $id)
-          ->orWhere('public_id', $id);
-      }
-    });
-
-    $dataMaster = $query->first();
-
-    if (!$dataMaster) {
-      return response()->json(['message' => 'Data not found'], 404);
-    }
+    $year = now()->format('Y');
+    $last = OrderBlood::where('po_number', 'like', "P{$year}OB%")
+      ->lockForUpdate()
+      ->orderByDesc('po_number')
+      ->first();
+    $nextNumber = $last
+      ? ((int) substr($last->po_number, -6) + 1)
+      : 1;
+    $poNumber = 'P' . $year . 'OB' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
     // ---------- Lempar data ke frontend ----------
-    return $dataMaster;
+    return $poNumber;
   }
-  // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
+  // ---------- Fungsi untuk membuat po number :end ----------
 }

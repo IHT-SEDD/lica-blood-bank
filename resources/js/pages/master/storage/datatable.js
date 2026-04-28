@@ -3,25 +3,40 @@ import {
     GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
     GlobalDeleteDataConfirmation,
+    GlobalRestoreDataConfirmation,
     GlobalEditData,
     DateTimeFormatter,
 } from "../../../app";
 
-// ---------- Init global variable ----------
-let masterStorageTableInstance;
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+let masterStorageTableInstance; // instance datatable untuk global
 
-const DateFilterSelector = ".master-storage-table-date-filter";
-const DatatableSelector = "#master-storage-table";
-const MasterDataURL = "/master/storage/data";
-const FormEditSelector = "#edit_data_storage";
-const ModalEditSelector = "edit_data_master_storage_modal";
-const ModalDeleteSelector = "delete_data_master_storage_modal";
-const ActionEditSelector = ".btn-edit-storage";
-const ActionDeleteSelector = ".btn-delete-storage";
-const AttributeDelete = "deleteId";
-const AttributeEdit = "editId";
-const ConfirmDeleteSelector = "#confirm_delete";
-const ReloadDatatableSelector = "master-storage-reload";
+// Filter datatable
+const DateFilterSelector = ".master-storage-table-date-filter"; // class selector filter tanggal
+
+// Datatable
+const DatatableSelector = "#master-storage-table"; // id selector datatable
+const MasterDataURL = "/master/storage/data"; // url fetch data untuk datatable
+const ReloadDatatableSelector = "master-storage-reload"; // index reload datatable
+
+// Edit Action
+const FormEditSelector = "#edit_data_storage"; // id selector form edit
+const ModalEditSelector = "edit_data_master_storage_modal"; // id selector modal edit
+const ActionEditSelector = ".btn-edit-storage"; // class selector button edit
+const AttributeEdit = "editId"; // attribute data id edit
+
+// Delete Action
+const ModalDeleteSelector = "delete_data_master_storage_modal"; // id selector modal delete
+const ActionDeleteSelector = ".btn-delete-storage"; // class selector button delete
+const AttributeDelete = "deleteId"; // attribute data id delete
+const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
+
+// Restore Action
+const ModalRestoreSelector = "restore_data_master_storage_modal"; // id selector modal restore
+const ActionRestoreSelector = ".btn-restore-storage"; // class selector button restore
+const AttributeRestore = "restoreId"; // attribute data id restore
+const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
+// ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
@@ -69,8 +84,15 @@ function MasterStorageTable() {
         {
             data: "is_active",
             title: "Status",
-            render: (data) => {
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">${data == 1 ? "Active" : "Inactive"}</span>`;
+            render: (data, type, row) => {
+                const isDeleted = row.deleted_at !== null;
+                if (isDeleted) {
+                    return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
+                }
+
+                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
+                    ${data == 1 ? "Active" : "Inactive"}
+                </span>`;
             },
         },
         {
@@ -98,6 +120,8 @@ function MasterStorageTable() {
             data: null,
             title: "Action",
             render: (data, type, row, meta) => {
+                const isDeleted = row.deleted_at !== null;
+
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
                 data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
@@ -106,6 +130,10 @@ function MasterStorageTable() {
                         <li>
                             <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-storage" data-edit-id="${row.public_id}" type="button">
                             Edit</button>
+                        </li>
+                        <li>
+                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-storage ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            Restore</button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-storage text-danger" data-delete-id="${row.public_id}" type="button">
@@ -208,8 +236,138 @@ function DeleteDataStorageActionModal() {
         document.querySelector(ConfirmDeleteSelector).dataset.id =
             data.public_id;
     });
+
+    const confirmBtn = document.querySelector(ConfirmDeleteSelector);
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener("click", async function () {
+            const id = this.dataset.id;
+
+            if (!id) return;
+
+            try {
+                const response = await fetch(MasterDataURL + `/${id}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    notyf.error({
+                        message: result.message || "Failed to delete data!",
+                    });
+                }
+
+                notyf.success({
+                    message: result.message || "Data deleted successfully!",
+                });
+
+                const modalEl = document.getElementById(ModalDeleteSelector);
+                const modal =
+                    bootstrap.Modal.getInstance(modalEl) ||
+                    new bootstrap.Modal(modalEl);
+
+                modal.hide();
+
+                this.dataset.id = "";
+
+                reloadTable();
+
+                console.log(result.message);
+            } catch (error) {
+                console.error(error);
+                notyf.error({
+                    message: error || "Failed to delete data!",
+                });
+            }
+        });
+    }
 }
 // ---------- Handle modal delete data :end ----------
+
+// ---------- Handle modal restore data :begin ----------
+function RestoreDataStorageActionModal() {
+    // Panggil dan setup delete data
+    new GlobalRestoreDataConfirmation({
+        ButtonSelector: ActionRestoreSelector,
+        DataAttributeID: AttributeRestore,
+        UrlFetchData: (id) => MasterDataURL + `/${id}`,
+        ModalConfirmID: ModalRestoreSelector,
+    });
+
+    // Custom isi modal
+    document.addEventListener("restore:open", function (e) {
+        const { data } = e.detail;
+        if (!data) return;
+
+        // Isi text ke modal
+        document.querySelector("#restored_data").textContent =
+            `${data.name} with ID ${data.public_id}`;
+
+        // Berikan attribute button restore dengan id data
+        document.querySelector(ConfirmRestoreSelector).dataset.id =
+            data.public_id;
+    });
+
+    const confirmBtn = document.querySelector(ConfirmRestoreSelector);
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener("click", async function () {
+            const id = this.dataset.id;
+
+            if (!id) return;
+
+            try {
+                const response = await fetch(MasterDataURL + `/${id}/restore`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    notyf.error({
+                        message: result.message || "Failed to restore data!",
+                    });
+                }
+
+                notyf.success({
+                    message: result.message || "Data restored successfully!",
+                });
+
+                const modalEl = document.getElementById(ModalRestoreSelector);
+                const modal =
+                    bootstrap.Modal.getInstance(modalEl) ||
+                    new bootstrap.Modal(modalEl);
+
+                modal.hide();
+
+                this.dataset.id = "";
+
+                reloadTable();
+
+                console.log(result.message);
+            } catch (error) {
+                console.error(error);
+                notyf.error({
+                    message: error || "Failed to restore data!",
+                });
+            }
+        });
+    }
+}
+// ---------- Handle modal restore data :end ----------
 
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
@@ -223,6 +381,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Action data
     EditDataStorageActionModal();
     DeleteDataStorageActionModal();
+    RestoreDataStorageActionModal();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

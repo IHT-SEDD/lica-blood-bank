@@ -23,7 +23,7 @@
                     ©
                     <script>
                         document.write(new Date().getFullYear())
-                    </script> Simple — by <span class="fw-semibold">Coderthemes</span>
+                    </script> LICA Blood Bank — by <span class="fw-semibold">ISOLA</span>
                 </p>
             </div>
         </div>

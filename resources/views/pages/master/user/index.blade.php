@@ -104,6 +104,7 @@
 @section('modal-content')
 @include('pages.master.user.partials.edit-data-modal')
 @include('pages.master.user.partials.delete-data-modal')
+@include('pages.master.user.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

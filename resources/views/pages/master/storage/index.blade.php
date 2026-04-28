@@ -98,6 +98,7 @@
 @section('modal-content')
 @include('pages.master.storage.partials.edit-data-modal')
 @include('pages.master.storage.partials.delete-data-modal')
+@include('pages.master.storage.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

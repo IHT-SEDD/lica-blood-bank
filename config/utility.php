@@ -3,28 +3,33 @@
 return [
  'user' => [
   'model' => App\Models\User::class,
-  'with' => ['roles'],
   'label' => 'name',
+  'with' => ['roles'],
  ],
  'role' => [
   'model' => Spatie\Permission\Models\Role::class,
   'label' => 'name',
+  'with'  => [],
  ],
  'vendor' => [
   'model' => App\Models\Vendor::class,
   'label' => 'name',
+  'with'  => [],
  ],
  'storage' => [
   'model' => App\Models\Storage::class,
   'label' => 'name',
+  'with'  => [],
  ],
  'storage-rack' => [
   'model' => App\Models\StorageRack::class,
   'label' => 'name',
+  'with'  => ['storages'],
  ],
  'blood-pack' => [
   'model' => '',
   'label' => 'initial',
+  'with'  => [],
  ],
  'blood-group' => [
   'type' => 'enum',
@@ -33,6 +38,9 @@ return [
   'type' => 'enum',
  ],
  'blood-rhesus' => [
+  'type' => 'enum',
+ ],
+ 'order-status' => [
   'type' => 'enum',
  ],
 ];

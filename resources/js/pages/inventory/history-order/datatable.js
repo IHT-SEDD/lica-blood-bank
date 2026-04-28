@@ -10,37 +10,43 @@ import {
 import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-let masterVendorTableInstance; // instance datatable untuk global
+let historyOrderTableInstance; // instance datatable untuk global
 
 // Filter datatable
-const DateFilterSelector = ".master-vendor-table-date-filter"; // class selector filter tanggal
+const DateFilterSelector = ".history-order-table-date-filter"; // class selector filter tanggal
 
 // Datatable
-const DatatableSelector = "#master-vendor-table"; // id selector datatable
-const MasterDataURL = "/master/vendor/data"; // url fetch data untuk datatable
-const ReloadDatatableSelector = "master-vendor-reload"; // index reload datatable
+const DatatableSelector = "#history-order-table"; // id selector datatable
+const DataURL = "/inventory/history-order/data"; // url fetch data untuk datatable
+const ReloadDatatableSelector = "history-order-reload"; // index reload datatable
 
-// Edit Action
-const FormEditSelector = "#edit_data_vendor"; // id selector form edit
-const ModalEditSelector = "edit_data_master_vendor_modal"; // id selector modal edit
-const ActionEditSelector = ".btn-edit-vendor"; // class selector button edit
-const AttributeEdit = "editId"; // attribute data id edit
+// See More Action
+const FormSeeSelector = "#see_data_history_order"; // id selector form see
+const ModalSeeSelector = "see_data_history_order_modal"; // id selector modal see
+const ActionSeeSelector = ".btn-see-history-order"; // class selector button see
+const AttributeSee = "seeId"; // attribute data id see
 
 // Delete Action
-const ModalDeleteSelector = "delete_data_master_vendor_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-vendor"; // class selector button delete
+const ModalDeleteSelector = "delete_data_history_order_modal"; // id selector modal delete
+const ActionDeleteSelector = ".btn-delete-history-order"; // class selector button delete
 const AttributeDelete = "deleteId"; // attribute data id delete
 const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
 
 // Restore Action
-const ModalRestoreSelector = "restore_data_master_vendor_modal"; // id selector modal restore
-const ActionRestoreSelector = ".btn-restore-vendor"; // class selector button restore
+const ModalRestoreSelector = "restore_data_history_order_modal"; // id selector modal restore
+const ActionRestoreSelector = ".btn-restore-history-order"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
+    const vendor = document.querySelector("#filter-order-vendor")?.value || "";
+    const status = document.querySelector("#filter-order-status")?.value || "";
+    const bloodGroup =
+        document.querySelector("#filter-order-blood-group")?.value || "";
+    const bloodComponent =
+        document.querySelector("#filter-order-blood-component")?.value || "";
     const dateVal = document.querySelector(DateFilterSelector)?.value;
 
     let start_date = "";
@@ -54,46 +60,57 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { start_date, end_date };
+    return { status, vendor, bloodGroup, bloodComponent, start_date, end_date };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterVendorTableInstance?.instance) {
-        masterVendorTableInstance.instance.ajax.reload();
+    if (historyOrderTableInstance?.instance) {
+        historyOrderTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
 
 // ---------- Datatable untuk master storage :begin ----------
-function MasterVendorTable() {
+function HistoryOrderTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterVendorTableColumns = [
+    const HistoryOrderTableColumns = [
+        { data: "po_number", title: "PO Number" },
         {
-            data: null,
-            title: "No",
-            render: (data, type, row, meta) => {
-                return meta.row + 1;
+            data: "vendor_id",
+            title: "Vendor",
+            render: (data, type, row) => {
+                return `<span class="badge badge-label badge-soft-primary">${row.vendors.name}</span>`;
             },
         },
-        { data: "name", title: "Name" },
-        { data: "address", title: "Address" },
-        { data: "phone_number", title: "Phone Number" },
-        { data: "telephone_number", title: "Telephone Number" },
-        { data: "pic_name", title: "PIC Name" },
+        { data: "total_quantity", title: "Total Qty" },
         {
-            data: "is_active",
+            data: null,
+            title: "Blood Group",
+            render: (data, type, row) => {
+                const details = row.order_blood_details || [];
+                if (!details.length) return "-";
+                const bloodGroups = details
+                    .map((item) => item.blood_group)
+                    .filter(Boolean)
+                    .join(", ");
+                return `<span class="fw-medium text-muted">${bloodGroups}</span>`;
+            },
+        },
+        {
+            data: "status",
             title: "Status",
             render: (data, type, row) => {
                 const isDeleted = row.deleted_at !== null;
+                const isDone = data == "done";
                 if (isDeleted) {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
+                } else if (isDone) {
+                    return `<span class="badge badge-label badge-soft-success">Done</span>`;
+                } else {
+                    return `<span class="badge badge-label badge-soft-secondary">Order Created</span>`;
                 }
-
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
             },
         },
         {
@@ -129,15 +146,16 @@ function MasterVendorTable() {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-vendor" data-edit-id="${row.public_id}" type="button">
-                            Edit</button>
+                            <button id="see-data-${row.public_id}" class="dropdown-item fw-medium btn-see-history-order ${isDeleted ? "disabled" : ""}" 
+                            data-see-id="${row.public_id}" type="button">
+                            See More</button>
                         </li>
                         <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-vendor ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-history-order ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             Restore</button>
                         </li>
                         <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-vendor text-danger" data-delete-id="${row.public_id}" type="button">
+                            <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-history-order ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
                             Delete</button>
                         </li>
                     </ul>
@@ -147,16 +165,16 @@ function MasterVendorTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterVendorTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
+    historyOrderTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
         ajax: {
-            url: MasterDataURL,
+            url: DataURL,
             data: function (d) {
                 const filters = getFilters();
                 d.start_date = filters.start_date;
                 d.end_date = filters.end_date;
             },
         },
-        columns: MasterVendorTableColumns,
+        columns: HistoryOrderTableColumns,
         useHideColumn: true,
         columnDefs: [
             {
@@ -172,6 +190,81 @@ function MasterVendorTable() {
 }
 // ---------- Datatable untuk master storage :end ----------
 
+// ---------- Filter dari tom-select untuk data di tabel :begin ----------
+function FilterBloodGroup() {
+    const filterBloodGroup = new TomSelect("#filter-order-blood-group", {
+        valueField: "text",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+
+    filterBloodGroup.on("change", reloadTable);
+}
+
+function FilterVendor() {
+    const filterVendor = new TomSelect("#filter-order-vendor", {
+        valueField: "text",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/vendor?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+
+    filterVendor.on("change", reloadTable);
+}
+
+function FilterOrderStatus() {
+    const filterOrderStatus = new TomSelect("#filter-order-status", {
+        valueField: "text",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/order-status?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+
+    filterOrderStatus.on("change", reloadTable);
+}
+
+function FilterBloodComponent() {
+    const filterBloodComponent = new TomSelect(
+        "#filter-order-blood-component",
+        {
+            valueField: "text",
+            labelField: "text",
+            searchField: "text",
+            preload: true,
+            load: function (query, callback) {
+                fetch(
+                    `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+                )
+                    .then((res) => res.json())
+                    .then((json) => callback(json.results))
+                    .catch(() => callback());
+            },
+        },
+    );
+
+    filterBloodComponent.on("change", reloadTable);
+}
+// ---------- Filter dari tom-select untuk data di tabel :end ----------
+
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
@@ -180,46 +273,13 @@ function DateRangeFilter() {
 }
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
-// ---------- Handle modal edit data :begin ----------
-function EditDataVendorActionModal() {
-    new GlobalEditData({
-        ButtonSelector: ActionEditSelector,
-        DataAttributeID: AttributeEdit,
-        UrlFetchData: (id) => `${MasterDataURL}/${id}`,
-        ModalEditID: ModalEditSelector,
-        FormSelector: FormEditSelector,
-    });
-
-    document.addEventListener("edit:open", function (e) {
-        const { data } = e.detail;
-
-        if (!data) return;
-
-        document.querySelector("#edit_data_vendor_name").value =
-            data.name ?? "";
-        document.querySelector("#edit_data_vendor_address").value =
-            data.address ?? "";
-        document.querySelector("#edit_data_vendor_phone_number").value =
-            data.phone_number ?? "";
-        document.querySelector("#edit_data_vendor_telephone_number").value =
-            data.telephone_number ?? "";
-        document.querySelector("#edit_data_vendor_pic_name").value =
-            data.pic_name ?? "";
-        document.querySelector("#edit_data_vendor_is_active").checked =
-            data.is_active == 1;
-
-        document.querySelector(FormEditSelector).dataset.id = data.public_id;
-    });
-}
-// ---------- Handle modal edit data :end ----------
-
 // ---------- Handle modal delete data :begin ----------
-function DeleteDataVendorActionModal() {
+function DeleteDataHistoryDataActionModal() {
     // Panggil dan setup delete data
     new GlobalDeleteDataConfirmation({
         ButtonSelector: ActionDeleteSelector,
         DataAttributeID: AttributeDelete,
-        UrlFetchData: (id) => MasterDataURL + `/${id}`,
+        UrlFetchData: (id) => DataURL + `/${id}`,
         ModalConfirmID: ModalDeleteSelector,
     });
 
@@ -230,7 +290,7 @@ function DeleteDataVendorActionModal() {
 
         // Isi text ke modal
         document.querySelector("#deleted_data").textContent =
-            `${data.name} with ID ${data.public_id}`;
+            `${data.po_number} with ID ${data.public_id}`;
 
         // Berikan attribute button delete dengan id data
         document.querySelector(ConfirmDeleteSelector).dataset.id =
@@ -246,7 +306,7 @@ function DeleteDataVendorActionModal() {
             if (!id) return;
 
             try {
-                const response = await fetch(MasterDataURL + `/${id}`, {
+                const response = await fetch(DataURL + `/${id}`, {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json",
@@ -292,12 +352,12 @@ function DeleteDataVendorActionModal() {
 // ---------- Handle modal delete data :end ----------
 
 // ---------- Handle modal restore data :begin ----------
-function RestoreDataVendorActionModal() {
+function RestoreDataHistoryDataActionModal() {
     // Panggil dan setup delete data
     new GlobalRestoreDataConfirmation({
         ButtonSelector: ActionRestoreSelector,
         DataAttributeID: AttributeRestore,
-        UrlFetchData: (id) => MasterDataURL + `/${id}`,
+        UrlFetchData: (id) => DataURL + `/${id}`,
         ModalConfirmID: ModalRestoreSelector,
     });
 
@@ -308,7 +368,7 @@ function RestoreDataVendorActionModal() {
 
         // Isi text ke modal
         document.querySelector("#restored_data").textContent =
-            `${data.name} with ID ${data.public_id}`;
+            `${data.po_number} with ID ${data.public_id}`;
 
         // Berikan attribute button restore dengan id data
         document.querySelector(ConfirmRestoreSelector).dataset.id =
@@ -324,7 +384,7 @@ function RestoreDataVendorActionModal() {
             if (!id) return;
 
             try {
-                const response = await fetch(MasterDataURL + `/${id}/restore`, {
+                const response = await fetch(DataURL + `/${id}/restore`, {
                     method: "PATCH",
                     headers: {
                         "Content-Type": "application/json",
@@ -371,17 +431,22 @@ function RestoreDataVendorActionModal() {
 
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
-    MasterVendorTable();
+    HistoryOrderTable();
 
     // Select function
+    FilterBloodGroup();
+    FilterVendor();
+    FilterBloodComponent();
+    FilterOrderStatus();
+    // EditStorage();
 
     // Date range picker
     DateRangeFilter();
 
     // Action data
-    EditDataVendorActionModal();
-    DeleteDataVendorActionModal();
-    RestoreDataVendorActionModal();
+    // EditDataStorageRackActionModal();
+    DeleteDataHistoryDataActionModal();
+    RestoreDataHistoryDataActionModal();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

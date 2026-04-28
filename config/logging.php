@@ -137,8 +137,19 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/master-update-data.log'),
             'level' => 'debug',
-        ]
+        ],
 
+        'masterdelete' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master-delete-data.log'),
+            'level' => 'debug',
+        ],
+
+        'neworderadd' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/order-new-data.log'),
+            'level' => 'debug',
+        ]
     ],
 
 ];
