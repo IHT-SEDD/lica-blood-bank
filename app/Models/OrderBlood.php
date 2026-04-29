@@ -19,7 +19,9 @@ class OrderBlood extends Model
         'po_number',
         'vendor_id',
         'total_quantity',
+        'description',
         'status',
+        'ordered_by_user_id',
     ];
 
     protected $hidden = [
@@ -37,50 +39,19 @@ class OrderBlood extends Model
             if (empty($orderBlood->public_id)) {
                 $orderBlood->public_id = (string) Str::uuid();
             }
-
-            // Generate po number
-            if (empty($orderBlood->po_number)) {
-
-                $year = now()->format('Y');
-
-                DB::transaction(function () use ($orderBlood, $year) {
-                    $last = self::where('po_number', 'like', "P{$year}OB%")
-                        ->lockForUpdate()
-                        ->orderByDesc('po_number')
-                        ->first();
-
-                    $nextNumber = $last
-                        ? ((int) substr($last->po_number, -6) + 1)
-                        : 1;
-
-                    $orderBlood->po_number =
-                        'P' . $year . 'OB' . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-                });
-            }
         });
-    }
-
-    // Buat peraturan validasi untuk data model
-    public static function rules($context = 'store', $id = null)
-    {
-        return match ($context) {
-            'store' => [
-                'total_quantity' => 'required',
-                'po_number' => 'required|unique:order_bloods,po_number',
-                'vendor_id' => 'required|exists:vendors,id',
-            ],
-            'update' => [
-                'total_quantity' => 'sometimes|required',
-                'po_number' => "sometimes|required|unique:order_bloods,po_number,$id",
-                'vendor_id' => 'sometimes|required|exists:vendors,id',
-            ]
-        };
     }
 
     // Relasi ke vendors
     public function vendors(): BelongsTo
     {
         return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    // Relasi ke users
+    public function users(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ordered_by_user_id');
     }
 
 

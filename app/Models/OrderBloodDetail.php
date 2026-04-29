@@ -20,6 +20,7 @@ class OrderBloodDetail extends Model
         'blood_group',
         'blood_component',
         'blood_volume',
+        'note',
         'rhesus',
         'is_hiv',
         'is_hbsag',
@@ -43,25 +44,6 @@ class OrderBloodDetail extends Model
                 $orderBloodDetail->public_id = (string) Str::uuid();
             }
         });
-    }
-
-    // Buat peraturan validasi untuk data model
-    public static function rules($context = 'store', $id = null)
-    {
-        return match ($context) {
-            'store' => [
-                'order_blood_id' => 'required|exists:order_bloods,id',
-                'blood_group' => ['required', new Enum(BloodGroup::class)],
-                'blood_volume' => 'required|integer|min:1',
-                'rhesus' => 'required|in:+,-',
-            ],
-            'update' => [
-                'order_blood_id' => 'sometimes|required|exists:order_bloods,id',
-                'blood_group' => ['sometimes', 'required', new Enum(BloodGroup::class)],
-                'blood_volume' => 'sometimes|required|integer|min:1',
-                'rhesus' => 'sometimes|required|in:+,-',
-            ]
-        };
     }
 
     // Relation to order_bloods

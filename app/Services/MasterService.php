@@ -18,7 +18,13 @@ class MasterService
     $modelClass = $modules['model'];
 
     // ---------- Ambil semua data jenis master ----------
-    $query = $modelClass::query();
+    $excludeWithTrashed = ['role'];
+
+    if (in_array($master, $excludeWithTrashed)) {
+      $query = $modelClass::query();
+    } else {
+      $query = $modelClass::withTrashed();
+    }
     if (!empty($modules['with'])) {
       $query->with($modules['with']);
     }
@@ -73,23 +79,34 @@ class MasterService
         $modelClass::beforeCreate($data);
       }
 
+      // ---------- Kondisi khusus untuk insert role ----------
+      if ($modelClass === \Spatie\Permission\Models\Role::class) {
+        if (empty($data['guard_name'])) {
+          $data['guard_name'] = 'web';
+        }
+
+        $created = $modelClass::create($data);
+
+        // clear permission cache
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+      }
+
       // ---------- Kondisi khusus untuk insert user ----------
-      if ($model instanceof \App\Models\User) {
-        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
+      elseif ($model instanceof \App\Models\User) {
         if (empty($data['email']) && !empty($data['username'])) {
           $data['email'] = strtolower($data['username']) . '@licabloodbank.com';
         }
 
-        // ---------- Insert data ke database ----------
         $created = $modelClass::create($data);
 
-        // ---------- Tambahkan role secara spatie ke user yang baru ditambahkan ----------
         if ($request->filled('role')) {
-          $roleName = Role::findById($request->role);
+          $roleName = \Spatie\Permission\Models\Role::findById($request->role);
           $created->syncRoles($roleName->name);
         }
-      } else {
-        // ---------- Insert data master lainnya seperti biasa ----------
+      }
+
+      // ---------- Default insert ----------
+      else {
         $created = $modelClass::create($data);
       }
       DB::commit();
@@ -150,12 +167,22 @@ class MasterService
       // ---------- Ambil model ----------
       $model = new $modelClass;
 
+      // ---------- Konfigurasi khusus ----------
+      $useOnlyId = ['role'];
+
       // ---------- Ambil data master ----------
       $query = $modelClass::query();
-      $record = $query
-        ->where('id', $id)
-        ->orWhere('public_id', $id)
-        ->firstOrFail();
+
+      $query->where(function ($q) use ($id, $master, $useOnlyId) {
+        if (in_array($master, $useOnlyId)) {
+          $q->where('id', $id);
+        } else {
+          $q->where('id', $id)
+            ->orWhere('public_id', $id);
+        }
+      });
+
+      $record = $query->firstOrFail();
 
       // ---------- Ambil hanya field yang dikirim (partial update) ----------
       $data = array_filter(
@@ -172,7 +199,6 @@ class MasterService
 
       // ---------- Kondisi khusus untuk insert user ----------
       if ($model instanceof \App\Models\User) {
-        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
         if (
           array_key_exists('email', $data) &&
           empty($data['email']) &&
@@ -210,6 +236,10 @@ class MasterService
       // ---------- Update ----------
       $record->update($data);
 
+      // ---------- Handle role spatie ----------
+      if ($record instanceof \Spatie\Permission\Models\Role) {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+      }
 
       // ---------- Sync role ----------
       if ($record instanceof \App\Models\User && $request->filled('role')) {
@@ -261,6 +291,159 @@ class MasterService
     }
   }
   // ---------- Fungsi untuk edit data berdasarkan jenis master :end ----------
+
+  // ---------- Fungsi untuk delete data berdasarkan jenis master :begin ----------
+  public function deleteData(string $master, $id)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
+
+    // ---------- Mulai transaksi database :begin----------
+    DB::beginTransaction();
+    try {
+      // ---------- Konfigurasi khusus ----------
+      $useOnlyId = ['role'];
+
+      // ---------- Ambil data master ----------
+      $query = $modelClass::query();
+
+      $query->where(function ($q) use ($id, $master, $useOnlyId) {
+        if (in_array($master, $useOnlyId)) {
+          $q->where('id', $id);
+        } else {
+          $q->where('id', $id)
+            ->orWhere('public_id', $id);
+        }
+      });
+
+      $record = $query->firstOrFail();
+
+      // ---------- Detach permission role ----------
+      if ($record instanceof \Spatie\Permission\Models\Role) {
+        $record->syncPermissions([]); // detach permissions
+      }
+
+      // ---------- Delete ----------
+      $record->delete();
+
+      // ---------- Clear cache role ----------
+      if ($record instanceof \Spatie\Permission\Models\Role) {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+      }
+
+      DB::commit();
+      // ---------- Mulai transaksi database :end ----------
+
+      // ---------- Masukkan ke log untuk success ----------
+      globalLogger(
+        'info',
+        "Data for master $master deleted successfully!",
+        [
+          'master' => $master,
+          'id' => $record->id,
+        ],
+        200,
+        'masterdelete'
+      );
+
+      // ---------- Lempar sukses respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master deleted successfully!",
+        'data' => $record
+      ]);
+    } catch (\Throwable $e) {
+      // ---------- Batalkan transaksi database jika ada error ----------
+      DB::rollBack();
+
+      // ---------- Masukkan ke log untuk error ----------
+      globalLogger(
+        'error',
+        "Data for master $master failed to delete!",
+        [
+          'master' => $master,
+          'error' => $e->getMessage(),
+        ],
+        500,
+        'masterdelete'
+      );
+
+      // ---------- Lempar error respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master failed to update!",
+      ], 500);
+    }
+  }
+  // ---------- Fungsi untuk delete data berdasarkan jenis master :end ----------
+
+  // ---------- Fungsi untuk restore data berdasarkan jenis master :begin ----------
+  public function restoreData(string $master, $id)
+  {
+    // ---------- Ambil data config master.php ----------
+    $modules = $this->getMasterConfig($master);
+    $modelClass = $modules['model'];
+
+    if ($modelClass === \Spatie\Permission\Models\Role::class) {
+      return response()->json([
+        'message' => 'Role cannot be restored (no soft delete support)'
+      ], 400);
+    }
+
+    // ---------- Mulai transaksi database :begin----------
+    DB::beginTransaction();
+    try {
+      // ---------- Ambil data master ----------
+      $record = $modelClass::onlyTrashed()
+        ->where('id', $id)
+        ->orWhere('public_id', $id)
+        ->firstOrFail();
+
+      // ---------- Restore ----------
+      $record->restore();
+
+      DB::commit();
+      // ---------- Mulai transaksi database :end ----------
+
+      // ---------- Masukkan ke log untuk success ----------
+      globalLogger(
+        'info',
+        "Data for master $master restored successfully!",
+        [
+          'master' => $master,
+          'id' => $record->id,
+        ],
+        200,
+        'masterrestore'
+      );
+
+      // ---------- Lempar sukses respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master restored successfully!",
+        'data' => $record
+      ]);
+    } catch (\Throwable $e) {
+      // ---------- Batalkan transaksi database jika ada error ----------
+      DB::rollBack();
+
+      // ---------- Masukkan ke log untuk error ----------
+      globalLogger(
+        'error',
+        "Data for master $master failed to restore!",
+        [
+          'master' => $master,
+          'error' => $e->getMessage(),
+        ],
+        500,
+        'masterrestore'
+      );
+
+      // ---------- Lempar error respon ke frontend ----------
+      return response()->json([
+        'message' => "Data for master $master failed to restore!",
+      ], 500);
+    }
+  }
+  // ---------- Fungsi untuk restore data berdasarkan jenis master :end ----------
 
   // ---------- Helper: mengambil data config master.php :begin ----------
   private function getMasterConfig($master = null)
@@ -340,18 +523,31 @@ class MasterService
     $modules = $this->getMasterConfig($master);
     $modelClass = $modules['model'];
 
+    // ---------- Konfigurasi khusus ----------
+    $excludeWithTrashed = ['role'];
+    $useOnlyId = ['role'];
+
     // ---------- Ambil data master ----------
-    $query = $modelClass::query();
+    if (in_array($master, $excludeWithTrashed)) {
+      $query = $modelClass::query();
+    } else {
+      $query = $modelClass::withTrashed();
+    }
+
     if (!empty($modules['with'])) {
       $query->with($modules['with']);
     }
 
-    $dataMaster = $query
-      ->where(function ($q) use ($id) {
+    $query->where(function ($q) use ($id, $master, $useOnlyId) {
+      if (in_array($master, $useOnlyId)) {
+        $q->where('id', $id);
+      } else {
         $q->where('id', $id)
           ->orWhere('public_id', $id);
-      })
-      ->first();
+      }
+    });
+
+    $dataMaster = $query->first();
 
     if (!$dataMaster) {
       return response()->json(['message' => 'Data not found'], 404);

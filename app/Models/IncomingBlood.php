@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\IncomingBloodStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,10 +18,18 @@ class IncomingBlood extends Model
         'po_number',
         'order_blood_id',
         'batch_number',
+        'status',
+        'received_by_user_id',
+        'received_at',
+        'stock_ready_at',
     ];
 
     protected $hidden = [
         'id',
+    ];
+
+    protected $casts = [
+        'status' => IncomingBloodStatus::class,
     ];
 
     protected static function booted()
@@ -33,26 +42,15 @@ class IncomingBlood extends Model
         });
     }
 
-    // Buat peraturan validasi untuk data model
-    public static function rules($context = 'store', $id = null)
-    {
-        return match ($context) {
-            'store' => [
-                'total_quantity' => 'required',
-                'po_number' => 'required|exists:order_bloods,po_number',
-                'order_blood_id' => 'required|exists:order_bloods,id',
-            ],
-            'update' => [
-                'total_quantity' => 'sometimes|required',
-                'po_number' => "sometimes|required|exists:order_bloods,po_number",
-                'order_blood_id' => 'sometimes|required|exists:order_bloods,id',
-            ]
-        };
-    }
-
     // Relasi ke order_bloods
     public function orderBloods(): BelongsTo
     {
         return $this->belongsTo(OrderBlood::class, 'order_blood_id');
+    }
+
+    // Relasi ke users
+    public function users(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'received_by_user_id');
     }
 }

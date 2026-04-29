@@ -1,11 +1,12 @@
-import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
-const FormAddSelector = "add_new_vendor";
-const FormAddURL = "/master/vendor";
-const FormEditSelector = "edit_data_vendor";
-const ReloadDatatableSelector = "master-vendor-reload";
-const ModalEditSelector = "edit_data_master_vendor_modal";
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+const FormAddSelector = "add_new_vendor"; // id selector untuk form add new
+const FormAddURL = "/master/vendor"; // url submit form add
+const FormEditSelector = "edit_data_vendor"; // id selector untuk form edit
+const ReloadDatatableSelector = "master-vendor-reload"; // reload datatable index
+const ModalEditSelector = "edit_data_master_vendor_modal"; // id selector untuk modal edit
+// ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Handle form penambahan data baru :begin ----------
 function AddNewVendor() {

@@ -7,12 +7,13 @@ use Illuminate\Http\Request;
 
 class UtilityController extends Controller
 {
-    // Init Services
+    // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
         protected UtilityService $service
     ) {}
+    // ---------- Panggil semua service yang dibutuhkan :end ----------
 
-    // Dynamic select data
+    // ---------- Fungsi untuk mengambil data agar bisa ditampilkan di select ----------
     public function selectData(Request $request, $select)
     {
         return response()->json(
@@ -20,12 +21,12 @@ class UtilityController extends Controller
         );
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // ---------- Fungsi untuk mengambil data per id ----------
+    public function getDataById(Request $request, $data, $id)
     {
-        //
+        return response()->json(
+            $this->service->getDataById($request, $data, $id)
+        );
     }
 
     /**

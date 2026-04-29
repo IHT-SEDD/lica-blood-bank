@@ -1,11 +1,13 @@
 import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
-const FormAddSelector = "add_new_storage_rack";
-const FormAddURL = "/master/storage-rack";
-const FormEditSelector = "edit_data_storage_rack";
-const ReloadDatatableSelector = "master-storage-rack-reload";
-const ModalEditSelector = "edit_data_master_storage_rack_modal";
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+const FormAddSelector = "add_new_storage_rack"; // id selector untuk form add new
+const FormAddURL = "/master/storage-rack"; // url submit form add
+const FormEditSelector = "edit_data_storage_rack"; // id selector untuk form edit
+const ReloadDatatableSelector = "master-storage-rack-reload"; // reload datatable index
+const ModalEditSelector = "edit_data_master_storage_rack_modal"; // id selector untuk modal edit
+// ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Select storage dari tom-select untuk form add new data :begin ----------
 function SelectStorage() {

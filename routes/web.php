@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BloodTranfusionController;
+use App\Http\Controllers\Inventory\HistoryOrderController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LockSessionController;
 use App\Http\Controllers\MasterController;
@@ -17,44 +18,6 @@ Route::get('/', function () {
 })->middleware(['auth', 'verified'])->name('welcome');
 
 Route::middleware('auth')->group(function () {
-    // --------------------------------------------------------------------------
-    // Inventory Group Routes -> inventory.*
-    // --------------------------------------------------------------------------
-    Route::prefix('inventory')->name('inventory.')->controller(InventoryController::class)->group(function () {
-        // --------------------------------------------------------------------------
-        // Inventory / Dashboard Route -> inventory.index
-        // --------------------------------------------------------------------------
-        Route::get('/', 'index')->name('index');
-
-        // --------------------------------------------------------------------------
-        // Inventory / Blood Stock Group Routes -> inventory.blood-stock.*
-        // --------------------------------------------------------------------------
-        Route::prefix('blood-stock')->name('blood-stock.')->group(function () {
-            Route::get('/', 'bloodStockIndex')->name('index');
-        });
-
-        // --------------------------------------------------------------------------
-        // Inventory / Stock In Group Routes -> inventory.stock-in.*
-        // --------------------------------------------------------------------------
-        Route::prefix('stock-in')->name('stock-in.')->group(function () {
-            Route::get('/', 'stockInIndex')->name('index');
-        });
-
-        // --------------------------------------------------------------------------
-        // Inventory / Stock Out Group Routes -> inventory.stock-out.*
-        // --------------------------------------------------------------------------
-        Route::prefix('stock-out')->name('stock-out.')->group(function () {
-            Route::get('/', 'stockOutIndex')->name('index');
-        });
-
-        // --------------------------------------------------------------------------
-        // Inventory / History Order Group Routes -> inventory.history-order.*
-        // --------------------------------------------------------------------------
-        Route::prefix('history-order')->name('history-order.')->group(function () {
-            Route::get('/', 'historyOrderIndex')->name('index');
-        });
-    });
-
     // --------------------------------------------------------------------------
     // Blood Tranfusion Group Routes -> blood-tranfusion.*
     // --------------------------------------------------------------------------
@@ -74,6 +37,8 @@ Route::middleware('auth')->group(function () {
         Route::get('{master}/data/{id}', 'getDataById')->where('master', implode('|', array_keys(config('master'))))->name('get-data');
         Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data');
         Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
+        Route::delete('{master}/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
+        Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data');
     });
 
     // --------------------------------------------------------------------------
@@ -81,6 +46,7 @@ Route::middleware('auth')->group(function () {
     // --------------------------------------------------------------------------
     Route::prefix('utility')->name('utility.')->controller(UtilityController::class)->group(function () {
         Route::get('select/{select}', 'selectData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data');
+        Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -88,6 +54,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+// ---------- Breeze Auth Routes ----------
 require __DIR__ . '/auth.php';
+// ---------- Simple Theme Routes ----------
 require __DIR__ . '/ui-theme.php';
+// ---------- Inventory Modules Routes ----------
+require __DIR__ . '/inventory.php';
+// ---------- Demo App Routes ----------
+require __DIR__ . '/demo.php';
