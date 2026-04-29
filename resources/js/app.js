@@ -129,19 +129,24 @@ class App {
         });
 
         // Handle card toggle
-        $('[data-action="card-toggle"]').on("click", function (event) {
-            event.preventDefault();
+        $(document)
+            .off("click", '[data-action="card-toggle"]')
+            .on("click", '[data-action="card-toggle"]', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
 
-            const $card = $(this).closest(".card");
-            const $icon = $(this).find("i").eq(0);
-            const $body = $card.find(".card-body");
-            const $footer = $card.find(".card-footer");
+                const $card = $(this).closest(".card");
+                const $icon = $(this).find("i").eq(0);
+                const $body = $card.find(".card-body");
+                const $footer = $card.find(".card-footer");
 
-            $body.slideToggle(300);
-            $footer.slideToggle(200);
-            $icon.toggleClass("ti-chevron-up ti-chevron-down");
-            $card.toggleClass("card-collapse");
-        });
+                // $body.slideToggle(300);
+                // $footer.slideToggle(200);
+                $body.stop(true, true).slideToggle(300);
+                $footer.stop(true, true).slideToggle(200);
+                $icon.toggleClass("ti-chevron-up ti-chevron-down");
+                $card.toggleClass("card-collapse");
+            });
 
         // Handle card refresh
         const refreshButtons = document.querySelectorAll(

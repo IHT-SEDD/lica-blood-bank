@@ -8,9 +8,9 @@
   {{-- Order Data Inputs :begin --}}
   <div class="row">
     {{-- Left Side :begin --}}
-    <div class="col-lg-6 col-12">
+    <div class="col-lg-6 col-12 mb-1">
       {{-- PO Number --}}
-      <div class="mb-1">
+      <div class="col-12">
         <label class="form-label" for="po_number">PO Number
           <span class="text-danger">*</span>
         </label>
@@ -19,6 +19,13 @@
         <small class="form-text text-muted">
           Click inputs to generate po number.
         </small>
+      </div>
+
+      {{-- Description --}}
+      <div class="col-12">
+        <label class="form-label" for="description">Description</label>
+        <textarea autocomplete="off" class="form-control" id="description" name="description" rows="5"
+          placeholder="Order description"></textarea>
       </div>
     </div>
     {{-- Left Side :begin --}}
@@ -65,7 +72,10 @@
   <div class="d-flex align-items-center justify-content-start gap-2"
     style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
     <h4 class="m-0">Blood Data Details</h4>
-    <button class="btn btn-sm btn-soft-info" type="button" id="add_blood_data">Add</button>
+    <button class="btn btn-sm btn-info" type="button" id="add_blood_data" data-bs-title="Add blood row"
+      data-bs-toggle="tooltip" data-bs-trigger="hover">
+      <i data-lucide="heart-plus" class="align-middle fs-4"></i>
+    </button>
   </div>
 
   {{-- Blood Data Inputs :begin --}}
@@ -74,9 +84,15 @@
   </div>
   {{-- Blood Data Inputs :end --}}
 
+  <hr />
+
   {{-- Submit Button --}}
-  <div style="border-top: 2px dashed #ccc; padding-top: 6px;">
-    <button class="btn btn-sm btn-success" type="submit">Add New Order</button>
+  <div class="mt-6 d-flex align-items-center justify-content-end gap-2">
+    <div class="form-check form-check-info">
+      <input class="form-check-input" id="save_as_draft" name="draft" type="checkbox" />
+      <label class="form-check-label fw-semibold" for="save_as_draft">Save as draft?</label>
+    </div>
+    <button class="btn btn-success" type="submit">Add New Order</button>
   </div>
 </form>
 {{-- Form Add New Order :end --}}

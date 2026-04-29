@@ -3,11 +3,14 @@
 namespace App\Services\Inventory;
 
 use App\Enums\OrderBloodStatus;
+use App\Enums\OrderLogActivityStatus;
 use App\Models\OrderBlood;
 use App\Models\OrderBloodDetail;
+use App\Models\OrderLogActivity;
 use App\Models\Vendor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
@@ -21,7 +24,7 @@ class HistoryOrderService
     $query = OrderBlood::withTrashed()
       ->with([
         'vendors:id,public_id,name',
-        'orderBloods:id,public_id,order_blood_id,blood_group',
+        'orderBloods:id,public_id,order_blood_id,blood_group,rhesus',
       ]);
 
     // ---------- Terapkan filter untuk tanggal pada data ----------
@@ -76,7 +79,7 @@ class HistoryOrderService
   // ---------- Fungsi untuk menampilkan data history order ke tabel :end ----------
 
   // ---------- Fungsi untuk menambahkan data order baru :begin ----------
-  public function insertNewOrder(Request $request)
+  public function insertNewOrder(Request $request, bool $draft)
   {
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
@@ -91,32 +94,74 @@ class HistoryOrderService
         ? $request->po_number
         : $this->generatePoNumber();
 
-      // ---------- Ambil id vendor berdasarkan public_id ----------
-      $vendorId = Vendor::where('public_id', $request->vendor_id)->value('id');
+      // ---------- Ambil data vendor ----------
+      $vendor = Vendor::where('public_id', $request->vendor_id)->first();
+
+      $vendorId = $vendor?->id;
+      $vendorName = $vendor?->name;
+
+      // ---------- Ambil data user ----------
+      $user = Auth::user();
+
+      // ---------- Ambil status order ----------
+      $status = $draft === 'draft'
+        ? OrderBloodStatus::DRAFT
+        : OrderBloodStatus::ORDER_CREATED;
 
       // ---------- Insert ke tabel order_bloods ----------
       $newOrderData = OrderBlood::create([
         'vendor_id' => $vendorId,
         'po_number' => $poNumber,
         'total_quantity' => $totalQuantity,
-        'status' => OrderBloodStatus::ORDER_CREATED,
+        'description' => $request->description ?? NULL,
+        'status' => $status,
+        'ordered_by_user_id' => $user->id,
       ]);
 
       // ---------- Insert detail per blood data ----------
+      $orderBloodDetails = [];
+
       foreach ($request->blood_data as $item) {
-        OrderBloodDetail::create([
+        $detail = OrderBloodDetail::create([
           'order_blood_id' => $newOrderData->id,
           'blood_group' => $item['blood_group'],
           'rhesus' => $item['blood_rhesus'],
           'blood_component' => $item['blood_component'],
           'blood_volume' => $item['blood_volume'],
+          'note' => $item['note'],
           'quantity' => $item['blood_quantity'],
           'is_hiv' => $item['is_hiv'] ?? false,
           'is_hcv' => $item['is_hcv'] ?? false,
           'is_hbsag' => $item['is_hbsag'] ?? false,
           'is_syphilis' => $item['is_syphilis'] ?? false,
         ]);
+
+        $orderBloodDetails[] = $detail;
       }
+
+      // ---------- Ambil status order log ----------
+      $statusLog = $draft === 'draft'
+        ? OrderLogActivityStatus::DRAFT_CREATED
+        : OrderLogActivityStatus::ORDER_CREATED;
+
+      // ---------- Insert Order Log Activity ----------
+      OrderLogActivity::create([
+        'po_number' => $poNumber,
+        'vendor_name' => $vendorName,
+        'order_data' => $newOrderData->toArray(),
+        'order_blood_data' => collect($orderBloodDetails)
+          ->map(fn($d) => $d->toArray())
+          ->toArray(),
+        'order_by_user_name' => $user->name,
+        'status' => $statusLog,
+        'description' => generateOrderLogDescription(
+          $statusLog,
+          $poNumber,
+          $user->id
+        ),
+        'ordered_at' => $newOrderData->created_at,
+      ]);
+
       DB::commit();
       // ---------- Mulai transaksi database :end ----------
 
@@ -161,281 +206,6 @@ class HistoryOrderService
   }
   // ---------- Fungsi untuk menambahkan data order baru :end ----------
 
-  // ---------- Fungsi untuk edit data berdasarkan jenis master :begin ----------
-  public function editData(string $master, Request $request, $id)
-  {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
-    // ---------- Mulai transaksi database :begin----------
-    DB::beginTransaction();
-    try {
-      // ---------- Ambil model ----------
-      $model = new $modelClass;
-
-      // ---------- Ambil data master ----------
-      $query = $modelClass::query();
-      $record = $query
-        ->where('id', $id)
-        ->orWhere('public_id', $id)
-        ->firstOrFail();
-
-      // ---------- Ambil hanya field yang dikirim (partial update) ----------
-      $data = array_filter(
-        $request->only($model->getFillable()),
-        fn($value) => !is_null($value) && $value !== ''
-      );
-
-      // Jangan update data password
-      if (array_key_exists('password', $data)) {
-        if (empty($data['password'])) {
-          unset($data['password']);
-        }
-      }
-
-      // ---------- Kondisi khusus untuk insert user ----------
-      if ($model instanceof \App\Models\User) {
-        // ---------- Isi email otomatis jika value email kosong dan value username tidak kosong ----------
-        if (
-          array_key_exists('email', $data) &&
-          empty($data['email']) &&
-          !empty($data['username'] ?? $record->username)
-        ) {
-          $data['email'] = strtolower($data['username'] ?? $record->username) . '@licabloodbank.com';
-        }
-      }
-
-      // ---------- Bandingkan perubahan data ----------
-      $isSame = true;
-      foreach ($data as $key => $value) {
-        $old = trim((string)$record->$key);
-        $new = trim((string)$value);
-
-        if ($old !== $new) {
-          $isSame = false;
-          break;
-        }
-      }
-
-      // ---------- Jika tidak ada perubahan ----------
-      if ($isSame) {
-        return response()->json([
-          'message' => "No data changes",
-          'data' => $record
-        ], 200);
-      }
-
-      // ---------- Hook before update data ----------
-      if (method_exists($modelClass, 'beforeUpdate')) {
-        $modelClass::beforeUpdate($data, $record);
-      }
-
-      // ---------- Update ----------
-      $record->update($data);
-
-
-      // ---------- Sync role ----------
-      if ($record instanceof \App\Models\User && $request->filled('role')) {
-        $roleName = \Spatie\Permission\Models\Role::findByName($request->role);
-        $record->syncRoles($roleName->name);
-      }
-
-      DB::commit();
-      // ---------- Mulai transaksi database :end ----------
-
-      // ---------- Masukkan ke log untuk success ----------
-      globalLogger(
-        'info',
-        "Data for master $master updated successfully!",
-        [
-          'master' => $master,
-          'id' => $record->id,
-          'payload' => $record,
-        ],
-        200,
-        'masterupdate'
-      );
-
-      // ---------- Lempar sukses respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master updated successfully!",
-        'data' => $record
-      ]);
-    } catch (\Throwable $e) {
-      // ---------- Batalkan transaksi database jika ada error ----------
-      DB::rollBack();
-
-      // ---------- Masukkan ke log untuk error ----------
-      globalLogger(
-        'error',
-        "Data for master $master failed to update!",
-        [
-          'master' => $master,
-          'error' => $e->getMessage(),
-        ],
-        500,
-        'masterupdate'
-      );
-
-      // ---------- Lempar error respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master failed to update!",
-      ], 500);
-    }
-  }
-  // ---------- Fungsi untuk edit data berdasarkan jenis master :end ----------
-
-  // ---------- Fungsi untuk delete data berdasarkan jenis master :begin ----------
-  public function deleteData(string $master, $id)
-  {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
-    // ---------- Mulai transaksi database :begin----------
-    DB::beginTransaction();
-    try {
-      // ---------- Ambil data master ----------
-      $record = $modelClass::query()
-        ->where('id', $id)
-        ->orWhere('public_id', $id)
-        ->firstOrFail();
-
-      // ---------- Delete ----------
-      $record->delete();
-
-      DB::commit();
-      // ---------- Mulai transaksi database :end ----------
-
-      // ---------- Masukkan ke log untuk success ----------
-      globalLogger(
-        'info',
-        "Data for master $master deleted successfully!",
-        [
-          'master' => $master,
-          'id' => $record->id,
-        ],
-        200,
-        'masterdelete'
-      );
-
-      // ---------- Lempar sukses respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master deleted successfully!",
-        'data' => $record
-      ]);
-    } catch (\Throwable $e) {
-      // ---------- Batalkan transaksi database jika ada error ----------
-      DB::rollBack();
-
-      // ---------- Masukkan ke log untuk error ----------
-      globalLogger(
-        'error',
-        "Data for master $master failed to delete!",
-        [
-          'master' => $master,
-          'error' => $e->getMessage(),
-        ],
-        500,
-        'masterdelete'
-      );
-
-      // ---------- Lempar error respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master failed to update!",
-      ], 500);
-    }
-  }
-  // ---------- Fungsi untuk delete data berdasarkan jenis master :end ----------
-
-  // ---------- Fungsi untuk restore data berdasarkan jenis master :begin ----------
-  public function restoreData(string $master, $id)
-  {
-    // ---------- Ambil data config master.php ----------
-    $modules = $this->getMasterConfig($master);
-    $modelClass = $modules['model'];
-
-    // ---------- Mulai transaksi database :begin----------
-    DB::beginTransaction();
-    try {
-      // ---------- Ambil data master ----------
-      $record = $modelClass::onlyTrashed()
-        ->where('id', $id)
-        ->orWhere('public_id', $id)
-        ->firstOrFail();
-
-      // ---------- Restore ----------
-      $record->restore();
-
-      DB::commit();
-      // ---------- Mulai transaksi database :end ----------
-
-      // ---------- Masukkan ke log untuk success ----------
-      globalLogger(
-        'info',
-        "Data for master $master restored successfully!",
-        [
-          'master' => $master,
-          'id' => $record->id,
-        ],
-        200,
-        'masterrestore'
-      );
-
-      // ---------- Lempar sukses respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master restored successfully!",
-        'data' => $record
-      ]);
-    } catch (\Throwable $e) {
-      // ---------- Batalkan transaksi database jika ada error ----------
-      DB::rollBack();
-
-      // ---------- Masukkan ke log untuk error ----------
-      globalLogger(
-        'error',
-        "Data for master $master failed to restore!",
-        [
-          'master' => $master,
-          'error' => $e->getMessage(),
-        ],
-        500,
-        'masterrestore'
-      );
-
-      // ---------- Lempar error respon ke frontend ----------
-      return response()->json([
-        'message' => "Data for master $master failed to restore!",
-      ], 500);
-    }
-  }
-  // ---------- Fungsi untuk restore data berdasarkan jenis master :end ----------
-
-  // ---------- Helper: mengambil data config master.php :begin ----------
-  private function getMasterConfig($master = null)
-  {
-    // ---------- Ambil data config master.php ----------
-    $modules = config('master');
-    // ---------- Lempar 404 jika jenis master tidak ada di config ----------
-    abort_unless(isset($modules[$master]), 404);
-    // ---------- Kembalikan data sesuai key $master ----------
-    if ($master !== null) {
-      abort_unless(isset($modules[$master]), 404);
-      return $modules[$master];
-    }
-    // ---------- Kembalikan semua isi config ----------
-    return $modules;
-  }
-  // ---------- Helper: mengambil data config master.php :end ----------
-
-  // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :begin ----------
-  private function getSearchableColumns($model)
-  {
-    return (new $model)->getFillable();
-  }
-  // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :end ----------
-
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
   protected function applyDateFilter($query, Request $request)
   {
@@ -463,16 +233,6 @@ class HistoryOrderService
   }
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
 
-
-  // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :begin ----------
-  protected function filterUser($query, Request $request)
-  {
-    if ($request->filled('role')) {
-      $query->role($request->role);
-    }
-  }
-  // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
-
   // ---------- Fungsi untuk membuat po number :begin ----------
   public function generatePoNumber(): string
   {
@@ -490,4 +250,19 @@ class HistoryOrderService
     return $poNumber;
   }
   // ---------- Fungsi untuk membuat po number :end ----------
+
+  // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
+  public function getDataOrderAndLogById(string $id)
+  {
+    $order = OrderBlood::where('public_id', $id)
+      ->with(['orderBloods', 'vendors', 'users.roles'])
+      ->firstOrFail();
+    $orderLog = OrderLogActivity::where('po_number', $order->po_number)->firstOrFail();
+
+    return [
+      'order' => $order,
+      'log' => $orderLog,
+    ];
+  }
+  // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 }

@@ -89,12 +89,20 @@ function HistoryOrderTable() {
             data: null,
             title: "Blood Group",
             render: (data, type, row) => {
-                const details = row.order_blood_details || [];
+                const details = row.order_bloods || [];
                 if (!details.length) return "-";
+
                 const bloodGroups = details
-                    .map((item) => item.blood_group)
+                    .map((item) => {
+                        const group = item.blood_group || "";
+                        const rhesus = item.rhesus || "";
+                        return group && rhesus
+                            ? `${group}${rhesus}`
+                            : group || "-";
+                    })
                     .filter(Boolean)
                     .join(", ");
+
                 return `<span class="fw-medium text-muted">${bloodGroups}</span>`;
             },
         },
@@ -104,10 +112,13 @@ function HistoryOrderTable() {
             render: (data, type, row) => {
                 const isDeleted = row.deleted_at !== null;
                 const isDone = data == "done";
+                const isDraft = data == "draft";
                 if (isDeleted) {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 } else if (isDone) {
                     return `<span class="badge badge-label badge-soft-success">Done</span>`;
+                } else if (isDraft) {
+                    return `<span class="badge badge-label badge-soft-warning">Draft</span>`;
                 } else {
                     return `<span class="badge badge-label badge-soft-secondary">Order Created</span>`;
                 }
@@ -429,6 +440,20 @@ function RestoreDataHistoryDataActionModal() {
 }
 // ---------- Handle modal restore data :end ----------
 
+// ---------- Handle see data :begin ----------
+function SeeDataHistoryDataAction() {
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(ActionSeeSelector);
+        if (!btn) return;
+
+        const id = btn.dataset[AttributeSee];
+        if (!id) return;
+
+        window.location.href = `/inventory/history-order/detail-order/${id}`;
+    });
+}
+// ---------- Handle see data :end ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     HistoryOrderTable();
@@ -447,6 +472,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // EditDataStorageRackActionModal();
     DeleteDataHistoryDataActionModal();
     RestoreDataHistoryDataActionModal();
+    SeeDataHistoryDataAction();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

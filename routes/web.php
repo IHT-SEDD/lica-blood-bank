@@ -19,61 +19,6 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     // --------------------------------------------------------------------------
-    // Inventory Group Routes -> inventory.*
-    // --------------------------------------------------------------------------
-    Route::prefix('inventory')->name('inventory.')->group(function () {
-        // --------------------------------------------------------------------------
-        // General Route Group Inventory
-        // --------------------------------------------------------------------------
-        Route::controller(InventoryController::class)->group(function () {
-            // --------------------------------------------------------------------------
-            // Inventory / Dashboard Route -> inventory.index
-            // --------------------------------------------------------------------------
-            Route::get('/', 'index')->name('index');
-
-            // --------------------------------------------------------------------------
-            // Inventory / Blood Stock Group Routes -> inventory.blood-stock.*
-            // --------------------------------------------------------------------------
-            Route::prefix('blood-stock')->name('blood-stock.')->group(function () {
-                Route::get('/', 'bloodStockIndex')->name('index');
-            });
-
-            // --------------------------------------------------------------------------
-            // Inventory / Stock In Group Routes -> inventory.stock-in.*
-            // --------------------------------------------------------------------------
-            Route::prefix('stock-in')->name('stock-in.')->group(function () {
-                Route::get('/', 'stockInIndex')->name('index');
-            });
-
-            // --------------------------------------------------------------------------
-            // Inventory / Stock Out Group Routes -> inventory.stock-out.*
-            // --------------------------------------------------------------------------
-            Route::prefix('stock-out')->name('stock-out.')->group(function () {
-                Route::get('/', 'stockOutIndex')->name('index');
-            });
-
-            // --------------------------------------------------------------------------
-            // Inventory / History Order Group Routes -> inventory.history-order.*
-            // --------------------------------------------------------------------------
-            Route::prefix('history-order')->name('history-order.')->group(function () {
-                Route::get('/', 'historyOrderIndex')->name('index');
-            });
-        });
-
-        // --------------------------------------------------------------------------
-        // Spesific Route Group -> History Order
-        // --------------------------------------------------------------------------
-        Route::prefix('history-order')->name('history-order.')->controller(HistoryOrderController::class)->group(function () {
-            Route::get('/new-order', 'newOrderIndex')->name('new-order');
-            Route::get('/data', 'historyOrderTable')->name('history-order-table');
-            Route::get('/new-po-number', 'generatePoNumber')->name('generate-po-number');
-            Route::post('/new-order', 'insertNewOrder')->name('insert-new-order');
-            Route::delete('/data/{id}', 'deleteDataOrder')->name('delete-data-order');
-            Route::patch('/data/{id}/restore', 'restoreDataOrder')->name('restore-data-order');
-        });
-    });
-
-    // --------------------------------------------------------------------------
     // Blood Tranfusion Group Routes -> blood-tranfusion.*
     // --------------------------------------------------------------------------
     Route::prefix('blood-tranfusion')->name('blood-tranfusion.')->controller(BloodTranfusionController::class)->group(function () {
@@ -109,6 +54,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-
+// ---------- Breeze Auth Routes ----------
 require __DIR__ . '/auth.php';
+// ---------- Simple Theme Routes ----------
 require __DIR__ . '/ui-theme.php';
+// ---------- Inventory Modules Routes ----------
+require __DIR__ . '/inventory.php';
+// ---------- Demo App Routes ----------
+require __DIR__ . '/demo.php';

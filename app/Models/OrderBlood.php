@@ -19,7 +19,9 @@ class OrderBlood extends Model
         'po_number',
         'vendor_id',
         'total_quantity',
+        'description',
         'status',
+        'ordered_by_user_id',
     ];
 
     protected $hidden = [
@@ -44,6 +46,12 @@ class OrderBlood extends Model
     public function vendors(): BelongsTo
     {
         return $this->belongsTo(Vendor::class, 'vendor_id');
+    }
+
+    // Relasi ke users
+    public function users(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ordered_by_user_id');
     }
 
 

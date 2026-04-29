@@ -18,7 +18,13 @@ class HistoryOrderController extends Controller
     // ---------- Halaman New Order ----------
     public function newOrderIndex()
     {
-        return view('pages.inventory.sub-pages.history-order.partials.new-order');
+        return view('pages.inventory.sub-pages.history-order.new-order');
+    }
+
+    // ---------- Halaman Detail Order ----------
+    public function detailOrderIndex(string $id)
+    {
+        return view('pages.inventory.sub-pages.history-order.detail-order', compact('id'));
     }
 
     // ---------- Fungsi untuk mengambil data order agar ditampilkan di datatable ----------
@@ -32,7 +38,8 @@ class HistoryOrderController extends Controller
     // ---------- Fungsi untuk menambahkan data order ke database ----------
     public function insertNewOrder(AddNewOrderRequest $request)
     {
-        return $this->service->insertNewOrder($request);
+        $draft = $request->boolean('draft') ? 'draft' : null;
+        return $this->service->insertNewOrder($request, $draft);
     }
 
     // ---------- Fungsi untuk membuat po number ----------
@@ -42,35 +49,11 @@ class HistoryOrderController extends Controller
         return response()->json($poNumber);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    // ---------- Halaman Detail Order ----------
+    public function detailOrderData(string $id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json(
+            $this->service->getDataOrderAndLogById($id)
+        );
     }
 }

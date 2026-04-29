@@ -107,10 +107,15 @@ function HandleFormAddNewOrder() {
         const idx = bloodIndex++;
         const row = document.createElement("div");
         const titleRow = `${idx}# Blood Data`;
-        row.className = "card blood-data-row";
+        row.className = "card my-0 blood-data-row";
         row.innerHTML = `<div class="card-header justify-content-between align-items-center">
                 <h6 class="card-title text-capitalize mb-0" id="blood_data[${idx}][title]">${titleRow}</h6>
-                <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button">Delete</button>
+                <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button" data-bs-title="Delete blood row" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                    <i class="ti ti-trash fs-4"></i>
+                </button>
+                <div class="card-action" id="blood_data[${idx}][header_collapse]">
+                    <a class="card-action-item" data-action="card-toggle" href="#!" id="blood_data[${idx}][toggle_header]"><i class="ti ti-chevron-up"></i></a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="col-12">
@@ -156,6 +161,10 @@ function HandleFormAddNewOrder() {
                                 </div>
                             </div>
                         </div>
+                        <div class="col-6">
+                            <label class="form-label text-muted" for="blood_data[${idx}][note]">Note</label>
+                            <textarea autocomplete="off" class="form-control" id="blood_data[${idx}][note]" name="blood_data[${idx}][note]" placeholder="Note" type="text" rows="5"></textarea>
+                        </div>
                     </div>
                 </div>
             </div>`;
@@ -171,6 +180,11 @@ function HandleFormAddNewOrder() {
         );
 
         bloodDataContainer.appendChild(row);
+
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+
         addBloodRowValidation(idx);
         syncDeleteButtons();
     }
@@ -296,6 +310,7 @@ function HandleFormAddNewOrder() {
                 blood_volume: row.querySelector('[name*="blood_volume"]').value,
                 blood_quantity: row.querySelector('[name*="blood_quantity"]')
                     .value,
+                note: row.querySelector('[name*="note"]').value,
                 is_hiv: row.querySelector('[name*="is_hiv"]').checked,
                 is_hcv: row.querySelector('[name*="is_hcv"]').checked,
                 is_hbsag: row.querySelector('[name*="is_hbsag"]').checked,
@@ -337,7 +352,7 @@ function GeneratePoNumber() {
 // ---------- Fungsi untuk generate PO Number :end ----------
 
 // ---------- Fungsi untuk submit data form add new order :begin ----------
-function SubmitFormAddNewOrder() {
+function SubmitFormAddNewOrder(orderForm) {
     new GlobalSubmitForm({
         formId: FormAddNewOrderSelector,
         url: UrlPostNewOrder,
@@ -367,6 +382,10 @@ function SubmitFormAddNewOrder() {
                     item.blood_quantity,
                 );
                 formData.set(
+                    `blood_data[${index}][note]`,
+                    item.note ? item.note : null,
+                );
+                formData.set(
                     `blood_data[${index}][is_hiv]`,
                     item.is_hiv ? 1 : 0,
                 );
@@ -389,9 +408,6 @@ function SubmitFormAddNewOrder() {
             notyf.success({
                 message: "New order added successfully!",
             });
-            console.log(data);
-            // contoh: reload datatable atau redirect
-            // window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
         onError: (err) => {
             notyf.error({

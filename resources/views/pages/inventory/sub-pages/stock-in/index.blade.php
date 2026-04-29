@@ -1,77 +1,91 @@
 @extends('layouts.vertical', ['title' => 'Stock In'])
 
 @section('content')
-{{-- Header :begin --}}
-<div class="row pt-4 pb-2">
- {{-- Title & Tools :begin --}}
- <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
-  {{-- Title & Add Stock :begin --}}
-  <div class="d-flex align-items-center justify-content-center gap-2">
-   {{-- Title --}}
-   <h1 class="fw-bold mb-0">STOCK IN</h1>
+<div class="row py-4">
+  {{-- Title & Add Stock In :begin --}}
+  <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
+    {{-- Title --}}
+    <h1 class="fw-bold">Stock In</h1>
 
-   {{-- Button Add New Blood --}}
-   <button class="btn btn-soft-info" data-bs-target="#add_blood_modal" data-bs-toggle="modal" type="button">
-    Add Blood
-   </button>
+    {{-- Button Add Stock In --}}
+    <a href="{{ route('inventory.history-order.new-order') }}" class="btn btn-soft-info">
+      Add Stock In
+    </a>
   </div>
-  {{-- Title & Add Stock :end --}}
+  {{-- Title & Add Stock In :end --}}
 
-  {{-- Tools :begin --}}
-  <div class="d-flex align-items-center justify-content-center gap-2">
-   {{-- Select Blood Group --}}
-   <div>
-    <select class="form-control" id="filter-blood-group" name="filter-blood-group"
-     placeholder="Filter by blood group..."></select>
-   </div>
+  {{-- Datatables :begin --}}
+  <div class="col-12">
+    {{-- Card :begin --}}
+    <div class="card">
+      {{-- Card Header :begin --}}
+      <div class="card-header justify-content-between align-items-center">
+        <h5 class="card-title text-capitalize mb-0">List Data of Stock In</h5>
 
-   {{-- Select Blood Component --}}
-   <div>
-    <select class="form-control" id="filter-blood-component" name="filter-blood-component"
-     placeholder="Filter by blood component..."></select>
-   </div>
+        {{-- Filters Datatable :begin --}}
+        <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
+          {{-- Select Status --}}
+          <div>
+            <select class="form-control" id="filter-stockin-status" name="filter-stockin-status"
+              placeholder="Filter by status..."></select>
+          </div>
 
-   {{-- Date Range Picker :begin --}}
-   <div>
-    <div class="input-group">
-     <span class="input-group-text" id="stock-in-date-filter">
-      <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
-     </span>
-     <input class="form-control stock-in-date-filter" aria-describedby="stock-in-date-filter" data-date-format="d-m-Y"
-      data-provider="flatpickr" data-range-date="true" data-enable-time="true" type="text"
-      placeholder="Choose date range" />
+          {{-- Select Vendor --}}
+          <div>
+            <select class="form-control" id="filter-stockin-vendor" name="filter-stockin-vendor"
+              placeholder="Filter by vendor..."></select>
+          </div>
+
+          {{-- Date Range Picker :begin --}}
+          <div>
+            <div class="input-group">
+              <span class="input-group-text" id="stockin-table-date-filter">
+                <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
+              </span>
+              <input class="form-control stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
+                data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
+                placeholder="Choose date range" />
+            </div>
+          </div>
+          {{-- Date Range Picker :end --}}
+        </div>
+        {{-- Filters Datatable :end --}}
+      </div>
+      {{-- Card Header :end --}}
+
+      {{-- Card Body :begin --}}
+      <div class="card-body">
+        <table class="table table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
+          <thead class="thead-sm text-uppercase fs-xxs">
+            <tr>
+              <th>PO Number</th>
+              <th>Vendor</th>
+              <th>Batch Number</th>
+              <th>Total Qty</th>
+              <th>Blood Group</th>
+              <th>Status</th>
+              <th>Created At</th>
+              <th>Updated At</th>
+              <th>Deleted At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+        </table>
+      </div>
+      {{-- Card Body :end --}}
     </div>
-   </div>
-   {{-- Date Range Picker :end --}}
+    {{-- Card :end --}}
   </div>
-  {{-- Tools :end --}}
- </div>
- {{-- Title & Tools :end --}}
+  {{-- Datatables :end --}}
 </div>
-{{-- Header :end --}}
 
-{{-- Datatables :begin --}}
-<div class="row">
- <div class="col-xxl-12">
-  {{-- Card :begin --}}
-  <div class="card card-h-100">
-   {{-- Card Body :begin --}}
-   <div class="card-body">
-   </div>
-   {{-- Card Body :end --}}
-  </div>
-  {{-- Card :end --}}
- </div>
-</div>
-{{-- Datatables :end --}}
-
-{{-- Modal Add New Blood :begin --}}
-<x-modal-layout id="add_blood_modal" size="modal-lg" title="Add New Blood">
- @include('pages.inventory.sub-pages.stock-in.partials.form-add-blood')
-</x-modal-layout>
-{{-- Modal Add New Blood :end --}}
+@include('pages.inventory.sub-pages.stock-in.partials.delete-data-modal')
+@include('pages.inventory.sub-pages.stock-in.partials.restore-data-modal')
 @endsection
 
 @section('scripts')
-@vite(['resources/js/pages/inventory/index.js', 'resources/js/pages/inventory/dashboard/datatables.js'])
+@vite([
+'resources/js/pages/inventory/stock-in/datatable.js',
+'resources/js/pages/inventory/stock-in/index.js',
+])
 @endsection
