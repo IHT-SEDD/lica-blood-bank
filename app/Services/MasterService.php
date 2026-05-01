@@ -149,6 +149,7 @@ class MasterService
       // ---------- Lempar error respon ke frontend ----------
       return response()->json([
         'message' => `New data for master $master failed to insert!`,
+         'error' => $e->getMessage(),
       ], 500);
     }
   }
@@ -475,6 +476,7 @@ class MasterService
     // ---------- Terima data start_date & end_date dari frontend ----------
     $start = $request->start_date;
     $end = $request->end_date;
+    $dateField = $request->date_field ?? 'created_at';
 
     if ($start && $end) {
       try {
@@ -485,9 +487,13 @@ class MasterService
         // ---------- Cek apakah kolom ada atau tidak ----------
         $table = $query->getModel()->getTable();
 
+        if (!Schema::hasColumn($table, $dateField)) {
+          $dateField = 'created_at';
+        }
+
         // ---------- Jalankan filter data ----------
-        if (Schema::hasColumn($table, 'created_at')) {
-          $query->whereBetween('created_at', [$startDate, $endDate]);
+        if (Schema::hasColumn($table, $dateField)) {
+          $query->whereBetween($dateField, [$startDate, $endDate]);
         }
       } catch (\Exception $e) {
         logger()->error('Date filter error: ' . $e->getMessage());
