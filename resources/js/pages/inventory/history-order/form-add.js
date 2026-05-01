@@ -104,10 +104,11 @@ function HandleFormAddNewOrder() {
 
     // ---------- Fungsi untuk menambahkan baris blood data :begin ----------
     function addBloodRow() {
+        collapseAllRows();
         const idx = bloodIndex++;
         const row = document.createElement("div");
         const titleRow = `${idx}# Blood Data`;
-        row.className = "card my-0 blood-data-row";
+        row.className = "card my-1 blood-data-row";
         row.innerHTML = `<div class="card-header justify-content-between align-items-center">
                 <h6 class="card-title text-capitalize mb-0" id="blood_data[${idx}][title]">${titleRow}</h6>
                 <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button" data-bs-title="Delete blood row" data-bs-toggle="tooltip" data-bs-trigger="hover">
@@ -118,54 +119,36 @@ function HandleFormAddNewOrder() {
                 </div>
             </div>
             <div class="card-body">
-                <div class="col-12">
-                    <div class="row g-2 align-items-end">
-                        <div class="col-lg-2 col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][blood_group]">Group <span class="text-danger">*</span></label>
-                            <select class="form-control" id="blood_data[${idx}][blood_group]" name="blood_data[${idx}][blood_group]" placeholder="Choose blood group..."></select>
-                        </div>
-                        <div class="col-lg-2 col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][blood_rhesus]">Rhesus <span class="text-danger">*</span></label>
-                            <select class="form-control" id="blood_data[${idx}][blood_rhesus]" name="blood_data[${idx}][blood_rhesus]" placeholder="Choose blood rhesus..."></select>
-                        </div>
-                        <div class="col-lg-2 col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][blood_component]">Component <span class="text-danger">*</span></label>
-                            <select class="form-control" id="blood_data[${idx}][blood_component]" name="blood_data[${idx}][blood_component]" placeholder="Choose blood component...">
-                            </select>
-                        </div>
-                        <div class="col-lg-2 col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][blood_volume]">Volume <span class="text-danger">*</span></label>
-                            <input class="form-control" id="blood_data[${idx}][blood_volume]" name="blood_data[${idx}][blood_volume]" placeholder="Blood volume" type="text" />
-                        </div>
-                        <div class="col-lg-2 col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][blood_quantity]">Quantity <span class="text-danger">*</span></label>
-                            <input class="form-control" id="blood_data[${idx}][blood_quantity]" name="blood_data[${idx}][blood_quantity]" placeholder="Blood quantity" type="text" />
-                        </div>
-                        <div class="col-lg-2 col-6">
-                            <div class="d-flex flex-wrap gap-1">
-                                <div class="form-check form-check-danger">
-                                    <input class="form-check-input" id="blood_data[${idx}][is_hiv]" name="blood_data[${idx}][is_hiv]" type="checkbox" />
-                                    <label class="form-check-label" for="blood_data[${idx}][is_hiv]">HIV?</label>
-                                </div>
-                                <div class="form-check form-check-danger">
-                                    <input class="form-check-input" id="blood_data[${idx}][is_hcv]" name="blood_data[${idx}][is_hcv]" type="checkbox" />
-                                    <label class="form-check-label" for="blood_data[${idx}][is_hcv]">HCV?</label>
-                                </div>
-                                <div class="form-check form-check-danger">
-                                    <input class="form-check-input" id="blood_data[${idx}][is_hbsag]" name="blood_data[${idx}][is_hbsag]" type="checkbox" />
-                                    <label class="form-check-label" for="blood_data[${idx}][is_hbsag]">HbsAG?</label>
-                                </div>
-                                <div class="form-check form-check-danger">
-                                    <input class="form-check-input" id="blood_data[${idx}][is_syphilis]" name="blood_data[${idx}][is_syphilis]" type="checkbox" />
-                                    <label class="form-check-label" for="blood_data[${idx}][is_syphilis]">Syphilis?</label>
-                                </div>
+                <div class="row">
+                    <div class="col-lg-6 col-12">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="form-label text-muted" for="blood_data[${idx}][blood_group]">Group <span class="text-danger">*</span></label>
+                                <select class="form-control" id="blood_data[${idx}][blood_group]" name="blood_data[${idx}][blood_group]" placeholder="Choose blood group..."></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted" for="blood_data[${idx}][blood_rhesus]">Rhesus <span class="text-danger">*</span></label>
+                                <select class="form-control" id="blood_data[${idx}][blood_rhesus]" name="blood_data[${idx}][blood_rhesus]" placeholder="Choose blood rhesus..."></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted" for="blood_data[${idx}][blood_component]">Component <span class="text-danger">*</span></label>
+                                <select class="form-control" id="blood_data[${idx}][blood_component]" name="blood_data[${idx}][blood_component]" placeholder="Choose blood component...">
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label text-muted" for="blood_data[${idx}][blood_quantity]">Quantity <span class="text-danger">*</span></label>
+                                <input class="form-control" id="blood_data[${idx}][blood_quantity]" name="blood_data[${idx}][blood_quantity]" placeholder="Blood quantity" type="text" />
                             </div>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label text-muted" for="blood_data[${idx}][note]">Note</label>
-                            <textarea autocomplete="off" class="form-control" id="blood_data[${idx}][note]" name="blood_data[${idx}][note]" placeholder="Note" type="text" rows="5"></textarea>
-                        </div>
                     </div>
+                    <div class="col-lg-6 col-12">
+                        <div class="row g-2">
+                            <div class="col-12">
+                                <label class="form-label text-muted" for="blood_data[${idx}][note]">Note</label>
+                                <textarea autocomplete="off" class="form-control" id="blood_data[${idx}][note]" name="blood_data[${idx}][note]" placeholder="Note" type="text" rows="5"></textarea>
+                            </div>
+                        </div>
+                    <div>
                 </div>
             </div>`;
 
@@ -231,6 +214,38 @@ function HandleFormAddNewOrder() {
     }
     // ---------- Fungsi untuk inisialisasi Tom Select blood data :end ----------
 
+    // ---------- Fungsi untuk collapse semua card blood data :begin ----------
+    function collapseAllRows() {
+        const toggleBtns = bloodDataContainer.querySelectorAll(
+            '[data-action="card-toggle"]',
+        );
+        toggleBtns.forEach((btn) => {
+            const card = btn.closest(".blood-data-row");
+            if (!card) return;
+            const cardBody = card.querySelector(".card-body");
+            if (cardBody && cardBody.style.display !== "none") {
+                btn.click(); // trigger collapse yang sudah ada di framework
+            }
+        });
+    }
+    // ---------- Fungsi untuk collapse semua card blood data :end ----------
+
+    // ---------- Fungsi untuk reset semua blood data row menjadi 1 :begin ----------
+    function resetBloodRows() {
+        // Hapus semua row beserta validasinya
+        const rows = bloodDataContainer.querySelectorAll(BloodDataRow);
+        rows.forEach((row) => {
+            const idx = row.dataset.idx;
+            if (idx !== undefined) removeBloodRowValidation(idx);
+            row.remove();
+        });
+        // Reset index agar mulai dari 0 lagi
+        bloodIndex = 0;
+        // Buat 1 baris default
+        addBloodRow();
+    }
+    // ---------- Fungsi untuk reset semua blood data row menjadi 1 :end ---------
+
     // ---------- Fungsi untuk menambahkan validasi per baris blood data :begin ----------
     function addBloodRowValidation(idx) {
         const bloodFieldValidators = {
@@ -241,7 +256,6 @@ function HandleFormAddNewOrder() {
             `blood_data[${idx}][blood_group]`,
             `blood_data[${idx}][blood_rhesus]`,
             `blood_data[${idx}][blood_component]`,
-            `blood_data[${idx}][blood_volume]`,
             `blood_data[${idx}][blood_quantity]`,
         ];
 
@@ -261,7 +275,6 @@ function HandleFormAddNewOrder() {
             `blood_data[${idx}][blood_group]`,
             `blood_data[${idx}][blood_rhesus]`,
             `blood_data[${idx}][blood_component]`,
-            `blood_data[${idx}][blood_volume]`,
             `blood_data[${idx}][blood_quantity]`,
         ];
 
@@ -307,21 +320,16 @@ function HandleFormAddNewOrder() {
                 blood_rhesus: row.querySelector('[name*="blood_rhesus"]').value,
                 blood_component: row.querySelector('[name*="blood_component"]')
                     .value,
-                blood_volume: row.querySelector('[name*="blood_volume"]').value,
                 blood_quantity: row.querySelector('[name*="blood_quantity"]')
                     .value,
                 note: row.querySelector('[name*="note"]').value,
-                is_hiv: row.querySelector('[name*="is_hiv"]').checked,
-                is_hcv: row.querySelector('[name*="is_hcv"]').checked,
-                is_hbsag: row.querySelector('[name*="is_hbsag"]').checked,
-                is_syphilis: row.querySelector('[name*="is_syphilis"]').checked,
             });
         });
         return result;
     }
     // ---------- Fungsi untuk membuat array blood data :end ----------
 
-    return { formValidation, getBloodData };
+    return { formValidation, getBloodData, resetBloodRows };
 }
 // ---------- Fungsi untuk mengelola form add new order :end ----------
 
@@ -374,32 +382,12 @@ function SubmitFormAddNewOrder(orderForm) {
                     item.blood_component,
                 );
                 formData.set(
-                    `blood_data[${index}][blood_volume]`,
-                    item.blood_volume,
-                );
-                formData.set(
                     `blood_data[${index}][blood_quantity]`,
                     item.blood_quantity,
                 );
                 formData.set(
                     `blood_data[${index}][note]`,
                     item.note ? item.note : null,
-                );
-                formData.set(
-                    `blood_data[${index}][is_hiv]`,
-                    item.is_hiv ? 1 : 0,
-                );
-                formData.set(
-                    `blood_data[${index}][is_hcv]`,
-                    item.is_hcv ? 1 : 0,
-                );
-                formData.set(
-                    `blood_data[${index}][is_hbsag]`,
-                    item.is_hbsag ? 1 : 0,
-                );
-                formData.set(
-                    `blood_data[${index}][is_syphilis]`,
-                    item.is_syphilis ? 1 : 0,
                 );
             });
             return formData;
@@ -408,6 +396,7 @@ function SubmitFormAddNewOrder(orderForm) {
             notyf.success({
                 message: "New order added successfully!",
             });
+            orderForm.resetBloodRows();
         },
         onError: (err) => {
             notyf.error({

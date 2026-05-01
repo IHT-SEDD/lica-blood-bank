@@ -127,13 +127,8 @@ class HistoryOrderService
           'blood_group' => $item['blood_group'],
           'rhesus' => $item['blood_rhesus'],
           'blood_component' => $item['blood_component'],
-          'blood_volume' => $item['blood_volume'],
           'note' => $item['note'],
           'quantity' => $item['blood_quantity'],
-          'is_hiv' => $item['is_hiv'] ?? false,
-          'is_hcv' => $item['is_hcv'] ?? false,
-          'is_hbsag' => $item['is_hbsag'] ?? false,
-          'is_syphilis' => $item['is_syphilis'] ?? false,
         ]);
 
         $orderBloodDetails[] = $detail;
@@ -267,10 +262,10 @@ class HistoryOrderService
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
-  public function getDataOrderByPO(string $po)
+  public function getDataOrderByPO(string $poNumber)
   {
-    $order = OrderBlood::where('po_number', $po)
-      ->with(['orderBloods', 'vendors', 'users.roles']) 
+    $order = OrderBlood::where('po_number', $poNumber)
+      ->with(['orderBloods', 'vendors', 'users.roles'])
       ->firstOrFail();
 
     return $order;

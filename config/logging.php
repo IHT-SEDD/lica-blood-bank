@@ -149,6 +149,24 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/order-new-data.log'),
             'level' => 'debug',
+        ],
+
+        'newincomingbloodadd' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/incoming-blood-new-data.log'),
+            'level' => 'debug',
+        ],
+
+        'newincomingblooddelete' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/incoming-blood-delete-data.log'),
+            'level' => 'debug',
+        ],
+
+        'newincomingbloodrestore' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/incoming-blood-restore-data.log'),
+            'level' => 'debug',
         ]
     ],
 

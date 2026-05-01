@@ -1,0 +1,56 @@
+{
+    "Processing": "Processing",
+
+    "Enter your username and password to continue.": "Enter your username and password to continue.",
+    "Keep me signed in": "Keep me signed in",
+    "Forgot Password": "Forgot Password",
+    "Create an Account": "Create an account",
+    "Sign In": "Sign In",
+    "New Here": "New Here",
+
+    "Create your account by entering your details below.": "Create your account by entering your details below.",
+    "Re-input your password for confirmation.": "Re-input your password for confirmation.",
+    "Use 8+ characters with letters, numbers &amp; symbols.": "Use 8+ characters with letters, numbers &amp; symbols.",
+    "Create Account": "Create Account",
+    "Already have an account": "Already have an account",
+
+    "This screen is locked. Enter your password to continue": "This screen is locked. Enter your password to continue",
+    "Unlock": "Unlock",
+    "Not You": "Not You",
+    "Return To": "Return To",
+
+    "Name": "Name",
+    "Username": "Username",
+    "Email Address": "Email Address",
+    "your@mail.com": "your@mail.com",
+    "Password": "Password",
+    "Confirmation": "Confirmation",
+
+    "page_not_found": "Page Not Found",
+    "page_not_found_description": "The page you’re looking for doesn’t exist or has been moved.",
+    "go_home_link": "Go Home",
+
+    "List Data of :master": "List Data of :master",
+    "Add New Data for :master": "Add New Data for :master",
+
+    "Dashboard": "Dashboard",
+    "Blood Stock": "Blood Stock",
+    "History Order": "History Order",
+    "Stock In": "Stock In",
+    "Stock Out": "Stock Out",
+    "Blood Tranfusion": "Blood Tranfusion",
+    "Donor": "Donor",
+    "Inventory": "Inventory",
+    "Welcome Back": "Welcome Back",
+    "Please set your name": "Please set your name",
+    "Please set your role": "Please set your role",
+    "Lock Screen": "Lock Screen",
+    "Log Out": "Log Out",
+    "Please Sign In First": "Please Sign In First",
+    "Login": "Login",
+    "Register": "Register",
+
+    "Please log in first": "Please log in first",
+    "Collapse Menu": "Collapse Menu",
+    "Role": "Role"
+}

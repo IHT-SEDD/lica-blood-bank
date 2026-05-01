@@ -108,6 +108,12 @@ class UtilityService
       case 'order-status':
         $data = collect(\App\Enums\OrderBloodStatus::toSelect());
         break;
+      case 'blood-status':
+        $data = collect(\App\Enums\BloodPackStatus::toSelect());
+        break;
+      case 'incoming-stock-status':
+        $data = collect(\App\Enums\IncomingBloodStatus::toSelect());
+        break;
       case 'blood-rhesus':
         $data = collect(['+', '-'])->map(fn($item) => [
           'id' => $item,

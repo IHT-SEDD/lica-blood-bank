@@ -31,9 +31,6 @@ class AddNewOrderRequest extends FormRequest
             'blood_data.*.blood_rhesus.required' => 'Blood rhesus is required',
             'blood_data.*.blood_rhesus.in' => 'Blood rhesus must be + or -',
             'blood_data.*.blood_component.required' => 'Blood component is required',
-            'blood_data.*.blood_volume.required' => 'Blood volume is required',
-            'blood_data.*.blood_volume.integer' => 'Blood volume must be a number',
-            'blood_data.*.blood_volume.min' => 'Blood volume must be at least 1',
             'blood_data.*.blood_quantity.required' => 'Blood quantity is required',
             'blood_data.*.blood_quantity.integer' => 'Blood quantity must be a number',
             'blood_data.*.blood_quantity.min' => 'Blood quantity must be at least 1',
@@ -58,12 +55,7 @@ class AddNewOrderRequest extends FormRequest
             'blood_data.*.blood_group' => ['required', new Enum(BloodGroup::class)],
             'blood_data.*.blood_rhesus' => 'required|in:+,-',
             'blood_data.*.blood_component' => ['required', new Enum(BloodComponent::class)],
-            'blood_data.*.blood_volume' => 'required|integer|min:1',
             'blood_data.*.blood_quantity' => 'required|integer|min:1',
-            'blood_data.*.is_hiv' => 'nullable|boolean',
-            'blood_data.*.is_hcv' => 'nullable|boolean',
-            'blood_data.*.is_hbsag' => 'nullable|boolean',
-            'blood_data.*.is_syphilis' => 'nullable|boolean',
             // ---------- Validasi blood data array :end ----------
         ];
     }

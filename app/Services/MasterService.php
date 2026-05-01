@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -155,7 +156,7 @@ class MasterService
   // ---------- Fungsi untuk submit data berdasarkan jenis master :end ----------
 
   // ---------- Fungsi untuk edit data berdasarkan jenis master :begin ----------
-  public function editData(string $master, Request $request, $id)
+  public function editData(string $master, Request $request, string $id)
   {
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
@@ -293,7 +294,7 @@ class MasterService
   // ---------- Fungsi untuk edit data berdasarkan jenis master :end ----------
 
   // ---------- Fungsi untuk delete data berdasarkan jenis master :begin ----------
-  public function deleteData(string $master, $id)
+  public function deleteData(string $master, string $id)
   {
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
@@ -377,7 +378,7 @@ class MasterService
   // ---------- Fungsi untuk delete data berdasarkan jenis master :end ----------
 
   // ---------- Fungsi untuk restore data berdasarkan jenis master :begin ----------
-  public function restoreData(string $master, $id)
+  public function restoreData(string $master, string $id)
   {
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
@@ -463,14 +464,14 @@ class MasterService
   // ---------- Helper: mengambil data config master.php :end ----------
 
   // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :begin ----------
-  private function getSearchableColumns($model)
+  private function getSearchableColumns(string $model)
   {
     return (new $model)->getFillable();
   }
   // ---------- Helper: mengambil kolom apa saja yang boleh dicari dari fillable model :end ----------
 
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
-  protected function applyDateFilter($query, Request $request)
+  protected function applyDateFilter(Builder $query, Request $request)
   {
     // ---------- Terima data start_date & end_date dari frontend ----------
     $start = $request->start_date;
@@ -497,7 +498,7 @@ class MasterService
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
 
   // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :begin ----------
-  protected function applyMasterFilter($query, string $master, Request $request)
+  protected function applyMasterFilter(Builder $query, string $master, Request $request)
   {
     switch ($master) {
       case 'user':
@@ -508,7 +509,7 @@ class MasterService
   // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :end ----------
 
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :begin ----------
-  protected function filterUser($query, Request $request)
+  protected function filterUser(Builder $query, Request $request)
   {
     if ($request->filled('role')) {
       $query->role($request->role);
@@ -517,7 +518,7 @@ class MasterService
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
 
   // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
-  public function getDataById(string $master, $id)
+  public function getDataById(string $master, string $id)
   {
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);

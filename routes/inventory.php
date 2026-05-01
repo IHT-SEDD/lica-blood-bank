@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
    Route::get('/new-order', 'newOrderIndex')->name('new-order'); // Halaman form add order
    Route::get('/detail-order/{id}', 'detailOrderIndex')->name('detail-order'); // Halaman detail order
    Route::get('/new-po-number', 'generatePoNumber')->name('generate-po-number'); // Generate PO Number
+   Route::get('/get-data/{poNumber}', 'getDataOrderByPO')->name('get-data-by-po-number'); // Get data by PO Number
 
    // ---------- Datatable ----------
    Route::get('/data', 'historyOrderTable')->name('history-order-table'); // Datatable order
@@ -77,14 +78,11 @@ Route::middleware('auth')->group(function () {
   Route::prefix('stock-in')->name('stock-in.')->controller(StockInController::class)->group(function () {
    // ---------- Static Route ----------
    Route::get('/new-incoming-stock', 'newStockInIndex')->name('new-incoming-stock'); // Halaman form add stock in
-   Route::get('/detail-incoming-stock/{id}', 'detailStockInIndex')->name('detail-incoming-stock'); // Halaman detail stock in
    Route::get('/new-bag-number', 'generateBagNumber')->name('generate-bag-number'); // Generate bag number
+   Route::get('/get-data/{id}', 'getData')->name('get-data'); // Generate bag number
 
    // ---------- Datatable ----------
    Route::get('/data', 'stockInTable')->name('stock-in-table'); // Datatable stock in
-
-   // ---------- Detail data ----------
-   Route::get('/data/detail/{id}', 'detailStockInData')->name('detail-stock-in-data'); // Ambil data detail stock in
 
    // ---------- Write data incoming stock ----------
    Route::post('/new-incoming-stock', 'insertNewStockIn')->name('insert-new-incoming-stock'); // Insert data stock in

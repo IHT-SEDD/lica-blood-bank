@@ -52,11 +52,25 @@ import Choices from "choices.js";
 // Import notyf
 import { Notyf } from "notyf";
 window.notyf = new Notyf({
-    duration: 1000,
+    duration: 4000,
+    ripple: true,
+    dismissible: true,
     position: {
         x: "right",
         y: "top",
     },
+    types: [
+        {
+            type: "error",
+            background: "red",
+            className: "notyf-allow-html",
+        },
+        {
+            type: "success",
+            background: "green",
+            className: "notyf-allow-html",
+        },
+    ],
 });
 
 // Common
@@ -211,27 +225,6 @@ class App {
             return false;
         });
     }
-
-    // Form Validation
-    // initFormValidation() {
-    //     // Example starter JavaScript for disabling form submissions if there are invalid fields
-    //     // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    //     // Loop over them and prevent submission
-    //     document.querySelectorAll(".needs-validation").forEach((form) => {
-    //         form.addEventListener(
-    //             "submit",
-    //             (event) => {
-    //                 if (!form.checkValidity()) {
-    //                     event.preventDefault();
-    //                     event.stopPropagation();
-    //                 }
-
-    //                 form.classList.add("was-validated");
-    //             },
-    //             false,
-    //         );
-    //     });
-    // }
 
     // Counter for Numbers
     initCounter() {
@@ -961,7 +954,20 @@ class I18nManager {
             const key = el.getAttribute(this.translationKeyAttribute);
             const value = getNestedValue(translations, key);
             if (value) {
-                el.innerHTML = value;
+                let original = el.innerHTML;
+
+                const bladeVars = original.match(/{{\s*[^}]+\s*}}/g) || [];
+
+                let translated = value;
+
+                if (bladeVars.length > 0) {
+                    translated = translated.replace(
+                        /{{\s*value\s*}}/i,
+                        bladeVars[0],
+                    );
+                }
+
+                el.innerHTML = translated;
             } else {
                 console.warn(`Missing translation for key: ${key}`);
             }
@@ -1008,7 +1014,7 @@ document.addEventListener("DOMContentLoaded", function (e) {
     new App().init();
     new LayoutCustomizer().init();
     new Plugins().init();
-    new I18nManager().init();
+    // new I18nManager().init();
 });
 
 //
@@ -1260,7 +1266,7 @@ export class GlobalAdvanceDatatable {
             config.dom =
                 "<'d-md-flex justify-content-between align-items-center mt-2 mb-3'<'columnToggleWrapper'>f>" +
                 "rt" +
-                "<'d-md-flex justify-content-between align-items-center mt-2'lp>";
+                "<'d-md-flex justify-content-between align-items-center mt-2'lip>";
         }
 
         // Bangun datatable instance dengan default config, serta gabungkan config option yang diterima

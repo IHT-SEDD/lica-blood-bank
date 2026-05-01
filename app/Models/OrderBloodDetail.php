@@ -19,7 +19,6 @@ class OrderBloodDetail extends Model
         'order_blood_id',
         'blood_group',
         'blood_component',
-        'blood_volume',
         'note',
         'rhesus',
         'is_hiv',

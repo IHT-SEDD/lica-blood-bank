@@ -1,32 +1,48 @@
+{{-- Full Screen Loading Overlay :begin --}}
+<div id="fullscreen_loading_overlay" style="
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(2px);
+    " class="d-flex align-items-center justify-content-center d-none">
+  <div class="text-center text-white">
+    <div class="spinner-border avatar-lg text-primary mb-2" role="status"></div>
+    <p class="fw-semibold fs-5 mb-0">Processing...</p>
+  </div>
+</div>
+{{-- Full Screen Loading Overlay :end --}}
+
 {{-- Form Add New Blood :begin --}}
 <form class="row g-2" id="add_new_incoming_stock" autocomplete="off">
   {{-- Choose Purchase Order --}}
-  <div class="col-lg-12">
+  <div class="col-lg-4">
     <label class="form-label" for="select-purchase-order">Choose Purchase Order
       <span class="text-danger">*</span>
     </label>
-    <select class="form-control" id="select-purchase-order" placeholder="Choose purchase order"></select>
+    <select class="form-control" id="select-purchase-order" name="po_number"
+      placeholder="Choose purchase order"></select>
     <small class="form-text text-muted fs-6">
       Choose purchase order from dropdown to start add incoming stock.
     </small>
   </div>
 
   {{-- Batch Number --}}
-  <div class="col-lg-6">
+  <div class="col-lg-4">
     <label class="form-label" for="batch_number">Batch Number</label>
-    <input autocomplete="off" class="form-control" id="batch_number" name="batch_number" type="text"
+    <input autocomplete="off" class="form-control" id="batch_number" name="batch_number" type="text" value=1
       placeholder="Batch number" />
     <small class="form-text text-muted fs-6">
-      Input batch number if exists.
+      The batch number functions to mark the number of items sent in 1 order.
     </small>
   </div>
 
   {{-- Choose Add Incoming Stock Method --}}
-  <div class="col-lg-6">
+  <div class="col-lg-4">
     <label class="form-label" for="select-add-data-method">Choose Method of Add Incoming Stock
       <span class="text-danger">*</span>
     </label>
-    <select class="form-control" id="select-add-data-method" placeholder="Choose method"></select>
+    <select class="form-control" id="select-add-data-method" name="method_add" placeholder="Choose method"></select>
     <small class="form-text text-muted fs-6">
       Choose manual if you want to add manually or choose excel if you want to import an excel data.
     </small>
@@ -34,162 +50,84 @@
 
   <hr />
 
-  {{-- Manually Input :begin --}}
-  <div class="col-lg-12 my-1 d-none" id="add_manually_method_wrapper">
-    <button class="btn btn-sm btn-soft-info mb-2 d-flex align-items-center justify-content-center add_blood_row"
-      type="button" id="add_blood_row">
-      <i class="ti ti-plus fs-4 me-2"></i>
-      Add Blood Row
-    </button>
+  {{-- Main Content :begin --}}
+  <div class="col-lg-12 my-1" id="main_form_wrapper">
+    {{-- Loading Form :begin --}}
+    <div class="d-flex align-items-center justify-content-center">
+      <div class="spinner-border avatar-lg text-primary m-2 d-none" role="status"
+        id="loading_form_add_new_incoming_stock"></div>
+    </div>
+    {{-- Loading Form :end --}}
 
-    <div class="card m-0">
-      {{-- Card Header :begin --}}
-      <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">1# Blood Data</h5>
-        <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button" data-bs-title="Delete blood row"
-          data-bs-toggle="tooltip" data-bs-trigger="hover">
-          <i class="ti ti-trash fs-4"></i>
-        </button>
-        <div class="card-action" id="blood_data[${idx}][header_collapse]">
-          <a class="card-action-item" data-action="card-toggle" href="#!" id="blood_data[${idx}][toggle_header]"><i
-              class="ti ti-chevron-up"></i>
-          </a>
+    {{-- Add Manual :begin --}}
+    <div class="d-none" id="add_manually_method_wrapper">
+      {{-- Add Row Blood Data Button --}}
+      <div class="w-xxl-25 w-lg-50 w-100 mb-2">
+        <div class="input-group">
+          <input aria-label="Count Table Row" class="form-control" type="number" min="1" id="add_row_blood_data_count"
+            placeholder="Count row" />
+          <button class="btn btn-dark add_row_blood_data" type="button" id="add_row_blood_data">
+            <i class="ti ti-plus fs-4 me-2"></i>
+            Add Row
+          </button>
         </div>
       </div>
-      {{-- Card Header :end --}}
 
-      {{-- Card Body :begin --}}
-      <div class="card-body">
-        <div class="row g-2">
-          {{-- Bag Number --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="bag_number">Bag Number
-              <span class="text-danger">*</span>
-            </label>
-            <input autocomplete="off" class="form-control" id="bag_number" name="bag_number" type="text"
-              placeholder="Bag number" />
-          </div>
+      {{-- Table Blood Data :begin --}}
+      <div class="table-responsive" id="table_blood_data_wrapper">
+        <table class="table table-sm table-striped align-middle mb-0" id="table_blood_data">
+          <thead class="bg-light align-middle bg-opacity-25 thead-sm">
+            <tr class="text-uppercase fs-xxs">
+              <th>Bag Number <span class="text-danger">*</span></th>
+              <th>Group <span class="text-danger">*</span></th>
+              <th style="width: 3%;">Rhesus <span class="text-danger">*</span></th>
+              <th>Component <span class="text-danger">*</span></th>
+              <th style="width: 5%;">Volume <span class="text-danger">*</span></th>
+              <th style="width: 8%;">Aftap <span class="text-danger">*</span></th>
+              <th style="width: 8%;">Expiry <span class="text-danger">*</span></th>
+              <th style="width: 8%;">Process <span class="text-danger">*</span></th>
+              <th>HIV?</th>
+              <th>HCV?</th>
+              <th>HbsAG?</th>
+              <th>Syphilis?</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="blood_data_row">
+            {{-- Populate by JS --}}
+          </tbody>
+        </table>
+      </div>
+      {{-- Table Blood Data :end --}}
+    </div>
+    {{-- Add Manual :end --}}
 
-          {{-- Group --}}
-          <div class="col-lg-2 col-12">
-            <label class="form-label" for="select-blood-group">Group
-              <span class="text-danger">*</span>
-            </label>
-            <select class="form-control" id="select-blood-group" placeholder="Choose blood group"></select>
-          </div>
-
-          {{-- Rhesus --}}
-          <div class="col-lg-2 col-12">
-            <label class="form-label" for="select-blood-rhesus">Rhesus
-              <span class="text-danger">*</span>
-            </label>
-            <select class="form-control" id="select-blood-rhesus" placeholder="Choose blood rhesus"></select>
-          </div>
-
-          {{-- Component --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="select-blood-component">Component
-              <span class="text-danger">*</span>
-            </label>
-            <select class="form-control" id="select-blood-component" placeholder="Choose blood component"></select>
-          </div>
-
-          {{-- Volume --}}
-          <div class="col-lg-2 col-12">
-            <label class="form-label" for="volume">Volume
-              <span class="text-danger">*</span>
-            </label>
-            <input autocomplete="off" class="form-control" id="volume" name="volume" type="text" placeholder="mL" />
-          </div>
-
-          {{-- Aftap --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="aftap_date">Aftap
-              <span class="text-danger">*</span>
-            </label>
-            <input class="form-control aftap_date" aria-describedby="aftap_date" data-date-format="d-m-Y"
-              data-provider="flatpickr" id="aftap_date" name="aftap_date" data-range-date="true" type="text"
-              placeholder="Aftap date" />
-          </div>
-
-          {{-- Expiry --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="expiry_date">Expiry
-              <span class="text-danger">*</span>
-            </label>
-            <input class="form-control expiry_date" aria-describedby="expiry_date" data-date-format="d-m-Y"
-              data-provider="flatpickr" id="expiry_date" name="expiry_date" data-range-date="true" type="text"
-              placeholder="Expiry date" />
-          </div>
-
-          {{-- Process --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="process_date">Process
-              <span class="text-danger">*</span>
-            </label>
-            <input class="form-control process_date" aria-describedby="process_date" data-date-format="d-m-Y"
-              data-provider="flatpickr" id="process_date" name="process_date" data-range-date="true" type="text"
-              placeholder="Process date" />
-          </div>
-
-          {{-- Qty --}}
-          <div class="col-lg-3 col-12">
-            <label class="form-label" for="quantity">Qty
-              <span class="text-danger">*</span>
-            </label>
-            <input autocomplete="off" class="form-control" id="quantity" name="quantity" type="text"
-              placeholder="Quantity" />
-          </div>
-
-          {{-- Blood Status --}}
-          <div class="col-12 d-flex flex-wrap gap-2">
-            <div class="form-check form-check-danger m-0">
-              <input class="form-check-input" id="is_hiv" type="checkbox" />
-              <label class="form-check-label" for="is_hiv">HIV?</label>
-            </div>
-            <div class="form-check form-check-danger m-0">
-              <input class="form-check-input" id="is_hcv" type="checkbox" />
-              <label class="form-check-label" for="is_hcv">HCV?</label>
-            </div>
-            <div class="form-check form-check-danger m-0">
-              <input class="form-check-input" id="is_hbsag" type="checkbox" />
-              <label class="form-check-label" for="is_hbsag">HbsAg?</label>
-            </div>
-            <div class="form-check form-check-danger m-0">
-              <input class="form-check-input" id="is_syphilis" type="checkbox" />
-              <label class="form-check-label" for="is_syphilis">Syphilis?</label>
-            </div>
-          </div>
+    {{-- Add Via Excel :begin --}}
+    <div class="d-none" id="add_excel_method_wrapper">
+      <div class="d-flex align-items-center justify-content-start gap-3">
+        {{-- Download Template --}}
+        <div>
+          <label class="form-label" for="download_template_excel">Download Template Excel</label>
+          <button
+            class="btn btn-sm btn-soft-secondary d-flex align-items-center justify-content-center download_template_excel"
+            type="button" id="download_template_excel">
+            <i class="ti ti-download fs-4 me-2"></i>
+            Template Excel
+          </button>
+        </div>
+        {{-- Upload File --}}
+        <div class="col-4">
+          <label class="form-label" for="incoming_stock_excel">Upload Data
+            <span class="text-danger">*</span>
+          </label>
+          <input class="form-control" id="incoming_stock_excel" type="file" name="incoming_stock_excel"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
         </div>
       </div>
-      {{-- Card Body :end --}}
     </div>
+    {{-- Add Via Excel :end --}}
   </div>
-  {{-- Manually Input :end --}}
-
-  {{-- Export Excel Input :begin --}}
-  <div class="col-lg-12 my-1 d-none" id="add_excel_method_wrapper">
-    <div class="row g-2">
-      {{-- Download Template --}}
-      <div class="col-lg-4 col-12">
-        <label class="form-label" for="download_template_excel">Download Template Excel</label>
-        <button
-          class="btn btn-sm btn-soft-secondary mb-2 d-flex align-items-center justify-content-center download_template_excel"
-          type="button" id="download_template_excel">
-          <i class="ti ti-download fs-4 me-2"></i>
-          Template Excel
-        </button>
-      </div>
-      {{-- Upload File --}}
-      <div class="col-lg-8 col-12">
-        <label class="form-label" for="download_template_excel">Upload Data
-          <span class="text-danger">*</span>
-        </label>
-        <input class="form-control" id="inputGroupFile04" type="file" />
-      </div>
-    </div>
-  </div>
-  {{-- Export Excel Input :end --}}
+  {{-- Main Content :end --}}
 
   <hr />
 

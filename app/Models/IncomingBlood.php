@@ -6,6 +6,7 @@ use App\Enums\IncomingBloodStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -15,8 +16,8 @@ class IncomingBlood extends Model
 
     protected $fillable = [
         'public_id',
-        'po_number',
         'order_blood_id',
+        'po_number',
         'batch_number',
         'status',
         'received_by_user_id',
@@ -52,5 +53,11 @@ class IncomingBlood extends Model
     public function users(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by_user_id');
+    }
+
+    // Relasi dari blood_packs
+    public function bloodPacks(): HasMany
+    {
+        return $this->hasMany(BloodPack::class, 'incoming_blood_id');
     }
 }

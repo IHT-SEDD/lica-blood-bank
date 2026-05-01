@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->appendToGroup('web', \App\Http\Middleware\LockSession::class);
+        $middleware->appendToGroup('web', \App\Http\Middleware\SetLocale::class);
         $middleware->prependToGroup('web', \App\Http\Middleware\Demo::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -56,4 +56,12 @@ class HistoryOrderController extends Controller
             $this->service->getDataOrderAndLogById($id)
         );
     }
+
+    // ---------- Get Data by PO ----------
+    public function getDataOrderByPO(string $poNumber)
+    {
+        return response()->json(
+            $this->service->getDataOrderByPO($poNumber)
+        );
+    }
 }

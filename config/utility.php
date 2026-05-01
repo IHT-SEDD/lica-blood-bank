@@ -49,7 +49,13 @@ return [
  'order-status' => [
   'type' => 'enum',
  ],
+ 'blood-status' => [
+  'type' => 'enum',
+ ],
  'add-incoming-stock-method' => [
+  'type' => 'enum',
+ ],
+ 'incoming-stock-status' => [
   'type' => 'enum',
  ],
 ];

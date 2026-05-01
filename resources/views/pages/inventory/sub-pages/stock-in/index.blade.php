@@ -6,13 +6,18 @@
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
     <h1 class="fw-bold">Stock In</h1>
+
+    {{-- Button Add New Stock --}}
+    <a href="{{ route('inventory.stock-in.new-incoming-stock') }}" class="btn btn-soft-info">
+      Add New Stock
+    </a>
   </div>
   {{-- Title :end --}}
 
   {{-- Datatables of List Stock In :begin --}}
-  <div class="col-xxl-7 col-md-6 col-12">
+  <div class="col-12">
     {{-- Card :begin --}}
-    <div class="card m-0">
+    <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
         <h5 class="card-title text-capitalize mb-0">List Data of Incoming Stock</h5>
@@ -50,14 +55,13 @@
 
       {{-- Card Body :begin --}}
       <div class="card-body">
-        <table class="table table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
+        <table class="table table-sm table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
               <th>PO Number</th>
               <th>Vendor</th>
               <th>Batch Number</th>
-              <th>Total Qty</th>
-              <th>Blood Group</th>
+              <th>Total Bloods</th>
               <th>Status</th>
               <th>Created At</th>
               <th>Updated At</th>
@@ -72,26 +76,6 @@
     {{-- Card :end --}}
   </div>
   {{-- Datatables of List Stock In :end --}}
-
-  {{-- Form add incoming stock :begin --}}
-  <div class="col-xxl-5 col-md-6 col-12">
-    {{-- Card :begin --}}
-    <div class="card m-0">
-      {{-- Card Header :begin --}}
-      <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">Add New Incoming Stock</h5>
-      </div>
-      {{-- Card Header :end --}}
-
-      {{-- Card Body :begin --}}
-      <div class="card-body">
-        @include('pages.inventory.sub-pages.stock-in.partials.form-add-incoming-stock')
-      </div>
-      {{-- Card Body :end --}}
-    </div>
-    {{-- Card :end --}}
-  </div>
-  {{-- Form add incoming stock :end --}}
 </div>
 
 @include('pages.inventory.sub-pages.stock-in.partials.delete-data-modal')
@@ -102,6 +86,5 @@
 @vite([
 'resources/js/pages/inventory/stock-in/datatable.js',
 'resources/js/pages/inventory/stock-in/index.js',
-'resources/js/pages/inventory/stock-in/form-add.js',
 ])
 @endsection

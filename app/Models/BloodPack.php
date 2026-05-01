@@ -19,6 +19,7 @@ class BloodPack extends Model
         'public_id',
         'incoming_blood_id',
         'bag_number',
+        'bag_number_lica',
         'blood_group',
         'rhesus',
         'blood_component',
@@ -30,10 +31,9 @@ class BloodPack extends Model
         'is_hbsag',
         'is_hcv',
         'is_syphilis',
-        'blood_status',
         'is_expired',
         'used_at',
-        'is_active',
+        'blood_status',
     ];
 
     protected $hidden = [
@@ -53,27 +53,6 @@ class BloodPack extends Model
                 $bloodPack->public_id = (string) Str::uuid();
             }
         });
-    }
-
-    // Buat peraturan validasi untuk data model
-    public static function rules($context = 'store', $id = null)
-    {
-        return match ($context) {
-            'store' => [
-                'incoming_blood_id' => 'required|exists:incoming_bloods,id',
-                'bag_number' => 'required|string|unique:blood_packs,bag_number',
-                'blood_group' => ['required', new Enum(BloodGroup::class)],
-                'rhesus' => 'required|in:+,-',
-                'blood_component' => ['required', new Enum(BloodComponent::class)],
-            ],
-            'update' => [
-                'incoming_blood_id' => 'sometimes|required|exists:incoming_bloods,id',
-                'bag_number' => 'sometimes|required|string|unique:blood_packs,bag_number',
-                'blood_group' => ['sometimes', 'required', new Enum(BloodGroup::class)],
-                'rhesus' => 'sometimes|required|in:+,-',
-                'blood_component' => ['sometimes', 'required', new Enum(BloodComponent::class)],
-            ]
-        };
     }
 
     // Relation to incoming_bloods
