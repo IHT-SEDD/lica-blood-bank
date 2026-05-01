@@ -114,6 +114,18 @@ class UtilityService
           'text' => $item,
         ]);
         break;
+      case 'add-incoming-stock-method':
+        $data = collect(\App\Enums\AddIncomingStockMethod::toSelect());
+        break;
+      case 'purchase-order':
+        $data = \App\Models\OrderBlood::query()
+          ->select('public_id', 'po_number')
+          ->get()
+          ->map(fn($item) => [
+            'id' => $item->public_id,
+            'text' => $item->po_number,
+          ]);
+        break;
 
       default:
         return ['results' => []];

@@ -65,11 +65,12 @@
                                     <label class="form-check-label" for="remember_me">Keep me signed in</label>
                                 </div>
 
+                                {{-- Uncomment this if need forgot password --}}
                                 {{-- Forgot Password --}}
-                                @if (Route::has('password.request'))
+                                {{-- @if (Route::has('password.request'))
                                 <a class="text-decoration-underline link-offset-3 text-muted"
                                     href="{{ route('password.request') }}">Forgot Password?</a>
-                                @endif
+                                @endif --}}
                             </div>
 
                             {{-- Submit Button --}}
@@ -78,14 +79,14 @@
                             </div>
                         </form>
 
-
-                        <p class="text-muted text-center mt-4 mb-0">
+                        {{-- Uncomment this if need register account --}}
+                        {{-- <p class="text-muted text-center mt-4 mb-0">
                             New here?
                             <a class="text-decoration-underline link-offset-3 fw-semibold"
                                 href="{{ route('register') }}">
                                 Create an account
                             </a>
-                        </p>
+                        </p> --}}
                         {{-- Login Form :end --}}
                     </div>
                     {{-- Login Card Body :end --}}

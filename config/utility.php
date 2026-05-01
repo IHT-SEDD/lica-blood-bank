@@ -31,6 +31,12 @@ return [
   'label' => 'initial',
   'with'  => [],
  ],
+ 'purchase-order' => [
+  'type' => 'static',
+  'model' => App\Models\OrderBlood::class,
+  'label' => 'po_number',
+  'with' => [],
+ ],
  'blood-group' => [
   'type' => 'enum',
  ],
@@ -41,6 +47,9 @@ return [
   'type' => 'enum',
  ],
  'order-status' => [
+  'type' => 'enum',
+ ],
+ 'add-incoming-stock-method' => [
   'type' => 'enum',
  ],
 ];
