@@ -1,39 +1,12 @@
-import TomSelect from "tom-select";
-import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
+import { GlobalSubmitForm, GlobalFormValidation, GlobalAdvanceFlatpickr } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_patient"; // id selector untuk form add new
-const FormAddURL = "/master/storage-rack"; // url submit form add
+const FormAddURL = "/master/patient"; // url submit form add
 const FormEditSelector = "edit_data_patient"; // id selector untuk form edit
 const ReloadDatatableSelector = "master-patient-reload"; // reload datatable index
 const ModalEditSelector = "edit_data_master_patient_modal"; // id selector untuk modal edit
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
-
-// ---------- Select role dari tom-select untuk form add new data :begin ----------
-function SelectRole() {
-    new TomSelect("#select-role", {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        sortField: {
-            field: "id",
-            direction: "asc",
-        },
-        create: false,
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/role?q=${encodeURIComponent(query)}`)
-                .then((response) => response.json())
-                .then((json) => {
-                    callback(json.results);
-                })
-                .catch(() => {
-                    callback();
-                });
-        },
-    });
-}
-// ---------- Select role dari tom-select untuk form add new data :begin ----------
 
 // ---------- Handle form penambahan patient baru :begin ----------
 function AddNewPatient() {
@@ -48,18 +21,11 @@ function AddNewPatient() {
                     },
                 },
             },
-            medrec: {
-                validators: {
-                    notEmpty: {
-                        message: "Medical Record is required",
-                    },
-                },
-            },
             gender: {
                 validators: {
                     notEmpty: {
                         message: "Gender is required",
-                    }
+                    },
                 },
             },
             birthdate: {
@@ -67,11 +33,15 @@ function AddNewPatient() {
                     notEmpty: {
                         message: "Birthdate is required",
                     },
-                    date : {
-                        message: "Birthdate is not valid"
-                    }
                 },
             },
+              phone : {
+                validators: {
+                    isNumber : {
+                        message : "Phone Number must be a number"
+                    }
+                }
+            }
         },
     );
     // ---------- Validasi inputan form :end ----------
@@ -80,33 +50,29 @@ function AddNewPatient() {
     new GlobalSubmitForm({
         formId: FormAddSelector,
         url: FormAddURL,
-        validator: AddNewUserValidation,
+        validator: AddNewPatientValidation,
         onSuccess: (data) => {
             notyf.success({
-                message: "New user added succesfully!",
+                message: "New patient added succesfully!",
             });
-            console.log(data);
             window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
         onError: (err) => {
             notyf.error({
-                message: "New user failed to insert!",
+                message: "New patient failed to insert!",
             });
-
             console.error(err);
         },
-
         resetOnSuccess: true,
     });
     // ---------- Submit form ke url :end ----------
 }
-// ---------- Handle form penambahan user baru :begin ----------
+// ---------- Handle form penambahan patient baru :begin ----------
 
-// ---------- Handle form pembaharuan data user :begin ----------
-function EditDataUser() {
-    // ---------- Validasi inputan form :begin ----------
-    const EditDataUserValidation = GlobalFormValidation.init(
-        "#" + FormAddSelector,
+// ---------- Handle form pembaharuan data patient :begin ----------
+function EditDataPatient() {
+    const EditDataPatientValidation = GlobalFormValidation.init(
+        "#" + FormEditSelector,
         {
             name: {
                 validators: {
@@ -115,36 +81,30 @@ function EditDataUser() {
                     },
                 },
             },
-            username: {
+            gender: {
                 validators: {
                     notEmpty: {
-                        message: "Username is required",
+                        message: "Gender is required",
                     },
                 },
             },
-            password: {
+            birthdate: {
                 validators: {
                     notEmpty: {
-                        message: "Password is required",
-                    },
-                    stringLength: {
-                        min: 5,
-                        message: "Password minimum is 5 characters",
+                        message: "Birthdate is required",
                     },
                 },
             },
-            role: {
+            phone : {
                 validators: {
-                    notEmpty: {
-                        message: "Role is required",
-                    },
-                },
-            },
+                    isNumber : {
+                        message : "Phone Number must be a number"
+                    }
+                }
+            }
         },
     );
-    // ---------- Validasi inputan form :end ----------
 
-    // ---------- Submit form ke url :begin ----------
     new GlobalSubmitForm({
         formId: FormEditSelector,
         url: () => {
@@ -152,10 +112,10 @@ function EditDataUser() {
             return FormAddURL + `/${form.dataset.id}`;
         },
         method: "PATCH",
-        validator: EditDataUserValidation,
-        onSuccess: (data) => {
+        validator: EditDataPatientValidation,
+        onSuccess: () => {
             notyf.success({
-                message: "Data user updated succesfully!",
+                message: "Patient updated succesfully!",
             });
             window.dispatchEvent(new Event(ReloadDatatableSelector));
             const modalEl = document.getElementById(ModalEditSelector);
@@ -164,18 +124,23 @@ function EditDataUser() {
         },
         onError: (err) => {
             notyf.error({
-                message: "Data user failed to update!",
+                message: "Patient failed to update!",
             });
+            console.error(err);
         },
-
         resetOnSuccess: true,
     });
-    // ---------- Submit form ke url :end ----------
 }
-// ---------- Handle form pembaharuan data user :begin ----------
+// ---------- Handle form pembaharuan data patient :begin ----------
 
 document.addEventListener("DOMContentLoaded", function () {
-    SelectRole();
-    AddNewUser();
-    EditDataUser();
+    // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
+    new GlobalAdvanceFlatpickr('.birthdate', {
+          dateFormat: "Y-m-d",
+            maxDate: "today",
+    });
+    // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
+
+    AddNewPatient();
+    EditDataPatient();
 });

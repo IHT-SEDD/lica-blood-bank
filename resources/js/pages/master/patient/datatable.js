@@ -7,34 +7,33 @@ import {
     GlobalEditData,
     DateTimeFormatter,
 } from "../../../app";
-import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-let masterUserTableInstance; // instance datatable untuk global
+let masterPatientTableInstance; // instance datatable untuk global
 
 // Filter datatable
-const DateFilterSelector = ".master-user-table-date-filter"; // class selector filter tanggal
+const DateFilterSelector = ".master-patient-table-date-filter"; // class selector filter tanggal
 
 // Datatable
-const DatatableSelector = "#master-user-table"; // id selector datatable
-const MasterDataURL = "/master/user/data"; // url fetch data untuk datatable
-const ReloadDatatableSelector = "master-user-reload"; // index reload datatable
+const DatatableSelector = "#master-patient-table"; // id selector datatable
+const MasterDataURL = "/master/patient/data"; // url fetch data untuk datatable
+const ReloadDatatableSelector = "master-patient-reload"; // index reload datatable
 
 // Edit Action
-const FormEditSelector = "#edit_data_user"; // id selector form edit
-const ModalEditSelector = "edit_data_master_user_modal"; // id selector modal edit
-const ActionEditSelector = ".btn-edit-user"; // class selector button edit
+const FormEditSelector = "#edit_data_patient"; // id selector form edit
+const ModalEditSelector = "edit_data_master_patient_modal"; // id selector modal edit
+const ActionEditSelector = ".btn-edit-patient"; // class selector button edit
 const AttributeEdit = "editId"; // attribute data id edit
 
 // Delete Action
-const ModalDeleteSelector = "delete_data_master_user_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-user"; // class selector button delete
+const ModalDeleteSelector = "delete_data_master_patient_modal"; // id selector modal delete
+const ActionDeleteSelector = ".btn-delete-patient"; // class selector button delete
 const AttributeDelete = "deleteId"; // attribute data id delete
 const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
 
 // Restore Action
-const ModalRestoreSelector = "restore_data_master_user_modal"; // id selector modal restore
-const ActionRestoreSelector = ".btn-restore-user"; // class selector button restore
+const ModalRestoreSelector = "restore_data_master_patient_modal"; // id selector modal restore
+const ActionRestoreSelector = ".btn-restore-patient"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
@@ -42,7 +41,6 @@ const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restor
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
     const dateVal = document.querySelector(DateFilterSelector)?.value;
-    const role = document.querySelector("#filter-role")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -55,22 +53,22 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { role, start_date, end_date };
+    return { start_date, end_date, date_field: 'created_at' };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterUserTableInstance?.instance) {
-        masterUserTableInstance.instance.ajax.reload();
+    if (masterPatientTableInstance?.instance) {
+        masterPatientTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
 
-// ---------- Datatable untuk master user :begin ----------
-function MasterUserTable() {
+// ---------- Datatable untuk master patient :begin ----------
+function MasterPatientTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterUserTableColumns = [
+    const MasterPatientTableColumns = [
         {
             data: null,
             title: "No",
@@ -79,43 +77,20 @@ function MasterUserTable() {
             },
         },
         { data: "name", title: "Name" },
-        { data: "username", title: "Username" },
+        { data: "medrec", title: "Medical Record" },
+        { data: "gender", title: "Gender",
+            render: (data) => {
+              return  data == 'M' ? 'Male' : 'Female';
+            }
+         },
+        { data: "birthdate", title: "Birthdate",
+            render: (data) => {
+                return DateTimeFormatter.dateOnly(data);
+            }
+         },
+        { data: "phone", title: "Phone" },
         { data: "email", title: "Email" },
-        {
-            data: "is_active",
-            title: "Status",
-            render: (data, type, row) => {
-                const isDeleted = row.deleted_at !== null;
-                if (isDeleted) {
-                    return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
-                }
-
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
-            },
-        },
-        {
-            data: "created_at",
-            title: "Created At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "updated_at",
-            title: "Updated At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "email_verified_at",
-            title: "Email Verified At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
+        { data: "address", title: "Address" },
         {
             data: "deleted_at",
             title: "Deleted At",
@@ -129,21 +104,21 @@ function MasterUserTable() {
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
-                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown"
                 data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-user" data-edit-id="${row.public_id}" type="button">
+                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-patient" data-edit-id="${row.public_id}" type="button">
                             Edit</button>
                         </li>
                         <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-user ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-patient ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             Restore</button>
                         </li>
                         <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-user text-danger" data-delete-id="${row.public_id}" type="button">
+                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-patient text-danger" data-delete-id="${row.public_id}" type="button">
                             Delete</button>
                         </li>
                     </ul>
@@ -152,18 +127,16 @@ function MasterUserTable() {
         },
     ];
 
-    // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterUserTableInstance = new GlobalAdvanceDatatable("#master-user-table", {
+    masterPatientTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
         ajax: {
             url: MasterDataURL,
             data: function (d) {
                 const filters = getFilters();
-                d.role = filters.role;
                 d.start_date = filters.start_date;
                 d.end_date = filters.end_date;
             },
         },
-        columns: MasterUserTableColumns,
+        columns: MasterPatientTableColumns,
         useHideColumn: true,
         columnDefs: [
             {
@@ -177,43 +150,7 @@ function MasterUserTable() {
         ],
     });
 }
-// ---------- Datatable untuk master user :end ----------
-
-// ---------- Filter role dari tom-select untuk data di tabel :begin ----------
-function FilterRole() {
-    const filterRole = new TomSelect("#filter-role", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/role?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-
-    filterRole.on("change", reloadTable);
-}
-// ---------- Filter role dari tom-select untuk data di tabel :end ----------
-
-// ---------- Select new role dari tom-select untuk data di modal edit :begin ----------
-function EditRole() {
-    const editRole = new TomSelect("#edit_data_user_role", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/role?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-// ---------- Select new role dari tom-select untuk data di modal edit :end ----------
+// ---------- Datatable untuk master patient :end ----------
 
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
 function DateRangeFilter() {
@@ -224,7 +161,7 @@ function DateRangeFilter() {
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
 // ---------- Handle modal edit data :begin ----------
-function EditDataUserActionModal() {
+function EditDataPatientActionModal() {
     new GlobalEditData({
         ButtonSelector: ActionEditSelector,
         DataAttributeID: AttributeEdit,
@@ -235,25 +172,23 @@ function EditDataUserActionModal() {
 
     document.addEventListener("edit:open", function (e) {
         const { data } = e.detail;
-
         if (!data) return;
 
-        document.querySelector("#edit_data_user_name").value = data.name ?? "";
-        document.querySelector("#edit_data_user_username").value =
-            data.username ?? "";
-        document.querySelector("#edit_data_user_email").value =
-            data.email ?? "";
-        document.querySelector("#edit_data_user_is_active").checked =
-            data.is_active == 1;
+            // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
+    new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
+          dateFormat: "Y-m-d",
+            maxDate: "today",
+    });
+    // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
 
-        // Kondisi untuk tom select
-        const select = document.querySelector("#edit_data_user_role");
-
-        if (select) {
-            const role = data.roles;
-            select.tomselect.clear();
-            select.tomselect.setValue(role.map((role) => role.name));
-        }
+        document.querySelector("#edit_data_patient_name").value = data.name ?? "";
+        // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
+        document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
+        document.querySelector("#edit_data_patient_birthdate").value = data.birthdate ?? "";
+        document.querySelector("#edit_data_patient_phone").value = data.phone ?? "";
+        document.querySelector("#edit_data_patient_email").value = data.email ?? "";
+        document.querySelector("#edit_data_patient_address").value = data.address ?? "";
+        document.querySelector("#edit_data_patient_is_active").checked = data.is_active == 1;
 
         document.querySelector(FormEditSelector).dataset.id = data.public_id;
     });
@@ -261,8 +196,7 @@ function EditDataUserActionModal() {
 // ---------- Handle modal edit data :end ----------
 
 // ---------- Handle modal delete data :begin ----------
-function DeleteDataUserActionModal() {
-    // Panggil dan setup delete data
+function DeleteDataPatientActionModal() {
     new GlobalDeleteDataConfirmation({
         ButtonSelector: ActionDeleteSelector,
         DataAttributeID: AttributeDelete,
@@ -270,18 +204,13 @@ function DeleteDataUserActionModal() {
         ModalConfirmID: ModalDeleteSelector,
     });
 
-    // Custom isi modal
     document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
-        // Isi text ke modal
         document.querySelector("#deleted_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-
-        // Berikan attribute button delete dengan id data
-        document.querySelector(ConfirmDeleteSelector).dataset.id =
-            data.public_id;
+        document.querySelector(ConfirmDeleteSelector).dataset.id = data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
@@ -321,12 +250,8 @@ function DeleteDataUserActionModal() {
                     new bootstrap.Modal(modalEl);
 
                 modal.hide();
-
                 this.dataset.id = "";
-
                 reloadTable();
-
-                console.log(result.message);
             } catch (error) {
                 console.error(error);
                 notyf.error({
@@ -339,8 +264,7 @@ function DeleteDataUserActionModal() {
 // ---------- Handle modal delete data :end ----------
 
 // ---------- Handle modal restore data :begin ----------
-function RestoreDataUserActionModal() {
-    // Panggil dan setup delete data
+function RestoreDataPatientActionModal() {
     new GlobalRestoreDataConfirmation({
         ButtonSelector: ActionRestoreSelector,
         DataAttributeID: AttributeRestore,
@@ -348,18 +272,13 @@ function RestoreDataUserActionModal() {
         ModalConfirmID: ModalRestoreSelector,
     });
 
-    // Custom isi modal
     document.addEventListener("restore:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
-        // Isi text ke modal
         document.querySelector("#restored_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-
-        // Berikan attribute button restore dengan id data
-        document.querySelector(ConfirmRestoreSelector).dataset.id =
-            data.public_id;
+        document.querySelector(ConfirmRestoreSelector).dataset.id = data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);
@@ -399,12 +318,8 @@ function RestoreDataUserActionModal() {
                     new bootstrap.Modal(modalEl);
 
                 modal.hide();
-
                 this.dataset.id = "";
-
                 reloadTable();
-
-                console.log(result.message);
             } catch (error) {
                 console.error(error);
                 notyf.error({
@@ -417,22 +332,11 @@ function RestoreDataUserActionModal() {
 // ---------- Handle modal restore data :end ----------
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Datatable
-    MasterUserTable();
-
-    // Select function
-    FilterRole();
-    EditRole();
-
-    // Date range picker
+    MasterPatientTable();
     DateRangeFilter();
-
-    // Action data
-    EditDataUserActionModal();
-    DeleteDataUserActionModal();
-    RestoreDataUserActionModal();
-
-    // Reload table
+    EditDataPatientActionModal();
+    DeleteDataPatientActionModal();
+    RestoreDataPatientActionModal();
     window.addEventListener(ReloadDatatableSelector, function () {
         reloadTable();
     });

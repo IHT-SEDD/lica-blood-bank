@@ -1,5 +1,5 @@
-<x-static-modal-layout id="delete_data_master_user_modal" size="" title="Delete Data User">
- <h4 class="fw-semibold">Are your sure want to delete this data?</h4>
+<x-static-modal-layout id="delete_data_master_patient_modal" size="" title="Delete Data Patient">
+ <h4 class="fw-semibold">Are your sure want to delete this patient?</h4>
  <p>Data you want to delete: <span id="deleted_data" class="text-capitalize text-muted"></span></p>
  <p class="m-0">Click <span class="badge badge-label badge-soft-danger">Confirm Delete</span> if you want to delete it
   and click <span class="badge badge-label badge-soft-info">I'm Not Sure</span> if you want to cancel it</p>

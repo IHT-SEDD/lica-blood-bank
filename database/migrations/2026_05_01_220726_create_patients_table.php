@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->uuid('public_id')->unique();
             $table->string('name');
-            $table->string('medrec');
+            $table->string('medrec')->unique()->nullable();
             $table->enum('gender', ['F', 'M']);
             $table->date('birthdate');
             $table->string('phone')->nullable();
