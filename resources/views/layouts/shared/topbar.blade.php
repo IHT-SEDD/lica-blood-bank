@@ -105,9 +105,11 @@
             <div class="topbar-item nav-user">
                 <div class="dropdown">
                     {{-- Dropdown button --}}
-                    <a class="topbar-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown"
+                    <a class="topbar-link dropdown-toggle drop-arrow-none px-2 text-center" data-bs-toggle="dropdown"
                         data-bs-offset="0,13" href="#!" aria-haspopup="false" aria-expanded="false">
-                        <img src="/images/users/user-2.jpg" width="32" class="rounded-circle d-flex" alt="user-image">
+                        <img src="{{ asset('assets/images/profile.png') }}" width="30"
+                            class="rounded-circle d-flex align-items-center justify-content-center"
+                            alt="user-image">
                     </a>
 
                     {{-- Dropdown menu :begin --}}

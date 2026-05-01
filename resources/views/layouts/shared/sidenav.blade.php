@@ -9,7 +9,7 @@
         @endphp
         <div class="sidenav-user text-nowrap border border-dashed rounded-3">
             <a href="#!" class="sidenav-user-name d-flex align-items-center">
-                <img src="/images/users/user-2.jpg" width="36" class="rounded-circle me-2 d-flex" alt="user-image">
+                <img src="{{ asset('assets/images/profile.png') }}" width="36" class="rounded-circle me-2 d-flex" alt="user-image">
                 <span>
                     <h5 class="my-0 fw-semibold">{{ $user->name ? $user->name : 'Please log in first!' }}</h5>
                     <h6 class="my-0 text-muted">{{ $role ? $role : '' }}</h6>
