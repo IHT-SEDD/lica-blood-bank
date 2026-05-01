@@ -2,25 +2,20 @@
 
 @section('content')
 <div class="row py-4">
-  {{-- Title & Add Stock In :begin --}}
-  <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
+  {{-- Title :begin --}}
+  <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
     <h1 class="fw-bold">Stock In</h1>
-
-    {{-- Button Add Stock In --}}
-    <a href="{{ route('inventory.history-order.new-order') }}" class="btn btn-soft-info">
-      Add Stock In
-    </a>
   </div>
-  {{-- Title & Add Stock In :end --}}
+  {{-- Title :end --}}
 
-  {{-- Datatables :begin --}}
-  <div class="col-12">
+  {{-- Datatables of List Stock In :begin --}}
+  <div class="col-xxl-7 col-md-6 col-12">
     {{-- Card :begin --}}
-    <div class="card">
+    <div class="card m-0">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">List Data of Stock In</h5>
+        <h5 class="card-title text-capitalize mb-0">List Data of Incoming Stock</h5>
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
@@ -76,7 +71,27 @@
     </div>
     {{-- Card :end --}}
   </div>
-  {{-- Datatables :end --}}
+  {{-- Datatables of List Stock In :end --}}
+
+  {{-- Form add incoming stock :begin --}}
+  <div class="col-xxl-5 col-md-6 col-12">
+    {{-- Card :begin --}}
+    <div class="card m-0">
+      {{-- Card Header :begin --}}
+      <div class="card-header justify-content-between align-items-center">
+        <h5 class="card-title text-capitalize mb-0">Add New Incoming Stock</h5>
+      </div>
+      {{-- Card Header :end --}}
+
+      {{-- Card Body :begin --}}
+      <div class="card-body">
+        @include('pages.inventory.sub-pages.stock-in.partials.form-add-incoming-stock')
+      </div>
+      {{-- Card Body :end --}}
+    </div>
+    {{-- Card :end --}}
+  </div>
+  {{-- Form add incoming stock :end --}}
 </div>
 
 @include('pages.inventory.sub-pages.stock-in.partials.delete-data-modal')
@@ -87,5 +102,6 @@
 @vite([
 'resources/js/pages/inventory/stock-in/datatable.js',
 'resources/js/pages/inventory/stock-in/index.js',
+'resources/js/pages/inventory/stock-in/form-add.js',
 ])
 @endsection

@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Inventory\HistoryOrderController;
+use App\Http\Controllers\Inventory\StockInController;
 use App\Http\Controllers\InventoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,6 +69,29 @@ Route::middleware('auth')->group(function () {
    // ---------- Delete & Restore ----------
    Route::delete('/data/{id}', 'deleteDataOrder')->name('delete-data-order'); // Hapus data order
    Route::patch('/data/{id}/restore', 'restoreDataOrder')->name('restore-data-order'); // Pulihkan data order
+  });
+
+  // --------------------------------------------------------------------------
+  // Spesific Route Group -> Stock In
+  // --------------------------------------------------------------------------
+  Route::prefix('stock-in')->name('stock-in.')->controller(StockInController::class)->group(function () {
+   // ---------- Static Route ----------
+   Route::get('/new-incoming-stock', 'newStockInIndex')->name('new-incoming-stock'); // Halaman form add stock in
+   Route::get('/detail-incoming-stock/{id}', 'detailStockInIndex')->name('detail-incoming-stock'); // Halaman detail stock in
+   Route::get('/new-bag-number', 'generateBagNumber')->name('generate-bag-number'); // Generate bag number
+
+   // ---------- Datatable ----------
+   Route::get('/data', 'stockInTable')->name('stock-in-table'); // Datatable stock in
+
+   // ---------- Detail data ----------
+   Route::get('/data/detail/{id}', 'detailStockInData')->name('detail-stock-in-data'); // Ambil data detail stock in
+
+   // ---------- Write data incoming stock ----------
+   Route::post('/new-incoming-stock', 'insertNewStockIn')->name('insert-new-incoming-stock'); // Insert data stock in
+
+   // ---------- Delete & Restore ----------
+   Route::delete('/data/{id}', 'deleteDataStockIn')->name('delete-data-incoming-stock'); // Hapus data stock in
+   Route::patch('/data/{id}/restore', 'restoreDataStockIn')->name('restore-data-incoming-stock'); // Pulihkan data stock in
   });
  });
 });

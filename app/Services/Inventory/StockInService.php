@@ -15,10 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
-class HistoryOrderService
+class StockInService
 {
   // ---------- Fungsi untuk menampilkan data history order ke tabel :begin ----------
-  public function historyOrderTable(Request $request)
+  public function stockInTable(Request $request)
   {
     // ---------- Ambil data ----------
     $query = OrderBlood::withTrashed()
@@ -79,7 +79,7 @@ class HistoryOrderService
   // ---------- Fungsi untuk menampilkan data history order ke tabel :end ----------
 
   // ---------- Fungsi untuk menambahkan data order baru :begin ----------
-  public function insertNewOrder(Request $request, $draft)
+  public function insertIncomingStock(Request $request, bool $draft)
   {
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
@@ -234,7 +234,7 @@ class HistoryOrderService
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
 
   // ---------- Fungsi untuk membuat po number :begin ----------
-  public function generatePoNumber(): string
+  public function generateBagNumber(): string
   {
     $year = now()->format('Y');
     $last = OrderBlood::where('po_number', 'like', "P{$year}OB%")
@@ -263,17 +263,6 @@ class HistoryOrderService
       'order' => $order,
       'log' => $orderLog,
     ];
-  }
-  // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
-
-  // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
-  public function getDataOrderByPO(string $po)
-  {
-    $order = OrderBlood::where('po_number', $po)
-      ->with(['orderBloods', 'vendors', 'users.roles']) 
-      ->firstOrFail();
-
-    return $order;
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 }
