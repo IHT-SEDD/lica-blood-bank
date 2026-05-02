@@ -55,9 +55,9 @@ class IncomingBlood extends Model
         return $this->belongsTo(User::class, 'received_by_user_id');
     }
 
-    // Relasi dari blood_packs
-    public function bloodPacks(): HasMany
+    // Relasi dari blood_stocks
+    public function bloodStocks(): HasMany
     {
-        return $this->hasMany(BloodPack::class, 'incoming_blood_id');
+        return $this->hasMany(BloodStock::class, 'incoming_blood_id');
     }
 }

@@ -20,12 +20,12 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            // Golongan darah A, B, O, AB
-            $table->enum('blood_group', ['A', 'B', 'AB', 'O']);
-            $table->enum('rhesus', ['+', '-']);
+            $table->foreignId('blood_pack_id')
+                ->nullable()
+                ->constrained('blood_packs')
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
 
-            // Komponen darah PRC, WB, etc
-            $table->string('blood_component');
             $table->integer('blood_volume');
 
             // 0 = NR, 1 = R

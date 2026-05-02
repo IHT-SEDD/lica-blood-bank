@@ -8,7 +8,7 @@
     " class="d-flex align-items-center justify-content-center d-none">
   <div class="text-center text-white">
     <div class="spinner-border avatar-lg text-primary mb-2" role="status"></div>
-    <p class="fw-semibold fs-5 mb-0">Processing...</p>
+    <p class="fw-semibold fs-5 mb-0">{{ __('Processing') }}...</p>
   </div>
 </div>
 {{-- Full Screen Loading Overlay :end --}}
@@ -79,9 +79,7 @@
           <thead class="bg-light align-middle bg-opacity-25 thead-sm">
             <tr class="text-uppercase fs-xxs">
               <th>Bag Number <span class="text-danger">*</span></th>
-              <th>Group <span class="text-danger">*</span></th>
-              <th style="width: 3%;">Rhesus <span class="text-danger">*</span></th>
-              <th>Component <span class="text-danger">*</span></th>
+              <th>Blood Pack <span class="text-danger">*</span></th>
               <th style="width: 5%;">Volume <span class="text-danger">*</span></th>
               <th style="width: 8%;">Aftap <span class="text-danger">*</span></th>
               <th style="width: 8%;">Expiry <span class="text-danger">*</span></th>

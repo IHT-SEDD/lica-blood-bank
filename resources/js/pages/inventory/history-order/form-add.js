@@ -2,16 +2,24 @@ import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-const BloodDataInputsContainer = "blood_data_container";
-const AddBloodDataRowButton = "add_blood_data";
-const DeleteBloodDataRowButton = ".btn-delete-blood";
-const BloodDataRow = ".blood-data-row";
 const FormAddNewOrderSelector = "add_new_order";
 const PoNumberInputSelector = "po_number";
 const UrlPostNewOrder = "/inventory/history-order/new-order";
 const UrlGetNewPoNumber = "/inventory/history-order/new-po-number";
-const orderForm = HandleFormAddNewOrder();
+const TableRowBloodData = "blood_data_row";
+const AddRowButton = ".add_row_blood_data";
+const AddRowCountInput = "#add_row_blood_data_count";
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+
+// ---------- State global :begin ----------
+let formValidation = null;
+
+const REQUIRED_FIELDS = ["blood_pack_id", "quantity"];
+
+function f(idx, field) {
+    return `blood_data[${idx}][${field}]`;
+}
+// ---------- State global :end ----------
 
 // ---------- Select vendor dari tom-select untuk form add new data :begin ----------
 function SelectVendor() {
@@ -60,278 +68,41 @@ function SelectVendor() {
 }
 // ---------- Select vendor dari tom-select untuk form add new data :begin ----------
 
-// ---------- Fungsi untuk mengelola form add new order :begin ----------
-function HandleFormAddNewOrder() {
-    // Mulai index blood data dari 0
-    let bloodIndex = 0;
-    const bloodDataContainer = document.getElementById(
-        BloodDataInputsContainer,
-    );
+// ---------- Helper: init TomSelect pada elemen dengan value default :begin ----------
+function initTomSelect(el, url) {
+    if (!el) return;
+    if (el.tomselect) el.tomselect.destroy();
 
-    const formValidation = GlobalFormValidation.init(
-        "#" + FormAddNewOrderSelector,
-        {
-            // ---------- Validasi field statis :begin ----------
-            po_number: {
-                validators: {
-                    notEmpty: {
-                        message: "PO Number is required",
-                    },
-                },
-            },
-            vendor_id: {
-                validators: {
-                    notEmpty: {
-                        message: "Vendor is required",
-                    },
-                },
-            },
-            // ---------- Validasi field statis :end ----------
+    return new TomSelect(el, {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        create: false,
+        dropdownParent: "body",
+        load: function (query, callback) {
+            fetch(`${url}?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
         },
-    );
-
-    // Kosongkan isi container
-    bloodDataContainer.innerHTML = "";
-    // Bikin 1 baris default inputan
-    addBloodRow();
-
-    // Tambahkan baris jika tombol add blood data di click
-    document
-        .getElementById(AddBloodDataRowButton)
-        .addEventListener("click", () => {
-            addBloodRow();
-        });
-
-    // ---------- Fungsi untuk menambahkan baris blood data :begin ----------
-    function addBloodRow() {
-        collapseAllRows();
-        const idx = bloodIndex++;
-        const row = document.createElement("div");
-        const titleRow = `${idx}# Blood Data`;
-        row.className = "card my-1 blood-data-row";
-        row.innerHTML = `<div class="card-header justify-content-between align-items-center">
-                <h6 class="card-title text-capitalize mb-0" id="blood_data[${idx}][title]">${titleRow}</h6>
-                <button class="btn btn-sm btn-soft-danger btn-delete-blood" type="button" data-bs-title="Delete blood row" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                    <i class="ti ti-trash fs-4"></i>
-                </button>
-                <div class="card-action" id="blood_data[${idx}][header_collapse]">
-                    <a class="card-action-item" data-action="card-toggle" href="#!" id="blood_data[${idx}][toggle_header]"><i class="ti ti-chevron-up"></i></a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-lg-6 col-12">
-                        <div class="row g-2">
-                            <div class="col-12">
-                                <label class="form-label text-muted" for="blood_data[${idx}][blood_group]">Group <span class="text-danger">*</span></label>
-                                <select class="form-control" id="blood_data[${idx}][blood_group]" name="blood_data[${idx}][blood_group]" placeholder="Choose blood group..."></select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label text-muted" for="blood_data[${idx}][blood_rhesus]">Rhesus <span class="text-danger">*</span></label>
-                                <select class="form-control" id="blood_data[${idx}][blood_rhesus]" name="blood_data[${idx}][blood_rhesus]" placeholder="Choose blood rhesus..."></select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label text-muted" for="blood_data[${idx}][blood_component]">Component <span class="text-danger">*</span></label>
-                                <select class="form-control" id="blood_data[${idx}][blood_component]" name="blood_data[${idx}][blood_component]" placeholder="Choose blood component...">
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label text-muted" for="blood_data[${idx}][blood_quantity]">Quantity <span class="text-danger">*</span></label>
-                                <input class="form-control" id="blood_data[${idx}][blood_quantity]" name="blood_data[${idx}][blood_quantity]" placeholder="Blood quantity" type="text" />
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-6 col-12">
-                        <div class="row g-2">
-                            <div class="col-12">
-                                <label class="form-label text-muted" for="blood_data[${idx}][note]">Note</label>
-                                <textarea autocomplete="off" class="form-control" id="blood_data[${idx}][note]" name="blood_data[${idx}][note]" placeholder="Note" type="text" rows="5"></textarea>
-                            </div>
-                        </div>
-                    <div>
-                </div>
-            </div>`;
-
-        initBloodDataSelects(row, idx);
-
-        // Hapus baris jika tombol delete di click
-        row.querySelector(DeleteBloodDataRowButton).addEventListener(
-            "click",
-            () => {
-                deleteBloodRow(row);
-            },
-        );
-
-        bloodDataContainer.appendChild(row);
-
-        if (window.lucide) {
-            lucide.createIcons();
-        }
-
-        addBloodRowValidation(idx);
-        syncDeleteButtons();
-    }
-    // ---------- Fungsi untuk menambahkan baris blood data :end ----------
-
-    // ---------- Fungsi untuk inisialisasi Tom Select blood data :begin ----------
-    function initBloodDataSelects(row, idx) {
-        const selectConfigs = [
-            {
-                el: row.querySelector(
-                    `[name="blood_data[${idx}][blood_group]"]`,
-                ),
-                url: "/utility/select/blood-group",
-            },
-            {
-                el: row.querySelector(
-                    `[name="blood_data[${idx}][blood_rhesus]"]`,
-                ),
-                url: "/utility/select/blood-rhesus",
-            },
-            {
-                el: row.querySelector(
-                    `[name="blood_data[${idx}][blood_component]"]`,
-                ),
-                url: "/utility/select/blood-component",
-            },
-        ];
-
-        selectConfigs.forEach(({ el, url }) => {
-            if (!el) return;
-            new TomSelect(el, {
-                valueField: "id",
-                labelField: "text",
-                searchField: "text",
-                preload: true,
-                load: function (query, callback) {
-                    fetch(`${url}?q=${encodeURIComponent(query)}`)
-                        .then((res) => res.json())
-                        .then((json) => callback(json.results))
-                        .catch(() => callback());
-                },
-            });
-        });
-    }
-    // ---------- Fungsi untuk inisialisasi Tom Select blood data :end ----------
-
-    // ---------- Fungsi untuk collapse semua card blood data :begin ----------
-    function collapseAllRows() {
-        const toggleBtns = bloodDataContainer.querySelectorAll(
-            '[data-action="card-toggle"]',
-        );
-        toggleBtns.forEach((btn) => {
-            const card = btn.closest(".blood-data-row");
-            if (!card) return;
-            const cardBody = card.querySelector(".card-body");
-            if (cardBody && cardBody.style.display !== "none") {
-                btn.click(); // trigger collapse yang sudah ada di framework
-            }
-        });
-    }
-    // ---------- Fungsi untuk collapse semua card blood data :end ----------
-
-    // ---------- Fungsi untuk reset semua blood data row menjadi 1 :begin ----------
-    function resetBloodRows() {
-        // Hapus semua row beserta validasinya
-        const rows = bloodDataContainer.querySelectorAll(BloodDataRow);
-        rows.forEach((row) => {
-            const idx = row.dataset.idx;
-            if (idx !== undefined) removeBloodRowValidation(idx);
-            row.remove();
-        });
-        // Reset index agar mulai dari 0 lagi
-        bloodIndex = 0;
-        // Buat 1 baris default
-        addBloodRow();
-    }
-    // ---------- Fungsi untuk reset semua blood data row menjadi 1 :end ---------
-
-    // ---------- Fungsi untuk menambahkan validasi per baris blood data :begin ----------
-    function addBloodRowValidation(idx) {
-        const bloodFieldValidators = {
-            notEmpty: { message: "This field is required" },
-        };
-
-        const fields = [
-            `blood_data[${idx}][blood_group]`,
-            `blood_data[${idx}][blood_rhesus]`,
-            `blood_data[${idx}][blood_component]`,
-            `blood_data[${idx}][blood_quantity]`,
-        ];
-
-        fields.forEach((fieldName) => {
-            formValidation.addField(fieldName, {
-                validators: {
-                    notEmpty: bloodFieldValidators.notEmpty,
-                },
-            });
-        });
-    }
-    // ---------- Fungsi untuk menambahkan validasi per baris blood data :end ----------
-
-    // ---------- Fungsi untuk menghapus validasi per baris blood data :begin ----------
-    function removeBloodRowValidation(idx) {
-        const fields = [
-            `blood_data[${idx}][blood_group]`,
-            `blood_data[${idx}][blood_rhesus]`,
-            `blood_data[${idx}][blood_component]`,
-            `blood_data[${idx}][blood_quantity]`,
-        ];
-
-        fields.forEach((fieldName) => {
-            formValidation.removeField(fieldName);
-        });
-    }
-    // ---------- Fungsi untuk menghapus validasi per baris blood data :end ----------
-
-    // ---------- Fungsi untuk menghapus baris blood data :begin ----------
-    function deleteBloodRow(row) {
-        const bloodDataRows = bloodDataContainer.querySelectorAll(BloodDataRow);
-        if (bloodDataRows.length <= 1) {
-            notyf.error({
-                message: "Minimal 1 blood data!",
-            });
-            return;
-        }
-        const idx = row.dataset.idx;
-        removeBloodRowValidation(idx);
-        row.remove();
-        syncDeleteButtons();
-    }
-    // ---------- Fungsi untuk menghapus baris blood data :end ----------
-
-    // ---------- Fungsi untuk disable button delete jika sisa 1 :begin ----------
-    function syncDeleteButtons() {
-        const bloodDataRows = bloodDataContainer.querySelectorAll(BloodDataRow);
-        bloodDataRows.forEach((row) => {
-            const btn = row.querySelector(DeleteBloodDataRowButton);
-            btn.disabled = bloodDataRows.length <= 1;
-        });
-    }
-    // ---------- Fungsi untuk disable button delete jika sisa 1 :end ----------
-
-    // ---------- Fungsi untuk membuat array blood data :begin ----------
-    function getBloodData() {
-        const rows = bloodDataContainer.querySelectorAll(BloodDataRow);
-        const result = [];
-        rows.forEach((row) => {
-            result.push({
-                blood_group: row.querySelector('[name*="blood_group"]').value,
-                blood_rhesus: row.querySelector('[name*="blood_rhesus"]').value,
-                blood_component: row.querySelector('[name*="blood_component"]')
-                    .value,
-                blood_quantity: row.querySelector('[name*="blood_quantity"]')
-                    .value,
-                note: row.querySelector('[name*="note"]').value,
-            });
-        });
-        return result;
-    }
-    // ---------- Fungsi untuk membuat array blood data :end ----------
-
-    return { formValidation, getBloodData, resetBloodRows };
+    });
 }
-// ---------- Fungsi untuk mengelola form add new order :end ----------
+// ---------- Helper: init TomSelect pada elemen dengan value default :end ----------
+
+// ---------- Helper: tampilkan fullscreen loading overlay :begin ----------
+function showPageLoading() {
+    const overlay = document.getElementById("fullscreen_loading_overlay");
+    if (overlay) overlay.classList.remove("d-none");
+}
+// ---------- Helper: tampilkan fullscreen loading overlay :end ----------
+
+// ---------- Helper: sembunyikan fullscreen loading overlay :begin ----------
+function hidePageLoading() {
+    const overlay = document.getElementById("fullscreen_loading_overlay");
+    if (overlay) overlay.classList.add("d-none");
+}
+// ---------- Helper: sembunyikan fullscreen loading overlay :end ----------
 
 // ---------- Fungsi untuk generate PO Number :begin ----------
 function GeneratePoNumber() {
@@ -359,58 +130,262 @@ function GeneratePoNumber() {
 }
 // ---------- Fungsi untuk generate PO Number :end ----------
 
-// ---------- Fungsi untuk submit data form add new order :begin ----------
-function SubmitFormAddNewOrder(orderForm) {
+// ---------- Fungsi untuk mengelola form add new order :begin ----------
+function HandleFormAddNewOrder() {
+    const addRowBtn = document.querySelector(AddRowButton);
+    const addRowCountInput = document.querySelector(AddRowCountInput);
+    const tableBody = document.getElementById(TableRowBloodData);
+
+    // ---------- Render Row ----------
+    function RenderTableRow(idx) {
+        return `
+            <tr id="row_blood_data_${idx}">
+                <td>
+                    <select class="form-control form-control-sm"
+                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Choose blood"></select>
+                </td>
+                <td>
+                    <input type="text" class="form-control form-control-sm"
+                        id="${f(idx, "quantity")}" name="${f(idx, "quantity")}" placeholder="Quantity" />
+                </td>
+                <td>
+                    <textarea autocomplete="off" class="form-control form-control-sm" id="${f(idx, "note")}" name="${f(idx, "note")}" placeholder="Note" type="text" rows="3"></textarea>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-soft-danger delete_row_blood_data"
+                        data-id="row_blood_data_${idx}">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }
+
+    // ---------- Init TomSelect untuk 1 row (by idx) ----------
+    function initTomSelectsForRow(idx) {
+        initTomSelect(
+            tableBody.querySelector(`[id="${f(idx, "blood_pack_id")}"]`),
+            "/utility/select/blood-pack",
+        );
+    }
+
+    // ---------- Tambah validasi per row :begin ----------
+    function addRowValidation(idx) {
+        REQUIRED_FIELDS.forEach((field) => {
+            formValidation.addField(f(idx, field), {
+                validators: {
+                    notEmpty: { message: "This field is required" },
+                },
+            });
+        });
+    }
+    // ---------- Tambah validasi per row :end ----------
+
+    // ---------- Hapus validasi per row :begin ----------
+    function removeRowValidation(idx) {
+        REQUIRED_FIELDS.forEach((field) => {
+            try {
+                formValidation.removeField(f(idx, field));
+            } catch (_) {}
+        });
+    }
+    // ---------- Hapus validasi per row :end ----------
+
+    // ---------- Reset seluruh tabel ke kondisi awal (1 baris kosong) :begin ----------
+    function resetTable() {
+        // Destroy semua TomSelect di tiap row sebelum clear innerHTML
+        tableBody.querySelectorAll("select").forEach((el) => {
+            if (el.tomselect) el.tomselect.destroy();
+        });
+
+        // Hapus validasi semua row yang ada
+        const rowCount = tableBody.querySelectorAll("tr").length;
+        for (let i = 0; i < rowCount; i++) {
+            removeRowValidation(i);
+        }
+
+        // Kosongkan tabel, tambah 1 baris default
+        tableBody.innerHTML = "";
+        AddTableRow(1);
+    }
+    // ---------- Reset seluruh tabel ke kondisi awal (1 baris kosong) :end ----------
+
+    // ---------- Add Row (dengan inisialisasi picker & select) ----------
+    function AddTableRow(count = 1) {
+        for (let i = 0; i < count; i++) {
+            const idx = tableBody.children.length;
+            tableBody.insertAdjacentHTML("beforeend", RenderTableRow(idx));
+            initTomSelectsForRow(idx);
+            addRowValidation(idx);
+        }
+    }
+
+    // ---------- Delete Row ----------
+    function DeleteTableRow(e) {
+        const btn = e.target.closest(".delete_row_blood_data");
+        if (!btn) return;
+
+        // Jangan hapus jika hanya 1 baris tersisa
+        if (tableBody.querySelectorAll("tr").length <= 1) {
+            notyf.error({ message: "At least 1 row is required!" });
+            return;
+        }
+
+        const rowId = btn.getAttribute("data-id");
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        const oldIdx = parseInt(rowId.replace("row_blood_data_", ""));
+        removeRowValidation(oldIdx);
+
+        // Destroy TomSelect di row ini sebelum dihapus
+        row.querySelectorAll("select").forEach((el) => {
+            if (el.tomselect) el.tomselect.destroy();
+        });
+
+        row.remove();
+        ReorderTableRows();
+    }
+
+    // ---------- Reorder setelah delete ----------
+    function ReorderTableRows() {
+        const rows = tableBody.querySelectorAll("tr");
+
+        rows.forEach((row, index) => {
+            const oldIndex = parseInt(row.id.replace("row_blood_data_", ""));
+
+            if (oldIndex === index) return; // sudah benar, skip
+
+            // Hapus validasi index lama
+            removeRowValidation(oldIndex);
+
+            // Update row id
+            row.id = `row_blood_data_${index}`;
+
+            // Update name & id semua input/select
+            row.querySelectorAll("input, select").forEach((el) => {
+                if (!el.name) return;
+                el.name = el.name.replace(
+                    /blood_data\[\d+\]/,
+                    `blood_data[${index}]`,
+                );
+                el.id = el.id.replace(
+                    /blood_data\[\d+\]/,
+                    `blood_data[${index}]`,
+                );
+            });
+
+            // Update tombol delete
+            const delBtn = row.querySelector(".delete_row_blood_data");
+            if (delBtn)
+                delBtn.setAttribute("data-id", `row_blood_data_${index}`);
+
+            // Daftarkan ulang validasi dengan index baru
+            addRowValidation(index);
+        });
+    }
+
+    // ---------- Kumpulkan semua data blood dari card yang ada di DOM :begin ----------
+    function getBloodData() {
+        const rows = tableBody.querySelectorAll("tr");
+        const result = [];
+
+        rows.forEach((tr, index) => {
+            const val = (field) => {
+                const el = tr.querySelector(`[name="${f(index, field)}"]`);
+                return el ? el.value : "";
+            };
+
+            result.push({
+                blood_pack_id: val("blood_pack_id"),
+                quantity: val("quantity"),
+                note: val("note"),
+            });
+        });
+
+        return result;
+    }
+    // ---------- Kumpulkan semua data blood dari card yang ada di DOM :end ----------
+
+    // ---------- Event: Add Row Button ----------
+    addRowBtn.addEventListener("click", () => {
+        const count = parseInt(addRowCountInput?.value);
+        if (!count || count < 1) {
+            notyf.error({ message: "Fill the count row input first!" });
+            return;
+        }
+        AddTableRow(count);
+        if (addRowCountInput) addRowCountInput.value = "";
+    });
+
+    // ---------- Event: Delete Row ----------
+    tableBody.addEventListener("click", DeleteTableRow);
+
+    // ---------- Default: 1 baris saat pertama kali ----------
+    AddTableRow(1);
+
+    // ---------- Init GlobalSubmitForm untuk handle submit dan validasi :begin ----------
     new GlobalSubmitForm({
         formId: FormAddNewOrderSelector,
         url: UrlPostNewOrder,
         method: "POST",
-        validator: orderForm.formValidation,
+        validator: formValidation,
         beforeSubmit: (formData) => {
-            const bloodData = orderForm.getBloodData();
-            bloodData.forEach((item, index) => {
-                formData.set(
-                    `blood_data[${index}][blood_group]`,
-                    item.blood_group,
-                );
-                formData.set(
-                    `blood_data[${index}][blood_rhesus]`,
-                    item.blood_rhesus,
-                );
-                formData.set(
-                    `blood_data[${index}][blood_component]`,
-                    item.blood_component,
-                );
-                formData.set(
-                    `blood_data[${index}][blood_quantity]`,
-                    item.blood_quantity,
-                );
-                formData.set(
-                    `blood_data[${index}][note]`,
-                    item.note ? item.note : null,
-                );
+            showPageLoading();
+
+            for (const key of [...formData.keys()]) {
+                if (key.startsWith("blood_data[")) formData.delete(key);
+            }
+
+            getBloodData().forEach((item, index) => {
+                Object.entries(item).forEach(([field, value]) => {
+                    formData.set(`blood_data[${index}][${field}]`, value);
+                });
             });
+
             return formData;
         },
-        onSuccess: (data) => {
-            notyf.success({
-                message: "New order added successfully!",
+        onValidationError: () => {
+            hidePageLoading();
+            notyf.error({
+                message: "There's a field that needs to be filled!",
             });
-            orderForm.resetBloodRows();
+        },
+        onSuccess: () => {
+            hidePageLoading();
+            resetTable();
+            notyf.success({ message: "New order added successfully!" });
+            setTimeout(() => {
+                window.location.href = "/inventory/history-order/";
+            }, 2000);
         },
         onError: (err) => {
+            hidePageLoading();
             notyf.error({
-                message: "Failed to add new order!",
+                message: err?.message ?? "Failed to add new order!",
             });
             console.error(err);
         },
         resetOnSuccess: true,
     });
+    // ---------- Init GlobalSubmitForm untuk handle submit dan validasi :end ----------
 }
-// ---------- Fungsi untuk submit data form add new order :end ----------
+// ---------- Fungsi untuk mengelola form add new order :end ----------
 
 document.addEventListener("DOMContentLoaded", () => {
+    formValidation = GlobalFormValidation.init("#" + FormAddNewOrderSelector, {
+        po_number: {
+            validators: {
+                notEmpty: { message: "Purchase Order is required" },
+            },
+        },
+        vendor_id: {
+            validators: {
+                notEmpty: { message: "Vendor is required" },
+            },
+        },
+    });
     SelectVendor();
     GeneratePoNumber();
-    SubmitFormAddNewOrder(orderForm);
+    HandleFormAddNewOrder();
 });

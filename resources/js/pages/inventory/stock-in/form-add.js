@@ -24,12 +24,29 @@ const UrlPostIncomingStock = "/inventory/stock-in/new-incoming-stock";
 const TableRowBloodData = "blood_data_row";
 const AddRowButton = ".add_row_blood_data";
 const AddRowCountInput = "#add_row_blood_data_count";
+
+// Form Excel
+const TemplateExcelPath = "/assets/files/Template Add Incoming Stock.xlsx";
+const TemplateExcelFileName = "Template_Add_Incoming_Stock.xlsx";
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 
 // ---------- State global :begin ----------
 let currentMethod = "manual";
 let formValidation = null;
 // ---------- State global :end ----------
+
+const REQUIRED_FIELDS = [
+    "bag_number",
+    "blood_pack_id",
+    "blood_volume",
+    "aftap_date",
+    "expiry_date",
+    "process_date",
+];
+
+function f(idx, field) {
+    return `blood_data[${idx}][${field}]`;
+}
 
 // ---------- Helper: toggle tampilan form berdasarkan method :begin ----------
 function toggleFormMethod(methodId) {
@@ -43,10 +60,42 @@ function toggleFormMethod(methodId) {
         formLoading.classList.add("d-none");
         formManual.classList.remove("d-none");
         formExcel.classList.add("d-none");
+
+        // Daftarkan kembali validasi semua row blood_data yang ada di DOM
+        if (formValidation) {
+            const rows =
+                document
+                    .getElementById(TableRowBloodData)
+                    ?.querySelectorAll("tr") ?? [];
+            rows.forEach((_, idx) => {
+                REQUIRED_FIELDS.forEach((field) => {
+                    formValidation.addField(f(idx, field), {
+                        validators: {
+                            notEmpty: { message: "This field is required" },
+                        },
+                    });
+                });
+            });
+        }
     } else if (methodId === "excel") {
         formLoading.classList.add("d-none");
         formManual.classList.add("d-none");
         formExcel.classList.remove("d-none");
+
+        // Hapus validasi semua row blood_data dari rules agar tidak ikut divalidasi
+        if (formValidation) {
+            const rows =
+                document
+                    .getElementById(TableRowBloodData)
+                    ?.querySelectorAll("tr") ?? [];
+            rows.forEach((_, idx) => {
+                REQUIRED_FIELDS.forEach((field) => {
+                    try {
+                        formValidation.removeField(f(idx, field));
+                    } catch (_) {}
+                });
+            });
+        }
     }
 }
 // ---------- Helper: toggle tampilan form berdasarkan method :end ----------
@@ -142,28 +191,102 @@ function hidePageLoading() {
 }
 // ---------- Helper: sembunyikan fullscreen loading overlay :end ----------
 
+// ---------- Download Template Excel :begin ----------
+/**
+ * Menggunakan fetch + streaming ke Blob agar file langsung didownload
+ * tanpa membuka tab baru, dan bekerja meski path mengandung spasi.
+ */
+function HandleDownloadTemplate() {
+    const btn = document.getElementById("download_template_excel");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+        // Tampilkan loading state di tombol
+        const originalHTML = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Downloading...`;
+
+        try {
+            const response = await fetch(TemplateExcelPath);
+
+            if (!response.ok) {
+                throw new Error(`File not found (${response.status})`);
+            }
+
+            // Stream response ke Blob — lebih cepat untuk file besar
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = TemplateExcelFileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Revoke object URL setelah download selesai (cleanup memory)
+            setTimeout(() => URL.revokeObjectURL(url), 10_000);
+        } catch (err) {
+            console.error("Download template failed:", err);
+            notyf.error({ message: "Gagal mengunduh template excel!" });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    });
+}
+// ---------- Download Template Excel :end ----------
+
+// ---------- Validasi file excel saat submit :begin ----------
+/**
+ * Validasi input file saat method adalah excel.
+ * Dipanggil di dalam beforeSubmit sebelum dikirim ke server.
+ * Return: true jika valid, false jika tidak.
+ */
+function validateExcelFile() {
+    const fileInput = document.getElementById("incoming_stock_excel");
+
+    if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
+        notyf.error({ message: "File must be uploaded!" });
+        return false;
+    }
+
+    const file = fileInput.files[0];
+    const allowedTypes = [
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // xlsx
+        "application/vnd.ms-excel", // xls
+        "text/csv",
+        "application/csv",
+    ];
+    const allowedExtensions = /\.(xlsx|xls|csv)$/i;
+    const maxSizeBytes = 10 * 1024 * 1024; // 10MB
+
+    if (!allowedExtensions.test(file.name)) {
+        notyf.error({ message: "File must be a .xlxs, .xls, or .csv!" });
+        return false;
+    }
+
+    if (!allowedTypes.includes(file.type) && file.type !== "") {
+        // Beberapa browser melaporkan type kosong untuk csv — skip check jika empty
+        if (file.type !== "") {
+            notyf.error({ message: "File type not valid!" });
+            return false;
+        }
+    }
+
+    if (file.size > maxSizeBytes) {
+        notyf.error({ message: "Maximum file size is 10MB!" });
+        return false;
+    }
+
+    return true;
+}
+// ---------- Validasi file excel saat submit :end ----------
+
 // ---------- Fungsi untuk form method manual :begin ----------
 function HandleFormManual() {
     const addRowBtn = document.querySelector(AddRowButton);
     const addRowCountInput = document.querySelector(AddRowCountInput);
     const tableBody = document.getElementById(TableRowBloodData);
-
-    const REQUIRED_FIELDS = [
-        "bag_number",
-        "blood_group",
-        "rhesus",
-        "blood_component",
-        "blood_volume",
-        "aftap_date",
-        "expiry_date",
-        "process_date",
-    ];
-
-    // ---------- Helper: buat field name dengan format array :begin ----------
-    function f(idx, field) {
-        return `blood_data[${idx}][${field}]`;
-    }
-    // ---------- Helper: buat field name dengan format array :end ----------
 
     // ---------- Render Row ----------
     function RenderTableRow(idx) {
@@ -175,15 +298,7 @@ function HandleFormManual() {
                 </td>
                 <td>
                     <select class="form-control form-control-sm"
-                        id="${f(idx, "blood_group")}" name="${f(idx, "blood_group")}"></select>
-                </td>
-                <td>
-                    <select class="form-control form-control-sm"
-                        id="${f(idx, "rhesus")}" name="${f(idx, "rhesus")}"></select>
-                </td>
-                <td>
-                    <select class="form-control form-control-sm"
-                        id="${f(idx, "blood_component")}" name="${f(idx, "blood_component")}"></select>
+                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Blood pack"></select>
                 </td>
                 <td>
                     <input type="text" class="form-control form-control-sm"
@@ -249,16 +364,8 @@ function HandleFormManual() {
     // ---------- Init TomSelect untuk 1 row (by idx) ----------
     function initTomSelectsForRow(idx) {
         initTomSelect(
-            tableBody.querySelector(`[id="${f(idx, "blood_group")}"]`),
-            "/utility/select/blood-group",
-        );
-        initTomSelect(
-            tableBody.querySelector(`[id="${f(idx, "rhesus")}"]`),
-            "/utility/select/blood-rhesus",
-        );
-        initTomSelect(
-            tableBody.querySelector(`[id="${f(idx, "blood_component")}"]`),
-            "/utility/select/blood-component",
+            tableBody.querySelector(`[id="${f(idx, "blood_pack_id")}"]`),
+            "/utility/select/blood-pack",
         );
     }
 
@@ -406,9 +513,7 @@ function HandleFormManual() {
 
             result.push({
                 bag_number: val("bag_number"),
-                blood_group: val("blood_group"),
-                rhesus: val("rhesus"),
-                blood_component: val("blood_component"),
+                blood_pack_id: val("blood_pack_id"),
                 blood_volume: val("blood_volume"),
                 aftap_date: val("aftap_date"),
                 expiry_date: val("expiry_date"),
@@ -448,8 +553,29 @@ function HandleFormManual() {
         method: "POST",
         validator: formValidation,
         beforeSubmit: (formData) => {
-            showPageLoading();
+            if (currentMethod === "excel") {
+                if (!validateExcelFile()) {
+                    hidePageLoading();
+                    return null; // Batalkan submit
+                }
+
+                // Bersihkan blood_data manual dari formData
+                for (const key of [...formData.keys()]) {
+                    if (key.startsWith("blood_data[")) formData.delete(key);
+                }
+
+                // Ganti nama field file agar sesuai dengan yang diharapkan backend
+                const fileInput = document.getElementById(
+                    "incoming_stock_excel",
+                );
+                if (fileInput?.files?.[0]) {
+                    formData.delete("incoming_stock_excel");
+                    formData.append("excel_file", fileInput.files[0]);
+                }
+            }
+
             if (currentMethod === "manual") {
+                showPageLoading();
                 formData.delete("incoming_stock_excel");
 
                 for (const key of [...formData.keys()]) {
@@ -462,9 +588,7 @@ function HandleFormManual() {
                     });
                 });
             } else if (currentMethod === "excel") {
-                for (const key of [...formData.keys()]) {
-                    if (key.startsWith("blood_data[")) formData.delete(key);
-                }
+                showPageLoading();
             }
 
             return formData;
@@ -477,15 +601,11 @@ function HandleFormManual() {
         },
         onSuccess: () => {
             hidePageLoading();
-            // Reset tabel + init ulang datepicker & tomselect (sudah di dalam AddTableRow)
             resetTable();
-
-            // Tampilkan notyf success, lalu redirect setelah notifikasi selesai
             notyf.success({ message: "Incoming stock added successfully!" });
-
             setTimeout(() => {
                 window.location.href = "/inventory/stock-in/";
-            }, 2000); // 2 detik — sesuaikan dengan durasi notyf kamu
+            }, 2000);
         },
         onError: (err) => {
             hidePageLoading();
@@ -531,4 +651,6 @@ document.addEventListener("DOMContentLoaded", () => {
     SelectPO();
     SelectAddMethod();
     HandleFormManual();
+
+    HandleDownloadTemplate();
 });

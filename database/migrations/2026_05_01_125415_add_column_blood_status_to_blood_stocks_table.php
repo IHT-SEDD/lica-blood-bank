@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('blood_packs', function (Blueprint $table) {
+        Schema::table('blood_stocks', function (Blueprint $table) {
             $table->string('blood_status')->nullable()->after('is_expired');
             $table->string('bag_number_lica')->nullable()->unique()->after('bag_number');
         });
@@ -22,11 +22,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('blood_packs', function (Blueprint $table) {
-            if (Schema::hasColumn('blood_packs', 'blood_status')) {
+        Schema::table('blood_stocks', function (Blueprint $table) {
+            if (Schema::hasColumn('blood_stocks', 'blood_status')) {
                 $table->dropColumn('blood_status');
             }
-            if (Schema::hasColumn('blood_packs', 'bag_number_lica')) {
+            if (Schema::hasColumn('blood_stocks', 'bag_number_lica')) {
                 $table->dropUnique(['bag_number_lica']);
                 $table->dropColumn('bag_number_lica');
             }

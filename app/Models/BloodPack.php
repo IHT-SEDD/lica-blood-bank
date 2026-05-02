@@ -17,23 +17,12 @@ class BloodPack extends Model
 
     protected $fillable = [
         'public_id',
-        'incoming_blood_id',
-        'bag_number',
-        'bag_number_lica',
         'blood_group',
-        'rhesus',
+        'blood_rhesus',
         'blood_component',
-        'blood_volume',
-        'aftap_date',
-        'process_date',
-        'expiry_date',
-        'is_hiv',
-        'is_hbsag',
-        'is_hcv',
-        'is_syphilis',
-        'is_expired',
-        'used_at',
-        'blood_status',
+        'warning_quantity',
+        'danger_quantity',
+        'is_active',
     ];
 
     protected $hidden = [
@@ -45,6 +34,11 @@ class BloodPack extends Model
         'blood_component' => BloodComponent::class,
     ];
 
+    public function getLabelAttribute()
+    {
+        return "{$this->blood_group->value}{$this->blood_rhesus} {$this->blood_component->value}";
+    }
+
     protected static function booted()
     {
         static::creating(function ($bloodPack) {
@@ -55,9 +49,9 @@ class BloodPack extends Model
         });
     }
 
-    // Relation to incoming_bloods
-    public function incomingBloods(): BelongsTo
+    // Relasi dari blood_stocks
+    public function bloodStocks()
     {
-        return $this->belongsTo(IncomingBlood::class, 'incoming_blood_id');
+        return $this->hasMany(BloodStock::class);
     }
 }

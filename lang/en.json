@@ -33,6 +33,10 @@
     "List Data of :master": "List Data of :master",
     "Add New Data for :master": "Add New Data for :master",
 
+    "Add New Stock": "Add New Stock",
+    "List Data of Incoming Stock": "List Data of Incoming Stock",
+    "List Data of": "List Data of",
+
     "Dashboard": "Dashboard",
     "Blood Stock": "Blood Stock",
     "History Order": "History Order",
@@ -49,6 +53,37 @@
     "Please Sign In First": "Please Sign In First",
     "Login": "Login",
     "Register": "Register",
+
+    "PO Number": "PO Number",
+    "Vendor": "Vendor",
+    "Batch Number": "Batch Number",
+    "Total Bloods": "Total Bloods",
+    "Status": "Status",
+    "Created At": "Created At",
+    "Updated At": "Updated At",
+    "Deleted At": "Deleted At",
+    "Action": "Action",
+    "Active": "Active",
+    "Submit": "Submit",
+    "Update": "Update",
+    "Form": "Form",
+    "Data": "Form",
+
+    "Blood Group": "Blood Group",
+    "Quantity": "Quantity",
+    "Blood Rhesus": "Blood Rhesus",
+    "Blood Component": "Blood Component",
+    "Choose": "Choose",
+    "Description": "Description",
+
+    "Order Data": "Order Data",
+    "Details": "Details",
+    "Click inputs to generate po number": "Click inputs to generate po number",
+    "Vendor name fill automatic based on vendor you choose": "Vendor name fill automatic based on vendor you choose",
+    "Vendor address fill automatic based on vendor you choose": "Vendor address fill automatic based on vendor you choose",
+
+    "Filter By": "Filter By",
+    "Choose Date Range": "Choose Date Range",
 
     "Please log in first": "Please log in first",
     "Collapse Menu": "Collapse Menu",

@@ -504,6 +504,9 @@ class MasterService
       case 'user':
         $this->filterUser($query, $request);
         break;
+      case 'blood-pack':
+        $this->filterBloodPack($query, $request);
+        break;
     }
   }
   // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :end ----------
@@ -516,6 +519,18 @@ class MasterService
     }
   }
   // ---------- Helper: menerima dan melakukan filter data user berdasarkan role :end ----------
+
+  // ---------- Helper: menerima dan melakukan filter data blood pack berdasarkan role :begin ----------
+  protected function filterBloodPack(Builder $query, Request $request)
+  {
+    if ($request->filled('bloodGroup')) {
+      $query->where('blood_group', $request->bloodGroup);
+    }
+    if ($request->filled('component')) {
+      $query->where('blood_component', $request->component);
+    }
+  }
+  // ---------- Helper: menerima dan melakukan filter data blood pack berdasarkan role :end ----------
 
   // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
   public function getDataById(string $master, string $id)

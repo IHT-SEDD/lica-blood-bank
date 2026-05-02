@@ -27,9 +27,9 @@ return [
   'with'  => ['storages'],
  ],
  'blood-pack' => [
-  'model' => '',
-  'label' => 'initial',
-  'with'  => [],
+  'model' => App\Models\BloodPack::class,
+  'label' => 'label',
+  'with' => [],
  ],
  'purchase-order' => [
   'type' => 'static',

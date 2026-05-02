@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('blood_packs', function (Blueprint $table) {
+        Schema::table('blood_stocks', function (Blueprint $table) {
             $table->dropColumn('is_active');
         });
     }
@@ -21,7 +21,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('blood_packs', function (Blueprint $table) {
+        Schema::table('blood_stocks', function (Blueprint $table) {
             $table->boolean('is_active')->default(true);
         });
     }

@@ -5,11 +5,11 @@
   {{-- Title :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
-    <h1 class="fw-bold">Stock In</h1>
+    <h1 class="fw-bold">{{ __('Stock In') }}</h1>
 
     {{-- Button Add New Stock --}}
     <a href="{{ route('inventory.stock-in.new-incoming-stock') }}" class="btn btn-soft-info">
-      Add New Stock
+      {{ __('Add New Stock') }}
     </a>
   </div>
   {{-- Title :end --}}
@@ -20,20 +20,20 @@
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">List Data of Incoming Stock</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('List Data of Incoming Stock') }}</h5>
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Select Status --}}
           <div>
             <select class="form-control" id="filter-stockin-status" name="filter-stockin-status"
-              placeholder="Filter by status..."></select>
+              placeholder="{{ __('Filter By') }} {{ __('Status') }}..."></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
             <select class="form-control" id="filter-stockin-vendor" name="filter-stockin-vendor"
-              placeholder="Filter by vendor..."></select>
+              placeholder="{{ __('Filter By') }} {{ __('Vendor') }}..."></select>
           </div>
 
           {{-- Date Range Picker :begin --}}
@@ -44,7 +44,7 @@
               </span>
               <input class="form-control stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
                 data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-                placeholder="Choose date range" />
+                placeholder="{{ __('Choose Date Range') }}" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -58,15 +58,15 @@
         <table class="table table-sm table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              <th>PO Number</th>
-              <th>Vendor</th>
-              <th>Batch Number</th>
-              <th>Total Bloods</th>
-              <th>Status</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th>Deleted At</th>
-              <th>Action</th>
+              <th>{{ __('PO Number') }}</th>
+              <th>{{ __('Vendor') }}</th>
+              <th>{{ __('Batch Number') }}</th>
+              <th>{{ __('Total Bloods') }}</th>
+              <th>{{ __('Status') }}</th>
+              <th>{{ __('Created At') }}</th>
+              <th>{{ __('Updated At') }}</th>
+              <th>{{ __('Deleted At') }}</th>
+              <th>{{ __('Action') }}</th>
             </tr>
           </thead>
         </table>

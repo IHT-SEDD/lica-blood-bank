@@ -13,6 +13,8 @@
   class="side-nav-link {{ request()->routeIs('inventory.blood-stock.*') ? 'active' : '' }}">
   <span class="menu-icon"><i data-lucide="folder-heart"></i></span>
   <span class="menu-text">{{ __('Blood Stock') }}</span>
+  <i data-lucide="circle-alert" class="menu-icon d-none text-danger fill-danger" id="danger_stock_alert_icon"></i>
+  <i data-lucide="triangle-alert" class="menu-icon d-none text-warning fill-warning" id="warning_stock_alert_icon"></i>
  </a>
 </li>
 

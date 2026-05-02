@@ -51,6 +51,7 @@ import Choices from "choices.js";
 
 // Import notyf
 import { Notyf } from "notyf";
+
 window.notyf = new Notyf({
     duration: 4000,
     ripple: true,
@@ -80,13 +81,14 @@ class App {
         this.initPreloader();
         this.initPortletCard();
         this.initMultiDropdown();
-        // this.initFormValidation();
         this.initCounter();
         this.initToggle();
         this.initPassword();
         this.initDismissible();
         this.initSidenav();
         this.initTitleTextAnimation();
+        // Custom
+        this.initBloodStockStatusLabel();
     }
 
     // Bootstrap Components
@@ -527,6 +529,68 @@ class App {
             scrollTitle();
         }
     }
+
+    // Blood Stock Status Label
+    async initBloodStockStatusLabel() {
+        const BloodStockStatusURL = "/inventory/blood-stock/status/label";
+
+        // Hanya jalan di halaman /inventory*
+        if (!window.location.pathname.startsWith("/inventory")) {
+            return;
+        }
+
+        const warningIcon = document.querySelector("#warning_stock_alert_icon");
+        const dangerIcon = document.querySelector("#danger_stock_alert_icon");
+
+        if (!warningIcon || !dangerIcon) return;
+
+        const cacheKey = "blood_stock_status";
+        let result;
+
+        try {
+            // Cek cache dulu
+            const cached = sessionStorage.getItem(cacheKey);
+
+            if (cached) {
+                result = JSON.parse(cached);
+            } else {
+                const response = await fetch(BloodStockStatusURL, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+
+                result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || "Failed to fetch data");
+                }
+
+                // Simpan ke cache
+                sessionStorage.setItem(cacheKey, JSON.stringify(result));
+            }
+
+            const data = result.data;
+
+            // Reset dulu
+            warningIcon.classList.add("d-none");
+            dangerIcon.classList.add("d-none");
+
+            // Logic status
+            if (data.is_danger === true) {
+                dangerIcon.classList.remove("d-none");
+            } else if (data.is_warning === true) {
+                warningIcon.classList.remove("d-none");
+            }
+        } catch (error) {
+            console.error("Blood Stock Status Error:", error);
+
+            notyf.error({
+                message: "Failed to load blood stock status!",
+            });
+        }
+    }
 }
 
 // Layout Customizer
@@ -822,31 +886,6 @@ class LayoutCustomizer {
     }
 }
 
-// If you need only theme toggler not whole layout customizer, you can use this.
-// Note: If you are using this, comment or remove LayoutCustomizer.
-
-// const themeToggle = document.getElementById('light-dark-mode');
-// if (themeToggle) {
-//     const html = document.documentElement;
-//
-//     const storageKey = '__Simple_CONFIG__';
-//     const savedConfig = sessionStorage.getItem(storageKey);
-//     const config = savedConfig ? JSON.parse(savedConfig) : {
-//         theme: html.getAttribute('data-bs-theme') || 'light'
-//     };
-//
-//     themeToggle.addEventListener('click', () => {
-//         const newTheme = config.theme === 'light' ? 'dark' : 'light';
-//         config.theme = newTheme;
-//         html.setAttribute('data-bs-theme', newTheme);
-//         sessionStorage.setItem(storageKey, JSON.stringify(config));
-//     });
-// }
-
-//
-// ------------------------------ Optional scripts / plugin scripts ------------------------------
-//
-
 class Plugins {
     init() {
         // comment or remove plugins you don't need
@@ -892,129 +931,10 @@ class Plugins {
     }
 }
 
-class I18nManager {
-    constructor({
-        defaultLang = "en",
-        langPath = "/data/translations/",
-        langImageSelector = "#selected-language-image",
-        langCodeSelector = "#selected-language-code",
-        translationKeySelector = "[data-lang]",
-        translationKeyAttribute = "data-lang",
-        languageSelector = "[data-translator-lang]",
-    } = {}) {
-        this.selectedLanguage =
-            sessionStorage.getItem("__Simple_LANG__") || defaultLang;
-        this.langPath = langPath;
-        this.langImageSelector = langImageSelector;
-        this.langCodeSelector = langCodeSelector;
-        this.translationKeySelector = translationKeySelector;
-        this.translationKeyAttribute = translationKeyAttribute;
-        this.languageSelector = languageSelector;
-
-        this.selectedLanguageImage = document.querySelector(
-            this.langImageSelector,
-        );
-        this.selectedLanguageCode = document.querySelector(
-            this.langCodeSelector,
-        );
-        this.languageButtons = document.querySelectorAll(this.languageSelector);
-    }
-
-    async init() {
-        await this.applyTranslations();
-        this.updateSelectedImage();
-        this.updateSelectedCode();
-        this.bindLanguageSwitchers();
-    }
-
-    async loadTranslations() {
-        try {
-            const response = await fetch(
-                `${this.langPath}${this.selectedLanguage}.json`,
-            );
-            if (!response.ok)
-                throw new Error(`Failed to load ${this.selectedLanguage}.json`);
-            return await response.json();
-        } catch (err) {
-            console.error("Translation load error:", err);
-            return {};
-        }
-    }
-
-    async applyTranslations() {
-        const translations = await this.loadTranslations();
-
-        const getNestedValue = (obj, keyPath) => {
-            return keyPath
-                .split(".")
-                .reduce((acc, key) => acc?.[key] ?? null, obj);
-        };
-
-        document.querySelectorAll(this.translationKeySelector).forEach((el) => {
-            const key = el.getAttribute(this.translationKeyAttribute);
-            const value = getNestedValue(translations, key);
-            if (value) {
-                let original = el.innerHTML;
-
-                const bladeVars = original.match(/{{\s*[^}]+\s*}}/g) || [];
-
-                let translated = value;
-
-                if (bladeVars.length > 0) {
-                    translated = translated.replace(
-                        /{{\s*value\s*}}/i,
-                        bladeVars[0],
-                    );
-                }
-
-                el.innerHTML = translated;
-            } else {
-                console.warn(`Missing translation for key: ${key}`);
-            }
-        });
-    }
-
-    setLanguage(lang) {
-        this.selectedLanguage = lang;
-        localStorage.setItem("__Simple_LANG__", lang);
-        this.applyTranslations();
-        this.updateSelectedImage();
-        this.updateSelectedCode();
-    }
-
-    updateSelectedImage() {
-        const activeImage = document.querySelector(
-            `[data-translator-lang="${this.selectedLanguage}"] [data-translator-image]`,
-        );
-        if (activeImage && this.selectedLanguageImage) {
-            this.selectedLanguageImage.src = activeImage.src;
-        }
-    }
-
-    updateSelectedCode() {
-        if (this.selectedLanguageCode) {
-            this.selectedLanguageCode.textContent =
-                this.selectedLanguage.toUpperCase();
-        }
-    }
-
-    bindLanguageSwitchers() {
-        this.languageButtons.forEach((button) => {
-            button.addEventListener("click", () => {
-                const lang = button.dataset.translatorLang;
-                if (lang && lang !== this.selectedLanguage) {
-                    this.setLanguage(lang);
-                }
-            });
-        });
-    }
-}
-
 document.addEventListener("DOMContentLoaded", function (e) {
     new App().init();
     new LayoutCustomizer().init();
     new Plugins().init();
-    // new I18nManager().init();
 });
 
 //
@@ -1614,6 +1534,7 @@ export class GlobalSubmitForm {
         method = "POST",
         onSuccess = null,
         onError = null,
+        onValidationError = null,
         beforeSubmit = null,
         resetOnSuccess = null,
         validator = null,
@@ -1623,6 +1544,7 @@ export class GlobalSubmitForm {
         this.method = method;
         this.onSuccess = onSuccess;
         this.onError = onError;
+        this.onValidationError = onValidationError;
         this.beforeSubmit = beforeSubmit;
         this.resetOnSuccess = resetOnSuccess;
         this.validator = validator;
@@ -1645,6 +1567,7 @@ export class GlobalSubmitForm {
             if (this.validator) {
                 const status = await this.validator.validate();
                 if (status !== "Valid") {
+                    if (this.onValidationError) this.onValidationError();
                     return;
                 }
             }
@@ -1659,14 +1582,24 @@ export class GlobalSubmitForm {
                     formData.set(el.name, el.checked ? 1 : 0);
                 });
 
-            // hook sebelum submit
+            // Hook sebelum submit — bisa memodifikasi formData
             if (this.beforeSubmit) {
                 formData = this.beforeSubmit(formData) || formData;
             }
 
-            // Panggil instance submit data
             this.submit(formData);
         });
+    }
+
+    /**
+     * Cek apakah FormData mengandung file (blob/File object).
+     * Digunakan untuk menentukan apakah perlu mengirim sebagai multipart.
+     */
+    _hasFile(formData) {
+        for (const value of formData.values()) {
+            if (value instanceof File && value.size > 0) return true;
+        }
+        return false;
     }
 
     // Mulai submit instance untuk global config submit data Form
@@ -1675,23 +1608,32 @@ export class GlobalSubmitForm {
             formData.append("_method", this.method);
         }
 
-        fetch(typeof this.url === "function" ? this.url() : this.url, {
+        const hasFile = this._hasFile(formData);
+
+        // Jika ada file → kirim sebagai multipart/form-data (biarkan browser set boundary otomatis)
+        // Jika tidak ada file → bisa tetap FormData (multipart ringan) atau convert ke URLSearchParams
+        // Di sini tetap pakai FormData agar konsisten dan support semua kasus
+        const fetchOptions = {
             method: "POST",
             headers: {
                 "X-CSRF-TOKEN": document
                     .querySelector('meta[name="csrf-token"]')
                     ?.getAttribute("content"),
                 Accept: "application/json",
+                // JANGAN set Content-Type manual saat ada file — browser akan set
+                // multipart/form-data + boundary secara otomatis
+                ...(hasFile ? {} : {}),
             },
             body: formData,
-        })
+        };
+
+        fetch(
+            typeof this.url === "function" ? this.url() : this.url,
+            fetchOptions,
+        )
             .then(async (res) => {
                 const data = await res.json();
-
-                if (!res.ok) {
-                    throw data;
-                }
-
+                if (!res.ok) throw data;
                 return data;
             })
             .then((data) => {
@@ -1701,10 +1643,15 @@ export class GlobalSubmitForm {
                     this.form.reset();
 
                     this.form.querySelectorAll("select").forEach((el) => {
-                        if (el.tomselect) {
-                            el.tomselect.clear();
-                        }
+                        if (el.tomselect) el.tomselect.clear();
                     });
+
+                    // Reset input file secara eksplisit
+                    this.form
+                        .querySelectorAll('input[type="file"]')
+                        .forEach((el) => {
+                            el.value = "";
+                        });
                 }
             })
             .catch((err) => {

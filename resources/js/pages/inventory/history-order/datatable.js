@@ -89,13 +89,13 @@ function HistoryOrderTable() {
             data: null,
             title: "Blood Group",
             render: (data, type, row) => {
-                const details = row.order_bloods || [];
-                if (!details.length) return "-";
+                const orderBlood = row.order_bloods || [];
+                if (!orderBlood.length) return "-";
 
-                const bloodGroups = details
+                const bloodGroups = orderBlood
                     .map((item) => {
-                        const group = item.blood_group || "";
-                        const rhesus = item.rhesus || "";
+                        const group = item.blood_packs.blood_group || "";
+                        const rhesus = item.blood_packs.blood_rhesus || "";
                         return group && rhesus
                             ? `${group}${rhesus}`
                             : group || "-";

@@ -1,5 +1,4 @@
 // ---------- Import Libraries ----------
-import { render } from "@fullcalendar/core/preact.js";
 import {
     GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
@@ -21,6 +20,12 @@ const DatatableSelector = "#master-blood-pack-table"; // id selector datatable
 const MasterDataURL = "/master/blood-pack/data"; // url fetch data untuk datatable
 const ReloadDatatableSelector = "master-blood-pack-reload"; // index reload datatable
 
+// Edit Action
+const FormEditSelector = "#edit_data_blood_pack"; // id selector form edit
+const ModalEditSelector = "edit_data_master_blood_pack_modal"; // id selector modal edit
+const ActionEditSelector = ".btn-edit-blood-pack"; // class selector button edit
+const AttributeEdit = "editId"; // attribute data id edit
+
 // Delete Action
 const ModalDeleteSelector = "delete_data_master_blood_pack_modal"; // id selector modal delete
 const ActionDeleteSelector = ".btn-delete-blood-pack"; // class selector button delete
@@ -38,7 +43,6 @@ const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restor
 function getFilters() {
     const bloodGroup =
         document.querySelector("#filter-blood-group")?.value || "";
-    const status = document.querySelector("#filter-status")?.value || "";
     const component = document.querySelector("#filter-component")?.value || "";
     const dateVal = document.querySelector(DateFilterSelector)?.value;
 
@@ -53,7 +57,7 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { bloodGroup, status, component, start_date, end_date };
+    return { bloodGroup, component, start_date, end_date };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
@@ -65,7 +69,7 @@ function reloadTable() {
 }
 // ---------- Helper: Reload tabel :end ----------
 
-// ---------- Datatable untuk master storage :begin ----------
+// ---------- Datatable untuk master :begin ----------
 function MasterBloodPackTable() {
     // ---------- Init kolom pada tabel ----------
     const MasterBloodPackTableColumns = [
@@ -76,78 +80,23 @@ function MasterBloodPackTable() {
                 return meta.row + 1;
             },
         },
-        { data: "bag_number", title: "Bag Number" },
-        { data: "bag_number", title: "Bag Number LICA" },
-        { data: "blood_group", title: "Group" },
-        { data: "rhesus", title: "Rhesus" },
+        { data: "blood_group", title: "Blood Group" },
+        { data: "blood_rhesus", title: "Blood Rhesus" },
         { data: "blood_component", title: "Component" },
-        { data: "blood_volume", title: "Volume" },
+        { data: "warning_quantity", title: "Warning Quantity" },
+        { data: "danger_quantity", title: "Danger Quantity" },
         {
-            data: "blood_status",
+            data: "is_active",
             title: "Status",
             render: (data, type, row) => {
                 const isDeleted = row.deleted_at !== null;
                 if (isDeleted) {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 }
-                return `<span class="badge badge-label badge-soft-secondary">${data}</span>`;
-            },
-        },
-        {
-            data: "aftap_date",
-            title: "Aftap",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "expiry_date",
-            title: "Expired",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "is_hiv",
-            title: "HIV",
-            render: (data, type, row) => {
+
                 return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "REACTIVE" : "NON REACTIVE"}
+                    ${data == 1 ? "Active" : "Inactive"}
                 </span>`;
-            },
-        },
-        {
-            data: "is_hcv",
-            title: "HCV",
-            render: (data, type, row) => {
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "REACTIVE" : "NON REACTIVE"}
-                </span>`;
-            },
-        },
-        {
-            data: "is_hbsag",
-            title: "HbsAG",
-            render: (data, type, row) => {
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "REACTIVE" : "NON REACTIVE"}
-                </span>`;
-            },
-        },
-        {
-            data: "is_syphilis",
-            title: "Syphilis",
-            render: (data, type, row) => {
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "REACTIVE" : "NON REACTIVE"}
-                </span>`;
-            },
-        },
-        {
-            data: "used_at",
-            title: "Used At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
             },
         },
         {
@@ -183,6 +132,10 @@ function MasterBloodPackTable() {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
+                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-blood-pack" data-edit-id="${row.public_id}" type="button">
+                            Edit</button>
+                        </li>
+                        <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-blood-pack ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             Restore</button>
                         </li>
@@ -207,7 +160,6 @@ function MasterBloodPackTable() {
                     d.start_date = filters.start_date;
                     d.end_date = filters.end_date;
                     d.bloodGroup = filters.bloodGroup;
-                    d.status = filters.status;
                     d.component = filters.component;
                 },
             },
@@ -226,7 +178,7 @@ function MasterBloodPackTable() {
         },
     );
 }
-// ---------- Datatable untuk master storage :end ----------
+// ---------- Datatable untuk master :end ----------
 
 // ---------- Filter dari tom-select untuk data di tabel :begin ----------
 function FilterGroup() {
@@ -246,26 +198,9 @@ function FilterGroup() {
     filterGroup.on("change", reloadTable);
 }
 
-function FilterStatus() {
-    const filterStatus = new TomSelect("#filter-status", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-status?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-
-    filterStatus.on("change", reloadTable);
-}
-
 function FilterComponent() {
     const filterComponent = new TomSelect("#filter-component", {
-        valueField: "text",
+        valueField: "id",
         labelField: "text",
         searchField: "text",
         preload: true,
@@ -291,6 +226,109 @@ function DateRangeFilter() {
 }
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
+// ---------- Select dari tom-select untuk data di modal edit :begin ----------
+function EditBloodGroup() {
+    const editBloodGroup = new TomSelect(
+        "#edit_data_blood_pack_select-blood-group",
+        {
+            valueField: "text",
+            labelField: "text",
+            searchField: "text",
+            preload: true,
+            load: function (query, callback) {
+                fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                    .then((res) => res.json())
+                    .then((json) => callback(json.results))
+                    .catch(() => callback());
+            },
+        },
+    );
+}
+function EditBloodRhesus() {
+    const editBloodRhesus = new TomSelect(
+        "#edit_data_blood_pack_select-blood-rhesus",
+        {
+            valueField: "text",
+            labelField: "text",
+            searchField: "text",
+            preload: true,
+            load: function (query, callback) {
+                fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
+                    .then((res) => res.json())
+                    .then((json) => callback(json.results))
+                    .catch(() => callback());
+            },
+        },
+    );
+}
+function EditBloodComponent() {
+    const editBloodComponent = new TomSelect(
+        "#edit_data_blood_pack_select-blood-component",
+        {
+            valueField: "text",
+            labelField: "text",
+            searchField: "text",
+            preload: true,
+            load: function (query, callback) {
+                fetch(`/utility/select/blood-component?q=${encodeURIComponent(query)}`)
+                    .then((res) => res.json())
+                    .then((json) => callback(json.results))
+                    .catch(() => callback());
+            },
+        },
+    );
+}
+// ---------- Select dari tom-select untuk data di modal edit :end ----------
+
+// ---------- Handle modal edit data :begin ----------
+function EditDataBloodPackActionModal() {
+    new GlobalEditData({
+        ButtonSelector: ActionEditSelector,
+        DataAttributeID: AttributeEdit,
+        UrlFetchData: (id) => `${MasterDataURL}/${id}`,
+        ModalEditID: ModalEditSelector,
+        FormSelector: FormEditSelector,
+    });
+
+    document.addEventListener("edit:open", function (e) {
+        const { data } = e.detail;
+
+        if (!data) return;
+
+        document.querySelector("#edit_data_blood_pack_warning_quantity").value =
+            data.warning_quantity ?? "";
+        document.querySelector("#edit_data_blood_pack_danger_quantity").value =
+            data.danger_quantity ?? "";
+
+        // Kondisi untuk tom select
+        const selectBloodGroup = document.querySelector(
+            "#edit_data_blood_pack_select-blood-group",
+        );
+        const selectBloodComponent = document.querySelector(
+            "#edit_data_blood_pack_select-blood-component",
+        );
+        const selectBloodRhesus = document.querySelector(
+            "#edit_data_blood_pack_select-blood-rhesus",
+        );
+
+        if ((selectBloodGroup, selectBloodComponent, selectBloodRhesus)) {
+            selectBloodGroup.tomselect.clear();
+            selectBloodGroup.tomselect.setValue(data.blood_group);
+            selectBloodComponent.tomselect.clear();
+            selectBloodComponent.tomselect.setValue(data.blood_component);
+            selectBloodRhesus.tomselect.clear();
+            selectBloodRhesus.tomselect.setValue(data.blood_rhesus);
+        }
+
+        document.querySelector("#edit_data_blood_pack_is_active").checked =
+            data.is_active == 1;
+
+        // tetap seperti sebelumnya
+        document.querySelector(FormEditSelector).dataset.id = data.public_id;
+    });
+}
+// ---------- Handle modal edit data :end ----------
+
 // ---------- Handle modal delete data :begin ----------
 function DeleteDataBloodPackActionModal() {
     // Panggil dan setup delete data
@@ -308,7 +346,7 @@ function DeleteDataBloodPackActionModal() {
 
         // Isi text ke modal
         document.querySelector("#deleted_data").textContent =
-            `${data.bag_number} with ID ${data.public_id}`;
+            `${data.blood_group}${data.blood_rhesus} - ${data.blood_component} with ID ${data.public_id}`;
 
         // Berikan attribute button delete dengan id data
         document.querySelector(ConfirmDeleteSelector).dataset.id =
@@ -386,7 +424,7 @@ function RestoreDataBloodPackActionModal() {
 
         // Isi text ke modal
         document.querySelector("#restored_data").textContent =
-            `${data.bag_number} with ID ${data.public_id}`;
+            `${data.blood_group}${data.blood_rhesus} - ${data.blood_component} with ID ${data.public_id}`;
 
         // Berikan attribute button restore dengan id data
         document.querySelector(ConfirmRestoreSelector).dataset.id =
@@ -453,13 +491,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Select function
     FilterGroup();
-    FilterStatus();
     FilterComponent();
+    EditBloodGroup();
+    EditBloodComponent();
+    EditBloodRhesus();
 
     // Date range picker
     DateRangeFilter();
 
     // Action data
+    EditDataBloodPackActionModal();
     DeleteDataBloodPackActionModal();
     RestoreDataBloodPackActionModal();
 

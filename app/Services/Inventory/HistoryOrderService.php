@@ -4,10 +4,12 @@ namespace App\Services\Inventory;
 
 use App\Enums\OrderBloodStatus;
 use App\Enums\OrderLogActivityStatus;
+use App\Models\BloodPack;
 use App\Models\OrderBlood;
 use App\Models\OrderBloodDetail;
 use App\Models\OrderLogActivity;
 use App\Models\Vendor;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -24,7 +26,8 @@ class HistoryOrderService
     $query = OrderBlood::withTrashed()
       ->with([
         'vendors:id,public_id,name',
-        'orderBloods:id,public_id,order_blood_id,blood_group,rhesus',
+        'orderBloods:id,public_id,order_blood_id,blood_pack_id',
+        'orderBloods.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
       ]);
 
     // ---------- Terapkan filter untuk tanggal pada data ----------
@@ -44,7 +47,7 @@ class HistoryOrderService
 
     // ---------- Filter berdasarkan blood_group dari detail ----------
     if ($request->filled('blood_group')) {
-      $query->whereHas('orderBloods', function ($q) use ($request) {
+      $query->whereHas('orderBloods.bloodPacks', function ($q) use ($request) {
         $q->where('blood_group', $request->blood_group);
       });
     }
@@ -57,7 +60,7 @@ class HistoryOrderService
           ->orWhereHas('vendors', function ($q) use ($search) {
             $q->where('name', 'like', "%{$search}%");
           })
-          ->orWhereHas('orderBloods', function ($q) use ($search) {
+          ->orWhereHas('orderBloods.bloodPacks', function ($q) use ($search) {
             $q->where('blood_group', 'like', "%{$search}%");
           });
       });
@@ -79,20 +82,18 @@ class HistoryOrderService
   // ---------- Fungsi untuk menampilkan data history order ke tabel :end ----------
 
   // ---------- Fungsi untuk menambahkan data order baru :begin ----------
-  public function insertNewOrder(Request $request, $draft)
+  public function insertNewOrder(Request $request, ?string $draft)
   {
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
     try {
       // ---------- Hitung total quantity dari semua blood data ----------
       $totalQuantity = collect($request->blood_data)
-        ->sum(fn($item) => (int) $item['blood_quantity']);
+        ->sum(fn($item) => (int) $item['quantity']);
 
       // ---------- Validasi PO Number ----------
       $poNumberExists = OrderBlood::where('po_number', $request->po_number)->exists();
-      $poNumber = (!empty($request->po_number) && !$poNumberExists)
-        ? $request->po_number
-        : $this->generatePoNumber();
+      $poNumber = (!empty($request->po_number) && !$poNumberExists) ? $request->po_number : $this->generatePoNumber();
 
       // ---------- Ambil data vendor ----------
       $vendor = Vendor::where('public_id', $request->vendor_id)->first();
@@ -104,9 +105,7 @@ class HistoryOrderService
       $user = Auth::user();
 
       // ---------- Ambil status order ----------
-      $status = $draft === 'draft'
-        ? OrderBloodStatus::DRAFT
-        : OrderBloodStatus::ORDER_CREATED;
+      $status = $draft === 'draft' ? OrderBloodStatus::DRAFT : OrderBloodStatus::ORDER_CREATED;
 
       // ---------- Insert ke tabel order_bloods ----------
       $newOrderData = OrderBlood::create([
@@ -122,13 +121,13 @@ class HistoryOrderService
       $orderBloodDetails = [];
 
       foreach ($request->blood_data as $item) {
+        $bloodPack = BloodPack::where('public_id', $item['blood_pack_id'])->firstOrFail();
+
         $detail = OrderBloodDetail::create([
           'order_blood_id' => $newOrderData->id,
-          'blood_group' => $item['blood_group'],
-          'rhesus' => $item['blood_rhesus'],
-          'blood_component' => $item['blood_component'],
+          'blood_pack_id' => $bloodPack->id,
           'note' => $item['note'],
-          'quantity' => $item['blood_quantity'],
+          'quantity' => $item['quantity'],
         ]);
 
         $orderBloodDetails[] = $detail;
@@ -161,16 +160,10 @@ class HistoryOrderService
       // ---------- Mulai transaksi database :end ----------
 
       // ---------- Masukkan ke log untuk success ----------
-      globalLogger(
-        'info',
-        'New order data inserted succesfully!',
-        [
-          'id' => $newOrderData->id,
-          'payload' => $newOrderData,
-        ],
-        200,
-        'neworderadd'
-      );
+      globalLogger('info', 'New order data inserted succesfully!', [
+        'id' => $newOrderData->id,
+        'payload' => $newOrderData,
+      ], 200, 'neworderadd');
 
       // ---------- Lempar sukses respon ke frontend ----------
       return response()->json([
@@ -182,16 +175,10 @@ class HistoryOrderService
       DB::rollBack();
 
       // ---------- Masukkan ke log untuk error ----------
-      globalLogger(
-        'error',
-        'New order data failed to insert!',
-        [
-          'payload' => $request->all(),
-          'error' => $e->getMessage(),
-        ],
-        500,
-        'neworderadd'
-      );
+      globalLogger('error', 'New order data failed to insert!', [
+        'payload' => $request->all(),
+        'error' => $e->getMessage(),
+      ], 500, 'neworderadd');
 
       // ---------- Lempar error respon ke frontend ----------
       return response()->json([
@@ -202,7 +189,7 @@ class HistoryOrderService
   // ---------- Fungsi untuk menambahkan data order baru :end ----------
 
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
-  protected function applyDateFilter($query, Request $request)
+  protected function applyDateFilter(Builder $query, Request $request)
   {
     // ---------- Terima data start_date & end_date dari frontend ----------
     $start = $request->start_date;

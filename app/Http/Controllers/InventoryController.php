@@ -15,7 +15,7 @@ class InventoryController extends Controller
     // ---------- Halaman blood stock inventory ----------
     public function bloodStockIndex()
     {
-        return view('pages.inventory.blood-stock.index');
+        return view('pages.inventory.sub-pages.blood-stock.index');
     }
 
     // ---------- Halaman stock in inventory ----------
@@ -27,7 +27,7 @@ class InventoryController extends Controller
     // ---------- Halaman stock out inventory ----------
     public function stockOutIndex()
     {
-        return view('pages.inventory.stock-out.index');
+        return view('pages.inventory.sub-pages.stock-out.index');
     }
 
     // ---------- Halaman history order inventory ----------
