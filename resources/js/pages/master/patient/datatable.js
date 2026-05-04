@@ -88,6 +88,8 @@ function MasterPatientTable() {
                 return DateTimeFormatter.dateOnly(data);
             }
          },
+        { data: "blood_group", title: "Blood Group" },
+        { data: "blood_rhesus", title: "Blood Rhesus" },
         { data: "phone", title: "Phone" },
         { data: "email", title: "Email" },
         { data: "address", title: "Address" },
@@ -175,16 +177,18 @@ function EditDataPatientActionModal() {
         if (!data) return;
 
             // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
-    new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
-          dateFormat: "Y-m-d",
+         new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
+            dateFormat: "Y-m-d",
             maxDate: "today",
-    });
+            defaultDate: data.birthdate ?? "",
+            static : true
+        });
     // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
 
         document.querySelector("#edit_data_patient_name").value = data.name ?? "";
         // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
         document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
-        document.querySelector("#edit_data_patient_birthdate").value = data.birthdate ?? "";
+        // document.querySelector("#edit_data_patient_birthdate").value = data.birthdate ?? "";
         document.querySelector("#edit_data_patient_phone").value = data.phone ?? "";
         document.querySelector("#edit_data_patient_email").value = data.email ?? "";
         document.querySelector("#edit_data_patient_address").value = data.address ?? "";
