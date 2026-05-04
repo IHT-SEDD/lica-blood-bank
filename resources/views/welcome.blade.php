@@ -26,7 +26,7 @@
     {{-- Menu List :begin --}}
     <div class="row gy-3 gy-md-0">
       {{-- Tranfusion Menu :begin --}}
-      <a href="{{ route('blood-tranfusion.index') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('blood-transfusion.index') }}" class="col-xl-3 col-md-6">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}

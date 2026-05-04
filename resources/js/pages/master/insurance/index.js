@@ -39,14 +39,15 @@ const ModalEditSelector = "edit_data_master_insurance_modal"; // id selector unt
 function AddNewInsurance() {
     // ---------- Validasi inputan form :begin ----------
     const AddNewInsuranceValidation = GlobalFormValidation.init(
-        "#" + FormAddSelector, {
+        "#" + FormAddSelector,
+        {
             name: {
                 validators: {
                     notEmpty: {
                         message: "Name is required",
                     },
                 },
-            }
+            },
         },
     );
     // ---------- Validasi inputan form :end ----------
@@ -81,14 +82,15 @@ function AddNewInsurance() {
 function EditDataInsurance() {
     // ---------- Validasi inputan form :begin ----------
     const EditDataInsuranceValidation = GlobalFormValidation.init(
-        "#" + FormAddSelector, {
+        "#" + FormAddSelector,
+        {
             name: {
                 validators: {
                     notEmpty: {
                         message: "Name is required",
                     },
                 },
-            }
+            },
         },
     );
     // ---------- Validasi inputan form :end ----------
@@ -123,7 +125,7 @@ function EditDataInsurance() {
 }
 // ---------- Handle form pembaharuan data user :begin ----------
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // SelectRole();
     AddNewInsurance();
     EditDataInsurance();
