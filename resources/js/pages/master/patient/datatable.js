@@ -53,7 +53,7 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { start_date, end_date, date_field: 'created_at' };
+    return { start_date, end_date, date_field: "created_at" };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
@@ -78,12 +78,16 @@ function MasterPatientTable() {
         },
         { data: "name", title: "Name" },
         { data: "medrec", title: "Medical Record" },
-        { data: "gender", title: "Gender",
+        {
+            data: "gender",
+            title: "Gender",
             render: (data) => {
-              return  data == 'M' ? 'Male' : 'Female';
-            }
-         },
-        { data: "birthdate", title: "Birthdate",
+                return data == "M" ? "Male" : "Female";
+            },
+        },
+        {
+            data: "birthdate",
+            title: "Birthdate",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             }
@@ -185,7 +189,8 @@ function EditDataPatientActionModal() {
         });
     // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
 
-        document.querySelector("#edit_data_patient_name").value = data.name ?? "";
+        document.querySelector("#edit_data_patient_name").value =
+            data.name ?? "";
         // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
         document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
         // document.querySelector("#edit_data_patient_birthdate").value = data.birthdate ?? "";
@@ -214,7 +219,8 @@ function DeleteDataPatientActionModal() {
 
         document.querySelector("#deleted_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-        document.querySelector(ConfirmDeleteSelector).dataset.id = data.public_id;
+        document.querySelector(ConfirmDeleteSelector).dataset.id =
+            data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
@@ -282,7 +288,8 @@ function RestoreDataPatientActionModal() {
 
         document.querySelector("#restored_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-        document.querySelector(ConfirmRestoreSelector).dataset.id = data.public_id;
+        document.querySelector(ConfirmRestoreSelector).dataset.id =
+            data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);

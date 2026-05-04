@@ -116,6 +116,9 @@ class UtilityService
       case 'blood-status':
         $data = collect(\App\Enums\BloodPackStatus::toSelect());
         break;
+      case 'relation-type':
+        $data = collect(\App\Enums\RelationType::toSelect());
+        break;
       case 'incoming-stock-status':
         $data = collect(\App\Enums\IncomingBloodStatus::toSelect());
         break;
