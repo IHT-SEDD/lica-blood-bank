@@ -17,7 +17,7 @@ class MasterController extends Controller
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
     // ---------- Fungsi untuk menampilkan halaman master berdasarkan jenis master data :begin ----------
-    public function index($master)
+    public function index(string $master)
     {
         // ---------- Ambil data config dari master.php ----------
         $modules = config('master');
@@ -40,7 +40,7 @@ class MasterController extends Controller
     // ---------- Fungsi untuk menampilkan halaman master berdasarkan jenis master data :begin ----------
 
     // ---------- Fungsi untuk mengambil data master berdasarkan jenis master data dari service datatable :begin ----------
-    public function datatable(Request $request, $master)
+    public function datatable(Request $request, string $master)
     {
         return response()->json(
             $this->service->datatable($master, $request)
@@ -49,14 +49,14 @@ class MasterController extends Controller
     // ---------- Fungsi untuk mengambil data master berdasarkan jenis master data dari service datatable:begin ----------
 
     // ---------- Fungsi untuk menambahkan data ke database berdasarkan jenis master data :begin ----------
-    public function submitData(StoreMasterRequest $request, $master)
+    public function submitData(StoreMasterRequest $request, string $master)
     {
         return $this->service->submitData($master, $request);
     }
     // ---------- Fungsi untuk menambahkan data ke database berdasarkan jenis master data :end ----------
 
     // ---------- Fungsi untuk mengambil data data ke database berdasarkan jenis master data dan id data :begin ----------
-    public function getDataById($master, $id)
+    public function getDataById(string $master, string $id)
     {
         // Panggil dan jalankan service
         $data = $this->service->getDataById($master, $id);
@@ -77,21 +77,21 @@ class MasterController extends Controller
     // ---------- Fungsi untuk mengambil data data ke database berdasarkan jenis master data dan id data :end ----------
 
     // ---------- Fungsi untuk memperbaharui data dari database berdasarkan jenis master data dan id data :begin ----------
-    public function editData(EditMasterRequest $request, $master, $id)
+    public function editData(EditMasterRequest $request, string $master, string $id)
     {
         return $this->service->editData($master, $request, $id);
     }
     // ---------- Fungsi untuk memperbaharui data dari database berdasarkan jenis master data dan id data :end ----------
 
     // ---------- Fungsi untuk menghapus data dari database berdasarkan jenis master data dan id data :begin ----------
-    public function deleteData(Request $request, $master, $id)
+    public function deleteData(Request $request, string $master, string $id)
     {
         return $this->service->deleteData($master, $id);
     }
     // ---------- Fungsi untuk menghapus data dari database berdasarkan jenis master data dan id data :end ----------
 
     // ---------- Fungsi untuk memulihkan data yang udah dihapus dari database berdasarkan jenis master data dan id data :begin ----------
-    public function restoreData(Request $request, $master, $id)
+    public function restoreData(Request $request, string $master, string $id)
     {
         return $this->service->restoreData($master, $id);
     }

@@ -15,7 +15,7 @@ class InventoryController extends Controller
     // ---------- Halaman blood stock inventory ----------
     public function bloodStockIndex()
     {
-        return view('pages.inventory.blood-stock.index');
+        return view('pages.inventory.sub-pages.blood-stock.index');
     }
 
     // ---------- Halaman stock in inventory ----------
@@ -27,60 +27,12 @@ class InventoryController extends Controller
     // ---------- Halaman stock out inventory ----------
     public function stockOutIndex()
     {
-        return view('pages.inventory.stock-out.index');
+        return view('pages.inventory.sub-pages.stock-out.index');
     }
 
     // ---------- Halaman history order inventory ----------
     public function historyOrderIndex()
     {
         return view('pages.inventory.sub-pages.history-order.index');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

@@ -20,8 +20,12 @@ class OrderBlood extends Model
         'vendor_id',
         'total_quantity',
         'description',
-        'status',
         'ordered_by_user_id',
+        'status',
+        'po_file_path',
+        'po_file_name',
+        'po_file_print_count',
+        'po_file_download_count',
     ];
 
     protected $hidden = [
@@ -55,8 +59,8 @@ class OrderBlood extends Model
     }
 
 
-    // Relation from order_bloods
-    public function orderBloods()
+    // Relation from order_blood_details
+    public function orderBloodDetails()
     {
         return $this->hasMany(OrderBloodDetail::class, 'order_blood_id');
     }

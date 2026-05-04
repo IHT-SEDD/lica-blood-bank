@@ -12,10 +12,12 @@
                     <div class="card-body">
                         <div class="p-2 text-center">
                             <div class="text-error fw-bold fs-60">404</div>
-                            <h3 class="fw-semibold">Page Not Found</h3>
-                            <p class="text-muted">The page you’re looking for doesn’t exist or has been moved.</p>
-                            <button class="btn btn-primary mt-3 rounded-pill" onclick="window.location.href='/'">Go
-                                Home</button>
+                            <h3 class="fw-semibold" data-lang="page_not_found">Page Not Found</h3>
+                            <p class="text-muted" data-lang="page_not_found_description">The page you’re looking for
+                                doesn’t exist or has been moved.</p>
+                            <button class="btn btn-primary mt-3 rounded-pill" onclick="window.location.href='/'" data-lang="go_home_link">
+                                Go Home
+                            </button>
                         </div>
                     </div>
                 </div>

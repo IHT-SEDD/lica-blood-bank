@@ -1,0 +1,33 @@
+{
+    "fullscreen_loading_overlay_text": "memuat",
+
+    "login_subtitle": "Masukkan username dan password untuk melanjutkan.",
+    "remember_me_input_label": "Biarkan tetap masuk",
+    "forgot_password_link": "Lupa Password?",
+    "register_link": "Buat akun",
+    "login_submit_button": "Masuk",
+
+    "register_subtitle": "Buat akun anda dengan mengisi detail dibawah ini",
+    "password_confirm_hint_input_label": "Ketik ulang password untuk konfirmasi",
+    "password_hint_input_label": "Gunakan 8+ karakter dengan kombinasi huruf, angka & simbol",
+    "register_submit_button": "Daftar Akun",
+    "login_link_label": "Sudah mempunyai akun?",
+    "login_link": "Masuk",
+
+    "lock_screen_subtitle": "Layar terkunci. Masukkan password anda untuk membuka",
+    "lock_screen_submit_button": "Buka",
+    "lock_screen_login_link_label": "Bukan anda? Kembali ke",
+
+    "name_input_label": "Nama",
+    "username_input_label": "Username",
+    "email_input_label": "Alamat Email",
+    "password_input_label": "Password",
+    "password_confirm_input_label": "Konfirmasi Password",
+
+    "page_not_found": "Halaman Tidak Ditemukan",
+    "page_not_found_description": "Halaman yang anda cari tidak ada atau sudah dipindahkan.",
+    "go_home_link": "Beranda",
+
+    "table_master_title": "Kumpulan Data :master",
+    "add_master_title": "Tambahkan Data :master Baru"
+}

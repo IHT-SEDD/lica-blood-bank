@@ -42,22 +42,27 @@
             {{-- Blood Tranfusion Menu --}}
             @if (!request()->is('blood-tranfusion*'))
             <div class="topbar-item d-none d-lg-flex">
-                <a href="{{ route('blood-tranfusion.index') }}" class="topbar-link btn shadow-none btn-link px-2">Blood
-                    Tranfusion</a>
+                <a href="{{ route('blood-tranfusion.index') }}" class="topbar-link btn shadow-none btn-link px-2">
+                    {{ __('Blood Tranfusion') }}
+                </a>
             </div>
             @endif
 
             {{-- Inventory Menu --}}
             @if (!request()->is('inventory*'))
             <div class="topbar-item d-none d-lg-flex">
-                <a href="{{ route('inventory.index') }}" class="topbar-link btn shadow-none btn-link px-2">Inventory</a>
+                <a href="{{ route('inventory.index') }}" class="topbar-link btn shadow-none btn-link px-2">
+                    {{ __('Inventory') }}
+                </a>
             </div>
             @endif
 
             {{-- Donor Menu --}}
             @if (!request()->is('donor*'))
             <div class="topbar-item d-none d-lg-flex">
-                <a href="#!" class="topbar-link btn shadow-none btn-link px-2">Donor</a>
+                <a href="#!" class="topbar-link btn shadow-none btn-link px-2">
+                    {{ __('Donor') }}
+                </a>
             </div>
             @endif
 
@@ -93,6 +98,32 @@
         {{-- Left Side :end --}}
 
         <div class="d-flex align-items-center gap-2">
+            <!-- Language Button -->
+            <div class="topbar-item">
+                <div class="dropdown">
+                    <button class="topbar-link fw-semibold" data-bs-toggle="dropdown" data-bs-offset="0,19"
+                        type="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="{{ asset('assets/images/flags/' . (app()->getLocale() === 'id' ? 'id' : 'us') . '.svg') }}"
+                            alt="flag" class="w-100 rounded me-2" height="18" id="selected-language-image">
+                        <span id="selected-language-code">{{ strtoupper(app()->getLocale()) }}</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a href="javascript:void(0);" class="dropdown-item language-switcher" data-lang="en"
+                            data-flag="{{ asset('assets/images/flags/us.svg') }}" title="English">
+                            <img src="{{ asset('assets/images/flags/us.svg') }}" alt="English" class="me-1 rounded"
+                                height="18">
+                            <span class="align-middle">English</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item language-switcher" data-lang="id"
+                            data-flag="{{ asset('assets/images/flags/id.svg') }}" title="Indonesia">
+                            <img src="{{ asset('assets/images/flags/id.svg') }}" alt="Indonesia" class="me-1 rounded"
+                                height="18">
+                            <span class="align-middle">Indonesia</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Light/Dark Mode Button -->
             <div class="topbar-item d-none d-sm-flex">
                 <button class="topbar-link" id="light-dark-mode" type="button">
@@ -108,8 +139,7 @@
                     <a class="topbar-link dropdown-toggle drop-arrow-none px-2 text-center" data-bs-toggle="dropdown"
                         data-bs-offset="0,13" href="#!" aria-haspopup="false" aria-expanded="false">
                         <img src="{{ asset('assets/images/profile.png') }}" width="30"
-                            class="rounded-circle d-flex align-items-center justify-content-center"
-                            alt="user-image">
+                            class="rounded-circle d-flex align-items-center justify-content-center" alt="user-image">
                     </a>
 
                     {{-- Dropdown menu :begin --}}
@@ -122,22 +152,14 @@
 
                         {{-- Header --}}
                         <div class="dropdown-header noti-title">
-                            <h6 class="text-overflow m-0">Welcome back!</h6>
+                            <h6 class="text-overflow m-0">{{ __('Welcome Back') }}!</h6>
                         </div>
 
                         {{-- User Info --}}
                         <div class="dropdown-item fw-semibold mb-0">
-                            <h5 class="mb-1">{{ $user->name ?? 'Please set your name!' }}</h5>
-                            <h6 class="mb-0">Role: {{ $role ?? 'Please set your role!' }}</h6>
+                            <h5 class="mb-1">{{ $user->name ?? __('Please set your name'). '!' }}</h5>
+                            <h6 class="mb-0">{{ __('Role') }}: {{ $role ?? __('Please set your role'). '!' }}</h6>
                         </div>
-
-                        <div class="dropdown-divider"></div>
-
-                        {{-- Profile --}}
-                        <a href="#!" class="dropdown-item">
-                            <i class="ti ti-user-circle me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">Profile</span>
-                        </a>
 
                         <div class="dropdown-divider"></div>
 
@@ -147,7 +169,7 @@
                             <button href="{{ route('lock') }}" class="dropdown-item"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                 <i class=" ti ti-lock me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">Lock Screen</span>
+                                <span class="align-middle">{{ __('Lock Screen') }}</span>
                             </button>
                         </form>
 
@@ -158,7 +180,7 @@
                                 onclick="event.preventDefault(); this.closest('form').submit();"
                                 class="dropdown-item text-danger fw-semibold">
                                 <i class="ti ti-logout-2 me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">Log Out</span>
+                                <span class="align-middle">{{ __('Log Out') }}</span>
                             </button>
                         </form>
                         @endauth
@@ -167,19 +189,19 @@
                         @guest
                         {{-- Header --}}
                         <div class="dropdown-header noti-title">
-                            <h6 class="text-overflow m-0">Please sign in first!</h6>
+                            <h6 class="text-overflow m-0">{{ __('Please Sign In First') }}</h6>
                         </div>
 
                         {{-- Login --}}
                         <a href="{{ route('login') }}" class="dropdown-item">
                             <i class="ti ti-login me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">Login</span>
+                            <span class="align-middle">{{ __('Login') }}</span>
                         </a>
 
                         {{-- Register --}}
                         <a href="{{ route('register') }}" class="dropdown-item">
                             <i class="ti ti-user-plus me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">Register</span>
+                            <span class="align-middle">{{ __('Register') }}</span>
                         </a>
                         @endguest
                     </div>

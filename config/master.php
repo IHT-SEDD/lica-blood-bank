@@ -4,7 +4,7 @@ return [
     'blood-pack' => [
         'view' => 'pages.master.blood-pack.index',
         'model' => App\Models\BloodPack::class,
-        'with' => ['incomingBloods'],
+        'with' => [],
     ],
     'role' => [
         'view' => 'pages.master.role.index',

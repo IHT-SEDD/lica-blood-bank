@@ -27,9 +27,9 @@ return [
   'with'  => ['storages'],
  ],
  'blood-pack' => [
-  'model' => '',
-  'label' => 'initial',
-  'with'  => [],
+  'model' => App\Models\BloodPack::class,
+  'label' => 'label',
+  'with' => [],
  ],
  'purchase-order' => [
   'type' => 'static',
@@ -49,7 +49,13 @@ return [
  'order-status' => [
   'type' => 'enum',
  ],
+ 'blood-status' => [
+  'type' => 'enum',
+ ],
  'add-incoming-stock-method' => [
+  'type' => 'enum',
+ ],
+ 'incoming-stock-status' => [
   'type' => 'enum',
  ],
 ];

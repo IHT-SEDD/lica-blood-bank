@@ -10,9 +10,12 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "doctrine/dbal": "^4.4",
         "laravel/framework": "^12.0",
         "laravel/telescope": "^5.20",
         "laravel/tinker": "^2.10.1",
+        "maatwebsite/excel": "^1.1",
+        "phpoffice/phpspreadsheet": "^5.7",
         "spatie/laravel-permission": "^7.3"
     },
     "require-dev": {
@@ -34,7 +37,8 @@
         },
         "files": [
             "app/Helpers/service_utility.php",
-            "app/Helpers/order_log_activity.php"
+            "app/Helpers/order_log_activity.php",
+            "app/Helpers/incoming_blood_log_activity.php"
         ]
     },
     "autoload-dev": {

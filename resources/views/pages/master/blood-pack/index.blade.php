@@ -2,9 +2,16 @@
 
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
-  {{-- Select Role --}}
+  {{-- Select Blood Group --}}
   <div>
-    <select class="form-control" id="filter-role" name="filter-role" placeholder="Filter by role..."></select>
+    <select class="form-control" id="filter-blood-group" name="filter-blood-group"
+      placeholder="Filter by blood group..."></select>
+  </div>
+
+  {{-- Select Component --}}
+  <div>
+    <select class="form-control" id="filter-component" name="filter-component"
+      placeholder="Filter by component..."></select>
   </div>
 
   {{-- Date filter :begin --}}
@@ -23,17 +30,18 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-blood-pack-table" id="master-blood-pack-table">
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-blood-pack-table"
+  id="master-blood-pack-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
-      <th>Name</th>
-      <th>Username</th>
-      <th>Email</th>
-      <th>Status</th>
+      <th>Blood Group</th>
+      <th>Blood Rhesus</th>
+      <th>Blood Component</th>
+      <th>Warning Qty</th>
+      <th>Danger Qty</th>
       <th>Created At</th>
       <th>Updated At</th>
-      <th>Email Verified At</th>
       <th>Deleted At</th>
       <th>Action</th>
     </tr>
@@ -43,67 +51,70 @@
 
 @section('form-content')
 <form class="row g-2" id="add_new_blood_pack" autocomplete="off">
-  {{-- Name --}}
+  {{-- Blood Group --}}
   <div class="col-lg-6">
-    <label class="form-label" for="name">Name
+    <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}
       <span class="text-danger">*</span>
     </label>
-    <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="your full name" />
+    <select class="form-control" id="select-blood-group" name="blood_group"
+      placeholder="{{ __('Choose') }} {{ __('Blood Group') }}..."></select>
   </div>
 
-  {{-- Username --}}
+  {{-- Blood Rhesus --}}
   <div class="col-lg-6">
-    <label class="form-label" for="username">Username
+    <label class="form-label" for="select-blood-rhesus">{{ __('Blood Rhesus') }}
       <span class="text-danger">*</span>
     </label>
-    <input autocomplete="off" class="form-control" id="username" name="username" type="text"
-      placeholder="your username" />
+    <select class="form-control" id="select-blood-rhesus" name="blood_rhesus"
+      placeholder="{{ __('Choose') }} {{ __('Blood Rhesus') }}..."></select>
   </div>
 
-  {{-- Email --}}
+  {{-- Blood Component --}}
   <div class="col-lg-12">
-    <label class="col-form-label" for="email">Email</label>
-    <input autocomplete="off" class="form-control" id="email" name="email" type="email"
-      placeholder="youremail@mail.com" />
-  </div>
-
-  {{-- Password --}}
-  <div class="col-lg-8">
-    <label class="form-label" for="password">Password
+    <label class="form-label" for="select-blood-component">{{ __('Blood Component') }}
       <span class="text-danger">*</span>
     </label>
-    <input autocomplete="new-password" class="form-control" id="password" name="password" placeholder="••••••••"
-      type="password" />
+    <select class="form-control" id="select-blood-component" name="blood_component"
+      placeholder="{{ __('Choose') }} {{ __('Blood Component') }}..."></select>
   </div>
 
-  {{-- Role --}}
-  <div class="col-lg-4">
-    <label class="form-label" for="select-role">Role
+  {{-- Warning QTY --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="warning_quantity">{{ __('Warning') }} {{ __('Quantity') }}
       <span class="text-danger">*</span>
     </label>
-    <select class="form-control" id="select-role" name="role" placeholder="Choose role..."></select>
+    <input autocomplete="off" class="form-control" id="warning_quantity" name="warning_quantity" type="number" />
+  </div>
+
+  {{-- Danger QTY --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="danger_quantity">{{ __('Danger') }} {{ __('Quantity') }}
+      <span class="text-danger">*</span>
+    </label>
+    <input autocomplete="off" class="form-control" id="danger_quantity" name="danger_quantity" type="number" />
   </div>
 
   {{-- Is Active? --}}
-  <div class="col-lg-3">
+  <div class="col-lg-12">
     <div>
-      <div class="form-check form-check-info my-1">
-        <input checked="" class="form-check-input" id="is_active" name="is_active" type="checkbox" />
-        <label class="form-check-label" for="is_active">Active?</label>
+      <div class="form-check form-check-success my-1">
+        <input checked="" class="form-check-input" id="is_active" type="checkbox" name="is_active" />
+        <label class="form-check-label" for="is_active">{{ __('Active') }}?</label>
       </div>
     </div>
   </div>
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Add New User</button>
+    <button class="btn btn-primary" type="submit">{{ __('Submit') }} {{ __('Data') }}</button>
   </div>
 </form>
 @endsection
 
 @section('modal-content')
-@include('pages.master.user.partials.edit-data-modal')
-@include('pages.master.user.partials.delete-data-modal')
+@include('pages.master.blood-pack.partials.edit-data-modal')
+@include('pages.master.blood-pack.partials.delete-data-modal')
+@include('pages.master.blood-pack.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

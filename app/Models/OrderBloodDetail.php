@@ -17,11 +17,8 @@ class OrderBloodDetail extends Model
     protected $fillable = [
         'public_id',
         'order_blood_id',
-        'blood_group',
-        'blood_component',
-        'blood_volume',
+        'blood_pack_id',
         'note',
-        'rhesus',
         'is_hiv',
         'is_hbsag',
         'is_hcv',
@@ -31,10 +28,6 @@ class OrderBloodDetail extends Model
 
     protected $hidden = [
         'id',
-    ];
-
-    protected $casts = [
-        'blood_group' => BloodGroup::class,
     ];
 
     protected static function booted()
@@ -50,5 +43,11 @@ class OrderBloodDetail extends Model
     public function orderBloods(): BelongsTo
     {
         return $this->belongsTo(OrderBlood::class, 'order_blood_id');
+    }
+
+    // Relation to blood_packs
+    public function bloodPacks(): BelongsTo
+    {
+        return $this->belongsTo(BloodPack::class, 'blood_pack_id');
     }
 }

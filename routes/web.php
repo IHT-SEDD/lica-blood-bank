@@ -37,7 +37,7 @@ Route::middleware('auth')->group(function () {
         Route::get('{master}/data/{id}', 'getDataById')->where('master', implode('|', array_keys(config('master'))))->name('get-data');
         Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data');
         Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
-        Route::delete('{master}/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
+        Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
         Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data');
     });
 
@@ -52,6 +52,21 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // --------------------------------------------------------------------------
+    // Set Locale Route
+    // --------------------------------------------------------------------------
+    Route::post('/language/switch', function (Illuminate\Http\Request $request) {
+        $lang = $request->input('lang');
+
+        if (!in_array($lang, ['en', 'id'])) {
+            $lang = 'en';
+        }
+
+        session(['locale' => $lang]);
+
+        return response()->json(['success' => true, 'locale' => $lang]);
+    })->name('language.switch');
 });
 
 // ---------- Breeze Auth Routes ----------

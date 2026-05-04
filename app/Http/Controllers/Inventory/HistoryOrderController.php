@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Inventory;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\AddNewOrderRequest;
 use App\Services\Inventory\HistoryOrderService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class HistoryOrderController extends Controller
@@ -49,11 +50,35 @@ class HistoryOrderController extends Controller
         return response()->json($poNumber);
     }
 
-    // ---------- Halaman Detail Order ----------
+    // ---------- Get Detail Order ----------
     public function detailOrderData(string $id)
     {
-        return response()->json(
-            $this->service->getDataOrderAndLogById($id)
-        );
+        try {
+            $data = $this->service->getDataOrderAndLogById($id);
+
+            return response()->json($data)
+                ->setEtag(md5(json_encode($data)))
+                ->header('Cache-Control', 'public, max-age=600');
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
+        }
+    }
+
+    // ---------- Get Data by PO ----------
+    public function getDataOrderByPO(string $poNumber)
+    {
+        try {
+            $data = $this->service->getDataOrderByPO($poNumber);
+
+            return response()->json($data)
+                ->setEtag(md5(json_encode($data)))
+                ->header('Cache-Control', 'public, max-age=600');
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
+        }
     }
 }
