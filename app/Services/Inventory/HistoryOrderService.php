@@ -13,12 +13,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Role;
 
 class HistoryOrderService
 {
+  const CACHE_ORDER_BY_ID_KEY = "order_and_log_data_by_id";
+  const CACHE_ORDER_BY_PO_KEY = "order_and_log_data_by_PO";
+
   // ---------- Fungsi untuk menampilkan data history order ke tabel :begin ----------
   public function historyOrderTable(Request $request)
   {
@@ -26,8 +30,8 @@ class HistoryOrderService
     $query = OrderBlood::withTrashed()
       ->with([
         'vendors:id,public_id,name',
-        'orderBloods:id,public_id,order_blood_id,blood_pack_id',
-        'orderBloods.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+        'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id',
+        'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
       ]);
 
     // ---------- Terapkan filter untuk tanggal pada data ----------
@@ -236,26 +240,44 @@ class HistoryOrderService
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
   public function getDataOrderAndLogById(string $id)
   {
-    $order = OrderBlood::where('public_id', $id)
-      ->with(['orderBloods', 'vendors', 'users.roles'])
-      ->firstOrFail();
-    $orderLog = OrderLogActivity::where('po_number', $order->po_number)->firstOrFail();
+    $cacheKey = self::CACHE_ORDER_BY_ID_KEY . ":{$id}";
 
-    return [
-      'order' => $order,
-      'log' => $orderLog,
-    ];
+    return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
+
+      $order = OrderBlood::where('public_id', $id)
+        ->with(['orderBloodDetails', 'orderBloodDetails.bloodPacks', 'vendors', 'users.roles'])
+        ->firstOrFail();
+
+      $log = OrderLogActivity::where('po_number', $order->po_number)
+        ->firstOrFail();
+
+      return [
+        'order' => $order,
+        'log' => $log,
+      ];
+    });
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
   public function getDataOrderByPO(string $poNumber)
   {
-    $order = OrderBlood::where('po_number', $poNumber)
-      ->with(['orderBloods', 'vendors', 'users.roles'])
-      ->firstOrFail();
+    $cacheKey = self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}";
 
-    return $order;
+    return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($poNumber) {
+      $order = OrderBlood::where('po_number', $poNumber)
+        ->with(['orderBloods', 'vendors', 'users.roles'])
+        ->firstOrFail();
+
+      return $order;
+    });
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
+
+  // ---------- Clear Cache ----------
+  public function clearOrderCache(string $id, string $poNumber)
+  {
+    Cache::forget(self::CACHE_ORDER_BY_ID_KEY . ":{$id}");
+    Cache::forget(self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}");
+  }
 }
