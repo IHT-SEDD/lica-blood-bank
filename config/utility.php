@@ -37,6 +37,26 @@ return [
   'label' => 'po_number',
   'with' => [],
  ],
+ 'patient' => [
+  'model' => App\Models\Patient::class,
+  'label' => 'name',
+  'with' => [],
+ ],
+ 'room' => [
+  'model' => '',
+  'label' => 'name',
+  'with' => [],
+ ],
+ 'insurance' => [
+  'model' => App\Models\Insurance::class,
+  'label' => 'name',
+  'with' => [],
+ ],
+ 'doctor' => [
+  'model' => App\Models\Doctor::class,
+  'label' => 'name',
+  'with' => [],
+ ],
  'blood-group' => [
   'type' => 'enum',
  ],
@@ -44,6 +64,9 @@ return [
   'type' => 'enum',
  ],
  'blood-rhesus' => [
+  'type' => 'enum',
+ ],
+ 'relation-type' => [
   'type' => 'enum',
  ],
  'order-status' => [
