@@ -22,6 +22,8 @@ class OrderLogActivity extends Model
         'description',
         'ordered_at',
         'deleted_at',
+        'po_file_path',
+        'po_file_name',
     ];
 
     protected $hidden = [

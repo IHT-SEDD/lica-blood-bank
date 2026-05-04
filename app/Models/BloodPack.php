@@ -17,22 +17,11 @@ class BloodPack extends Model
 
     protected $fillable = [
         'public_id',
-        'incoming_blood_id',
-        'bag_number',
         'blood_group',
-        'rhesus',
+        'blood_rhesus',
         'blood_component',
-        'blood_volume',
-        'aftap_date',
-        'process_date',
-        'expiry_date',
-        'is_hiv',
-        'is_hbsag',
-        'is_hcv',
-        'is_syphilis',
-        'blood_status',
-        'is_expired',
-        'used_at',
+        'warning_quantity',
+        'danger_quantity',
         'is_active',
     ];
 
@@ -45,6 +34,11 @@ class BloodPack extends Model
         'blood_component' => BloodComponent::class,
     ];
 
+    public function getLabelAttribute()
+    {
+        return "{$this->blood_group->value}{$this->blood_rhesus} {$this->blood_component->value}";
+    }
+
     protected static function booted()
     {
         static::creating(function ($bloodPack) {
@@ -55,30 +49,9 @@ class BloodPack extends Model
         });
     }
 
-    // Buat peraturan validasi untuk data model
-    public static function rules($context = 'store', $id = null)
+    // Relasi dari blood_stocks
+    public function bloodStocks()
     {
-        return match ($context) {
-            'store' => [
-                'incoming_blood_id' => 'required|exists:incoming_bloods,id',
-                'bag_number' => 'required|string|unique:blood_packs,bag_number',
-                'blood_group' => ['required', new Enum(BloodGroup::class)],
-                'rhesus' => 'required|in:+,-',
-                'blood_component' => ['required', new Enum(BloodComponent::class)],
-            ],
-            'update' => [
-                'incoming_blood_id' => 'sometimes|required|exists:incoming_bloods,id',
-                'bag_number' => 'sometimes|required|string|unique:blood_packs,bag_number',
-                'blood_group' => ['sometimes', 'required', new Enum(BloodGroup::class)],
-                'rhesus' => 'sometimes|required|in:+,-',
-                'blood_component' => ['sometimes', 'required', new Enum(BloodComponent::class)],
-            ]
-        };
-    }
-
-    // Relation to incoming_bloods
-    public function incomingBloods(): BelongsTo
-    {
-        return $this->belongsTo(IncomingBlood::class, 'incoming_blood_id');
+        return $this->hasMany(BloodStock::class);
     }
 }

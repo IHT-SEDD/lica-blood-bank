@@ -70,7 +70,7 @@
 
       {{-- Card Body :begin --}}
       <div class="card-body">
-        <table class="table table-striped dt-responsive align-middle mb-0 history-order-table" id="history-order-table">
+        <table class="table table-sm table-striped dt-responsive align-middle mb-0 history-order-table" id="history-order-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
               <th>PO Number</th>

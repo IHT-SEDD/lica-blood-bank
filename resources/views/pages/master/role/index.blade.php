@@ -18,7 +18,7 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-role-table" id="master-role-table">
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-role-table" id="master-role-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>

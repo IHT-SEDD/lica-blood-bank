@@ -5,30 +5,35 @@
   {{-- Title :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
-    <h1 class="fw-bold">Stock In</h1>
+    <h1 class="fw-bold">{{ __('Stock In') }}</h1>
+
+    {{-- Button Add New Stock --}}
+    <a href="{{ route('inventory.stock-in.new-incoming-stock') }}" class="btn btn-soft-info">
+      {{ __('Add New Stock') }}
+    </a>
   </div>
   {{-- Title :end --}}
 
   {{-- Datatables of List Stock In :begin --}}
-  <div class="col-xxl-7 col-md-6 col-12">
+  <div class="col-12">
     {{-- Card :begin --}}
-    <div class="card m-0">
+    <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">List Data of Incoming Stock</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('List Data of Incoming Stock') }}</h5>
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Select Status --}}
           <div>
             <select class="form-control" id="filter-stockin-status" name="filter-stockin-status"
-              placeholder="Filter by status..."></select>
+              placeholder="{{ __('Filter By') }} {{ __('Status') }}..."></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
             <select class="form-control" id="filter-stockin-vendor" name="filter-stockin-vendor"
-              placeholder="Filter by vendor..."></select>
+              placeholder="{{ __('Filter By') }} {{ __('Vendor') }}..."></select>
           </div>
 
           {{-- Date Range Picker :begin --}}
@@ -39,7 +44,7 @@
               </span>
               <input class="form-control stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
                 data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-                placeholder="Choose date range" />
+                placeholder="{{ __('Choose Date Range') }}" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -50,19 +55,18 @@
 
       {{-- Card Body :begin --}}
       <div class="card-body">
-        <table class="table table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
+        <table class="table table-sm table-striped dt-responsive align-middle mb-0 stockin-table" id="stockin-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              <th>PO Number</th>
-              <th>Vendor</th>
-              <th>Batch Number</th>
-              <th>Total Qty</th>
-              <th>Blood Group</th>
-              <th>Status</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th>Deleted At</th>
-              <th>Action</th>
+              <th>{{ __('PO Number') }}</th>
+              <th>{{ __('Vendor') }}</th>
+              <th>{{ __('Batch Number') }}</th>
+              <th>{{ __('Total Bloods') }}</th>
+              <th>{{ __('Status') }}</th>
+              <th>{{ __('Created At') }}</th>
+              <th>{{ __('Updated At') }}</th>
+              <th>{{ __('Deleted At') }}</th>
+              <th>{{ __('Action') }}</th>
             </tr>
           </thead>
         </table>
@@ -72,26 +76,6 @@
     {{-- Card :end --}}
   </div>
   {{-- Datatables of List Stock In :end --}}
-
-  {{-- Form add incoming stock :begin --}}
-  <div class="col-xxl-5 col-md-6 col-12">
-    {{-- Card :begin --}}
-    <div class="card m-0">
-      {{-- Card Header :begin --}}
-      <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">Add New Incoming Stock</h5>
-      </div>
-      {{-- Card Header :end --}}
-
-      {{-- Card Body :begin --}}
-      <div class="card-body">
-        @include('pages.inventory.sub-pages.stock-in.partials.form-add-incoming-stock')
-      </div>
-      {{-- Card Body :end --}}
-    </div>
-    {{-- Card :end --}}
-  </div>
-  {{-- Form add incoming stock :end --}}
 </div>
 
 @include('pages.inventory.sub-pages.stock-in.partials.delete-data-modal')
@@ -102,6 +86,5 @@
 @vite([
 'resources/js/pages/inventory/stock-in/datatable.js',
 'resources/js/pages/inventory/stock-in/index.js',
-'resources/js/pages/inventory/stock-in/form-add.js',
 ])
 @endsection

@@ -2,13 +2,14 @@
 
 namespace App\Services;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class UtilityService
 {
   // ---------- Fungsi mengambil data untuk dropdown select :begin ----------
-  public function getSelectData(Request $request, $select): array
+  public function getSelectData(Request $request, string $select): array
   {
     $select = Str::kebab($select);
 
@@ -42,10 +43,14 @@ class UtilityService
 
     // ---------- Lempar response ----------
     return [
-      'results' => $data->map(function ($item) use ($labelField) {
+      'results' => $data->map(function ($item) use ($modules, $labelField) {
+        $text = isset($modules['label_callback'])
+          ? call_user_func($modules['label_callback'], $item)
+          : data_get($item, $labelField);
+
         return [
           'id' => $item->public_id ?? $item->id,
-          'text' => data_get($item, $labelField),
+          'text' => $text,
         ];
       }),
     ];
@@ -53,7 +58,7 @@ class UtilityService
   // ---------- Fungsi mengambil data untuk dropdown select :end ----------
 
   // ---------- Helper untuk memformat relasi model :begin ----------
-  private function normalizeWith($with): array
+  private function normalizeWith(array $with): array
   {
     if (empty($with)) return [];
 
@@ -62,7 +67,7 @@ class UtilityService
   // ---------- Helper untuk memformat relasi model :end ----------
 
   // ---------- Helper untuk menerapkan search data :begin ----------
-  private function applySearch($query, string $field, string $search): void
+  private function applySearch(Builder $query, string $field, string $search): void
   {
     if (Str::contains($field, '.')) {
       [$relation, $column] = explode('.', $field);
@@ -107,6 +112,12 @@ class UtilityService
         break;
       case 'order-status':
         $data = collect(\App\Enums\OrderBloodStatus::toSelect());
+        break;
+      case 'blood-status':
+        $data = collect(\App\Enums\BloodPackStatus::toSelect());
+        break;
+      case 'incoming-stock-status':
+        $data = collect(\App\Enums\IncomingBloodStatus::toSelect());
         break;
       case 'blood-rhesus':
         $data = collect(['+', '-'])->map(fn($item) => [

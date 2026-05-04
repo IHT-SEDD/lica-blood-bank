@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blood_packs', function (Blueprint $table) {
+        Schema::create('blood_stocks', function (Blueprint $table) {
             $table->id();
             $table->uuid('public_id')->unique();
 
@@ -23,12 +23,12 @@ return new class extends Migration
 
             $table->string('bag_number')->unique();
 
-            // Golongan darah A, B, O, AB
-            $table->enum('blood_group', ['A', 'B', 'AB', 'O']);
-            $table->enum('rhesus', ['+', '-']);
+            $table->foreignId('blood_pack_id')
+                ->nullable()
+                ->constrained('blood_packs')
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
 
-            // Komponen darah PRC, WB, etc
-            $table->string('blood_component');
             $table->integer('blood_volume');
 
             $table->date('aftap_date');
@@ -57,6 +57,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blood_packs');
+        Schema::dropIfExists('blood_stocks');
     }
 };
