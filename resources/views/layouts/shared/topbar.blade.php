@@ -39,11 +39,11 @@
                 <a href="" class="topbar-link btn shadow-none btn-link px-2 disabled">v1.0.0</a>
             </div>
 
-            {{-- Blood Tranfusion Menu --}}
-            @if (!request()->is('blood-tranfusion*'))
+            {{-- Blood Transfusion Menu --}}
+            @if (!request()->is('blood-transfusion*'))
             <div class="topbar-item d-none d-lg-flex">
-                <a href="{{ route('blood-tranfusion.index') }}" class="topbar-link btn shadow-none btn-link px-2">
-                    {{ __('Blood Tranfusion') }}
+                <a href="{{ route('blood-transfusion.index') }}" class="topbar-link btn shadow-none btn-link px-2">
+                    {{ __('Blood Transfusion') }}
                 </a>
             </div>
             @endif
