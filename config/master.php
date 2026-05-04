@@ -28,4 +28,8 @@ return [
   'view' => 'pages.master.vendor.index',
   'model' => App\Models\Vendor::class,
  ],
+ 'patient' => [
+  'view' => 'pages.master.patient.index',
+  'model' => App\Models\Patient::class,
+ ],
 ];

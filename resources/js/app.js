@@ -1230,8 +1230,8 @@ export class GlobalAdvanceDatatable {
                         (label, index) => `
                         <li class="dropdown-item">
                             <div class="form-check">
-                                <input class="form-check-input toggle-vis" 
-                                    type="checkbox" data-column="${index}" 
+                                <input class="form-check-input toggle-vis"
+                                    type="checkbox" data-column="${index}"
                                     id="colToggle${index}" checked>
                                 <label class="form-check-label" for="colToggle${index}">
                                     ${label}
