@@ -1,4 +1,4 @@
-<x-modal-layout id="edit_data_master_patient_modal" size="" title="Edit Data Patient">
+<x-modal-layout id="edit_data_master_patient_modal" data-bs-focus="false" size="" title="Edit Data Patient">
  {{-- Form Edit :begin --}}
  <form class="row g-2" id="edit_data_patient" autocomplete="off">
   {{-- Name --}}
