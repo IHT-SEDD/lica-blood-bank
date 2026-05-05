@@ -2,23 +2,20 @@
 
 namespace App\Models;
 
-use App\Enums\BloodComponent;
-use App\Enums\BloodGroup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class BloodStock extends Model
+class IncomingBloodDetail extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'public_id',
+        'incoming_blood_id',
         'bag_number',
-        'bag_number_lica',
-        'incoming_blood_detail_id',
         'blood_pack_id',
         'blood_volume',
         'aftap_date',
@@ -29,35 +26,29 @@ class BloodStock extends Model
         'is_hcv',
         'is_syphilis',
         'is_expired',
-        'blood_status',
-        'add_new_note',
-        'note',
-        'used_at',
+        'is_ready',
+        'ready_at',
+        'is_active',
     ];
 
     protected $hidden = [
         'id',
     ];
 
-    protected $casts = [
-        'blood_group' => BloodGroup::class,
-        'blood_component' => BloodComponent::class,
-    ];
-
     protected static function booted()
     {
-        static::creating(function ($bloodStock) {
+        static::creating(function ($incomingBloodDetail) {
             // Generate public id
-            if (empty($bloodStock->public_id)) {
-                $bloodStock->public_id = (string) Str::uuid();
+            if (empty($incomingBloodDetail->public_id)) {
+                $incomingBloodDetail->public_id = (string) Str::uuid();
             }
         });
     }
 
-    // Relation to incoming_blood_details
-    public function incomingBloodDetails(): BelongsTo
+    // Relation to incoming_bloods
+    public function incomingBloods(): BelongsTo
     {
-        return $this->belongsTo(IncomingBloodDetail::class, 'incoming_blood_detail_id');
+        return $this->belongsTo(IncomingBlood::class, 'incoming_blood_id');
     }
 
     // Relation to blood_packs

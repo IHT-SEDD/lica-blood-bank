@@ -4,14 +4,18 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\AddNewIncomingStockRequest;
+use App\Services\Inventory\StockInAddService;
 use App\Services\Inventory\StockInService;
+use App\Services\Inventory\StockInDetailService;
 use Illuminate\Http\Request;
 
 class StockInController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
-        protected StockInService $service
+        protected StockInService $service,
+        protected StockInAddService $serviceAdd,
+        protected StockInDetailService $serviceDetail
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -22,7 +26,7 @@ class StockInController extends Controller
     }
 
     // ---------- Halaman Detail Order ----------
-    public function detailStockInIndex(string $id)
+    public function detailIncomingStockIndex(string $id)
     {
         return view('pages.inventory.sub-pages.stock-in.detail-incoming-stock', compact('id'));
     }
@@ -35,15 +39,31 @@ class StockInController extends Controller
         );
     }
 
+    // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable incoming blood detail ----------
+    public function incomingBloodTable(Request $request, string $id)
+    {
+        return response()->json(
+            $this->serviceDetail->incomingStockTable($request, $id)
+        );
+    }
+
+    // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable order blood detail ----------
+    public function orderBloodTable(Request $request, string $id)
+    {
+        return response()->json(
+            $this->serviceDetail->orderDataTable($request, $id)
+        );
+    }
+
     // ---------- Fungsi untuk menambahkan data incoming stock ke database ----------
     public function insertNewStockIn(AddNewIncomingStockRequest $request)
     {
         // Delegasikan ke service sesuai method yang dipilih
         if ($request->method_add === 'manual') {
-            return $this->service->insertIncomingStockByManual($request);
+            return $this->serviceAdd->insertIncomingStockByManual($request);
         }
 
-        return $this->service->insertIncomingStockByExcel($request);
+        return $this->serviceAdd->insertIncomingStockByExcel($request);
     }
 
     // ---------- Fungsi untuk mengambil data ----------
@@ -76,5 +96,17 @@ class StockInController extends Controller
     public function restoreDataStockIn(string $id)
     {
         return $this->service->restoreDataStockIn($id);
+    }
+
+    // ---------- Fungsi untuk mengambil data incoming stock ----------
+    public function getIncomingStock(string $id)
+    {
+        return $this->serviceDetail->getDataIncoming($id);
+    }
+
+    // ---------- Fungsi untuk mengambil data order blood ----------
+    public function getOrderBlood(string $id)
+    {
+        return $this->serviceDetail->getDataOrder($id);
     }
 }

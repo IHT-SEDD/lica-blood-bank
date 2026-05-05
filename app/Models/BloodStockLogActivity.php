@@ -7,21 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class IncomingBloodLogActivity extends Model
+class BloodStockLogActivity extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'public_id',
-        'incoming_blood_public_id',
-        'po_number',
-        'batch_number',
-        'incoming_data',
-        'blood_data',
+        'blood_stock_public_id',
+        'payload',
         'status',
-        'created_by_user_name',
         'description',
-        'deleted_at',
+        'created_by_user_name',
+        'timestamp',
     ];
 
     protected $hidden = [
@@ -29,16 +26,15 @@ class IncomingBloodLogActivity extends Model
     ];
 
     protected $casts = [
-        'incoming_data' => 'array',
-        'blood_data' => 'array',
+        'payload' => 'array',
     ];
 
     protected static function booted()
     {
-        static::creating(function ($incomingBloodLogActivity) {
+        static::creating(function ($bloodStockLogActivity) {
             // Generate public id
-            if (empty($incomingBloodLogActivity->public_id)) {
-                $incomingBloodLogActivity->public_id = (string) Str::uuid();
+            if (empty($bloodStockLogActivity->public_id)) {
+                $bloodStockLogActivity->public_id = (string) Str::uuid();
             }
         });
     }

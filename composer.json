@@ -38,7 +38,8 @@
         "files": [
             "app/Helpers/service_utility.php",
             "app/Helpers/order_log_activity.php",
-            "app/Helpers/incoming_blood_log_activity.php"
+            "app/Helpers/incoming_blood_log_activity.php",
+            "app/Helpers/blood_stock_log_activity.php"
         ]
     },
     "autoload-dev": {
