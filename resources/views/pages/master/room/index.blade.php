@@ -8,11 +8,11 @@
   {{-- Date filter :begin --}}
   <div>
     <div class="input-group">
-      <span class="input-group-text" id="master-insurance-table-date-filter">
+      <span class="input-group-text" id="master-room-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-insurance-table-date-filter"
-        aria-describedby="master-insurance-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+      <input class="form-control master-room-table-date-filter"
+        aria-describedby="master-room-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
         data-range-date="true" type="text" placeholder="Choose date range" />
     </div>
   </div>
@@ -21,11 +21,13 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-insurance-table" id="master-insurance-table">
+<table class="table table-striped dt-responsive align-middle mb-0 master-room-table" id="master-room-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
       <th>Name</th>
+      <th>Class</th>
+      <th>Type</th>
       <th>General Code</th>
       <th>Deleted At</th>
       <th>Action</th>
@@ -35,13 +37,30 @@
 @endsection
 
 @section('form-content')
-<form class="row g-2" id="add_new_insurance" autocomplete="off">
+<form class="row g-2" id="add_new_room" autocomplete="off">
   {{-- Name --}}
   <div class="col-lg-12">
     <label class="form-label" for="name">Name
       <span class="text-danger">*</span>
     </label>
-    <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter Insurance Name" />
+    <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter Room Name" />
+  </div>
+  <div class="col-lg-6">
+    <label class="form-label" for="class">Class
+      <span class="text-danger">*</span>
+    </label>
+    <input autocomplete="off" class="form-control" id="class" name="class" type="text" placeholder="Enter Room Class" />
+  </div>
+  <div class="col-lg-6">
+    <label class="form-label" for="type">Type
+      <span class="text-danger">*</span>
+    </label>
+     <select class="form-control" id="type" name="type">
+      <option value="">Choose type</option>
+      <option value="rawat_jalan">Rawat Jalan</option>
+      <option value="rawat_inap">Rawat Inap</option>
+      <option value="igd">IGD</option>
+    </select>
   </div>
   <div class="col-lg-12">
     <label class="form-label" for="general_code">General Code
@@ -62,14 +81,14 @@
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Add New Insurance</button>
+    <button class="btn btn-primary" type="submit">Add New Room</button>
   </div>
 </form>
 @endsection
 
 @section('modal-content')
-@include('pages.master.insurance.partials.edit-data-modal')
-@include('pages.master.insurance.partials.delete-data-modal')
+@include('pages.master.room.partials.edit-data-modal')
+@include('pages.master.room.partials.delete-data-modal')
 @endsection
 
 @section('custom-scripts')

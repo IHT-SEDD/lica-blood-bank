@@ -10,39 +10,39 @@ import {
 import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-let masterDoctorTableInstance; // instance datatable untuk global
+let masterRoomTableInstance; // instance datatable untuk global
 
 // Filter datatable
-const DateFilterSelector = ".master-doctor-table-date-filter"; // class selector filter tanggal
+const DateFilterSelector = ".master-room-table-date-filter"; // class selector filter tanggal
 
 // Datatable
-const DatatableSelector = "#master-doctor-table"; // id selector datatable
-const MasterDataURL = "/master/doctor/data"; // url fetch data untuk datatable
-const ReloadDatatableSelector = "master-doctor-reload"; // index reload datatable
+const DatatableSelector = "#master-room-table"; // id selector datatable
+const MasterDataURL = "/master/room/data"; // url fetch data untuk datatable
+const ReloadDatatableSelector = "master-room-reload"; // index reload datatable
 
 // Edit Action
-const FormEditSelector = "#edit_data_doctor"; // id selector form edit
-const ModalEditSelector = "edit_data_master_doctor_modal"; // id selector modal edit
-const ActionEditSelector = ".btn-edit-doctor"; // class selector button edit
+const FormEditSelector = "#edit_data_room"; // id selector form edit
+const ModalEditSelector = "edit_data_master_room_modal"; // id selector modal edit
+const ActionEditSelector = ".btn-edit-room"; // class selector button edit
 const AttributeEdit = "editId"; // attribute data id edit
 
 // Delete Action
-const ModalDeleteSelector = "delete_data_master_doctor_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-doctor"; // class selector button delete
+const ModalDeleteSelector = "delete_data_master_room_modal"; // id selector modal delete
+const ActionDeleteSelector = ".btn-delete-room"; // class selector button delete
 const AttributeDelete = "deleteId"; // attribute data id delete
 const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
 
 // Restore Action
-const ModalRestoreSelector = "restore_data_master_doctor_modal"; // id selector modal restore
-const ActionRestoreSelector = ".btn-restore-doctor"; // class selector button restore
+const ModalRestoreSelector = "restore_data_master_room_modal"; // id selector modal restore
+const ActionRestoreSelector = ".btn-restore-room"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
-    const dateVal = document.querySelector(DateFilterSelector) ?.value;
-    const role = document.querySelector("#filter-role") ?.value || "";
+    const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const role = document.querySelector("#filter-role")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -61,16 +61,17 @@ function getFilters() {
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterDoctorTableInstance ?.instance) {
-        masterDoctorTableInstance.instance.ajax.reload();
+    if (masterRoomTableInstance?.instance) {
+        masterRoomTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
 
-// ---------- Datatable untuk master doctor :begin ----------
-function MasterDoctorTable() {
+// ---------- Datatable untuk master room :begin ----------
+function MasterRoomTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterDoctorTableColumns = [{
+    const MasterRoomTableColumns = [
+        {
             data: null,
             title: "No",
             render: (data, type, row, meta) => {
@@ -78,6 +79,21 @@ function MasterDoctorTable() {
             },
         },
         { data: "name", title: "Name" },
+        { data: "class", title: "Class" },
+        { data: "type", title: "Type" ,
+            render: (data)=>{
+                if(data == 'rawat_jalan'){
+                    return 'Rawat Jalan';
+                }
+                else if(data == 'rawat_inap'){
+                    return 'Rawat Inap';
+                }else if(data == 'igd'){
+                    return 'IGD'
+                }else{
+                    return '-';
+                }
+            }
+        },
         { data: "general_code", title: "General Code" },
         {
             data: "created_at",
@@ -112,15 +128,15 @@ function MasterDoctorTable() {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-doctor" data-edit-id="${row.public_id}" type="button">
+                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-room" data-edit-id="${row.public_id}" type="button">
                             Edit</button>
                         </li>
                         <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-doctor ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-room ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             Restore</button>
                         </li>
                         <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-doctor text-danger" data-delete-id="${row.public_id}" type="button">
+                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-room text-danger" data-delete-id="${row.public_id}" type="button">
                             Delete</button>
                         </li>
                     </ul>
@@ -130,30 +146,34 @@ function MasterDoctorTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterDoctorTableInstance = new GlobalAdvanceDatatable("#master-doctor-table", {
-        ajax: {
-            url: MasterDataURL,
-            data: function(d) {
-                const filters = getFilters();
-                d.role = filters.role;
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterRoomTableInstance = new GlobalAdvanceDatatable(
+        "#master-room-table",
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.role = filters.role;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterRoomTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                {
+                    targets: -1,
+                    responsivePriority: 1,
+                },
+                {
+                    targets: 0,
+                    responsivePriority: 2,
+                },
+            ],
         },
-        columns: MasterDoctorTableColumns,
-        useHideColumn: true,
-        columnDefs: [{
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
-// ---------- Datatable untuk master doctor :end ----------
+// ---------- Datatable untuk master room :end ----------
 
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
 function DateRangeFilter() {
@@ -164,7 +184,7 @@ function DateRangeFilter() {
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
 // ---------- Handle modal edit data :begin ----------
-function EditDataDoctorActionModal() {
+function EditDataRoomActionModal() {
     new GlobalEditData({
         ButtonSelector: ActionEditSelector,
         DataAttributeID: AttributeEdit,
@@ -173,21 +193,25 @@ function EditDataDoctorActionModal() {
         FormSelector: FormEditSelector,
     });
 
-    document.addEventListener("edit:open", function(e) {
+    document.addEventListener("edit:open", function (e) {
         const { data } = e.detail;
 
         if (!data) return;
-        console.log(data)
-        document.querySelector("#edit_data_doctor_name").value = data.name ?? "";
-        document.querySelector("#edit_data_doctor_general_code").value = data.general_code ?? "";
 
-
+        document.querySelector("#edit_data_room_name").value =
+            data.name ?? "";
+        document.querySelector("#edit_data_room_class").value =
+            data.class ?? "";
+        document.querySelector("#edit_data_room_type").value =
+            data.type ?? "";
+        document.querySelector("#edit_data_room_general_code").value =
+            data.general_code ?? "";
     });
 }
 // ---------- Handle modal edit data :end ----------
 
 // ---------- Handle modal delete data :begin ----------
-function DeleteDataDoctorActionModal() {
+function DeleteDataRoomActionModal() {
     // Panggil dan setup delete data
     new GlobalDeleteDataConfirmation({
         ButtonSelector: ActionDeleteSelector,
@@ -197,7 +221,7 @@ function DeleteDataDoctorActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("delete:open", function(e) {
+    document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -213,7 +237,7 @@ function DeleteDataDoctorActionModal() {
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -265,7 +289,7 @@ function DeleteDataDoctorActionModal() {
 // ---------- Handle modal delete data :end ----------
 
 // ---------- Handle modal restore data :begin ----------
-function RestoreDataDoctorActionModal() {
+function RestoreDataRoomActionModal() {
     // Panggil dan setup delete data
     new GlobalRestoreDataConfirmation({
         ButtonSelector: ActionRestoreSelector,
@@ -275,7 +299,7 @@ function RestoreDataDoctorActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("restore:open", function(e) {
+    document.addEventListener("restore:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -291,7 +315,7 @@ function RestoreDataDoctorActionModal() {
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -342,9 +366,9 @@ function RestoreDataDoctorActionModal() {
 }
 // ---------- Handle modal restore data :end ----------
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Datatable
-    MasterDoctorTable();
+    MasterRoomTable();
 
     // Select function
     // FilterRole();
@@ -354,12 +378,12 @@ document.addEventListener("DOMContentLoaded", function() {
     DateRangeFilter();
 
     // Action data
-    EditDataDoctorActionModal();
-    DeleteDataDoctorActionModal();
-    RestoreDataDoctorActionModal();
+    EditDataRoomActionModal();
+    DeleteDataRoomActionModal();
+    RestoreDataRoomActionModal();
 
     // Reload table
-        window.addEventListener(ReloadDatatableSelector, function() {
-            reloadTable();
-        });
+    window.addEventListener(ReloadDatatableSelector, function () {
+        reloadTable();
+    });
 });
