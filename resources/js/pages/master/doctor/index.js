@@ -81,7 +81,7 @@ function AddNewDoctor() {
 function EditDataDoctor() {
     // ---------- Validasi inputan form :begin ----------
     const EditDataDoctorValidation = GlobalFormValidation.init(
-        "#" + FormAddSelector, {
+        "#" + FormEditSelector, {
             name: {
                 validators: {
                     notEmpty: {
