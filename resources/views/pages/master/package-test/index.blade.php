@@ -21,12 +21,12 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-test-table" id="master-test-table">
+<table class="table table-striped dt-responsive align-middle mb-0 master-package-test-table" id="master-package-test-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
-      <th>Name</th>
-      <th>General Code</th>
+      <th>Package Name</th>
+      <th>Test List</th>
       <th>Deleted At</th>
       <th>Action</th>
     </tr>
@@ -35,19 +35,21 @@
 @endsection
 
 @section('form-content')
-<form class="row g-2" id="add_new_test" autocomplete="off">
+<form class="row g-2" id="add_new_package_test" autocomplete="off">
   {{-- Name --}}
   <div class="col-lg-12">
-    <label class="form-label" for="name">Test Name
+    <label class="form-label" for="name">Package Name
       <span class="text-danger">*</span>
     </label>
-    <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter Test Name" />
+     <select class="form-control" id="select-package" name="package"
+      placeholder="Select Package"></select>
   </div>
   <div class="col-lg-12">
-    <label class="form-label" for="general_code">General Code
- 
+    <label class="form-label" for="general_code">Test List
+      <span class="text-danger">*</span>
     </label>
-    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text" placeholder="Enter General Code" />
+    <select class="form-control" id="select-test" name="tests[]"
+      placeholder="Select Tests" multiple></select>
   </div>
 
   {{-- Is Active? --}}
@@ -68,8 +70,8 @@
 @endsection
 
 @section('modal-content')
-@include('pages.master.test.partials.edit-data-modal')
-@include('pages.master.test.partials.delete-data-modal')
+@include('pages.master.package-test.partials.edit-data-modal')
+@include('pages.master.package-test.partials.delete-data-modal')
 @endsection
 
 @section('custom-scripts')
