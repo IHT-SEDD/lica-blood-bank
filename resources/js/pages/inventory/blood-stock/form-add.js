@@ -6,6 +6,7 @@ const FormAddSelector = "add_new_blood_stock";
 const FormAddURL = "/inventory/blood-stock/new-blood-stock";
 const SelectBagNumberWrapper = "wrap-select-bag-number";
 const BagNumberListWrapper = "wrap-textarea-bag-numbers";
+const ReloadDatatableSelector = "blood-stock-reload";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- State gobal :begin ----------

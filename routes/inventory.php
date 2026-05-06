@@ -7,70 +7,50 @@ use App\Http\Controllers\InventoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
- // --------------------------------------------------------------------------
- // Inventory Group Routes -> inventory.*
- // --------------------------------------------------------------------------
  Route::prefix('inventory')->name('inventory.')->group(function () {
-  // --------------------------------------------------------------------------
-  // General Route Group Inventory
-  // --------------------------------------------------------------------------
-  Route::controller(InventoryController::class)->group(function () {
-   // --------------------------------------------------------------------------
-   // Inventory / Dashboard Route -> inventory.index
-   // --------------------------------------------------------------------------
-   Route::get('/', 'index')->name('index');
+  // ---------- Inventory Index Dashboard ----------
+  Route::get('/', [InventoryController::class, 'index'])->name('index');
 
-   // --------------------------------------------------------------------------
-   // Inventory / Blood Stock Group Routes -> inventory.blood-stock.*
-   // --------------------------------------------------------------------------
-   Route::prefix('blood-stock')->name('blood-stock.')->group(function () {
-    Route::get('/', 'bloodStockIndex')->name('index');
-   });
+  // ---------- Inventory Index Blood Stock ----------
+  Route::get('blood-stock', [InventoryController::class, 'bloodStockIndex'])->name('blood-stock.index');
 
-   // --------------------------------------------------------------------------
-   // Inventory / Stock In Group Routes -> inventory.stock-in.*
-   // --------------------------------------------------------------------------
-   Route::prefix('stock-in')->name('stock-in.')->group(function () {
-    Route::get('/', 'stockInIndex')->name('index');
-   });
+  // ---------- Inventory Index Stock In ----------
+  Route::get('stock-in', [InventoryController::class, 'stockInIndex'])->name('stock-in.index');
 
-   // --------------------------------------------------------------------------
-   // Inventory / Stock Out Group Routes -> inventory.stock-out.*
-   // --------------------------------------------------------------------------
-   Route::prefix('stock-out')->name('stock-out.')->group(function () {
-    Route::get('/', 'stockOutIndex')->name('index');
-   });
-
-   // --------------------------------------------------------------------------
-   // Inventory / History Order Group Routes -> inventory.history-order.*
-   // --------------------------------------------------------------------------
-   Route::prefix('history-order')->name('history-order.')->group(function () {
-    Route::get('/', 'historyOrderIndex')->name('index');
-   });
-  });
+  // ---------- Inventory Index Stock Out ----------
+  Route::get('stock-out', [InventoryController::class, 'stockOutIndex'])->name('stock-out.index');
 
   // --------------------------------------------------------------------------
-  // Spesific Route Group -> History Order
+  // Routes Group History Order
   // --------------------------------------------------------------------------
-  Route::prefix('history-order')->name('history-order.')->controller(HistoryOrderController::class)->group(function () {
-   // ---------- Static Route ----------
-   Route::get('/new-order', 'newOrderIndex')->name('new-order'); // Halaman form add order
-   Route::get('/detail-order/{id}', 'detailOrderIndex')->name('detail-order'); // Halaman detail order
-   Route::get('/new-po-number', 'generatePoNumber')->name('generate-po-number'); // Generate PO Number
-   Route::get('/get-data/{poNumber}', 'getDataOrderByPO')->name('get-data-by-po-number'); // Get data by PO Number
+  Route::prefix('history-order')->name('history-order.')->group(function () {
+   // ---------- Pages ----------
+   Route::get('/', [InventoryController::class, 'historyOrderIndex'])->name('index');
+   Route::get('new-order', [HistoryOrderController::class, 'newOrderIndex'])->name('new-order'); // Halaman form add order
+   Route::get('new-po-number', [HistoryOrderController::class, 'generatePoNumber'])->name('generate-po-number');
+   Route::get('get-data/{poNumber}', [HistoryOrderController::class, 'getDataOrderByPO'])->name('get-data-by-po-number'); // Get data by PO Number
+
+   // ---------- PO File Group Routes ----------
+   Route::prefix('po-file')->name('po-file.')->controller(HistoryOrderController::class)->group(function () {
+    Route::post('generate/{poNumber}', 'generatePoFile')->name('generate'); // Generate PO File
+    Route::get('preview/{poNumber}', 'previewPoFile')->middleware(['role:superadmin'])->name('preview');
+    Route::get('download/{poNumber}', 'downloadPoFile')->name('download');
+    Route::get('print/{poNumber}', 'printPoFile')->name('print');
+   });
 
    // ---------- Datatable ----------
-   Route::get('/data', 'historyOrderTable')->name('history-order-table'); // Datatable order
+   Route::get('data', [HistoryOrderController::class, 'historyOrderTable'])->name('table'); // Datatable order
 
-   // ---------- Detail data ----------
-   Route::get('/data/detail/{id}', 'detailOrderData')->name('detail-order-data'); // Ambil data detail order
+   // ---------- Detail group routes ----------
+   Route::prefix('detail')->name('detail.')->controller(HistoryOrderController::class)->group(function () {
+    Route::get('{id}', 'detailOrderIndex')->name('index'); // Halaman detail order
+    Route::get('data/{id}', 'detailOrderData')->name('data');
+   });
 
-   // ---------- Write data order ----------
-   Route::post('/new-order', 'insertNewOrder')->name('insert-new-order'); // Insert data order
-
-   // ---------- Delete & Restore ----------
-   Route::delete('/data/{id}', 'deleteDataOrder')->name('delete-data-order'); // Hapus data order
-   Route::patch('/data/{id}/restore', 'restoreDataOrder')->name('restore-data-order'); // Pulihkan data order
+   // ---------- CRUD ----------
+   Route::post('new-order', [HistoryOrderController::class, 'insertNewOrder'])->name('insert-new-order'); // Insert data order
+   Route::delete('data/{id}', [HistoryOrderController::class, 'deleteDataOrder'])->name('delete-data');
+   Route::patch('data/{id}/restore', [HistoryOrderController::class, 'restoreDataOrder'])->name('restore-data');
   });
 
   // --------------------------------------------------------------------------

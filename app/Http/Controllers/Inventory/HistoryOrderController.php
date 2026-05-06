@@ -50,6 +50,31 @@ class HistoryOrderController extends Controller
         return response()->json($poNumber);
     }
 
+    // ---------- Fungsi untuk membuat file po ----------
+    public function generatePoFile(string $poNumber)
+    {
+        try {
+            $result = $this->service->generatePoFile($poNumber);
+            return $result;
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to generate PO File!'], 500);
+        }
+    }
+
+    // ---------- Fungsi untuk melihat file po ----------
+    public function previewPoFile(string $poNumber)
+    {
+        try {
+            return $this->service->previewPoFile($poNumber);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to preview PO File!'], 500);
+        }
+    }
+
     // ---------- Get Detail Order ----------
     public function detailOrderData(string $id)
     {
@@ -79,6 +104,30 @@ class HistoryOrderController extends Controller
             return response()->json([
                 'message' => 'Data not found!'
             ], 404);
+        }
+    }
+
+    // ---------- Fungsi untuk download file po ----------
+    public function downloadPoFile(string $poNumber)
+    {
+        try {
+            return $this->service->downloadPoFile($poNumber);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to download PO File!'], 500);
+        }
+    }
+
+    // ---------- Fungsi untuk print file po ----------
+    public function printPoFile(string $poNumber)
+    {
+        try {
+            return $this->service->printPoFile($poNumber);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to print PO File!'], 500);
         }
     }
 }

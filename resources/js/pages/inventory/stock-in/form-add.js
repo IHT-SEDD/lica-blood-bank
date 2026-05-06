@@ -177,20 +177,6 @@ function SelectAddMethod() {
 }
 // ---------- Select add method dari tom-select :end ----------
 
-// ---------- Helper: tampilkan fullscreen loading overlay :begin ----------
-function showPageLoading() {
-    const overlay = document.getElementById("fullscreen_loading_overlay");
-    if (overlay) overlay.classList.remove("d-none");
-}
-// ---------- Helper: tampilkan fullscreen loading overlay :end ----------
-
-// ---------- Helper: sembunyikan fullscreen loading overlay :begin ----------
-function hidePageLoading() {
-    const overlay = document.getElementById("fullscreen_loading_overlay");
-    if (overlay) overlay.classList.add("d-none");
-}
-// ---------- Helper: sembunyikan fullscreen loading overlay :end ----------
-
 // ---------- Download Template Excel :begin ----------
 /**
  * Menggunakan fetch + streaming ke Blob agar file langsung didownload
@@ -600,15 +586,14 @@ function HandleFormManual() {
             });
         },
         onSuccess: () => {
-            hidePageLoading();
             resetTable();
             notyf.success({ message: "Incoming stock added successfully!" });
             setTimeout(() => {
+                hidePageLoading();
                 window.location.href = "/inventory/stock-in/";
             }, 2000);
         },
         onError: (err) => {
-            hidePageLoading();
             if (err?.duplicates && err.duplicates.length > 0) {
                 const dupList = err.duplicates.join(", ");
                 notyf.error({
@@ -621,6 +606,7 @@ function HandleFormManual() {
             notyf.error({
                 message: err?.message ?? "Failed to add incoming stock!",
             });
+            hidePageLoading();
             console.error(err);
         },
         resetOnSuccess: true,

@@ -9,7 +9,7 @@ enum OrderLogActivityStatus: string
     case DRAFT_DELETED = 'draft_deleted';
 
     case PO_FILE_GENERATED = 'po_file_generated';
-    case PO_FILE_PRINTED = 'po_file_printer';
+    case PO_FILE_PRINTED = 'po_file_printed';
     case PO_FILE_DOWNLOADED = 'po_file_downloaded';
 
     case ORDER_CREATED = 'order_created';
@@ -48,8 +48,8 @@ enum OrderLogActivityStatus: string
             self::DRAFT_DELETED => '%s: Draft deleted successfully by User ID %s.',
 
             self::PO_FILE_GENERATED => '%s: PO File generated successfully by User ID %s.',
-            self::PO_FILE_PRINTED => '%s: PO File printed %s by User ID %s.',
-            self::PO_FILE_DOWNLOADED => '%s: PO File downloaded %s by User ID %s.',
+            self::PO_FILE_PRINTED => '%s: PO File printed by User ID %s.',
+            self::PO_FILE_DOWNLOADED => '%s: PO File downloaded by User ID %s.',
 
             self::ORDER_CREATED => '%s: Order created successfully by User ID %s.',
             self::ORDER_CANCELLED => '%s: Order cancelled successfully by User ID %s.',

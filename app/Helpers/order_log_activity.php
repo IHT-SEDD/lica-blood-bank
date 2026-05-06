@@ -7,7 +7,7 @@ use App\Enums\OrderLogActivityStatus;
 function generateOrderLogDescription(
  OrderLogActivityStatus $status,
  string $poNumber,
- string $userId
+ ?string $userId,
 ): string {
  return $status->label() . ' ' . sprintf(
   $status->template(),
