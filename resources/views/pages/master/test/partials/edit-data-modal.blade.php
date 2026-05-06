@@ -1,19 +1,19 @@
-<x-modal-layout id="edit_data_master_insurance_modal" size="" title="Edit Data Insurance">
+<x-modal-layout id="edit_data_master_test_modal" size="" title="Edit Data Test">
  {{-- Form Edit :begin --}}
- <form class="row g-2" id="edit_data_insurance" autocomplete="off">
+ <form class="row g-2" id="edit_data_test" autocomplete="off">
   {{-- Name --}}
   <div class="col-lg-12">
-   <label class="form-label" for="edit_data_insurance_name">Name
+   <label class="form-label" for="edit_data_test_name">Name
     <span class="text-danger">*</span>
    </label>
-   <input autocomplete="off" class="form-control" id="edit_data_insurance_name" name="name" type="text"
+   <input autocomplete="off" class="form-control" id="edit_data_test_name" name="name" type="text"
     placeholder="your full name" />
   </div>
   <div class="col-lg-12">
-   <label class="form-label" for="edit_data_insurance_general_code">General Code
+   <label class="form-label" for="edit_data_test_general_code">General Code
     <span class="text-danger">*</span>
    </label>
-   <input autocomplete="off" class="form-control" id="edit_data_insurance_general_code" name="general_code" type="text"
+   <input autocomplete="off" class="form-control" id="edit_data_test_general_code" name="general_code" type="text"
     placeholder="your full name" />
   </div>
 
@@ -21,8 +21,8 @@
   <div class="col-lg-12">
    <div>
     <div class="form-check form-check-info my-1">
-     <input checked="" class="form-check-input" id="edit_data_insurance_is_active" name="is_active" type="checkbox" />
-     <label class="form-check-label" for="edit_data_insurance_is_active">Active?</label>
+     <input checked="" class="form-check-input" id="edit_data_test_is_active" name="is_active" type="checkbox" />
+     <label class="form-check-label" for="edit_data_test_is_active">Active?</label>
     </div>
    </div>
   </div>

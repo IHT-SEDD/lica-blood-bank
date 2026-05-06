@@ -24,4 +24,13 @@ class Test extends Model
     protected $hidden = [
         'id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($test) {
+            if (empty($test->public_id)) {
+                $test->public_id = (string)Str::uuid();
+            }
+        });
+    }
 }
