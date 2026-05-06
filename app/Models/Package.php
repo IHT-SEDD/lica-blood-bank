@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class Test extends Model
+class Package extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -15,8 +15,6 @@ class Test extends Model
         'public_id',
         'is_active',
         'name',
-        'blood_group',
-        'blood_rhesus',
         'blood_component',
         'general_code'
     ];
@@ -24,12 +22,11 @@ class Test extends Model
     protected $hidden = [
         'id',
     ];
-
     protected static function booted()
     {
-        static::creating(function ($test) {
-            if (empty($test->public_id)) {
-                $test->public_id = (string) Str::uuid();
+        static::creating(function ($package) {
+            if (empty($package->public_id)) {
+                $package->public_id = (string) Str::uuid();
             }
         });
     }
