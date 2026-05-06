@@ -167,6 +167,12 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/incoming-blood-restore-data.log'),
             'level' => 'debug',
+        ],
+
+        'newbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/new-blood-stock-data.log'),
+            'level' => 'debug',
         ]
     ],
 

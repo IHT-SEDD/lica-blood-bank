@@ -49,30 +49,8 @@ import "pdfmake/build/vfs_fonts.js";
 // Import choices select
 import Choices from "choices.js";
 
-// Import notyf
-import { Notyf } from "notyf";
-
-window.notyf = new Notyf({
-    duration: 4000,
-    ripple: true,
-    dismissible: true,
-    position: {
-        x: "right",
-        y: "top",
-    },
-    types: [
-        {
-            type: "error",
-            background: "red",
-            className: "notyf-allow-html",
-        },
-        {
-            type: "success",
-            background: "green",
-            className: "notyf-allow-html",
-        },
-    ],
-});
+// Import global utility functions
+import "./utility/ui";
 
 // Common
 class App {
@@ -1214,7 +1192,8 @@ export class GlobalAdvanceDatatable {
     initColumnToggle() {
         const columnLabels = this.getColumnLabels();
 
-        const wrapper = document.querySelector(".columnToggleWrapper");
+        const dtContainer = this.instance.table().container();
+        const wrapper = dtContainer.querySelector(".columnToggleWrapper");
         if (!wrapper) return;
 
         const dropdown = document.createElement("div");

@@ -10,6 +10,8 @@ enum IncomingBloodLogActivityStatus: string
     case INCOMING_DELETED = 'incoming_stock_deleted';
     case INCOMING_RESTORED = 'incoming_stock_restored';
 
+    case INCOMING_ALL_STOCK_READY = 'incoming_all_stock_ready';
+
     public function label(): string
     {
         return match ($this) {
@@ -18,6 +20,8 @@ enum IncomingBloodLogActivityStatus: string
             self::INCOMING_CANCELLED => '(CANCELLED)',
             self::INCOMING_DELETED => '(DELETED)',
             self::INCOMING_RESTORED => '(RESTORED)',
+
+            self::INCOMING_ALL_STOCK_READY => '(ALL STOCK READY)',
         };
     }
 
@@ -29,6 +33,8 @@ enum IncomingBloodLogActivityStatus: string
             self::INCOMING_CANCELLED => 'Incoming Stock %s: Cancelled successfully by User ID %s.',
             self::INCOMING_DELETED => 'Incoming Stock %s: Deleted successfully by User ID %s.',
             self::INCOMING_RESTORED => 'Incoming Stock %s: Restored successfully by User ID %s.',
+
+            self::INCOMING_ALL_STOCK_READY => 'All Incoming Stock %s: Are ready in storage. Logged successfully by User ID %s.',
         };
     }
 }

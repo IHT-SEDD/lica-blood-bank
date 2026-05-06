@@ -22,6 +22,7 @@ class IncomingBlood extends Model
         'status',
         'received_by_user_id',
         'received_at',
+        'registered_by_user_id',
         'stock_ready_at',
     ];
 
@@ -55,9 +56,9 @@ class IncomingBlood extends Model
         return $this->belongsTo(User::class, 'received_by_user_id');
     }
 
-    // Relasi dari blood_stocks
-    public function bloodStocks(): HasMany
+    // Relasi dari incoming_blood_details
+    public function incomingBloodDetails(): HasMany
     {
-        return $this->hasMany(BloodStock::class, 'incoming_blood_id');
+        return $this->hasMany(IncomingBloodDetail::class, 'incoming_blood_id');
     }
 }
