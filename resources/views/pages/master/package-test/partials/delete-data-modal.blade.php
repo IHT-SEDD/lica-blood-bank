@@ -1,4 +1,4 @@
-<x-static-modal-layout id="delete_data_master_test_modal" size="" title="Delete Data Test">
+<x-static-modal-layout id="delete_data_master_package-test_modal" size="" title="Delete Data Test">
  <h4 class="fw-semibold">Are your sure want to delete this data?</h4>
  <p>Data you want to delete: <span id="deleted_data" class="text-capitalize fw-semibold text-muted"></span></p>
  <p class="m-0">Click <span class="badge badge-label badge-soft-danger">Confirm Delete</span> if you want to delete it

@@ -44,4 +44,17 @@ return [
         'view' => 'pages.master.room.index',
         'model' => App\Models\Room::class,
     ],
+    'test' => [
+        'view' => 'pages.master.test.index',
+        'model' => App\Models\Test::class,
+    ],
+    'package' => [
+        'view' => 'pages.master.package.index',
+        'model' => App\Models\Package::class,
+    ],
+    'package-test' => [
+        'view' => 'pages.master.package-test.index',
+        'model' => App\Models\PackageTest::class,
+        'with' => ['test', 'package']
+    ],
 ];

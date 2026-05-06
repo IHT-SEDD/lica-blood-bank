@@ -67,13 +67,13 @@ class MasterService
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
     $modelClass = $modules['model'];
-
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
     try {
       // ---------- Ambil model & data fillable ----------
       $model = new $modelClass;
       $data = $request->only($model->getFillable());
+
 
       // ---------- Panggil hook sebelum insert jika ada ----------
       if (method_exists($modelClass, 'beforeCreate')) {
@@ -103,6 +103,19 @@ class MasterService
         if ($request->filled('role')) {
           $roleName = \Spatie\Permission\Models\Role::findById($request->role);
           $created->syncRoles($roleName->name);
+        }
+      } elseif ($model instanceof \App\Models\PackageTest) {
+        $tests = $request->input('tests', []);
+        $package = \App\Models\Package::where('public_id', $request->package)->select('id')->firstOrFail();
+        foreach ($tests as $test) {
+          $test = \App\Models\Test::where('public_id', $test)->select('id')->firstOrFail();
+
+          $data = [
+            'package_id' => $package->id,
+            'test_id' => $test->id,
+            'is_active' => $request->is_active ?? true,
+          ];
+          $created = $modelClass::create($data);
         }
       }
 
@@ -513,6 +526,9 @@ class MasterService
       case 'blood-pack':
         $this->filterBloodPack($query, $request);
         break;
+      case 'package-test':
+        $this->filterPackageTest($query, $request);
+        break;
     }
   }
   // ---------- Helper: untuk menerima dan menerapkan filter khusus pada data :end ----------
@@ -537,6 +553,21 @@ class MasterService
     }
   }
   // ---------- Helper: menerima dan melakukan filter data blood pack berdasarkan role :end ----------
+
+  protected function filterPackageTest(Builder $query, Request $request)
+  {
+    $query->join('packages', 'package_tests.package_id', '=', 'packages.id')
+      ->join('tests', 'package_tests.test_id', '=', 'tests.id')
+      ->select(
+        'packages.id',
+        'packages.name as package_name',
+        'packages.created_at',
+        'packages.updated_at',
+        'packages.deleted_at'
+      )
+      ->selectRaw('GROUP_CONCAT(tests.name) as tests')
+      ->groupBy('packages.id', 'packages.name', 'packages.created_at', 'packages.updated_at', 'packages.deleted_at');
+  }
 
   // ---------- Fungsi untuk query data berdasarkan jenis master :begin ----------
   public function getDataById(string $master, string $id)

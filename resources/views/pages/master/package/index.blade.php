@@ -8,11 +8,11 @@
   {{-- Date filter :begin --}}
   <div>
     <div class="input-group">
-      <span class="input-group-text" id="master-insurance-table-date-filter">
+      <span class="input-group-text" id="master-package-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-insurance-table-date-filter"
-        aria-describedby="master-insurance-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+      <input class="form-control master-package-table-date-filter"
+        aria-describedby="master-package-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
         data-range-date="true" type="text" placeholder="Choose date range" />
     </div>
   </div>
@@ -21,11 +21,12 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-test-table" id="master-test-table">
+<table class="table table-striped dt-responsive align-middle mb-0 master-package-table" id="master-package-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
       <th>Name</th>
+      <th>Blood Component</th>
       <th>General Code</th>
       <th>Deleted At</th>
       <th>Action</th>
@@ -35,13 +36,20 @@
 @endsection
 
 @section('form-content')
-<form class="row g-2" id="add_new_test" autocomplete="off">
+<form class="row g-2" id="add_new_package" autocomplete="off">
   {{-- Name --}}
   <div class="col-lg-12">
-    <label class="form-label" for="name">Test Name
+    <label class="form-label" for="name">Package Name
       <span class="text-danger">*</span>
     </label>
     <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter Test Name" />
+  </div>
+  <div class="col-lg-12">
+    <label class="form-label" for="blood_component">Blood Component
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-blood-component" name="blood_component"
+      placeholder="{{ __('Choose') }} {{ __('Blood Component') }}..."></select>
   </div>
   <div class="col-lg-12">
     <label class="form-label" for="general_code">General Code
@@ -68,8 +76,8 @@
 @endsection
 
 @section('modal-content')
-@include('pages.master.test.partials.edit-data-modal')
-@include('pages.master.test.partials.delete-data-modal')
+@include('pages.master.package.partials.edit-data-modal')
+@include('pages.master.package.partials.delete-data-modal')
 @endsection
 
 @section('custom-scripts')

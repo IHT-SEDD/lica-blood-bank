@@ -1,5 +1,4 @@
 // ---------- Import Libraries ----------
-import TomSelect from "tom-select";
 import {
     GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
@@ -8,45 +7,42 @@ import {
     GlobalEditData,
     DateTimeFormatter,
 } from "../../../app";
-import { log } from "handlebars/runtime";
+import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-let masterPatientTableInstance; // instance datatable untuk global
+let masterPackageTableInstance; // instance datatable untuk global
 
 // Filter datatable
-const DateFilterSelector = ".master-patient-table-date-filter"; // class selector filter tanggal
+const DateFilterSelector = ".master-package-test-table-date-filter"; // class selector filter tanggal
 
 // Datatable
-const DatatableSelector = "#master-patient-table"; // id selector datatable
-const MasterDataURL = "/master/patient/data"; // url fetch data untuk datatable
-const ReloadDatatableSelector = "master-patient-reload"; // index reload datatable
+const DatatableSelector = "#master-package-test-table"; // id selector datatable
+const MasterDataURL = "/master/package-test/data"; // url fetch data untuk datatable
+const ReloadDatatableSelector = "master-package-test-reload"; // index reload datatable
 
 // Edit Action
-const FormEditSelector = "#edit_data_patient"; // id selector form edit
-const ModalEditSelector = "edit_data_master_patient_modal"; // id selector modal edit
-const ActionEditSelector = ".btn-edit-patient"; // class selector button edit
+const FormEditSelector = "#edit_data_package-test"; // id selector form edit
+const ModalEditSelector = "edit_data_master_package-test_modal"; // id selector modal edit
+const ActionEditSelector = ".btn-edit-package-test"; // class selector button edit
 const AttributeEdit = "editId"; // attribute data id edit
 
 // Delete Action
-const ModalDeleteSelector = "delete_data_master_patient_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-patient"; // class selector button delete
+const ModalDeleteSelector = "delete_data_master_package-test_modal"; // id selector modal delete
+const ActionDeleteSelector = ".btn-delete-package-test"; // class selector button delete
 const AttributeDelete = "deleteId"; // attribute data id delete
 const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
 
 // Restore Action
-const ModalRestoreSelector = "restore_data_master_patient_modal"; // id selector modal restore
-const ActionRestoreSelector = ".btn-restore-patient"; // class selector button restore
+const ModalRestoreSelector = "restore_data_master_package-test_modal"; // id selector modal restore
+const ActionRestoreSelector = ".btn-restore-package-test"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
-
-// Select Blood Group and Rhesus
-let BloodGroupSelectInstance;
-let BloodRhesusSelectInstance;
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
     const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const role = document.querySelector("#filter-role")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -59,98 +55,47 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { start_date, end_date, date_field: "created_at" };
+    return { role, start_date, end_date };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
-function SelectBloodGroup() {
-   BloodGroupSelectInstance = new TomSelect("#edit-select-blood-group", {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        sortField: {
-            field: "id",
-            direction: "asc",
-        },
-        create: false,
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
-                .then((response) => response.json())
-                .then((json) => {
-                    callback(json.results);
-                })
-                .catch(() => {
-                    callback();
-                });
-        },
-    });
-}
-
-function SelectBloodRhesus() {
-   BloodRhesusSelectInstance = new TomSelect("#edit-select-blood-rhesus", {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        sortField: {
-            field: "id",
-            direction: "asc",
-        },
-        create: false,
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
-                .then((response) => response.json())
-                .then((json) => {
-                    callback(json.results);
-                })
-                .catch(() => {
-                    callback();
-                });
-        },
-    });
-}
-
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterPatientTableInstance?.instance) {
-        masterPatientTableInstance.instance.ajax.reload();
+    if (masterPackageTableInstance?.instance) {
+        masterPackageTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
 
-// ---------- Datatable untuk master patient :begin ----------
-function MasterPatientTable() {
+// ---------- Datatable untuk master package :begin ----------
+function MasterPackageTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterPatientTableColumns = [
+    const MasterPackageTableColumns = [
         {
             data: null,
             title: "No",
             render: (data, type, row, meta) => {
+                console.log(row);
                 return meta.row + 1;
             },
         },
-        { data: "name", title: "Name" },
-        { data: "medrec", title: "Medical Record" },
+        { data: "package_name", title: "Package Name" },
+        
+        { data: "tests", title: "Test Name" },
         {
-            data: "gender",
-            title: "Gender",
+            data: "created_at",
+            title: "Created At",
             render: (data) => {
-                return data == "M" ? "Male" : "Female";
+                return DateTimeFormatter.human(data);
             },
         },
         {
-            data: "birthdate",
-            title: "Birthdate",
+            data: "updated_at",
+            title: "Updated At",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
-            }
-         },
-        { data: "blood_group", title: "Blood Group" },
-        { data: "blood_rhesus", title: "Blood Rhesus" },
-        { data: "phone", title: "Phone" },
-        { data: "email", title: "Email" },
-        { data: "address", title: "Address" },
+                return DateTimeFormatter.human(data);
+            },
+        },
         {
             data: "deleted_at",
             title: "Deleted At",
@@ -164,21 +109,21 @@ function MasterPatientTable() {
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
-                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown"
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
                 data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-patient" data-edit-id="${row.public_id}" type="button">
+                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-package" data-edit-id="${row.public_id}" type="button">
                             Edit</button>
                         </li>
                         <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-patient ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-package ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             Restore</button>
                         </li>
                         <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-patient text-danger" data-delete-id="${row.public_id}" type="button">
+                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-package text-danger" data-delete-id="${row.public_id}" type="button">
                             Delete</button>
                         </li>
                     </ul>
@@ -187,30 +132,35 @@ function MasterPatientTable() {
         },
     ];
 
-    masterPatientTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
-        ajax: {
-            url: MasterDataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
+    masterPackageTableInstance = new GlobalAdvanceDatatable(
+        "#master-package-test-table",
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.role = filters.role;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterPackageTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                {
+                    targets: -1,
+                    responsivePriority: 1,
+                },
+                {
+                    targets: 0,
+                    responsivePriority: 2,
+                },
+            ],
         },
-        columns: MasterPatientTableColumns,
-        useHideColumn: true,
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
-// ---------- Datatable untuk master patient :end ----------
+// ---------- Datatable untuk master package :end ----------
 
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
 function DateRangeFilter() {
@@ -219,9 +169,11 @@ function DateRangeFilter() {
     });
 }
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
+// ---------- Function ini tomselect blood component :begin ----------
 
+// ---------- Function ini tomselect blood component :end ----------
 // ---------- Handle modal edit data :begin ----------
-function EditDataPatientActionModal() {
+function EditDataPackageTestActionModal() {
     new GlobalEditData({
         ButtonSelector: ActionEditSelector,
         DataAttributeID: AttributeEdit,
@@ -232,34 +184,24 @@ function EditDataPatientActionModal() {
 
     document.addEventListener("edit:open", function (e) {
         const { data } = e.detail;
+
         if (!data) return;
 
-            // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
-         new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
-            dateFormat: "Y-m-d",
-            maxDate: "today",
-            defaultDate: data.birthdate ?? "",
-            static : true
-        });
-    // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
-
-        document.querySelector("#edit_data_patient_name").value =
+        document.querySelector("#edit_data_package_name").value =
             data.name ?? "";
-        // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
-        document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
-        document.querySelector("#edit_data_patient_phone").value = data.phone ?? "";
-        document.querySelector("#edit_data_patient_email").value = data.email ?? "";
-        document.querySelector("#edit_data_patient_address").value = data.address ?? "";
-        document.querySelector("#edit_data_patient_is_active").checked = data.is_active == 1;
-        BloodGroupSelectInstance.setValue(data.blood_group ?? "");
-        BloodRhesusSelectInstance.setValue(data.blood_rhesus ?? "");
-        document.querySelector(FormEditSelector).dataset.id = data.public_id;
+        // Kondisi untuk tom select
+      
+        
+
+        document.querySelector("#edit_data_package_general_code").value =
+            data.general_code ?? "";
     });
 }
 // ---------- Handle modal edit data :end ----------
 
 // ---------- Handle modal delete data :begin ----------
-function DeleteDataPatientActionModal() {
+function DeleteDataPackageTestActionModal() {
+    // Panggil dan setup delete data
     new GlobalDeleteDataConfirmation({
         ButtonSelector: ActionDeleteSelector,
         DataAttributeID: AttributeDelete,
@@ -267,12 +209,16 @@ function DeleteDataPatientActionModal() {
         ModalConfirmID: ModalDeleteSelector,
     });
 
+    // Custom isi modal
     document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
+        // Isi text ke modal
         document.querySelector("#deleted_data").textContent =
             `${data.name} with ID ${data.public_id}`;
+
+        // Berikan attribute button delete dengan id data
         document.querySelector(ConfirmDeleteSelector).dataset.id =
             data.public_id;
     });
@@ -314,8 +260,12 @@ function DeleteDataPatientActionModal() {
                     new bootstrap.Modal(modalEl);
 
                 modal.hide();
+
                 this.dataset.id = "";
+
                 reloadTable();
+
+                console.log(result.message);
             } catch (error) {
                 console.error(error);
                 notyf.error({
@@ -328,7 +278,8 @@ function DeleteDataPatientActionModal() {
 // ---------- Handle modal delete data :end ----------
 
 // ---------- Handle modal restore data :begin ----------
-function RestoreDataPatientActionModal() {
+function RestoreDataPackageTestActionModal() {
+    // Panggil dan setup delete data
     new GlobalRestoreDataConfirmation({
         ButtonSelector: ActionRestoreSelector,
         DataAttributeID: AttributeRestore,
@@ -336,12 +287,16 @@ function RestoreDataPatientActionModal() {
         ModalConfirmID: ModalRestoreSelector,
     });
 
+    // Custom isi modal
     document.addEventListener("restore:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
+        // Isi text ke modal
         document.querySelector("#restored_data").textContent =
             `${data.name} with ID ${data.public_id}`;
+
+        // Berikan attribute button restore dengan id data
         document.querySelector(ConfirmRestoreSelector).dataset.id =
             data.public_id;
     });
@@ -383,8 +338,12 @@ function RestoreDataPatientActionModal() {
                     new bootstrap.Modal(modalEl);
 
                 modal.hide();
+
                 this.dataset.id = "";
+
                 reloadTable();
+
+                console.log(result.message);
             } catch (error) {
                 console.error(error);
                 notyf.error({
@@ -397,14 +356,25 @@ function RestoreDataPatientActionModal() {
 // ---------- Handle modal restore data :end ----------
 
 document.addEventListener("DOMContentLoaded", function () {
-    MasterPatientTable();
+    // Datatable
+    MasterPackageTable();
+
+    // Select function
+    // FilterRole();
+    // EditRole();
+    
+
+    // Date range picker
     DateRangeFilter();
-    EditDataPatientActionModal();
-    DeleteDataPatientActionModal();
-    RestoreDataPatientActionModal();
-    SelectBloodGroup();
-    SelectBloodRhesus();
+
+    // Action data
+    EditDataPackageTestActionModal();
+    DeleteDataPackageTestActionModal();
+    RestoreDataPackageTestActionModal();
+
+    // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {
+        
         reloadTable();
     });
 });

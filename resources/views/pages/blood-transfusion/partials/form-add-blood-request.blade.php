@@ -1,199 +1,288 @@
-{{-- Choose Patient --}}
-<div class="col-lg-12 mb-3">
-  <label class="form-label" for="select-patient">{{ __('Choose Patient or Create New') }}</label>
-  <div class="input-group">
-    <select class="form-control" id="select-patient" name="patient_id"
-      placeholder="{{ __('Choose Patient or Create New') }}"></select>
-    <button class="btn btn-soft-primary" id="add-new-patient-data" type="button">{{ __('Add New') }}</button>
-  </div>
-  <small class="form-text text-muted fs-6">
-    {{ __('Choose patient from dropdown if patient already exists or you can click Add New button to insert new
-    patient.') }}
-  </small>
-</div>
-
-<hr />
-
 {{-- Form Add New Blood Request :begin --}}
-<form class="row g-2" id="add_new_blood_request" autocomplete="off">
-  {{-- Patient Data :begin --}}
-  <div class="col-lg-7 col-12 patient-data-border pe-lg-4">
-    {{-- Title --}}
-    <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-      <h4>{{ __('Patient Data') }} {{ __('Details') }}</h4>
+<form  id="add_new_blood_request" autocomplete="off" data-wizard-validation="">
+    <div class="ins-wizard" data-wizard="">
+           <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs wizard-tabs mb-3 justify-content-center gap-4" data-wizard-nav="" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-bs-toggle="tab" href="#stepPatient">
+                            <span class="d-flex align-items-center">
+                                <i class="ti ti-user-circle fs-32"></i>
+                                <span class="flex-grow-1 ms-2 text-truncate">
+                                    <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">Patient
+                                        Info</span>
+                                    <span class="mb-0 fw-normal">Patient & Transaction details</span>
+                                </span>
+                            </span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-bs-toggle="tab" href="#stepBloodRequest">
+                            <span class="d-flex align-items-center">
+                                <i data-lucide="flask-conical" class="align-middle fs-32"></i>
+                                <span class="flex-grow-1 ms-2 text-truncate">
+                                    <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">Blood Request
+                                        Info</span>
+                                    <span class="mb-0 fw-normal">Where you currently live</span>
+                                </span>
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+
+        <!-- Patient & Transaction -->
+            <div class="tab-content pt-3" data-wizard-content="">
+                        <!-- Step 1 -->
+                        <div class="tab-pane fade show active" id="stepPatient">
+                                        {{-- Choose Patient --}}
+                                        <div class="col-lg-12 mb-3">
+                                        <label class="form-label" for="select-patient">{{ __('Choose Patient or Create New') }}</label>
+                                        <div class="input-group">
+                                            <select class="form-control" id="select-patient" name="patient_id"
+                                            placeholder="{{ __('Choose Patient or Create New') }}"></select>
+                                            <button class="btn btn-soft-primary" id="add-new-patient-data" type="button">{{ __('Add New') }}</button>
+                                        </div>
+                                        <small class="form-text text-muted fs-6">
+                                            {{ __('Choose patient from dropdown if patient already exists or you can click Add New button to insert new
+                                            patient.') }}
+                                        </small>
+                                        </div>
+
+                                        <hr />
+
+                                        <div class="row g-2">
+                                            {{-- Patient Data :begin --}}
+                                            <div class="col-lg-7 col-12 patient-data-border pe-lg-4">
+                                                {{-- Title --}}
+                                                <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
+                                                <h4>{{ __('Patient Data') }} {{ __('Details') }}</h4>
+                                                </div>
+
+                                                <div class="row mb-2">
+                                                {{-- Medrec --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mb-0">
+                                                    <label class="form-label" for="medrec">{{ __('Medrec') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input autocomplete="off" class="form-control" id="medrec" name="medrec" type="text"
+                                                    placeholder="{{ __('Medical Record') }}" readonly />
+                                                    <small class="form-text text-muted">
+                                                    {{ __('Click inputs to generate medrec.') }}
+                                                    </small>
+                                                </div>
+
+                                                {{-- Name --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mb-0">
+                                                    <label class="form-label" for="name">{{ __('Name') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input autocomplete="off" class="form-control" id="name" name="name" type="text"
+                                                    placeholder="{{ __('Patient Full Name') }}" required />
+                                                </div>
+
+                                                {{-- Email --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mb-0">
+                                                    <label class="col-form-label" for="email">{{ __('Email') }}</label>
+                                                    <input autocomplete="off" class="form-control" id="email" name="email" type="email"
+                                                    placeholder="{{ __('Patient Email Address') }}" />
+                                                </div>
+
+                                                {{-- Phone Number --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mb-0">
+                                                    <label class="col-form-label" for="phone_number">{{ __('Phone Number') }}</label>
+                                                    <input autocomplete="off" class="form-control" id="phone_number" name="phone_number" type="text"
+                                                    placeholder="08**********" />
+                                                </div>
+
+                                                {{-- Blood Group --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mt-2">
+                                                    <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}</label>
+                                                    <select class="form-control" id="select-blood-group" name="blood_group"
+                                                    placeholder="{{ __('A,B,AB,O') }}"></select>
+                                                </div>
+
+                                                {{-- Blood Rhesus --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mt-2">
+                                                    <label class="form-label" for="select-blood-rhesus">{{ __('Blood Rhesus') }}</label>
+                                                    <select class="form-control" id="select-blood-rhesus" name="blood_rhesus"
+                                                    placeholder="{{ __('+/-') }}"></select>
+                                                </div>
+
+                                                {{-- Birth Date --}}
+                                                <div class="col-xxl-6 col-md-12 col-12 mb-2">
+                                                    <label class="col-form-label m-0" for="birthdate">
+                                                    {{ __('Birth Date') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input class="form-control patient-birth-date" aria-describedby="patient-birth-date" data-date-format="Y-m-d"
+                                                    data-provider="flatpickr" data-range-date="true" type="text" id="birthdate" name="birthdate"
+                                                    placeholder="{{ __('Choose') }} {{ __('Birth Date') }}" />
+                                                </div>
+
+                                                {{-- Gender --}}
+                                                <div class="col-xxl-6 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="select-role">{{ __('Gender') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <div class="mt-1">
+                                                    {{-- Male --}}
+                                                    <div class="form-check form-check-inline">
+                                                        <input checked="" class="form-check-input" id="gender" name="gender" type="radio" value="M" />
+                                                        <label class="form-check-label" for="gender">{{ __('Male') }}</label>
+                                                    </div>
+                                                    {{-- Female --}}
+                                                    <div class="form-check form-check-inline">
+                                                        <input class="form-check-input" id="gender" name="gender" type="radio" value="F" />
+                                                        <label class="form-check-label" for="gender">{{ __('Female') }}</label>
+                                                    </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Relation Name --}}
+                                                <div class="col-xxl-6 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="relation_name">{{ __('Relation Name') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input autocomplete="off" class="form-control" id="relation_name" name="relation_name" type="text"
+                                                    placeholder="{{ __('Patient Relation Name') }}" />
+                                                </div>
+
+                                                {{-- Relation Type --}}
+                                                <div class="col-xxl-6 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="relation_type">{{ __('Relation Type') }}
+                                                    <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-control" id="select-relation-type" name="relation_type"
+                                                    placeholder="{{ __('Choose Relation Type') }}"></select>
+                                                </div>
+
+                                                      {{-- Address --}}
+                                                <div class="col-xxl-12 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="address">{{ __('Address') }}</label>
+                                                    <textarea class="form-control" id="address" name="address" placeholder="{{ __('Address') }}"
+                                                    rows="5"></textarea>
+                                                </div>
+                                                </div>
+                                            </div>
+                                            {{-- Patient Data :end --}}
+
+                                            {{-- Transaction : begin --}}
+                                            <div class="col-lg-5 col-12 ps-lg-4">
+                                                        {{-- Title --}}
+                                                <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
+                                                <h4>{{ __('Transaction') }} {{ __('Details') }}</h4>
+                                                </div>
+
+                                                <div class="row">
+                                                {{-- Insurance --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mt-2">
+                                                    <label class="form-label" for="select-insurance">{{ __('Insurance') }}</label>
+                                                    <select class="form-control" id="select-insurance" name="insurance_id"
+                                                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}"></select>
+                                                </div>
+
+                                                {{-- Room --}}
+                                                <div class="col-xxl-6 col-md-6 col-12 mt-2">
+                                                    <label class="form-label" for="select-room">{{ __('Room') }}</label>
+                                                    <select class="form-control" id="select-room" name="room_id"
+                                                    placeholder="{{ __('Choose') }} {{ __('Room') }}"></select>
+                                                </div>
+
+                                                {{-- Doctor --}}
+                                                <div class="col-xxl-12 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="select-doctor">{{ __('Doctor') }}</label>
+                                                    <select class="form-control" id="select-doctor" name="doctor_id"
+                                                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}"></select>
+                                                </div>
+
+                                                {{-- Diagnosis --}}
+                                                <div class="col-xxl-12 col-md-12 col-12 mt-2">
+                                                    <label class="form-label" for="diagnosis">{{ __('Diagnosis') }}</label>
+                                                    <textarea class="form-control" id="diagnosis" name="diagnosis" placeholder="{{ __('Diagnosis') }}"
+                                                    rows="5"></textarea>
+                                                </div>
+                                                </div>
+                                            </div>
+                                            {{-- Transaction : end --}}
+                                        </div>
+                                <div class="d-flex justify-content-end mt-3">
+                                        <button class="btn btn-primary" data-wizard-next="#stepBloodRequest" type="button">Next: Blood Request →</button>
+                                </div>
+                         </div>
+
+                            <!-- Step 2: Blood Request -->
+                        <div class="tab-pane fade" id="stepBloodRequest">
+                                {{-- Title --}}
+                                <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
+                                <h4>{{ __('Blood Request') }} {{ __('Details') }}</h4>
+                                </div>
+
+                                {{-- Blood Required Date --}}
+                                <div class="row mb-3">
+                                    <div class="col-xxl-12 col-md-12 col-12">
+                                        <label class="col-form-label m-0" for="blood_required_at">
+                                            {{ __('Required Date') }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input class="form-control patient-blood-required-date" aria-describedby="patient-blood-required-date"
+                                            data-date-format="d-m-Y" data-provider="flatpickr" type="text" id="blood_required_at" name="blood_required_at"
+                                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" required />
+                                    </div>
+                                </div>
+
+                                {{-- Blood Pack Selection --}}
+                                <div class="row g-3">
+                                    {{-- Available Blood Packs (Left) --}}
+                                    <div class="col-lg-6 col-12">
+                                        <h5 class="mb-3">{{ __('Available Blood Packs') }}</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover" id="available-blood-pack-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th width="5%">{{ __('Blood Group') }}</th>
+                                                        <th width="5%">{{ __('Rhesus') }}</th>
+                                                        <th>{{ __('Component') }}</th>
+                                                        <th>{{ __('Action') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    {{-- Selected Blood Packs (Right) --}}
+                                    <div class="col-lg-6 col-12">
+                                        <h5 class="mb-3">{{ __('Selected Blood Packs') }}</h5>
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="selected-blood-pack-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{ __('Blood Group') }}</th>
+                                                        <th>{{ __('Rhesus') }}</th>
+                                                        <th>{{ __('Component') }}</th>
+                                                        <th>{{ __('Action') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Hidden Input for Selected Blood Packs --}}
+                                <input type="hidden" id="selected-blood-packs" name="selected_blood_packs" value="[]" />
+                                 <div class="d-flex justify-content-between mt-3">
+                                    <button class="btn btn-secondary" data-wizard-prev="#stepPatient" type="button">← Back</button>
+                                    <button class="btn btn-success" type="submit">{{ __('Submit Application') }}</button>
+                                </div>
+                        </div>
+            </div>
     </div>
 
-    <div class="row mb-2">
-      {{-- Medrec --}}
-      <div class="col-xxl-6 col-md-6 col-12 mb-0">
-        <label class="form-label" for="medrec">{{ __('Medrec') }}
-          <span class="text-danger">*</span>
-        </label>
-        <input autocomplete="off" class="form-control" id="medrec" name="medrec" type="text"
-          placeholder="{{ __('Medical Record') }}" readonly />
-        <small class="form-text text-muted">
-          {{ __('Click inputs to generate medrec.') }}
-        </small>
-      </div>
-
-      {{-- Name --}}
-      <div class="col-xxl-6 col-md-6 col-12 mb-0">
-        <label class="form-label" for="name">{{ __('Name') }}
-          <span class="text-danger">*</span>
-        </label>
-        <input autocomplete="off" class="form-control" id="name" name="name" type="text"
-          placeholder="{{ __('Patient Full Name') }}" />
-      </div>
-
-      {{-- Email --}}
-      <div class="col-xxl-6 col-md-6 col-12 mb-0">
-        <label class="col-form-label" for="email">{{ __('Email') }}</label>
-        <input autocomplete="off" class="form-control" id="email" name="email" type="email"
-          placeholder="{{ __('Patient Email Address') }}" />
-      </div>
-
-      {{-- Phone Number --}}
-      <div class="col-xxl-6 col-md-6 col-12 mb-0">
-        <label class="col-form-label" for="phone_number">{{ __('Phone Number') }}</label>
-        <input autocomplete="off" class="form-control" id="phone_number" name="phone_number" type="text"
-          placeholder="08**********" />
-      </div>
-
-      {{-- Blood Group --}}
-      <div class="col-xxl-6 col-md-6 col-12 mt-2">
-        <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}</label>
-        <select class="form-control" id="select-blood-group" name="blood_group"
-          placeholder="{{ __('A,B,AB,O') }}"></select>
-      </div>
-
-      {{-- Blood Rhesus --}}
-      <div class="col-xxl-6 col-md-6 col-12 mt-2">
-        <label class="form-label" for="select-blood-rhesus">{{ __('Blood Rhesus') }}</label>
-        <select class="form-control" id="select-blood-rhesus" name="blood_rhesus"
-          placeholder="{{ __('+/-') }}"></select>
-      </div>
-
-      {{-- Birth Date --}}
-      <div class="col-xxl-6 col-md-12 col-12 mb-0">
-        <label class="col-form-label m-0" for="birth_date">
-          {{ __('Birth Date') }}
-          <span class="text-danger">*</span>
-        </label>
-        <input class="form-control patient-birth-date" aria-describedby="patient-birth-date" data-date-format="d-m-Y"
-          data-provider="flatpickr" data-range-date="true" type="text" id="birth_date" name="birth_date"
-          placeholder="{{ __('Choose') }} {{ __('Birth Date') }}" />
-      </div>
-
-      {{-- Gender --}}
-      <div class="col-xxl-6 col-md-12 col-12 mt-2">
-        <label class="form-label" for="select-role">{{ __('Gender') }}
-          <span class="text-danger">*</span>
-        </label>
-        <div class="mt-1">
-          {{-- Male --}}
-          <div class="form-check form-check-inline">
-            <input checked="" class="form-check-input" id="gender" name="gender" type="radio" value="M" />
-            <label class="form-check-label" for="gender">{{ __('Male') }}</label>
-          </div>
-          {{-- Female --}}
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" id="gender" name="gender" type="radio" value="F" />
-            <label class="form-check-label" for="gender">{{ __('Female') }}</label>
-          </div>
-        </div>
-      </div>
-
-      {{-- Relation Name --}}
-      <div class="col-xxl-6 col-md-12 col-12 mt-2">
-        <label class="form-label" for="relation_name">{{ __('Relation Name') }}
-          <span class="text-danger">*</span>
-        </label>
-        <input autocomplete="off" class="form-control" id="relation_name" name="relation_name" type="text"
-          placeholder="{{ __('Patient Relation Name') }}" />
-      </div>
-
-      {{-- Relation Type --}}
-      <div class="col-xxl-6 col-md-12 col-12 mt-2">
-        <label class="form-label" for="relation_type">{{ __('Relation Type') }}
-          <span class="text-danger">*</span>
-        </label>
-        <select class="form-control" id="select-relation-type" name="relation_type"
-          placeholder="{{ __('Choose Relation Type') }}"></select>
-      </div>
-    </div>
-
-    {{-- Title --}}
-    <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-      <h4>{{ __('Transaction') }} {{ __('Details') }}</h4>
-    </div>
-
-    <div class="row">
-      {{-- Insurance --}}
-      <div class="col-xxl-6 col-md-6 col-12 mt-2">
-        <label class="form-label" for="select-insurance">{{ __('Insurance') }}</label>
-        <select class="form-control" id="select-insurance" name="insurance_id"
-          placeholder="{{ __('Choose') }} {{ __('Insurance') }}"></select>
-      </div>
-
-      {{-- Room --}}
-      <div class="col-xxl-6 col-md-6 col-12 mt-2">
-        <label class="form-label" for="select-room">{{ __('Room') }}</label>
-        <select class="form-control" id="select-room" name="room_id"
-          placeholder="{{ __('Choose') }} {{ __('Room') }}"></select>
-      </div>
-
-      {{-- Doctor --}}
-      <div class="col-xxl-12 col-md-12 col-12 mt-2">
-        <label class="form-label" for="select-doctor">{{ __('Doctor') }}</label>
-        <select class="form-control" id="select-doctor" name="doctor_id"
-          placeholder="{{ __('Choose') }} {{ __('Doctor') }}"></select>
-      </div>
-
-      {{-- Diagnosis --}}
-      <div class="col-xxl-12 col-md-12 col-12 mt-2">
-        <label class="form-label" for="diagnosis">{{ __('Diagnosis') }}</label>
-        <textarea class="form-control" id="diagnosis" name="diagnosis" placeholder="{{ __('Diagnosis') }}"
-          rows="5"></textarea>
-      </div>
-    </div>
-  </div>
-  {{-- Patient Data :end --}}
-
-  {{-- Blood Request Detail :begin --}}
-  <div class="col-lg-5 col-12 ps-lg-4">
-    {{-- Title --}}
-    <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-      <h4>{{ __('Blood Request') }} {{ __('Details') }}</h4>
-    </div>
-
-    <button class="btn btn-sm btn-soft-secondary" id="add-new-blood-pack-request" type="button">{{ __('Add Blood Pack')
-      }}</button>
-
-    {{-- Blood Required Date --}}
-    <div class="col-xxl-12 col-md-12 col-12 mt-2">
-      <label class="col-form-label m-0" for="blood_required_at">
-        {{ __('Required Date') }}
-        <span class="text-danger">*</span>
-      </label>
-      <input class="form-control patient-blood-required-date" aria-describedby="patient-blood-required-date"
-        data-date-format="d-m-Y" data-provider="flatpickr" type="text" id="blood_required_at" name="blood_required_at"
-        placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
-    </div>
-
-    {{-- Blood Pack --}}
-    <div class="col-xxl-12 col-md-12 col-12 mt-2">
-      <label class="form-label" for="select-blood-pack">{{ __('Blood Pack') }}</label>
-      <select class="form-control" id="select-blood-pack" name="blood_pack_id"
-        placeholder="{{ __('Choose') }} {{ __('Blood Pack') }}"></select>
-    </div>
-  </div>
-  {{-- Blood Request Detail :end --}}
-
-  <hr />
+  {{-- <hr /> --}}
 
   {{-- Submit Button --}}
-  <div class="col-lg-12 mt-2">
+  {{-- <div class="col-lg-12 mt-2">
     <button class="btn btn-primary" type="submit">{{ __('Add Blood Request') }}</button>
-  </div>
+  </div> --}}
 </form>
 {{-- Form Add New Blood Request :end --}}
