@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-class Insurance extends Model
+class Room extends Model
 {
     use HasFactory, SoftDeletes;
 
@@ -15,19 +15,19 @@ class Insurance extends Model
         'public_id',
         'is_active',
         'name',
+        'type',
+        'class',
         'general_code'
-
     ];
 
     protected $hidden = [
         'id',
     ];
-
     protected static function booted()
     {
-        static::creating(function ($insurance) {
-            if (empty($insurance->public_id)) {
-                $insurance->public_id = (string) Str::uuid();
+        static::creating(function ($room) {
+            if (empty($room->public_id)) {
+                $room->public_id = (string) Str::uuid();
             }
         });
     }

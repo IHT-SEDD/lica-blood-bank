@@ -2,11 +2,11 @@ import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-const FormAddSelector = "add_new_insurance"; // id selector untuk form add new
-const FormAddURL = "/master/insurance"; // url submit form add
-const FormEditSelector = "edit_data_insurance"; // id selector untuk form edit
-const ReloadDatatableSelector = "master-insurance-reload"; // reload datatable index
-const ModalEditSelector = "edit_data_master_insurance_modal"; // id selector untuk modal edit
+const FormAddSelector = "add_new_room"; // id selector untuk form add new
+const FormAddURL = "/master/room"; // url submit form add
+const FormEditSelector = "edit_data_room"; // id selector untuk form edit
+const ReloadDatatableSelector = "master-room-reload"; // reload datatable index
+const ModalEditSelector = "edit_data_master_room_modal"; // id selector untuk modal edit
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Select role dari tom-select untuk form add new data :begin ----------
@@ -36,9 +36,9 @@ const ModalEditSelector = "edit_data_master_insurance_modal"; // id selector unt
 // ---------- Select role dari tom-select untuk form add new data :begin ----------
 
 // ---------- Handle form penambahan user baru :begin ----------
-function AddNewInsurance() {
+function AddNewRoom() {
     // ---------- Validasi inputan form :begin ----------
-    const AddNewInsuranceValidation = GlobalFormValidation.init(
+    const AddNewRoomValidation = GlobalFormValidation.init(
         "#" + FormAddSelector,
         {
             name: {
@@ -56,17 +56,17 @@ function AddNewInsurance() {
     new GlobalSubmitForm({
         formId: FormAddSelector,
         url: FormAddURL,
-        validator: AddNewInsuranceValidation,
+        validator: AddNewRoomValidation,
         onSuccess: (data) => {
             notyf.success({
-                message: "New insurance added succesfully!",
+                message: "New Room added succesfully!",
             });
             console.log(data);
             window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
         onError: (err) => {
             notyf.error({
-                message: "New insurance failed to insert!",
+                message: "New Room failed to insert!",
             });
 
             console.error(err);
@@ -79,9 +79,9 @@ function AddNewInsurance() {
 // ---------- Handle form penambahan user baru :begin ----------
 
 // ---------- Handle form pembaharuan data user :begin ----------
-function EditDataInsurance() {
+function EditDataRoom() {
     // ---------- Validasi inputan form :begin ----------
-    const EditDataInsuranceValidation = GlobalFormValidation.init(
+    const EditDataRoomValidation = GlobalFormValidation.init(
         "#" + FormEditSelector,
         {
             name: {
@@ -103,10 +103,10 @@ function EditDataInsurance() {
             return FormAddURL + `/${form.dataset.id}`;
         },
         method: "PATCH",
-        validator: EditDataInsuranceValidation,
+        validator: EditDataRoomValidation,
         onSuccess: (data) => {
             notyf.success({
-                message: "Data insurance updated succesfully!",
+                message: "Data Room updated succesfully!",
             });
             window.dispatchEvent(new Event(ReloadDatatableSelector));
             const modalEl = document.getElementById(ModalEditSelector);
@@ -115,7 +115,7 @@ function EditDataInsurance() {
         },
         onError: (err) => {
             notyf.error({
-                message: "Data insurance failed to update!",
+                message: "Data Room failed to update!",
             });
         },
 
@@ -127,6 +127,6 @@ function EditDataInsurance() {
 
 document.addEventListener("DOMContentLoaded", function () {
     // SelectRole();
-    AddNewInsurance();
-    EditDataInsurance();
+    AddNewRoom();
+    EditDataRoom();
 });
