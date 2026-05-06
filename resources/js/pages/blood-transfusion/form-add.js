@@ -1,12 +1,17 @@
 // ---------- Import Libraries ----------
 import { log } from "handlebars/runtime";
-import { GlobalAdvanceFlatpickr } from "../../app";
+import {
+    GlobalAdvanceFlatpickr,
+    GlobalSubmitForm,
+    GlobalFormValidation,
+} from "../../app";
 import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Form
-const AddNewBloodRequestForm = "add_new_blood_request";
+const FormAddSelector = "add_new_blood_request";
 const AddNewPatientBtn = "add-new-patient-data";
+const FormAddURL = "/blood-transfusion/store"; // url submit form add
 
 // Patient
 const SelectPatientSelector = "#select-patient";
@@ -311,6 +316,48 @@ function toggleAddNewPatient() {
 }
 // ---------- Add New Patient Toggle :end ----------
 
+// ---------- Handle form Blood Request :begin ----------
+function AddNewBloodRequest() {
+    // ---------- Validasi inputan form :begin ----------
+    const AddNewBloodRequestValidation = GlobalFormValidation.init(
+        "#" + FormAddSelector,
+        {
+            name: {
+                validators: {
+                    notEmpty: {
+                        message: "Name is required",
+                    },
+                },
+            },
+        },
+    );
+    // ---------- Validasi inputan form :end ----------
+
+    // ---------- Submit form ke url :begin ----------
+    new GlobalSubmitForm({
+        formId: FormAddSelector,
+        url: FormAddURL,
+        validator: AddNewBloodRequestValidation,
+        onSuccess: (data) => {
+            notyf.success({
+                message: "New Blood Request added succesfully!",
+            });
+            window.dispatchEvent(new Event(ReloadDatatableSelector));
+        },
+        onError: (err) => {
+            notyf.error({
+                message: "New Blood Request failed to insert!",
+            });
+
+            console.error(err);
+        },
+
+        resetOnSuccess: true,
+    });
+    // ---------- Submit form ke url :end ----------
+}
+// ---------- Handle form Blood Request :begin ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // Tom Select
     SelectPatient();
@@ -318,9 +365,10 @@ document.addEventListener("DOMContentLoaded", function () {
     SelectBloodGroup();
     SelectRelationType();
     SelectInsurance();
-    // SelectRoom();
+    SelectRoom();
     SelectDoctor();
     SelectBloodPack();
+    AddNewBloodRequest();
 
     // Datepicker
     PatientBirthdateDatepicker();

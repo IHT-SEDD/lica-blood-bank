@@ -38,9 +38,9 @@ class BloodTransfusionController extends Controller
 
             if ($searchValue !== '') {
                 $query->where(function ($sub) use ($searchValue) {
-                    $sub->where('blood_packs.blood_group', 'like', "%{$searchValue}%")
-                        ->orWhere('blood_packs.blood_rhesus', 'like', "%{$searchValue}%")
-                        ->orWhere('blood_packs.blood_component', 'like', "%{$searchValue}%");
+                    $sub->where('blood_packs.blood_group', 'like', "{$searchValue}%")
+                        ->orWhere('blood_packs.blood_rhesus', 'like', "{$searchValue}%")
+                        ->orWhere('blood_packs.blood_component', 'like', "{$searchValue}%");
                 });
             }
 
@@ -69,5 +69,12 @@ class BloodTransfusionController extends Controller
             'recordsFiltered' => $recordsFiltered,
             'data' => $pageData,
         ]);
+    }
+
+    // ---------- Store Blood Request -----------
+
+    public function store(Request $request)
+    {
+        dd($request->all());
     }
 }

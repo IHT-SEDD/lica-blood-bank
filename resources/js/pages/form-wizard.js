@@ -8,11 +8,18 @@
 class FormWizard {
     constructor(wizardElement) {
         this.wizard = wizardElement;
-        this.form = wizardElement.closest('form');
-        this.validate = this.form?.hasAttribute('data-wizard-validation') ?? false;
-        this.tabs = wizardElement.querySelectorAll('[data-wizard-nav] .nav-link');
-        this.tabPanes = wizardElement.querySelectorAll('[data-wizard-content] .tab-pane');
-        this.progressBar = wizardElement.querySelector('[data-wizard-progress]');
+        this.form = wizardElement.closest("form");
+        this.validate =
+            this.form?.hasAttribute("data-wizard-validation") ?? false;
+        this.tabs = wizardElement.querySelectorAll(
+            "[data-wizard-nav] .nav-link",
+        );
+        this.tabPanes = wizardElement.querySelectorAll(
+            "[data-wizard-content] .tab-pane",
+        );
+        this.progressBar = wizardElement.querySelector(
+            "[data-wizard-progress]",
+        );
         this.currentIndex = 0;
     }
 
@@ -27,21 +34,25 @@ class FormWizard {
     disableFutureTabs() {
         if (this.validate) {
             this.tabs.forEach((tab, index) => {
-                if (index > 0) tab.classList.add('disabled');
+                if (index > 0) tab.classList.add("disabled");
             });
         }
     }
 
     bindTabClicks() {
         this.tabs.forEach((tab, index) => {
-            tab.addEventListener('click', (e) => {
-                if (this.validate && index > this.currentIndex && !this.validateStep(this.currentIndex)) {
+            tab.addEventListener("click", (e) => {
+                if (
+                    this.validate &&
+                    index > this.currentIndex &&
+                    !this.validateStep(this.currentIndex)
+                ) {
                     e.preventDefault();
                     e.stopImmediatePropagation();
                 }
             });
 
-            tab.addEventListener('shown.bs.tab', () => {
+            tab.addEventListener("shown.bs.tab", () => {
                 this.currentIndex = index;
                 this.updateProgress(index);
             });
@@ -49,18 +60,18 @@ class FormWizard {
     }
 
     bindButtons() {
-        this.wizard.querySelectorAll('[data-wizard-next]').forEach(btn => {
-            btn.addEventListener('click', () => this.nextStep());
+        this.wizard.querySelectorAll("[data-wizard-next]").forEach((btn) => {
+            btn.addEventListener("click", () => this.nextStep());
         });
 
-        this.wizard.querySelectorAll('[data-wizard-prev]').forEach(btn => {
-            btn.addEventListener('click', () => this.prevStep());
+        this.wizard.querySelectorAll("[data-wizard-prev]").forEach((btn) => {
+            btn.addEventListener("click", () => this.prevStep());
         });
 
         if (this.form) {
-            this.form.addEventListener('submit', () => {
+            this.form.addEventListener("submit", () => {
                 if (this.progressBar) {
-                    this.progressBar.style.width = '100%';
+                    this.progressBar.style.width = "100%";
                 }
             });
         }
@@ -70,32 +81,50 @@ class FormWizard {
         if (this.currentIndex >= this.tabs.length - 1) return;
 
         if (!this.validate || this.validateStep(this.currentIndex)) {
-            if (this.validate) this.tabs[this.currentIndex + 1].classList.remove('disabled');
-            this.tabs[this.currentIndex].classList.add('wizard-item-done');
+            if (this.validate)
+                this.tabs[this.currentIndex + 1].classList.remove("disabled");
+            this.tabs[this.currentIndex].classList.add("wizard-item-done");
             this.showTab(this.currentIndex + 1);
         }
     }
 
     prevStep() {
         if (this.currentIndex <= 0) return;
-        this.tabs[this.currentIndex - 1].classList.remove('wizard-item-done');
+        this.tabs[this.currentIndex - 1].classList.remove("wizard-item-done");
         this.showTab(this.currentIndex - 1);
     }
 
     validateStep(index) {
         if (!this.validate) return true;
 
-        const inputs = this.tabPanes[index].querySelectorAll('input, select, textarea');
+        const inputs = this.tabPanes[index].querySelectorAll(
+            "input, select, textarea",
+        );
         let isValid = true;
 
-        inputs.forEach(input => {
-            input.classList.remove('is-invalid', 'is-valid');
+        inputs.forEach((input) => {
+            let isFieldValid = input.checkValidity();
 
-            if (!input.checkValidity()) {
-                input.classList.add('is-invalid');
+            // Workaround for HTML5 ignoring readonly fields (e.g. flatpickr inputs)
+            if (input.hasAttribute("required") && input.value.trim() === "") {
+                isFieldValid = false;
+            }
+
+            input.classList.remove("is-invalid", "is-valid");
+
+            // Handle TomSelect wrappers
+            let tsWrapper = input.tomselect ? input.tomselect.wrapper : null;
+            if (tsWrapper) {
+                tsWrapper.classList.remove("is-invalid", "is-valid");
+            }
+
+            if (!isFieldValid) {
+                input.classList.add("is-invalid");
+                if (tsWrapper) tsWrapper.classList.add("is-invalid");
                 isValid = false;
             } else {
-                input.classList.add('is-valid');
+                input.classList.add("is-valid");
+                if (tsWrapper) tsWrapper.classList.add("is-valid");
             }
         });
 
@@ -111,14 +140,15 @@ class FormWizard {
 
     showTab(index) {
         if (index < 0 || index >= this.tabs.length) return;
-        if (this.validate && this.tabs[index].classList.contains('disabled')) return;
+        if (this.validate && this.tabs[index].classList.contains("disabled"))
+            return;
 
         new bootstrap.Tab(this.tabs[index]).show();
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-wizard]').forEach(wizardEl => {
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("[data-wizard]").forEach((wizardEl) => {
         const wizard = new FormWizard(wizardEl);
         wizard.init();
     });

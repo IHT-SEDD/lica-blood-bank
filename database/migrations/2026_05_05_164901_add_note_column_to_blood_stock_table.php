@@ -10,11 +10,18 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('blood_stocks', function (Blueprint $table) {
-            $table->text('add_new_note')->nullable()->after('blood_status');
-            $table->text('note')->nullable()->after('add_new_note');
-        });
+    {   
+        if(!Schema::hasColumn('incoming_bloods', 'add_new_note')){
+               Schema::table('blood_stocks', function (Blueprint $table) {
+                    $table->text('add_new_note')->nullable()->after('blood_status');
+                });
+        }
+
+        if (!Schema::hasColumn('incoming_bloods', 'note')) {
+            Schema::table('blood_stocks', function (Blueprint $table) {
+                $table->text('note')->nullable()->after('add_new_note');
+            });
+        }
     }
 
     /**

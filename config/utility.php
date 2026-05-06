@@ -63,6 +63,12 @@ return [
   'with' => [],
  ],
 
+ 'room' => [
+  'model' => App\Models\Room::class,
+  'label' => 'name',
+  'with' => [],
+ ],
+
  'order-status' => [
   'type' => 'enum',
  ],
