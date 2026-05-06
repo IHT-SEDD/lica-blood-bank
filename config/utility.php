@@ -33,23 +33,23 @@ return [
         'with' => [],
     ],
 
- 'bag-number-by-po' => [
-  'model' => App\Models\IncomingBloodDetail::class,
-  'label' => 'bag_number',
-  'with' => ['incomingBloods'],
-  'conditions' => [
-   [
-    'field' => 'incomingBloods.po_number',
-    'operator' => 'whereHas',
-    'relation' => 'incomingBloods',
-    'value_field' => 'po_number',
-   ],
-   [
-    'field' => 'ready_at',
-    'operator' => 'whereNull',
-   ],
-  ],
- ],
+    'bag-number-by-po' => [
+        'model' => App\Models\IncomingBloodDetail::class,
+        'label' => 'bag_number',
+        'with' => ['incomingBloods'],
+        'conditions' => [
+            [
+                'field' => 'incomingBloods.po_number',
+                'operator' => 'whereHas',
+                'relation' => 'incomingBloods',
+                'value_field' => 'po_number',
+            ],
+            [
+                'field' => 'ready_at',
+                'operator' => 'whereNull',
+            ],
+        ],
+    ],
 
     'doctor' => [
         'model' => App\Models\Doctor::class,
@@ -77,23 +77,23 @@ return [
         'with' => [],
     ],
 
- 'purchase-order' => [
-  'model' => App\Models\OrderBlood::class,
-  'label' => 'po_number',
-  'with' => [],
-  'conditions' => [
-   ['field' => 'status', 'operator' => 'not_in', 'value' => ['draft', 'done', 'deleted', 'cancelled']],
-  ],
- ],
+    'purchase-order' => [
+        'model' => App\Models\OrderBlood::class,
+        'label' => 'po_number',
+        'with' => [],
+        'conditions' => [
+            ['field' => 'status', 'operator' => 'not_in', 'value' => ['draft', 'done', 'deleted', 'cancelled']],
+        ],
+    ],
 
- 'purchase-order-registered' => [
-  'model' => App\Models\IncomingBlood::class,
-  'label' => 'po_number',
-  'with' => [],
-  'conditions' => [
-   ['field' => 'status', 'operator' => 'not_in', 'value' => ['stock_ready', 'deleted']],
-  ],
- ],
+    'purchase-order-registered' => [
+        'model' => App\Models\IncomingBlood::class,
+        'label' => 'po_number',
+        'with' => [],
+        'conditions' => [
+            ['field' => 'status', 'operator' => 'not_in', 'value' => ['stock_ready', 'deleted']],
+        ],
+    ],
 
     'relation-type' => [
         'type' => 'enum',
