@@ -97,7 +97,7 @@ function selectBloodPack(id, publicId, label, component, rhesus) {
     updateHiddenInput();
 
     notyf.success({
-        message: "Blood pack berhasil ditambahkan!",
+        message: "Blood pack added successfully!",
     });
 }
 
@@ -109,7 +109,7 @@ function removeBloodPack(index) {
     updateHiddenInput();
 
     notyf.success({
-        message: "Blood pack berhasil dihapus!",
+        message: "Blood pack successfully removed!",
     });
 }
 
