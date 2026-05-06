@@ -51,6 +51,7 @@ return [
     'package' => [
         'view' => 'pages.master.package.index',
         'model' => App\Models\Package::class,
+        'with' => ['tests'],
     ],
     'package-test' => [
         'view' => 'pages.master.package-test.index',

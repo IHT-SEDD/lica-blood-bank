@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -14,6 +15,8 @@ class PackageTest extends Model
     protected $fillable = [
         'public_id',
         'is_active',
+        'package_id',
+        'test_id'
     ];
 
     protected $hidden = [
@@ -26,5 +29,17 @@ class PackageTest extends Model
                 $package_test->public_id = (string) Str::uuid();
             }
         });
+    }
+
+    // Relation to order_bloods
+    public function package(): BelongsTo
+    {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
+
+    // Relation to blood_packs
+    public function test(): BelongsTo
+    {
+        return $this->belongsTo(Test::class, 'test_id');
     }
 }

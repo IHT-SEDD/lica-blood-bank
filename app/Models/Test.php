@@ -29,7 +29,7 @@ class Test extends Model
     {
         static::creating(function ($test) {
             if (empty($test->public_id)) {
-                $test->public_id = (string) Str::uuid();
+                $test->public_id = (string)Str::uuid();
             }
         });
     }

@@ -23,9 +23,9 @@ class Doctor extends Model
     ];
     protected static function booted()
     {
-        static::creating(function ($insurance) {
-            if (empty($insurance->public_id)) {
-                $insurance->public_id = (string) Str::uuid();
+        static::creating(function ($doctor) {
+            if (empty($doctor->public_id)) {
+                $doctor->public_id = (string) Str::uuid();
             }
         });
     }

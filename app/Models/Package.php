@@ -30,4 +30,8 @@ class Package extends Model
             }
         });
     }
+    public function package_tests()
+    {
+        return $this->hasMany(PackageTest::class, 'package_id');
+    }
 }
