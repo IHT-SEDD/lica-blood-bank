@@ -37,16 +37,17 @@
             data-bs-title="{{ __('Generate') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-file-spark fs-4 me-2"></i>{{ __('Generate') }} PO
           </button>
+
+          @role('superadmin')
+          <button class="btn btn-sm btn-secondary fw-medium mb-0" id="preview_po_btn"
+            data-bs-title="{{ __('Preview') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-eye-spark fs-4 me-2"></i>{{ __('Preview') }} PO
+          </button>
+          @endrole
         </div>
 
         {{-- CENTER --}}
         <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-center">
-          <button class="btn btn-sm btn-secondary fw-medium mb-0" id="update_to_draft_btn"
-            data-bs-title="{{ __('Set Status to') }} {{ __('Draft') }}" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
-            <i class="ti ti-notes fs-4 me-2"></i>{{ __('Draft') }}
-          </button>
-
           <button class="btn btn-sm btn-success fw-medium mb-0" id="update_to_done_btn"
             data-bs-title="{{ __('Set Status to') }} {{ __('Done') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-check fs-4 me-2"></i>{{ __('Done') }}

@@ -49,7 +49,6 @@ class UtilityService
       $this->applySearch($query, $labelField, $search);
     }
 
-
     $data = $query->limit(100)->get();
 
     return [
@@ -226,6 +225,14 @@ class UtilityService
 
       if (!$field) continue;
 
+      // ---------- Handle whereNotIn :begin ----------
+      if ($operator === 'not_in') {
+        $values = is_array($value) ? $value : [$value];
+        $query->whereNotIn($field, $values);
+        continue;
+      }
+      // ---------- Handle whereNotIn :end ----------
+
       $query->where($field, $operator, $value);
     }
   }
@@ -262,6 +269,27 @@ class UtilityService
         continue;
       }
       // ---------- Handle whereIn :end ----------
+
+      // ---------- Handle whereNotIn :begin ----------
+      if ($operator === 'not_in') {
+        $field = $cond['field'] ?? null;
+        if (!$field) continue;
+
+        $values = is_array($id) ? $id : explode(',', $id);
+        $query->whereNotIn($field, $values);
+        continue;
+      }
+      // ---------- Handle whereNotIn :end ----------
+
+      // ---------- Handle whereNull :begin ----------
+      if ($operator === 'whereNull') {
+        $field = $cond['field'] ?? null;
+        if (!$field) continue;
+
+        $query->whereNull($field);
+        continue;
+      }
+      // ---------- Handle whereNull :end ----------
 
       // ---------- Handle kondisi biasa :begin ----------
       $field = $cond['field'] ?? null;

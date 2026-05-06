@@ -44,6 +44,10 @@ return [
                 'relation' => 'incomingBloods',
                 'value_field' => 'po_number',
             ],
+            [
+                'field' => 'ready_at',
+                'operator' => 'whereNull',
+            ],
         ],
     ],
 
@@ -78,16 +82,16 @@ return [
         'label' => 'po_number',
         'with' => [],
         'conditions' => [
-            ['field' => 'status', 'operator' => '=', 'value' => 'order_created'],
+            ['field' => 'status', 'operator' => 'not_in', 'value' => ['draft', 'done', 'deleted', 'cancelled']],
         ],
     ],
 
     'purchase-order-registered' => [
-        'model' => App\Models\OrderBlood::class,
+        'model' => App\Models\IncomingBlood::class,
         'label' => 'po_number',
         'with' => [],
         'conditions' => [
-            ['field' => 'status', 'operator' => '=', 'value' => 'order_stock_registered'],
+            ['field' => 'status', 'operator' => 'not_in', 'value' => ['stock_ready', 'deleted']],
         ],
     ],
 
