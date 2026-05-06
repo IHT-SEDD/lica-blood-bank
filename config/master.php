@@ -40,4 +40,8 @@ return [
         'view' => 'pages.master.doctor.index',
         'model' => App\Models\Doctor::class,
     ],
+    'room' => [
+        'view' => 'pages.master.room.index',
+        'model' => App\Models\Room::class,
+    ],
 ];

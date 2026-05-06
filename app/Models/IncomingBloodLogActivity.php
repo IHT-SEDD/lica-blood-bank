@@ -17,7 +17,7 @@ class IncomingBloodLogActivity extends Model
         'po_number',
         'batch_number',
         'incoming_data',
-        'blood_stock_data',
+        'blood_data',
         'status',
         'created_by_user_name',
         'description',
@@ -30,7 +30,7 @@ class IncomingBloodLogActivity extends Model
 
     protected $casts = [
         'incoming_data' => 'array',
-        'blood_stock_data' => 'array',
+        'blood_data' => 'array',
     ];
 
     protected static function booted()

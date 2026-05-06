@@ -61,8 +61,8 @@ function getFilters() {
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterinsuranceTableInstance?.instance) {
-        masterinsuranceTableInstance.instance.ajax.reload();
+    if (masterInsuranceTableInstance?.instance) {
+        masterInsuranceTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
@@ -79,6 +79,7 @@ function MasterInsuranceTable() {
             },
         },
         { data: "name", title: "Name" },
+        { data: "general_code", title: "General Code" },
         {
             data: "created_at",
             title: "Created At",
@@ -184,6 +185,8 @@ function EditDataInsuranceActionModal() {
 
         document.querySelector("#edit_data_insurance_name").value =
             data.name ?? "";
+        document.querySelector("#edit_data_insurance_general_code").value =
+            data.general_code ?? "";
     });
 }
 // ---------- Handle modal edit data :end ----------
@@ -362,6 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {
+        console.log('testing ini reaload')
         reloadTable();
     });
 });

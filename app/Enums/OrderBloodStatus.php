@@ -11,6 +11,9 @@ enum OrderBloodStatus: string
     case ORDER_CANCELLED = 'order_cancelled';
     case ORDER_DELETED = 'order_deleted';
 
+    case SOME_ORDER_STOCK_REGISTERED = 'some_order_stock_registered';
+    case ALL_ORDER_STOCK_REGISTERED = 'all_order_stock_registered';
+
     case DONE = 'done';
 
     public function label(): string
@@ -22,6 +25,9 @@ enum OrderBloodStatus: string
             self::ORDER_CREATED => 'Order Created',
             self::ORDER_CANCELLED => 'Order Cancelled',
             self::ORDER_DELETED => 'Order Deleted',
+
+            self::SOME_ORDER_STOCK_REGISTERED => 'Some Stock Order Are Registered',
+            self::ALL_ORDER_STOCK_REGISTERED => 'All Stock Order Are Registered',
 
             self::DONE => 'Done',
         };

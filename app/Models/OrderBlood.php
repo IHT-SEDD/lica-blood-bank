@@ -58,7 +58,6 @@ class OrderBlood extends Model
         return $this->belongsTo(User::class, 'ordered_by_user_id');
     }
 
-
     // Relation from order_blood_details
     public function orderBloodDetails()
     {

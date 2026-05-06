@@ -78,19 +78,28 @@ Route::middleware('auth')->group(function () {
   // --------------------------------------------------------------------------
   Route::prefix('stock-in')->name('stock-in.')->controller(StockInController::class)->group(function () {
    // ---------- Static Route ----------
-   Route::get('/new-incoming-stock', 'newStockInIndex')->name('new-incoming-stock'); // Halaman form add stock in
-   Route::get('/new-bag-number', 'generateBagNumber')->name('generate-bag-number'); // Generate bag number
-   Route::get('/get-data/{id}', 'getData')->name('get-data'); // Generate bag number
+   Route::get('/new-incoming-stock', 'newStockInIndex')->name('new-incoming-stock');
+   Route::get('/new-bag-number', 'generateBagNumber')->name('generate-bag-number');
+   Route::get('/get-data/{id}', 'getData')->name('get-data');
 
    // ---------- Datatable ----------
    Route::get('/data', 'stockInTable')->name('stock-in-table'); // Datatable stock in
 
-   // ---------- Write data incoming stock ----------
-   Route::post('/new-incoming-stock', 'insertNewStockIn')->name('insert-new-incoming-stock'); // Insert data stock in
+   // ---------- Detail group routes ----------
+   Route::prefix('detail')->group(function () {
+    Route::get('incoming-stock/{id}', 'detailIncomingStockIndex')->name('detail-incoming-stock');
+    Route::get('/data/incoming-blood/{id}', 'incomingBloodTable')->name('incoming-blood-table');
+    Route::get('/data/order-blood/{id}', 'orderBloodTable')->name('order-blood-table');
+    Route::get('/data/incoming-stock/{id}', 'getIncomingStock')->name('get-incoming-stock');
+    Route::get('/data/order/{id}', 'getOrderBlood')->name('get-order-blood');
+   });
+
+   // ---------- Write data ----------
+   Route::post('/new-incoming-stock', 'insertNewStockIn')->name('insert-new-incoming-stock');
 
    // ---------- Delete & Restore ----------
-   Route::delete('/data/{id}', 'deleteDataStockIn')->name('delete-data-incoming-stock'); // Hapus data stock in
-   Route::patch('/data/{id}/restore', 'restoreDataStockIn')->name('restore-data-incoming-stock'); // Pulihkan data stock in
+   Route::delete('/data/{id}', 'deleteDataStockIn')->name('delete-data-incoming-stock');
+   Route::patch('/data/{id}/restore', 'restoreDataStockIn')->name('restore-data-incoming-stock');
   });
 
   // --------------------------------------------------------------------------
@@ -102,6 +111,20 @@ Route::middleware('auth')->group(function () {
 
    // ---------- Datatable ----------
    Route::get('/data', 'bloodStockTable')->name('blood-stock-table'); // Datatable
+
+   // ---------- Detail group routes ----------
+   Route::prefix('detail')->group(function () {
+    Route::get('{id}', 'detailBloodStockIndex')->name('detail-blood-stock');
+    Route::get('/data/{id}', 'detailStockBloodDataTable')->name('stock-blood-table');
+    Route::get('/get-data/{id}', 'getDataDetailStockBlood')->name('get-stock-blood');
+    Route::get('/print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica-stock-blood');
+    Route::get('/download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica-stock-blood');
+    Route::delete('/data/{id}', 'deleteStockBloodData')->name('delete-stock-blood');
+    Route::patch('/data/{id}/restore', 'restoreStockBloodData')->name('restore-stock-blood');
+   });
+
+   // ---------- Write data ----------
+   Route::post('/new-blood-stock', 'insertNewBloodStock')->name('insert-new-blood-stock');
   });
  });
 });

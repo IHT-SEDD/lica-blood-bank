@@ -9,7 +9,7 @@
 
     {{-- Button Add New Stock --}}
     <a href="{{ route('inventory.stock-in.new-incoming-stock') }}" class="btn btn-soft-info">
-      {{ __('Add New Stock') }}
+      {{ __('Add New Incoming Stock') }}
     </a>
   </div>
   {{-- Title :end --}}

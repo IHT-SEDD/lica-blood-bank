@@ -82,7 +82,7 @@ function AddNewInsurance() {
 function EditDataInsurance() {
     // ---------- Validasi inputan form :begin ----------
     const EditDataInsuranceValidation = GlobalFormValidation.init(
-        "#" + FormAddSelector,
+        "#" + FormEditSelector,
         {
             name: {
                 validators: {

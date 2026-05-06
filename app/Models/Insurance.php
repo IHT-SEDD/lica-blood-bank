@@ -14,7 +14,8 @@ class Insurance extends Model
     protected $fillable = [
         'public_id',
         'is_active',
-        'name'
+        'name',
+        'general_code'
 
     ];
 

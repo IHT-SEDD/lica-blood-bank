@@ -21,8 +21,6 @@ const DataURL = "/inventory/history-order/data"; // url fetch data untuk datatab
 const ReloadDatatableSelector = "history-order-reload"; // index reload datatable
 
 // See More Action
-const FormSeeSelector = "#see_data_history_order"; // id selector form see
-const ModalSeeSelector = "see_data_history_order_modal"; // id selector modal see
 const ActionSeeSelector = ".btn-see-history-order"; // class selector button see
 const AttributeSee = "seeId"; // attribute data id see
 
