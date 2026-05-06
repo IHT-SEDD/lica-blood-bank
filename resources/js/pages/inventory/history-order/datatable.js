@@ -8,6 +8,7 @@ import {
     DateTimeFormatter,
 } from "../../../app";
 import TomSelect from "tom-select";
+import { TextFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let historyOrderTableInstance; // instance datatable untuk global
@@ -118,7 +119,7 @@ function HistoryOrderTable() {
                 } else if (isDraft) {
                     return `<span class="badge badge-label badge-soft-warning">Draft</span>`;
                 } else {
-                    return `<span class="badge badge-label badge-soft-secondary">Order Created</span>`;
+                    return `<span class="badge badge-label badge-soft-secondary">${TextFormatter.format(data)}</span>`;
                 }
             },
         },
@@ -157,15 +158,21 @@ function HistoryOrderTable() {
                         <li>
                             <button id="see-data-${row.public_id}" class="dropdown-item fw-medium btn-see-history-order ${isDeleted ? "disabled" : ""}" 
                             data-see-id="${row.public_id}" type="button">
-                            See More</button>
+                            <i class="ti ti-file-search align-middle me-2 fs-4"></i>
+                            See More
+                            </button>
                         </li>
                         <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-history-order ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
-                            Restore</button>
+                            <i class="ti ti-recycle align-middle me-2 fs-4"></i>
+                            Restore
+                            </button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-history-order ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
-                            Delete</button>
+                            <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                            Delete
+                            </button>
                         </li>
                     </ul>
                 `;
@@ -447,7 +454,7 @@ function SeeDataHistoryDataAction() {
         const id = btn.dataset[AttributeSee];
         if (!id) return;
 
-        window.location.href = `/inventory/history-order/detail-order/${id}`;
+        window.location.href = `/inventory/history-order/detail/${id}`;
     });
 }
 // ---------- Handle see data :end ----------
@@ -461,13 +468,11 @@ document.addEventListener("DOMContentLoaded", function () {
     FilterVendor();
     FilterBloodComponent();
     FilterOrderStatus();
-    // EditStorage();
 
     // Date range picker
     DateRangeFilter();
 
     // Action data
-    // EditDataStorageRackActionModal();
     DeleteDataHistoryDataActionModal();
     RestoreDataHistoryDataActionModal();
     SeeDataHistoryDataAction();

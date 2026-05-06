@@ -90,20 +90,6 @@ function initTomSelect(el, url) {
 }
 // ---------- Helper: init TomSelect pada elemen dengan value default :end ----------
 
-// ---------- Helper: tampilkan fullscreen loading overlay :begin ----------
-function showPageLoading() {
-    const overlay = document.getElementById("fullscreen_loading_overlay");
-    if (overlay) overlay.classList.remove("d-none");
-}
-// ---------- Helper: tampilkan fullscreen loading overlay :end ----------
-
-// ---------- Helper: sembunyikan fullscreen loading overlay :begin ----------
-function hidePageLoading() {
-    const overlay = document.getElementById("fullscreen_loading_overlay");
-    if (overlay) overlay.classList.add("d-none");
-}
-// ---------- Helper: sembunyikan fullscreen loading overlay :end ----------
-
 // ---------- Fungsi untuk generate PO Number :begin ----------
 function GeneratePoNumber() {
     const poNumberInput = document.getElementById(PoNumberInputSelector);
@@ -352,10 +338,10 @@ function HandleFormAddNewOrder() {
             });
         },
         onSuccess: () => {
-            hidePageLoading();
             resetTable();
             notyf.success({ message: "New order added successfully!" });
             setTimeout(() => {
+                hidePageLoading();
                 window.location.href = "/inventory/history-order/";
             }, 2000);
         },

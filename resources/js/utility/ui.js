@@ -35,3 +35,62 @@ window.notyf = new Notyf({
         },
     ],
 });
+
+// Class global format text
+export class TextFormatter {
+    static format(text, format = "underscoreReplace") {
+        if (!text) return "-";
+
+        switch (format) {
+            case "underscoreReplace":
+                return this.underscoreReplace(text);
+
+            case "capitalize":
+                return this.capitalize(text);
+
+            case "uppercase":
+                return text.toUpperCase();
+
+            case "lowercase":
+                return text.toLowerCase();
+
+            case "titleCase":
+                return this.titleCase(text);
+
+            case "slugToTitle":
+                return this.slugToTitle(text);
+
+            case "camelToTitle":
+                return this.camelToTitle(text);
+
+            default:
+                return text;
+        }
+    }
+
+    static underscoreReplace(text) {
+        return text
+            .replaceAll("_", " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    static capitalize(text) {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    }
+
+    static titleCase(text) {
+        return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    static slugToTitle(text) {
+        return text
+            .replaceAll("-", " ")
+            .replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    static camelToTitle(text) {
+        return text
+            .replace(/([A-Z])/g, " $1")
+            .replace(/^./, (str) => str.toUpperCase());
+    }
+}

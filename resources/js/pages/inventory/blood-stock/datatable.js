@@ -106,6 +106,7 @@ function BloodStockTable() {
                     <ul class="dropdown-menu">
                         <li>
                             <button id="see-detail-${row.public_id}" class="dropdown-item fw-medium btn-see-detail-blood-stock text-primary" data-see-detail-id="${row.public_id}" type="button">
+                            <i class="ti ti-heart-search align-middle me-2 fs-4"></i>
                             Detail
                             </button>
                         </li>

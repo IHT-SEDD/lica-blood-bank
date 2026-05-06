@@ -127,48 +127,63 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Master Data Loggings
         'masteradd' => [
             'driver' => 'single',
-            'path' => storage_path('logs/master-add-data.log'),
+            'path' => storage_path('logs/master/master-add-data.log'),
             'level' => 'debug',
         ],
-
         'masterupdate' => [
             'driver' => 'single',
-            'path' => storage_path('logs/master-update-data.log'),
+            'path' => storage_path('logs/master/master-update-data.log'),
             'level' => 'debug',
         ],
-
         'masterdelete' => [
             'driver' => 'single',
-            'path' => storage_path('logs/master-delete-data.log'),
+            'path' => storage_path('logs/master/master-delete-data.log'),
             'level' => 'debug',
         ],
 
+        // History Order Loggings
         'neworderadd' => [
             'driver' => 'single',
-            'path' => storage_path('logs/order-new-data.log'),
+            'path' => storage_path('logs/history-order/order-new-data.log'),
+            'level' => 'debug',
+        ],
+        'generatepofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/generate-po-file.log'),
+            'level' => 'debug',
+        ],
+        'downloadpofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/download-po-file.log'),
+            'level' => 'debug',
+        ],
+        'printpofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/print-po-file.log'),
             'level' => 'debug',
         ],
 
+        // Stock In Loggings
         'newincomingbloodadd' => [
             'driver' => 'single',
             'path' => storage_path('logs/incoming-blood-new-data.log'),
             'level' => 'debug',
         ],
-
         'newincomingblooddelete' => [
             'driver' => 'single',
             'path' => storage_path('logs/incoming-blood-delete-data.log'),
             'level' => 'debug',
         ],
-
         'newincomingbloodrestore' => [
             'driver' => 'single',
             'path' => storage_path('logs/incoming-blood-restore-data.log'),
             'level' => 'debug',
         ],
 
+        // Blood Stock Loggings
         'newbloodstock' => [
             'driver' => 'single',
             'path' => storage_path('logs/new-blood-stock-data.log'),
