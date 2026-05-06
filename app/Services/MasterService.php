@@ -150,7 +150,7 @@ class MasterService
       // ---------- Lempar error respon ke frontend ----------
       return response()->json([
         'message' => `New data for master $master failed to insert!`,
-         'error' => $e->getMessage(),
+        'error' => $e->getMessage(),
       ], 500);
     }
   }
