@@ -255,7 +255,11 @@
 @endsection
 
 @section('scripts')
-@vite(['resources/js/pages/blood-transfusion/index.js',
+@vite([
+'resources/js/pages/blood-transfusion/index.js',
+'resources/js/pages/blood-transfusion/datatable.js',
 'resources/js/pages/blood-transfusion/analytic/datatables.js',
-'resources/js/pages/blood-transfusion/form-add.js'])
+'resources/js/pages/blood-transfusion/form-add.js',
+'resources/js/pages/form-wizard.js'
+])
 @endsection

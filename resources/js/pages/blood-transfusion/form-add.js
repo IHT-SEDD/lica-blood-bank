@@ -1,4 +1,5 @@
 // ---------- Import Libraries ----------
+import { log } from "handlebars/runtime";
 import { GlobalAdvanceFlatpickr } from "../../app";
 import TomSelect from "tom-select";
 
@@ -25,13 +26,188 @@ const BloodRequiredDatePickerSelector = ".patient-blood-required-date";
 const AddNewBloodPackRequestBtn = "add-new-blood-pack-request";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
+// Select Blood Group and Rhesus
+let PatientSelectInstance;
+let BloodGroupSelectInstance;
+let BloodRhesusSelectInstance;
+let RelationTypeSelectInstance;
+let isCreatingNewPatient = false;
+
+// set variable global
+let birthdateFlatpickrInstance;
+
+// ---------- Tom Select Begin ----------
+
+function SelectBloodRhesus() {
+    BloodRhesusSelectInstance = initializeTomSelect(
+        SelectBloodRhesusSelector,
+        "/utility/select/blood-rhesus",
+    );
+}
+function SelectBloodGroup() {
+    BloodGroupSelectInstance = initializeTomSelect(
+        SelectBloodGroupSelector,
+        "/utility/select/blood-group",
+    );
+}
+function SelectRelationType() {
+    RelationTypeSelectInstance = initializeTomSelect(
+        SelectRelationTypeSelector,
+        "/utility/select/relation-type",
+    );
+}
+
+// Transaction
+function SelectInsurance() {
+    initializeTomSelect(SelectInsuranceSelector, "/utility/select/insurance");
+}
+function SelectRoom() {
+    initializeTomSelect(SelectRoomSelector, "/utility/select/room");
+}
+function SelectDoctor() {
+    initializeTomSelect(SelectDoctorSelector, "/utility/select/doctor");
+}
+
+// Blood Request
+function SelectBloodPack() {
+    initializeTomSelect(SelectBloodPackSelector, "/utility/select/blood-pack");
+}
+// ---------- Tom Select :end ----------
+
 // ---------- Tom Select :begin ----------
-// Patient
-function SelectPatient() {
-    const selectPatient = new TomSelect(SelectPatientSelector, {
+// Generic function for initializing TomSelect
+function initializeTomSelect(selector, endpoint) {
+    // Check if element exists before initializing
+    if (!document.querySelector(selector)) {
+        return;
+    }
+
+    return new TomSelect(selector, {
         valueField: "id",
         labelField: "text",
         searchField: "text",
+        preload: true,
+        load: function (query, callback) {
+            fetch(`${endpoint}?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+}
+
+// --------- Datepicker :begin ----------
+// Patient
+function PatientBirthdateDatepicker() {
+    birthdateFlatpickrInstance = new GlobalAdvanceFlatpickr(
+        PatientBirthdateDatePickerSelector,
+        {
+            maxDate: "today",
+            dateFormat: "Y-m-d",
+            static: true,
+        },
+    );
+}
+
+// Blood Request
+function BloodRequiredDatePicker() {
+    new GlobalAdvanceFlatpickr(BloodRequiredDatePickerSelector);
+}
+// --------- Datepicker :end ----------
+
+// Patient
+function setPatientDetailDisabled(isDisabled) {
+    const patientFieldIds = [
+        "medrec",
+        "name",
+        "email",
+        "phone_number",
+        "birth_date",
+        "relation_name",
+        "address",
+        "select-blood-group",
+        "select-blood-rhesus",
+        "select-relation-type",
+    ];
+
+    patientFieldIds.forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) field.disabled = isDisabled;
+    });
+
+    const genderRadios = document.querySelectorAll('input[name="gender"]');
+    genderRadios.forEach((radio) => {
+        radio.disabled = isDisabled;
+    });
+
+    if (BloodGroupSelectInstance) {
+        isDisabled
+            ? BloodGroupSelectInstance.disable()
+            : BloodGroupSelectInstance.enable();
+    }
+    if (BloodRhesusSelectInstance) {
+        isDisabled
+            ? BloodRhesusSelectInstance.disable()
+            : BloodRhesusSelectInstance.enable();
+    }
+    if (RelationTypeSelectInstance) {
+        isDisabled
+            ? RelationTypeSelectInstance.disable()
+            : RelationTypeSelectInstance.enable();
+    }
+}
+
+function clearPatientDetails() {
+    const patientFieldIds = [
+        "medrec",
+        "name",
+        "email",
+        "phone_number",
+        "birth_date",
+        "relation_name",
+        "address",
+    ];
+
+    patientFieldIds.forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) field.value = "";
+    });
+
+    const genderRadios = document.querySelectorAll('input[name="gender"]');
+    genderRadios.forEach((radio) => {
+        radio.checked = false;
+    });
+
+    if (BloodGroupSelectInstance) {
+        BloodGroupSelectInstance.clear();
+    }
+    if (BloodRhesusSelectInstance) {
+        BloodRhesusSelectInstance.clear();
+    }
+    if (RelationTypeSelectInstance) {
+        RelationTypeSelectInstance.clear();
+    }
+
+    // Clear birthdate field
+    const birthdateField = document.querySelector(
+        PatientBirthdateDatePickerSelector,
+    );
+    if (birthdateField) {
+        birthdateField.value = "";
+    }
+}
+
+function SelectPatient() {
+    // Check if element exists before initializing
+    if (!document.querySelector(SelectPatientSelector)) {
+        return;
+    }
+
+    PatientSelectInstance = new TomSelect(SelectPatientSelector, {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        plugins: ["clear_button"],
         preload: true,
         load: function (query, callback) {
             fetch(`/utility/select/patient?q=${encodeURIComponent(query)}`)
@@ -40,128 +216,100 @@ function SelectPatient() {
                 .catch(() => callback());
         },
     });
-}
-function SelectBloodRhesus() {
-    const selectBloodRhesus = new TomSelect(SelectBloodRhesusSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
+
+    // Add event listener for when patient is selected
+    PatientSelectInstance.on("change", function (value) {
+        if (value) {
+            // Fetch patient data
+            fetch(`/utility/get/patient/${value}`)
                 .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-function SelectBloodGroup() {
-    const selectBloodGroup = new TomSelect(SelectBloodGroupSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-function SelectRelationType() {
-    const selectRelationType = new TomSelect(SelectRelationTypeSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(
-                `/utility/select/relation-type?q=${encodeURIComponent(query)}`,
-            )
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
+                .then((data) => {
+                    // Fill patient details
+                    const rawDate = data.birthdate || data.birth_date || "";
+                    const dateOnly = rawDate ? rawDate.split("T")[0] : "";
+                    document.getElementById("medrec").value = data.medrec || "";
+                    document.getElementById("name").value = data.name || "";
+                    document.getElementById("email").value = data.email || "";
+                    document.getElementById("phone_number").value =
+                        data.phone || "";
+                    document.getElementById("birthdate").value = dateOnly || "";
+                    document.getElementById("relation_name").value =
+                        data.relation_name || "";
+                    document.getElementById("address").value =
+                        data.address || "";
+
+                    // Set gender
+                    const genderRadios = document.querySelectorAll(
+                        'input[name="gender"]',
+                    );
+                    genderRadios.forEach((radio) => {
+                        radio.checked = radio.value === data.gender;
+                    });
+
+                    // Set selects if needed
+                    if (data.blood_group) {
+                        BloodGroupSelectInstance.setValue(data.blood_group);
+                    }
+                    if (data.blood_rhesus) {
+                        BloodRhesusSelectInstance.setValue(data.blood_rhesus);
+                    }
+                    if (data.relation_type && RelationTypeSelectInstance) {
+                        RelationTypeSelectInstance.setValue(data.relation_type);
+                    }
+
+                    if (birthdateFlatpickrInstance && dateOnly) {
+                        birthdateFlatpickrInstance.setDate(
+                            dateOnly,
+                            true,
+                            "Y-m-d",
+                        );
+                    }
+
+                    setPatientDetailDisabled(true);
+                })
+                .catch(() => {
+                    // Handle error
+                });
+        }
     });
 }
 
-// Transaction
-function SelectInsurance() {
-    const selectInsurance = new TomSelect(SelectInsuranceSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/insurance?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-function SelectRoom() {
-    const selectRoom = new TomSelect(SelectRoomSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/room?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
-function SelectDoctor() {
-    const selectDoctor = new TomSelect(SelectDoctorSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/doctor?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
+// ---------- Add New Patient Toggle :begin ----------
+function toggleAddNewPatient() {
+    const btn = document.getElementById(AddNewPatientBtn);
+    const selectPatient = document.getElementById("select-patient");
 
-// Blood Request
-function SelectBloodPack() {
-    const selectBloodPack = new TomSelect(SelectBloodPackSelector, {
-        valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-pack?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
+    if (!isCreatingNewPatient) {
+        // Switch to add new mode: disable choose patient and clear existing patient values
+        isCreatingNewPatient = true;
+        if (PatientSelectInstance) {
+            PatientSelectInstance.clear();
+            PatientSelectInstance.disable();
+        }
+        if (selectPatient) {
+            selectPatient.disabled = true;
+        }
+        clearPatientDetails();
+        setPatientDetailDisabled(false);
+        btn.textContent = "Cancel";
+        btn.classList.remove("btn-soft-primary");
+        btn.classList.add("btn-danger");
+    } else {
+        // Switch back to select mode: enable choose patient again
+        isCreatingNewPatient = false;
+        if (PatientSelectInstance) {
+            PatientSelectInstance.enable();
+        }
+        if (selectPatient) {
+            selectPatient.disabled = false;
+        }
+        setPatientDetailDisabled(false);
+        btn.textContent = "Add New";
+        btn.classList.remove("btn-danger");
+        btn.classList.add("btn-soft-primary");
+    }
 }
-// ---------- Tom Select :begin ----------
-
-// --------- Datepicker :begin ----------
-// Patient
-function PatientBirthdateDatepicker() {
-    new GlobalAdvanceFlatpickr(PatientBirthdateDatePickerSelector, {
-        maxDate: "today",
-    });
-}
-
-// Blood Request
-function BloodRequiredDatePicker() {
-    new GlobalAdvanceFlatpickr(
-        BloodRequiredDatePickerSelector,
-    );
-}
-// --------- Datepicker :end ----------
+// ---------- Add New Patient Toggle :end ----------
 
 document.addEventListener("DOMContentLoaded", function () {
     // Tom Select
@@ -177,4 +325,9 @@ document.addEventListener("DOMContentLoaded", function () {
     // Datepicker
     PatientBirthdateDatepicker();
     BloodRequiredDatePicker();
+
+    // Add New Patient Toggle
+    document
+        .getElementById(AddNewPatientBtn)
+        .addEventListener("click", toggleAddNewPatient);
 });

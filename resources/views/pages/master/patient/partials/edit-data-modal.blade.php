@@ -54,6 +54,24 @@
     placeholder="youremail@mail.com" />
   </div>
 
+      {{-- Blood Group --}}
+    <div class="col-lg-6">
+    <label class="form-label" for="edit-select-blood-group">{{ __('Blood Group') }}
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="edit-select-blood-group" name="blood_group"
+      placeholder="{{ __('Choose') }} {{ __('Blood Group') }}..."></select>
+  </div>
+
+  {{-- Blood Rhesus --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="edit-select-blood-rhesus">{{ __('Blood Rhesus') }}
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="edit-select-blood-rhesus" name="blood_rhesus"
+      placeholder="{{ __('Choose') }} {{ __('Blood Rhesus') }}..."></select>
+  </div>
+
   {{-- Address --}}
   <div class="col-lg-12">
    <label class="col-form-label" for="edit_data_patient_address">Address</label>

@@ -26,6 +26,7 @@ Route::middleware('auth')->group(function () {
         // Blood Transfusion / Home Route -> blood-transfusion.index
         // --------------------------------------------------------------------------
         Route::get('/', 'index')->name('index');
+        Route::get('/datatable-blood-pack', 'datatableBloodPack')->name('datatable-blood-pack');
     });
 
     // --------------------------------------------------------------------------
