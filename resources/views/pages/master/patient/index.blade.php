@@ -89,6 +89,7 @@
     <input autocomplete="off" class="form-control" id="email" name="email" type="email" placeholder="youremail@mail.com" />
   </div>
 
+    {{-- Blood Group --}}
     <div class="col-lg-6">
     <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}
       <span class="text-danger">*</span>
