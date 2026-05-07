@@ -19,6 +19,13 @@
       placeholder="{{ __('Choose') }} {{ __('Blood Component') }}..."></select>
   </div>
   <div class="col-lg-12">
+    <label class="form-label" for="general_code">Test List
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="edit_data_package_select-tests" name="tests[]"
+      placeholder="Select Tests" multiple></select>
+  </div>
+  <div class="col-lg-12">
    <label class="form-label" for="edit_data_package_general_code">General Code
     <span class="text-danger">*</span>
    </label>

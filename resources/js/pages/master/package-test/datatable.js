@@ -75,7 +75,7 @@ function MasterPackageTable() {
             data: null,
             title: "No",
             render: (data, type, row, meta) => {
-                console.log(row);
+              
                 return meta.row + 1;
             },
         },
@@ -115,15 +115,15 @@ function MasterPackageTable() {
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-package" data-edit-id="${row.public_id}" type="button">
+                            <button id="edit-data-${row.package_id}" class="dropdown-item btn-edit-package-test" data-edit-id="${row.package_id}" type="button">
                             Edit</button>
                         </li>
                         <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-package ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                            <button id="restore-data-${row.package_id}" class="dropdown-item fw-medium btn-restore-package ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.package_id}" type="button">
                             Restore</button>
                         </li>
                         <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-package text-danger" data-delete-id="${row.public_id}" type="button">
+                            <button id="delete-data-${row.package_id}" class="dropdown-item btn-delete-package text-danger" data-delete-id="${row.package_id}" type="button">
                             Delete</button>
                         </li>
                     </ul>
