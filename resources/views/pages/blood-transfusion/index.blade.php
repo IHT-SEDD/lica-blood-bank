@@ -7,6 +7,10 @@
       border-right: 1px solid #e5e7eb;
     }
   }
+  #tableSelector {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
 </style>
 @endsection
 

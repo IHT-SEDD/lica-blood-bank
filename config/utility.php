@@ -66,11 +66,20 @@ return [
         'label' => 'name',
         'with' => [],
     ],
+    'insurance' => [
+    'model' => App\Models\Insurance::class,
+    'label' => 'name',
+    'with' => [],
+    ],
 
+    'room' => [
+    'model' => App\Models\Room::class,
+    'label' => 'name',
+    'with' => [],
+    ],
     'order-status' => [
         'type' => 'enum',
     ],
-
     'patient' => [
         'model' => App\Models\Patient::class,
         'label' => 'name',
@@ -139,6 +148,4 @@ return [
         'label' => 'name',
         'with' => [],
     ],
-
-
 ];

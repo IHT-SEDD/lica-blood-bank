@@ -1,12 +1,18 @@
 // ---------- Import Libraries ----------
 import { log } from "handlebars/runtime";
-import { GlobalAdvanceFlatpickr } from "../../app";
+import {
+    GlobalAdvanceFlatpickr,
+    GlobalSubmitForm,
+    GlobalFormValidation,
+} from "../../app";
 import TomSelect from "tom-select";
+import { clearSelectedBloodPacks } from "./datatable";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Form
-const AddNewBloodRequestForm = "add_new_blood_request";
+const FormAddSelector = "add_new_blood_request";
 const AddNewPatientBtn = "add-new-patient-data";
+const FormAddURL = "/blood-transfusion/store"; // url submit form add
 
 // Patient
 const SelectPatientSelector = "#select-patient";
@@ -111,7 +117,12 @@ function PatientBirthdateDatepicker() {
 
 // Blood Request
 function BloodRequiredDatePicker() {
-    new GlobalAdvanceFlatpickr(BloodRequiredDatePickerSelector);
+    new GlobalAdvanceFlatpickr(BloodRequiredDatePickerSelector, {
+        maxDate: "today",
+        dateFormat: "Y-m-d H:i",
+        static: true,
+        enableTime: true,
+    });
 }
 // --------- Datepicker :end ----------
 
@@ -278,6 +289,9 @@ function SelectPatient() {
 function toggleAddNewPatient() {
     const btn = document.getElementById(AddNewPatientBtn);
     const selectPatient = document.getElementById("select-patient");
+    const medrecContainer = document
+        .getElementById("medrec")
+        ?.closest(".col-xxl-6");
 
     if (!isCreatingNewPatient) {
         // Switch to add new mode: disable choose patient and clear existing patient values
@@ -288,6 +302,9 @@ function toggleAddNewPatient() {
         }
         if (selectPatient) {
             selectPatient.disabled = true;
+        }
+        if (medrecContainer) {
+            medrecContainer.classList.add("d-none");
         }
         clearPatientDetails();
         setPatientDetailDisabled(false);
@@ -303,6 +320,9 @@ function toggleAddNewPatient() {
         if (selectPatient) {
             selectPatient.disabled = false;
         }
+        if (medrecContainer) {
+            medrecContainer.classList.remove("d-none");
+        }
         setPatientDetailDisabled(false);
         btn.textContent = "Add New";
         btn.classList.remove("btn-danger");
@@ -311,6 +331,128 @@ function toggleAddNewPatient() {
 }
 // ---------- Add New Patient Toggle :end ----------
 
+// ---------- Handle form Blood Request :begin ----------
+function AddNewBloodRequest() {
+    // ---------- Validasi inputan form :begin ----------
+    const AddNewBloodRequestValidation = GlobalFormValidation.init(
+        "#" + FormAddSelector,
+        {
+            name: {
+                validators: {
+                    notEmpty: {
+                        message: "Name is required",
+                    },
+                },
+            },
+            birthdate: {
+                validators: {
+                    notEmpty: {
+                        message: "Birthdate is required",
+                    },
+                },
+            },
+            gender: {
+                validators: {
+                    notEmpty: {
+                        message: "Gender is required",
+                    },
+                },
+            },
+            doctor_id: {
+                validators: {
+                    notEmpty: {
+                        message: "Doctor is required",
+                    },
+                },
+            },
+            room_id: {
+                validators: {
+                    notEmpty: {
+                        message: "Room is required",
+                    },
+                },
+            },
+            insurance_id: {
+                validators: {
+                    notEmpty: {
+                        message: "Insurance is required",
+                    },
+                },
+            },
+            blood_required_at: {
+                validators: {
+                    notEmpty: {
+                        message: "Blood request at is required",
+                    },
+                },
+            },
+        },
+    );
+    // ---------- Validasi inputan form :end ----------
+
+    // ---------- Submit form ke url :begin ----------
+    new GlobalSubmitForm({
+        formId: FormAddSelector,
+        url: FormAddURL,
+        validator: AddNewBloodRequestValidation,
+        onValidationError: () => {
+            const firstError = document.querySelector("#" + FormAddSelector + " .is-invalid");
+            if (firstError) {
+                const tabPane = firstError.closest(".tab-pane");
+                if (tabPane) {
+                    const tabId = tabPane.id;
+                    const tabLink = document.querySelector(`[data-wizard-nav] a[href="#${tabId}"]`);
+                    if (tabLink) {
+                        new bootstrap.Tab(tabLink).show();
+                    }
+                }
+            }
+        },
+        onSuccess: (data) => {
+            notyf.success({
+                message: "New Blood Request added succesfully!",
+            });
+
+            // Reset wizard to step 1
+            const wizardTabs = document.querySelectorAll(
+                "#add_new_blood_request [data-wizard-nav] .nav-link",
+            );
+            if (wizardTabs.length > 0) {
+                new bootstrap.Tab(wizardTabs[0]).show();
+                wizardTabs.forEach((tab, index) => {
+                    if (index > 0) tab.classList.add("disabled");
+                    tab.classList.remove("wizard-item-done");
+                });
+            }
+
+            // Clear selected blood packs
+            clearSelectedBloodPacks();
+
+            // Hide Modal
+            const modalEl = document.getElementById("add_blood_request_modal");
+            if (modalEl) {
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+
+            window.dispatchEvent(new Event("#list-request-table"));
+        },
+        onError: (err) => {
+            notyf.error({
+                message: err.message,
+            });
+
+            console.error(err);
+        },
+
+        resetOnSuccess: true,
+    });
+    // ---------- Submit form ke url :end ----------
+}
+// ---------- Handle form Blood Request :begin ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // Tom Select
     SelectPatient();
@@ -318,9 +460,10 @@ document.addEventListener("DOMContentLoaded", function () {
     SelectBloodGroup();
     SelectRelationType();
     SelectInsurance();
-    // SelectRoom();
+    SelectRoom();
     SelectDoctor();
     SelectBloodPack();
+    AddNewBloodRequest();
 
     // Datepicker
     PatientBirthdateDatepicker();

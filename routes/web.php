@@ -27,6 +27,8 @@ Route::middleware('auth')->group(function () {
         // --------------------------------------------------------------------------
         Route::get('/', 'index')->name('index');
         Route::get('/datatable-blood-pack', 'datatableBloodPack')->name('datatable-blood-pack');
+        Route::get('/datatable-blood-request', 'datatableBloodRequest')->name('datatable-blood-request');
+        Route::post('store', 'store')->name('store');
     });
 
     // --------------------------------------------------------------------------

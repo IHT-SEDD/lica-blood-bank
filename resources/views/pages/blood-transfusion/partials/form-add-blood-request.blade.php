@@ -22,7 +22,7 @@
                                 <span class="flex-grow-1 ms-2 text-truncate">
                                     <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">Blood Request
                                         Info</span>
-                                    <span class="mb-0 fw-normal">Where you currently live</span>
+                                    <span class="mb-0 fw-normal">Blood Request details</span>
                                 </span>
                             </span>
                         </a>
@@ -115,7 +115,7 @@
                                                     </label>
                                                     <input class="form-control patient-birth-date" aria-describedby="patient-birth-date" data-date-format="Y-m-d"
                                                     data-provider="flatpickr" data-range-date="true" type="text" id="birthdate" name="birthdate"
-                                                    placeholder="{{ __('Choose') }} {{ __('Birth Date') }}" />
+                                                    placeholder="{{ __('Choose') }} {{ __('Birth Date') }}" required />
                                                 </div>
 
                                                 {{-- Gender --}}
@@ -140,7 +140,6 @@
                                                 {{-- Relation Name --}}
                                                 <div class="col-xxl-6 col-md-12 col-12 mt-2">
                                                     <label class="form-label" for="relation_name">{{ __('Relation Name') }}
-                                                    <span class="text-danger">*</span>
                                                     </label>
                                                     <input autocomplete="off" class="form-control" id="relation_name" name="relation_name" type="text"
                                                     placeholder="{{ __('Patient Relation Name') }}" />
@@ -149,7 +148,6 @@
                                                 {{-- Relation Type --}}
                                                 <div class="col-xxl-6 col-md-12 col-12 mt-2">
                                                     <label class="form-label" for="relation_type">{{ __('Relation Type') }}
-                                                    <span class="text-danger">*</span>
                                                     </label>
                                                     <select class="form-control" id="select-relation-type" name="relation_type"
                                                     placeholder="{{ __('Choose Relation Type') }}"></select>
@@ -176,22 +174,25 @@
                                                 {{-- Insurance --}}
                                                 <div class="col-xxl-6 col-md-6 col-12 mt-2">
                                                     <label class="form-label" for="select-insurance">{{ __('Insurance') }}</label>
+                                                    <span class="text-danger">*</span>
                                                     <select class="form-control" id="select-insurance" name="insurance_id"
-                                                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}"></select>
+                                                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}" required></select>
                                                 </div>
 
                                                 {{-- Room --}}
                                                 <div class="col-xxl-6 col-md-6 col-12 mt-2">
                                                     <label class="form-label" for="select-room">{{ __('Room') }}</label>
+                                                    <span class="text-danger">*</span>
                                                     <select class="form-control" id="select-room" name="room_id"
-                                                    placeholder="{{ __('Choose') }} {{ __('Room') }}"></select>
+                                                    placeholder="{{ __('Choose') }} {{ __('Room') }}" required></select>
                                                 </div>
 
                                                 {{-- Doctor --}}
                                                 <div class="col-xxl-12 col-md-12 col-12 mt-2">
                                                     <label class="form-label" for="select-doctor">{{ __('Doctor') }}</label>
+                                                    <span class="text-danger">*</span>
                                                     <select class="form-control" id="select-doctor" name="doctor_id"
-                                                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}"></select>
+                                                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}" required></select>
                                                 </div>
 
                                                 {{-- Diagnosis --}}
@@ -225,7 +226,7 @@
                                         </label>
                                         <input class="form-control patient-blood-required-date" aria-describedby="patient-blood-required-date"
                                             data-date-format="d-m-Y" data-provider="flatpickr" type="text" id="blood_required_at" name="blood_required_at"
-                                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" required />
+                                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
                                     </div>
                                 </div>
 
@@ -235,11 +236,11 @@
                                     <div class="col-lg-6 col-12">
                                         <h5 class="mb-3">{{ __('Available Blood Packs') }}</h5>
                                         <div class="table-responsive">
-                                            <table class="table table-sm table-hover" id="available-blood-pack-table">
+                                            <table class="table table-sm table-hover mt-2" id="available-blood-pack-table">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">{{ __('Blood Group') }}</th>
-                                                        <th width="5%">{{ __('Rhesus') }}</th>
+                                                        <th>{{ __('Blood Group') }}</th>
+                                                        <th>{{ __('Rhesus') }}</th>
                                                         <th>{{ __('Component') }}</th>
                                                         <th>{{ __('Action') }}</th>
                                                     </tr>
