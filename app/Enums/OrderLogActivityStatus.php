@@ -13,6 +13,7 @@ enum OrderLogActivityStatus: string
     case PO_FILE_DOWNLOADED = 'po_file_downloaded';
 
     case ORDER_CREATED = 'order_created';
+    case ORDER_UPDATED = 'order_updated';
     case ORDER_EDITED = 'order_edited';
     case ORDER_CANCELLED = 'order_cancelled';
     case ORDER_DELETED = 'order_deleted';
@@ -31,6 +32,7 @@ enum OrderLogActivityStatus: string
             self::PO_FILE_DOWNLOADED => '(PO DOWNLOADED)',
 
             self::ORDER_CREATED => '(ORDER CREATED)',
+            self::ORDER_UPDATED => '(ORDER UPDATED)',
             self::ORDER_CANCELLED => '(ORDER CANCELLED)',
             self::ORDER_EDITED => '(ORDER EDITED)',
             self::ORDER_DELETED => '(ORDER DELETED)',
@@ -52,6 +54,7 @@ enum OrderLogActivityStatus: string
             self::PO_FILE_DOWNLOADED => '%s: PO File downloaded by User ID %s.',
 
             self::ORDER_CREATED => '%s: Order created successfully by User ID %s.',
+            self::ORDER_UPDATED => '%s: Order updated successfully by User ID %s.',
             self::ORDER_CANCELLED => '%s: Order cancelled successfully by User ID %s.',
             self::ORDER_EDITED => '%s: Order edited successfully by User ID %s.',
             self::ORDER_DELETED => '%s: Order deleted successfully by User ID %s.',

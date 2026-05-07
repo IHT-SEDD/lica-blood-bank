@@ -1,19 +1,17 @@
-// Import notyf
 import { Notyf } from "notyf";
 
-// Show loading overlay
+// ---------- Show/Hide Loading Overlay ----------
 window.showPageLoading = function () {
     const overlay = document.getElementById("fullscreen_loading_overlay");
     if (overlay) overlay.classList.remove("d-none");
 };
 
-// Hide loading overlay
 window.hidePageLoading = function () {
     const overlay = document.getElementById("fullscreen_loading_overlay");
     if (overlay) overlay.classList.add("d-none");
 };
 
-// Global config untuk notyf
+// ---------- Notyf Global Config ----------
 window.notyf = new Notyf({
     duration: 4000,
     ripple: true,
@@ -36,7 +34,7 @@ window.notyf = new Notyf({
     ],
 });
 
-// Class global format text
+// ---------- Global Text Formatter Class ----------
 export class TextFormatter {
     static format(text, format = "underscoreReplace") {
         if (!text) return "-";
@@ -93,4 +91,11 @@ export class TextFormatter {
             .replace(/([A-Z])/g, " $1")
             .replace(/^./, (str) => str.toUpperCase());
     }
+}
+
+// ---------- Global Set Hidden Element Function ----------
+export function setHidden(id, hidden) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    hidden ? el.classList.add("d-none") : el.classList.remove("d-none");
 }

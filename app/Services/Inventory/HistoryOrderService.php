@@ -268,13 +268,24 @@ class HistoryOrderService
 
     return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($poNumber) {
       $order = OrderBlood::where('po_number', $poNumber)
-        ->with(['orderBloods', 'vendors', 'users.roles'])
+        ->with(['orderBloodDetails', 'vendors', 'users.roles'])
         ->firstOrFail();
 
       return $order;
     });
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
+
+  // ---------- Fungsi untuk mengambil data order berdasarkan id :begin ----------
+  public function getDataOrderById(string $id)
+  {
+      $order = OrderBlood::where('public_id', $id)
+        ->with(['orderBloodDetails', 'vendors', 'users.roles'])
+        ->firstOrFail();
+
+      return $order;
+  }
+  // ---------- Fungsi untuk mengambil data order berdasarkan id :end ----------
 
   // ---------- Clear Cache ----------
   public function clearOrderCache(string $id, string $poNumber)
@@ -559,4 +570,119 @@ class HistoryOrderService
     }
   }
   // ---------- Fungsi untuk print PO File :end ----------
+
+  // ---------- Fungsi untuk update data order :begin ----------
+  public function updateDataOrder(Request $request, string $id)
+  {
+    DB::beginTransaction();
+    try {
+      $user = Auth::user();
+
+      $order = OrderBlood::where('public_id', $id)
+        ->with(['orderBloodDetails', 'vendors'])
+        ->firstOrFail();
+
+      // ---------- Hanya status draft / order_created yang boleh diedit ----------
+      $editableStatuses = [
+        OrderBloodStatus::DRAFT->value,
+        OrderBloodStatus::ORDER_CREATED->value,
+      ];
+      if (!in_array($order->status->value, $editableStatuses)) {
+        return response()->json(['message' => 'Order cannot be edited in current status!'], 422);
+      }
+
+      $changes = []; // Catat field yang berubah untuk log
+
+      // ---------- Update field order (hanya yang dikirim & berubah) ----------
+      if ($request->has('vendor_id')) {
+        $vendor = Vendor::where('public_id', $request->vendor_id)->firstOrFail();
+        if ($order->vendor_id !== $vendor->id) {
+          $changes['vendor_id'] = ['old' => $order->vendor_id, 'new' => $vendor->id];
+          $order->vendor_id = $vendor->id;
+        }
+      }
+
+      if ($request->has('description') && $order->description !== $request->description) {
+        $changes['description'] = ['old' => $order->description, 'new' => $request->description];
+        $order->description = $request->description;
+      }
+
+      // ---------- Update blood details jika dikirim ----------
+      if ($request->has('blood_data')) {
+        // Hapus semua detail lama, insert ulang yang baru
+        $oldDetails = $order->orderBloodDetails->toArray();
+
+        $order->orderBloodDetails()->delete();
+
+        $newDetails = [];
+        $totalQuantity = 0;
+
+        foreach ($request->blood_data as $item) {
+          $bloodPack = BloodPack::where('id', $item['blood_pack_id'])->firstOrFail();
+
+          $detail = OrderBloodDetail::create([
+            'order_blood_id' => $order->id,
+            'blood_pack_id' => $bloodPack->id,
+            'note' => $item['note'] ?? null,
+            'quantity' => $item['quantity'],
+          ]);
+
+          $newDetails[] = $detail->toArray();
+          $totalQuantity += (int) $item['quantity'];
+        }
+
+        $changes['blood_details'] = ['old' => $oldDetails, 'new' => $newDetails];
+        $order->total_quantity = $totalQuantity;
+      }
+
+      // ---------- Simpan jika ada perubahan ----------
+      if (empty($changes)) {
+        DB::rollBack();
+        return response()->json(['message' => 'No changes detected.'], 200);
+      }
+
+      $order->save();
+
+      // ---------- Clear cache ----------
+      $this->clearOrderCache($order->public_id, $order->po_number);
+
+      // ---------- Insert log ----------
+      OrderLogActivity::create([
+        'po_number' => $order->po_number,
+        'vendor_name' => $order->vendors?->name,
+        'order_data' => $order->toArray(),
+        'order_blood_data' => $changes['blood_details']['new'] ?? null,
+        'created_by_user_name' => $user->name,
+        'status' => OrderLogActivityStatus::ORDER_UPDATED,
+        'description' => generateOrderLogDescription(
+          OrderLogActivityStatus::ORDER_UPDATED,
+          $order->po_number,
+          $user->id
+        ),
+        'timestamp' => now(),
+      ]);
+
+      DB::commit();
+
+      globalLogger('info', 'Order data updated successfully!', [
+        'id' => $order->id,
+        'changes' => $changes,
+      ], 200, 'updateorder');
+
+      return response()->json([
+        'message' => 'Order data updated successfully!',
+        'data' => $order->fresh(['orderBloodDetails.bloodPacks', 'vendors']),
+      ]);
+    } catch (\Throwable $e) {
+      DB::rollBack();
+
+      globalLogger('error', 'Order data failed to update!', [
+        'id' => $id,
+        'error' => $e->getMessage(),
+      ], 500, 'updateorder');
+
+      return response()->json(['message' => 'Failed to update order data!'], 500);
+    }
+  }
+  // ---------- Fungsi untuk update data order :end ----------
 }

@@ -52,11 +52,6 @@
             data-bs-title="{{ __('Set Status to') }} {{ __('Done') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-check fs-4 me-2"></i>{{ __('Done') }}
           </button>
-
-          <button class="btn btn-sm btn-danger fw-medium mb-0" id="delete_order_btn"
-            data-bs-title="{{ __('Delete') }} {{ __('Order Data') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-trash fs-4 me-2"></i>{{ __('Delete') }}
-          </button>
         </div>
 
         {{-- RIGHT --}}
@@ -139,14 +134,14 @@
       <div class="card-body">
         <div class="row g-2">
           {{-- PO Number --}}
-          <div class="col-lg-6 col-12">
+          <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="po_number">{{ __('PO Number') }}</label>
             <input autocomplete="off" class="form-control" id="po_number" type="text" placeholder="PO Number"
               disabled />
           </div>
 
           {{-- Vendor --}}
-          <div class="col-lg-6 col-12">
+          <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="select-vendor">{{ __('Vendor') }}
               <span class="text-danger">*</span>
             </label>
@@ -190,6 +185,6 @@
 
 @section('scripts')
 @vite([
-'resources/js/pages/inventory/history-order/detail-order.js'
+'resources/js/pages/inventory/history-order/detail-order/index.js',
 ])
 @endsection

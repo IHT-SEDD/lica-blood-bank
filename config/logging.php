@@ -150,6 +150,11 @@ return [
             'path' => storage_path('logs/history-order/order-new-data.log'),
             'level' => 'debug',
         ],
+        'updateorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-updated-data.log'),
+            'level' => 'debug',
+        ],
         'generatepofile' => [
             'driver' => 'single',
             'path' => storage_path('logs/history-order/generate-po-file.log'),
