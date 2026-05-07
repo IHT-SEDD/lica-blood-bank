@@ -51,10 +51,11 @@ return [
     'package' => [
         'view' => 'pages.master.package.index',
         'model' => App\Models\Package::class,
+        'with' => ['package_tests.test']
     ],
-    'package-test' => [
-        'view' => 'pages.master.package-test.index',
-        'model' => App\Models\PackageTest::class,
-        'with' => ['test', 'package']
-    ],
+    // 'package-test' => [
+    //     'view' => 'pages.master.package-test.index',
+    //     'model' => App\Models\PackageTest::class,
+    //     'with' => ['test', 'package']
+    // ],
 ];

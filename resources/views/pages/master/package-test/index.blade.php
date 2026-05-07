@@ -11,7 +11,7 @@
       <span class="input-group-text" id="master-insurance-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-insurance-table-date-filter"
+      <input class="form-control master-package-test-table-date-filter"
         aria-describedby="master-insurance-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
         data-range-date="true" type="text" placeholder="Choose date range" />
     </div>
