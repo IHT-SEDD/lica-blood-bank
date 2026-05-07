@@ -88,10 +88,10 @@ function HistoryOrderTable() {
             data: null,
             title: "Blood Group",
             render: (data, type, row) => {
-                const orderBlood = row.order_bloods || [];
-                if (!orderBlood.length) return "-";
+                const orderBloodDetail = row.order_blood_details || [];
+                if (!orderBloodDetail.length) return "-";
 
-                const bloodGroups = orderBlood
+                const bloodGroups = orderBloodDetail
                     .map((item) => {
                         const group = item.blood_packs.blood_group || "";
                         const rhesus = item.blood_packs.blood_rhesus || "";
@@ -190,6 +190,7 @@ function HistoryOrderTable() {
                 d.end_date = filters.end_date;
             },
         },
+        order: [5, "desc"],
         columns: HistoryOrderTableColumns,
         useHideColumn: true,
         columnDefs: [
@@ -298,7 +299,7 @@ function DeleteDataHistoryDataActionModal() {
         UrlFetchData: (id) => DataURL + `/${id}`,
         ModalConfirmID: ModalDeleteSelector,
     });
-
+    
     // Custom isi modal
     document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;

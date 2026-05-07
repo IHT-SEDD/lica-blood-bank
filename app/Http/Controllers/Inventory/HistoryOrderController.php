@@ -107,6 +107,24 @@ class HistoryOrderController extends Controller
         }
     }
 
+    // ---------- Get Data by ID ----------
+    public function getDataOrderByID(string $id)
+    {
+        $data = $this->service->getDataOrderByID($id);
+        // Lempar data not found
+        if (!$data) {
+            return response()->json([
+                'message' => 'Data not found'
+            ], 404);
+        }
+
+        // Lempar data ke frontend
+        return response()->json([
+            'message' => 'Data fetched succesfully!',
+            'data' => $data
+        ]);
+    }
+
     // ---------- Fungsi untuk download file po ----------
     public function downloadPoFile(string $poNumber)
     {
@@ -128,6 +146,19 @@ class HistoryOrderController extends Controller
             return response()->json(['message' => 'Order not found!'], 404);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'Failed to print PO File!'], 500);
+        }
+    }
+
+    // ---------- Fungsi untuk update data order ----------
+    public function updateDataOrder(Request $request, string $id)
+    {
+        try {
+            $result = $this->service->updateDataOrder($request, $id);
+            return $result;
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to update order data!'], 500);
         }
     }
 }
