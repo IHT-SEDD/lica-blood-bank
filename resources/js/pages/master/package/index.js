@@ -35,6 +35,32 @@ function SelectBloodComponent() {
         },
     });
 }
+function SelectTest() {
+    new TomSelect("#select-test", {
+        maxItems: null,
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        sortField: {
+            field: "id",
+            direction: "asc",
+        },
+        create: false,
+        preload: true,
+        load: function (query, callback) {
+            fetch(
+                `/utility/select/test?q=${encodeURIComponent(query)}`,
+            )
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
 // ---------- Select blood component dari tom-select untuk form add new data :begin ----------
 
 // ---------- Handle form penambahan user baru :begin ----------
@@ -47,6 +73,13 @@ function AddNewPackage() {
                 validators: {
                     notEmpty: {
                         message: "Name is required",
+                    },
+                },
+            },
+            tests: {
+                validators: {
+                    notEmpty: {
+                        message: "Tests is required Min 1",
                     },
                 },
             },
@@ -130,6 +163,7 @@ function EditDataPackage() {
 document.addEventListener("DOMContentLoaded", function () {
     // SelectRole();
     SelectBloodComponent();
+    SelectTest();
     AddNewPackage();
     EditDataPackage();
 });

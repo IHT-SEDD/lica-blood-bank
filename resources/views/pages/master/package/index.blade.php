@@ -27,6 +27,7 @@
       <th>No</th>
       <th>Name</th>
       <th>Blood Component</th>
+      <th>Test List</th>
       <th>General Code</th>
       <th>Deleted At</th>
       <th>Action</th>
@@ -52,6 +53,13 @@
       placeholder="{{ __('Choose') }} {{ __('Blood Component') }}..."></select>
   </div>
   <div class="col-lg-12">
+    <label class="form-label" for="general_code">Test List
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-test" name="tests[]"
+      placeholder="Select Tests" multiple></select>
+  </div>
+  <div class="col-lg-12">
     <label class="form-label" for="general_code">General Code
  
     </label>
@@ -70,7 +78,7 @@
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Add New Test</button>
+    <button class="btn btn-primary" type="submit">Add New Package</button>
   </div>
 </form>
 @endsection

@@ -104,6 +104,19 @@ class MasterService
           $roleName = \Spatie\Permission\Models\Role::findById($request->role);
           $created->syncRoles($roleName->name);
         }
+      } elseif ($model instanceof \App\Models\Package) {
+        $created_package = $modelClass::create($data);
+        $tests = $request->input('tests', []);
+        foreach ($tests as $test) {
+          $test = \App\Models\Test::where('public_id', $test)->select('id')->firstOrFail();
+
+          $data = [
+            'package_id' => $created_package->id,
+            'test_id' => $test->id,
+            'is_active' => $request->is_active ?? true,
+          ];
+          $created = \App\Models\PackageTest::create($data);
+        }
       } elseif ($model instanceof \App\Models\PackageTest) {
         $tests = $request->input('tests', []);
         $package = \App\Models\Package::where('public_id', $request->package)->select('id')->firstOrFail();
@@ -181,7 +194,7 @@ class MasterService
     try {
       // ---------- Ambil model ----------
       $model = new $modelClass;
-
+      // dd($model);
       // ---------- Konfigurasi khusus ----------
       $useOnlyId = ['role'];
 
@@ -220,6 +233,35 @@ class MasterService
           !empty($data['username'] ?? $record->username)
         ) {
           $data['email'] = strtolower($data['username'] ?? $record->username) . '@licabloodbank.com';
+        }
+      } else if ($model instanceof \App\Models\Package) {
+        $record_tests = $record->package_tests()->pluck('test_id')->toArray();
+        $requestTests = \App\Models\Test::whereIn('public_id', $request->input('tests', []))->pluck('id')->toArray();
+
+        $diff = array_values(
+          array_diff($record_tests, $requestTests)
+        );
+        // dd($diff);
+        if (!empty($diff)) {
+          // dd($record->id);
+          $packageTests = \App\Models\PackageTest::where('package_id', $record->id)->whereIn('test_id', $diff)->lockForUpdate()->get();
+
+          foreach ($packageTests as $packageTest) {
+            $packageTest->delete();
+          };
+
+          // dd($test);
+          $newRecordTests = \App\Models\PackageTest::where('package_id', $record->id)->pluck('test_id')->toArray();
+          $newDiff = array_diff($requestTests, $newRecordTests);
+          // dd($newDiff);
+          foreach ($newDiff as $testId) {
+            $data = [
+              'package_id' => $record->id,
+              'test_id' => $testId,
+              'is_active' => $request->is_active ?? true,
+            ];
+            \App\Models\PackageTest::create($data);
+          }
         }
       }
 
@@ -559,7 +601,7 @@ class MasterService
     $query->join('packages', 'package_tests.package_id', '=', 'packages.id')
       ->join('tests', 'package_tests.test_id', '=', 'tests.id')
       ->select(
-        'packages.id',
+        'packages.id as package_id',
         'packages.name as package_name',
         'packages.created_at',
         'packages.updated_at',
