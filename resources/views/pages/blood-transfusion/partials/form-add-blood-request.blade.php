@@ -226,7 +226,7 @@
                                         </label>
                                         <input class="form-control patient-blood-required-date" aria-describedby="patient-blood-required-date"
                                             data-date-format="d-m-Y" data-provider="flatpickr" type="text" id="blood_required_at" name="blood_required_at"
-                                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" required />
+                                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
                                     </div>
                                 </div>
 
@@ -236,11 +236,11 @@
                                     <div class="col-lg-6 col-12">
                                         <h5 class="mb-3">{{ __('Available Blood Packs') }}</h5>
                                         <div class="table-responsive">
-                                            <table class="table table-sm table-hover" id="available-blood-pack-table">
+                                            <table class="table table-sm table-hover mt-2" id="available-blood-pack-table">
                                                 <thead>
                                                     <tr>
-                                                        <th width="5%">{{ __('Blood Group') }}</th>
-                                                        <th width="5%">{{ __('Rhesus') }}</th>
+                                                        <th>{{ __('Blood Group') }}</th>
+                                                        <th>{{ __('Rhesus') }}</th>
                                                         <th>{{ __('Component') }}</th>
                                                         <th>{{ __('Action') }}</th>
                                                     </tr>

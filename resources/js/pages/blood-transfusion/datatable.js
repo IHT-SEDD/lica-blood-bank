@@ -5,11 +5,18 @@ import { GlobalAdvanceDatatable } from "../../app";
 // Global variables
 let selectedBloodPacksInstance;
 let availableBloodPacksInstance;
-let selectedBloodPacks = [];
+let listRequestTableInstance;
+window.__btSelectedBloodPacks = window.__btSelectedBloodPacks || [];
+let selectedBloodPacks = window.__btSelectedBloodPacks;
+let tableSelector = "#list-request-table";
 
 // Initialize Available Blood Packs Datatable
 function initAvailableBloodPacksTable() {
     const tableSelector = "#available-blood-pack-table";
+
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+        return;
+    }
 
     availableBloodPacksInstance = new GlobalAdvanceDatatable(tableSelector, {
         serverSide: true,
@@ -19,6 +26,9 @@ function initAvailableBloodPacksTable() {
         paging: false,
         info: false,
         responsive: true,
+        dom: "frt",
+        scrollY: "200px", // Mengatur tinggi area scroll
+        scrollCollapse: true,
         ajax: {
             url: "/blood-transfusion/datatable-blood-pack",
             type: "GET",
@@ -28,27 +38,28 @@ function initAvailableBloodPacksTable() {
             {
                 data: "blood_group",
                 title: "Blood Group",
-                width: "5%",
-                className: "all",
+                className: "all text-start",
+                width: "100%",
             },
             {
                 data: "blood_rhesus",
                 title: "Rhesus",
-                width: "5%",
-                className: "all",
+                className: "all text-center",
+                width: "100%",
             },
             {
                 data: "blood_component",
                 title: "Component",
-                width: "5%",
-                className: "all",
+                className: "all text-center",
+                width: "100%",
             },
             {
                 data: null,
                 title: "Action",
-                width: "15%",
+                width: "100%",
                 orderable: false,
                 searchable: false,
+                className: "all text-end",
                 render: (data) => {
                     return `<button class="btn btn-sm btn-soft-primary select-blood-pack" type="button"
                         data-id="${data.id}"
@@ -62,14 +73,6 @@ function initAvailableBloodPacksTable() {
             },
         ],
         order: [[0, "asc"]],
-        columnDefs: [
-            {
-                targets: -1,
-                orderable: false,
-                searchable: false,
-                className: "all",
-            },
-        ],
     });
 }
 
@@ -113,6 +116,13 @@ function removeBloodPack(index) {
     });
 }
 
+// Clear all selected blood packs
+export function clearSelectedBloodPacks() {
+    selectedBloodPacks.length = 0;
+    updateSelectedBloodPacksTable();
+    updateHiddenInput();
+}
+
 // Update selected blood packs table
 function updateSelectedBloodPacksTable() {
     const tableBody = document.querySelector(
@@ -152,12 +162,84 @@ function updateHiddenInput() {
     }
 }
 
-// Initialize on page load
-document.addEventListener("DOMContentLoaded", function () {
-    // Initialize datatable for available blood packs
-    initAvailableBloodPacksTable();
+// Initialize List Request Datatable
+function initListRequestTable() {
+    const tableEl = document.querySelector(tableSelector);
 
-    // Event delegation untuk button select yang di-render oleh datatable
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+        return;
+    }
+
+    if (tableEl) {
+        listRequestTableInstance = new GlobalAdvanceDatatable(tableSelector, {
+            serverSide: true,
+            processing: true,
+            autoWidth: false,
+            searchDelay: 1000,
+            dom: '<"mt-3"f>rtip',
+            ajax: {
+                url: "/blood-transfusion/datatable-blood-request",
+                type: "GET",
+                data: function (d) {
+                    const dateFilter = document.querySelector(
+                        ".blood-transfusion-date-filter",
+                    );
+                    if (dateFilter) {
+                        d.date_range = dateFilter.value;
+                    }
+                },
+                dataSrc: "data",
+            },
+            columns: [
+                { data: "blood_request_at", name: "blood_request_at" },
+                { data: "patient.name", name: "patient.name" },
+                { data: "patient.medrec", name: "patient.medrec" },
+                { data: "lab_number", name: "lab_number" },
+                { data: "order_number", name: "order_number" },
+                { data: "room.name", name: "room.name" },
+                {
+                    data: "is_cito",
+                    name: "is_cito",
+                    orderable: false,
+                    searchable: false,
+                    render: function (data) {
+                        return data
+                            ? `<i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning" data-bs-title="CITO" data-bs-toggle="tooltip"></i>`
+                            : `-`;
+                    },
+                },
+                {
+                    data: null,
+                    name: "action",
+                    orderable: false,
+                    searchable: false,
+                    render: function (data) {
+                        return `<button class="btn btn-sm btn-soft-primary" type="button"><i class="ti ti-eye"></i></button>`;
+                    },
+                },
+            ],
+            order: [[0, "desc"]],
+            drawCallback: function () {
+                // Initialize lucide icons after draw
+                if (typeof lucide !== "undefined") {
+                    lucide.createIcons();
+                }
+                // Initialize tooltips
+                const tooltipTriggerList = document.querySelectorAll(
+                    '[data-bs-toggle="tooltip"]',
+                );
+                const tooltipList = [...tooltipTriggerList].map(
+                    (tooltipTriggerEl) =>
+                        new bootstrap.Tooltip(tooltipTriggerEl),
+                );
+            },
+        });
+    }
+}
+
+// Event delegation untuk button select yang di-render oleh datatable
+if (!window.__btEventDelegated) {
+    window.__btEventDelegated = true;
     document.addEventListener("click", function (e) {
         const selectButton = e.target.closest(".select-blood-pack");
         if (selectButton) {
@@ -181,9 +263,35 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+}
+
+// Initialize on page load
+document.addEventListener("DOMContentLoaded", function () {
+    // Initialize datatable for available blood packs
+    initAvailableBloodPacksTable();
 
     // Initial display of selected blood packs table
     updateSelectedBloodPacksTable();
+
+    // Initialize list request datatable
+    initListRequestTable();
+
+    // Reload datatable on flatpickr change
+    const dateFilter = document.querySelector(".blood-transfusion-date-filter");
+    if (dateFilter) {
+        dateFilter.addEventListener("change", function () {
+            if ($.fn.DataTable.isDataTable(tableSelector)) {
+                $(tableSelector).DataTable().ajax.reload();
+            }
+        });
+    }
+
+    // Event listener for reloading datatable from other scripts
+    window.addEventListener(tableSelector, function () {
+        if ($.fn.DataTable.isDataTable(tableSelector)) {
+            $(tableSelector).DataTable().ajax.reload(null, false);
+        }
+    });
 });
 
 // ---------- Blood Pack Datatable :end ----------

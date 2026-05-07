@@ -33,9 +33,9 @@ return new class extends Migration
                 ->cascadeOnUpdate()
                 ->nullOnDelete(); 
 
-                   $table->enum('type', ['single', 'package'])->nullable();
+            $table->enum('type', ['single', 'package'])->nullable();
             $table->string('result')->nullable();
-            $table->string('string_status')->nullable();
+            $table->string('result_status')->nullable();
 
             $table->foreignId('result_by_user_id')
                 ->nullable()

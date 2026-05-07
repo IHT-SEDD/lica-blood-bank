@@ -34,4 +34,28 @@ class BloodTransfusion extends Model
     protected $hidden = [
         'id',
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->public_id)) {
+                $model->public_id = (string) \Illuminate\Support\Str::uuid();
+            }
+        });
+    }
+
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
+    public function details()
+    {
+        return $this->hasMany(BloodTransfusionDetail::class, 'blood_transfusion_id');
+    }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id');
+    }
 }
