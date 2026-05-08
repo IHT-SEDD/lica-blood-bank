@@ -120,7 +120,7 @@
 
                                                 {{-- Gender --}}
                                                 <div class="col-xxl-6 col-md-12 col-12 mt-2">
-                                                    <label class="form-label" for="select-role">{{ __('Gender') }}
+                                                    <label class="form-label" for="gender">{{ __('Gender') }}
                                                     <span class="text-danger">*</span>
                                                     </label>
                                                     <div class="mt-1">
@@ -147,7 +147,7 @@
 
                                                 {{-- Relation Type --}}
                                                 <div class="col-xxl-6 col-md-12 col-12 mt-2">
-                                                    <label class="form-label" for="relation_type">{{ __('Relation Type') }}
+                                                    <label class="form-label" for="select-relation-type">{{ __('Relation Type') }}
                                                     </label>
                                                     <select class="form-control" id="select-relation-type" name="relation_type"
                                                     placeholder="{{ __('Choose Relation Type') }}"></select>

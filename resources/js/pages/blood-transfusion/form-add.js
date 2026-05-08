@@ -6,7 +6,7 @@ import {
     GlobalFormValidation,
 } from "../../app";
 import TomSelect from "tom-select";
-import { clearSelectedBloodPacks } from "./datatable";
+import { clearSelectedBloodPacks } from "./datatable-blood-pack";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Form
@@ -118,7 +118,6 @@ function PatientBirthdateDatepicker() {
 // Blood Request
 function BloodRequiredDatePicker() {
     new GlobalAdvanceFlatpickr(BloodRequiredDatePickerSelector, {
-        maxDate: "today",
         dateFormat: "Y-m-d H:i",
         static: true,
         enableTime: true,
@@ -396,12 +395,16 @@ function AddNewBloodRequest() {
         url: FormAddURL,
         validator: AddNewBloodRequestValidation,
         onValidationError: () => {
-            const firstError = document.querySelector("#" + FormAddSelector + " .is-invalid");
+            const firstError = document.querySelector(
+                "#" + FormAddSelector + " .is-invalid",
+            );
             if (firstError) {
                 const tabPane = firstError.closest(".tab-pane");
                 if (tabPane) {
                     const tabId = tabPane.id;
-                    const tabLink = document.querySelector(`[data-wizard-nav] a[href="#${tabId}"]`);
+                    const tabLink = document.querySelector(
+                        `[data-wizard-nav] a[href="#${tabId}"]`,
+                    );
                     if (tabLink) {
                         new bootstrap.Tab(tabLink).show();
                     }

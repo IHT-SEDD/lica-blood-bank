@@ -1,5 +1,6 @@
 // ---------- Import Libraries ----------
 import { GlobalAdvanceFlatpickr } from "../../app";
+import { DatatableRequestBlood } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -17,4 +18,5 @@ function DateRangeFilter() {
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
+    DatatableRequestBlood();
 });

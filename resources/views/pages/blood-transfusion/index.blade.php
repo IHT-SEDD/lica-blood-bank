@@ -1,6 +1,10 @@
 @extends('layouts.vertical', ['title' => __('Blood Transfusion')])
 
 @section('styles')
+@vite([
+'node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css',
+'node_modules/datatables.net-select-bs5/css/select.bootstrap5.min.css',
+])
 <style>
   @media (min-width: 992px) {
     .patient-data-border {
@@ -256,14 +260,20 @@
   {{-- History Test :end --}}
 </div>
 {{-- Timeline, Blood Stock & History Test :end --}}
+
+{{-- Modal :begin --}}
+@include('pages.blood-transfusion.partials.edit-data-blood-request-modal')
+@include('pages.blood-transfusion.partials.delete-data-blood-request-modal')
+{{-- Modal :end --}}
 @endsection
 
 @section('scripts')
 @vite([
 'resources/js/pages/blood-transfusion/index.js',
-'resources/js/pages/blood-transfusion/datatable.js',
-'resources/js/pages/blood-transfusion/analytic/datatables.js',
+'resources/js/pages/blood-transfusion/datatable-blood-pack.js',
+'resources/js/pages/blood-transfusion/analytic/datatables-helper.js',
 'resources/js/pages/blood-transfusion/form-add.js',
+'resources/js/pages/blood-transfusion/form-edit.js',
 'resources/js/pages/form-wizard.js'
 ])
 @endsection
