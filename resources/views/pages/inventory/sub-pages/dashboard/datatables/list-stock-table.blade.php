@@ -3,10 +3,6 @@
   <tr>
    <th>No</th>
    <th>Bag Number</th>
-   <th>Blood Type</th>
-   <th>Blood Rhesus</th>
-   <th>Supplier</th>
-   <th>Storage / Rack</th>
    <th>Expired Date</th>
    <th>Received Date</th>
    <th>Expiry Countdown</th>

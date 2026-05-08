@@ -3,7 +3,7 @@ import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_blood_stock";
-const FormAddURL = "/inventory/blood-stock/new-blood-stock";
+const FormAddURL = "/inventory/blood-stock/data/new";
 const SelectBagNumberWrapper = "wrap-select-bag-number";
 const BagNumberListWrapper = "wrap-textarea-bag-numbers";
 const ReloadDatatableSelector = "blood-stock-reload";

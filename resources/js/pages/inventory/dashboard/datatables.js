@@ -29,14 +29,12 @@ function ListStockTable() {
             },
         },
         { data: "bag_number", title: "Bag Number" },
-        { data: "blood_pack", title: "Blood Pack" },
-        { data: "vendor", title: "Vendor" },
-        { data: "warning_quantity", title: "Warning Quantity" },
-        { data: "danger_quantity", title: "Danger Quantity" },
+        { data: "blood_packs.blood_component", title: "Blood Pack" },   
         {
             data: "is_active",
             title: "Status",
             render: (data, type, row) => {
+                console.log(row)
                 const isDeleted = row.deleted_at !== null;
                 if (isDeleted) {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
@@ -104,8 +102,9 @@ function ListStockTable() {
             ajax: {
                 url: ListStockTableDataURL,
                 data: function (d) {
-                    d.blood_group = blood_group;
-                    d.blood_rhesus = blood_rhesus;
+                    console.log(d);
+                    // d.blood_group = blood_group;
+                    // d.blood_rhesus = blood_rhesus;
                 },
             },
             columns: ListStockTableColumns,
@@ -124,3 +123,7 @@ function ListStockTable() {
     );
 }
 // ---------- Datatable untuk master :end ----------
+document.addEventListener("DOMContentLoaded", function () {
+    ListStockTable();
+})
+    // Event listener untuk tombol reload pada tabel list stock
