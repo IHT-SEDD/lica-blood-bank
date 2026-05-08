@@ -18,7 +18,7 @@ const FormExcelWrapper = "add_excel_method_wrapper";
 
 // Form Utilities
 const LoadingForm = "loading_form_add_new_incoming_stock";
-const UrlPostIncomingStock = "/inventory/stock-in/new-incoming-stock";
+const UrlPostIncomingStock = "/inventory/stock-in/data/new";
 
 // Form Manual
 const TableRowBloodData = "blood_data_row";

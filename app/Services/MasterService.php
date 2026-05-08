@@ -57,7 +57,7 @@ class MasterService
     }
 
     // ---------- Tampilkan data ke tabel frontend ----------
-    return $query->paginate($request->get('per_page', 10));
+    return $query->paginate($request->filled('per_page', 10));
   }
   // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
 

@@ -60,7 +60,7 @@
           {{-- List Stock Tab Content --}}
           <div class="tab-pane show active" id="list-stock">
             {{-- Subtitle :begin --}}
-            <h4 class="my-4">
+            <h4 class="my-4" id="blood-group-list-stock-title">
               List of available unit for blood type
               <span class="fw-semibold text-danger" id="blood-group-list-stock">A+</span>
             </h4>
