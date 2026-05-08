@@ -1302,6 +1302,12 @@ export class GlobalAdvanceDatatable {
             }
         });
     }
+
+    // Method untuk mendapatkan data per baris
+    getRowData(rowSelector) {
+        if (!this.instance) return null;
+        return this.instance.row(rowSelector).data();
+    }
 }
 // ------------------------------ Advance Datatable for global config :end ------------------------------
 

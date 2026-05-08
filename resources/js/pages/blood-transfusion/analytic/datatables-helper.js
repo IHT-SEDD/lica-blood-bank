@@ -2,7 +2,7 @@ import { GlobalAdvanceDatatable } from "../../../app";
 
 // ---------- Global Variable ----------
 let listRequestTable = "#list-request-table";
-let listRequestTableInstance;
+export let listRequestTableInstance;
 
 // Initialize List Request Datatable
 export function DatatableRequestBlood() {

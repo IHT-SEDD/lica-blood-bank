@@ -118,7 +118,8 @@
       {{-- Patient Details Header :begin --}}
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title text-capitalize mb-0">{{ __('Patient Details') }}</h5>
-        <div class="card-action">
+        <div class="card-action d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-primary d-none" id="btn-checkin-lab" data-id="">{{ __('Check In No Lab') }}</button>
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>

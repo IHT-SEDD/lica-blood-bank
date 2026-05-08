@@ -14,6 +14,7 @@ use App\Enums\BloodTransfusionStatus;
 use App\Http\Requests\BloodTransfusion\StoreBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodTransfusionRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -99,7 +100,7 @@ class BloodTransfusionController extends Controller
         $draw = (int) $request->input('draw', 1);
         $dateRange = $request->input('date_range');
 
-        $query = BloodTransfusion::with(['patient', 'room'])
+        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
             ->whereNull('deleted_at');
 
         // Handle Date Range
@@ -151,12 +152,26 @@ class BloodTransfusionController extends Controller
                 'blood_request_at' => $item->blood_request_at ? \Carbon\Carbon::parse($item->blood_request_at)->format('Y/m/d') : '-',
                 'order_number' => $item->order_number ?? '-',
                 'lab_number' => $item->lab_number ?? '-',
+                'diagnosis' => $item->diagnosis ?? '-',
                 'patient' => [
                     'medrec' => $item->patient->medrec ?? '-',
                     'name' => $item->patient->name ?? '-',
+                    'gender' => $item->patient->gender === 'M' ? 'Male' : ($item->patient->gender === 'F' ? 'Female' : '-'),
+                    'email' => $item->patient->email ?? '-',
+                    'address' => $item->patient->address ?? '-',
+                    'age' => $item->patient->birthdate ? \Carbon\Carbon::parse($item->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
+                    'blood_group' => $item->patient->blood_group ?? '-',
+                    'blood_rhesus' => $item->patient->blood_rhesus ?? '-', 
                 ],
                 'room' => [
                     'name' => $item->room->name ?? '-',
+                    'type' => $item->room->type ? str_replace('_', ' ', str::kebab($item->room->type)) : '-' 
+                ],
+                'insurance' => [
+                    'name' => $item->insurance->name ?? '-',
+                ],
+                'doctor' => [
+                    'name' => $item->doctor->name ?? '-',
                 ],
                 'is_cito' => false, // Placeholder since we don't have is_cito column yet
             ];
@@ -356,6 +371,65 @@ class BloodTransfusionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete blood request.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Check In Blood Request ----------
+    public function checkin($id)
+    {
+        try {
+            $transfusion = BloodTransfusion::where('public_id', $id)->firstOrFail();
+
+            if ($transfusion->lab_number) {
+                return response()->json([
+                    'message' => 'This request has already been checked in.',
+                ], 400);
+            }
+
+            $datePrefix = now()->format('ymd');
+
+            // Use Cache lock to prevent race condition
+            $lock = Cache::lock('generate_lab_number', 10);
+
+            if ($lock->get()) {
+                try {
+                    $latestLabNumber = BloodTransfusion::where('lab_number', 'like', $datePrefix . '%')
+                        ->orderBy('lab_number', 'desc')
+                        ->value('lab_number');
+
+                    if ($latestLabNumber) {
+                        $sequence = (int) substr($latestLabNumber, -3);
+                        $nextSequence = $sequence + 1;
+                    } else {
+                        $nextSequence = 1;
+                    }
+
+                    $labNumber = $datePrefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+
+                    $transfusion->update([
+                        'lab_number' => $labNumber,
+                        'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CHECKED_IN ?? $transfusion->status, // Use appropriate status if you have it
+                        'checkin_by_user_id' => Auth::id(),
+                    ]);
+                } finally {
+                    $lock->release();
+                }
+            } else {
+                return response()->json([
+                    'message' => 'System is currently processing another request, please try again in a moment.',
+                ], 429);
+            }
+
+            return response()->json([
+                'message' => 'Successfully checked in with Lab Number: ' . $labNumber,
+                'lab_number' => $labNumber,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to check in blood request.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

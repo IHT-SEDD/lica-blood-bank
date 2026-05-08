@@ -31,6 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::post('store', 'store')->name('store');
         Route::get('/{id}', 'getDataById')->name('get-data');
         Route::patch('/{id}', 'update')->name('update');
+        Route::post('/{id}/checkin', 'checkin')->name('checkin');
         Route::delete('/{id}', 'destroy')->name('destroy');
     });
 
