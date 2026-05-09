@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Inventory;
+namespace App\Services\Inventory\StockIn;
 
 use App\Enums\IncomingBloodStatus;
 use App\Models\BloodPack;
@@ -20,82 +20,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-class StockInService
+class StockInWriteService
 {
-  // ---------- Fungsi untuk menampilkan data ke tabel :begin ----------
-  public function stockInTable(Request $request)
-  {
-    $query = IncomingBlood::withTrashed()
-      ->select([
-        'id',
-        'public_id',
-        'order_blood_id',
-        'po_number',
-        'batch_number',
-        'status',
-        'created_at',
-        'updated_at',
-        'deleted_at'
-      ])
-      ->with([
-        'users',
-        'orderBloods:id,public_id,vendor_id,po_number',
-        'orderBloods.vendors:id,public_id,name',
-        'incomingBloodDetails' => function ($q) {
-          $q->withTrashed()->select('public_id', 'incoming_blood_id');
-        }
-      ])
-      ->withCount([
-        'incomingBloodDetails as total_blood_data' => function ($q) {
-          $q->withTrashed();
-        }
-      ]);
-
-    $this->applyDateFilter($query, $request);
-
-    if ($request->filled('vendor')) {
-      $query->whereHas('orderBloods.vendors', function ($q) use ($request) {
-        $q->where('public_id', $request->vendor);
-      });
-    }
-
-    if ($request->filled('status')) {
-      $query->where('status', $request->status);
-    }
-
-    if ($request->filled('search')) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('po_number', 'like', "%{$search}%")
-          ->orWhereHas('orderBloods.vendors', function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%");
-          });
-      });
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    } else {
-      $query->latest();
-    }
-
-    return $query->paginate($request->get('per_page', 10));
-  }
-  // ---------- Fungsi untuk menampilkan data ke tabel :end ----------
-
-  // ---------- Fungsi untuk mengambil data berdasarkan id :begin ----------
-  public function getData(string $id)
-  {
-    $dataStockIn = IncomingBlood::withTrashed()->where('public_id', $id)->first();
-
-    if (!$dataStockIn) {
-      return response()->json(['message' => 'Data not found'], 404);
-    }
-
-    return $dataStockIn;
-  }
-  // ---------- Fungsi untuk mengambil data berdasarkan id :end ----------
-
   // ---------- Fungsi untuk delete data :begin ----------
   public function deleteDataStockIn(string $id)
   {
@@ -103,22 +29,26 @@ class StockInService
     DB::beginTransaction();
     try {
       $user = Auth::user();
-      $incomingBlood = IncomingBlood::where('public_id', $id)->first();
 
+      $incomingBlood = IncomingBlood::where('public_id', $id)->first();
       if (!$incomingBlood) {
         return response()->json(['message' => 'Data incoming blood not found'], 404);
       }
 
-      $bloodStocks = BloodStock::where('incoming_blood_id', $incomingBlood->id)->get();
+      $incomingBloodDetails = IncomingBloodDetail::where('incoming_blood_id', $incomingBlood->id)->get();
+      if ($incomingBloodDetails->isEmpty()) {
+        return response()->json(['message' => 'Data incoming blood detail not found'], 404);
+      }
 
-      if ($bloodStocks->isEmpty()) {
-        return response()->json(['message' => 'Data blood pack not found'], 404);
+      $orderBlood = OrderBlood::withoutTrashed()->where('id', $incomingBlood->order_blood_id)->first();
+      if (!$orderBlood) {
+        return response()->json(['message' => 'Data order blood not found'], 404);
       }
 
       $incomingData = $incomingBlood->toArray();
-      $bloodStockData = $bloodStocks->toArray();
+      $incomingBloodDetailData = $incomingBloodDetails->toArray();
 
-      $bloodStocks->each->delete();
+      $incomingBloodDetails->each->delete();
       $incomingBlood->delete();
 
       // ---------- Insert Incoming Blood Log Activity ----------
@@ -127,7 +57,7 @@ class StockInService
         'po_number' => $incomingBlood->po_number,
         'batch_number' => $incomingBlood->batch_number,
         'incoming_data' => $incomingData,
-        'blood_stock_data' => $bloodStockData,
+        'blood_data' => $incomingBloodDetailData,
         'status' => IncomingBloodLogActivityStatus::INCOMING_DELETED,
         'created_by_user_name' => $user->name,
         'description' => generateIncomingLogDescription(
@@ -137,6 +67,27 @@ class StockInService
         ),
         'deleted_at' => now(),
       ]);
+
+      // ---------- Update status order blood setelah delete ----------
+      if ($orderBlood->status === OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED) {
+        $orderBlood->update([
+          'status' => OrderBloodStatus::SOME_ORDER_STOCK_REGISTERED,
+        ]);
+
+        OrderLogActivity::create([
+          'po_number' => $orderBlood->po_number,
+          'vendor_name' => $orderBlood->vendors?->name,
+          'payload' => $orderBlood->toArray(),
+          'created_by_user_name' => $user->name,
+          'status' => OrderLogActivityStatus::SOME_ORDER_STOCK_REGISTERED,
+          'description' => generateOrderLogDescription(
+            OrderLogActivityStatus::SOME_ORDER_STOCK_REGISTERED,
+            $orderBlood->po_number,
+            $user->id
+          ),
+          'timestamp' => now(),
+        ]);
+      }
 
       DB::commit();
 
@@ -170,23 +121,98 @@ class StockInService
     DB::beginTransaction();
     try {
       $user = Auth::user();
-      $incomingBlood = IncomingBlood::onlyTrashed()->where('public_id', $id)->first();
 
+      $incomingBlood = IncomingBlood::onlyTrashed()->where('public_id', $id)->first();
       if (!$incomingBlood) {
         return response()->json(['message' => 'Data incoming blood not found in the trash'], 404);
       }
 
-      $bloodStocks = BloodPack::onlyTrashed()->where('incoming_blood_id', $incomingBlood->id)->get();
-
-      if ($bloodStocks->isEmpty()) {
+      $incomingBloodDetails = IncomingBloodDetail::onlyTrashed()->where('incoming_blood_id', $incomingBlood->id)->get();
+      if ($incomingBloodDetails->isEmpty()) {
         return response()->json(['message' => 'Data blood pack not found'], 404);
       }
 
-      $incomingData = $incomingBlood->toArray();
-      $bloodStockData = $bloodStocks->toArray();
+      $orderBlood = OrderBlood::withoutTrashed()->where('id', $incomingBlood->order_blood_id)->first();
+      if (!$orderBlood) {
+        return response()->json(['message' => 'Data order blood not found'], 404);
+      }
 
-      $bloodStocks->each->restore();
+      $incomingData = $incomingBlood->toArray();
+      $bloodStockData = $incomingBloodDetails->toArray();
+
+      // ---------- Total detail aktif sebelum restore ----------
+      $totalIncomingBloodDetailsBeforeRestore =
+        IncomingBloodDetail::query()
+        ->whereHas('incomingBloods', function ($q) use ($orderBlood, $incomingBlood) {
+          $q->where('order_blood_id', $orderBlood->id)
+            ->whereNull('deleted_at')
+            ->whereNot('id', $incomingBlood->id);
+        })
+        ->count();
+
+      // ---------- Total data yang akan direstore ----------
+      $totalRestoreData = $incomingBloodDetails->count();
+
+      // ---------- Total detail setelah restore ----------
+      $totalIncomingBloodDetailsAfterRestore =
+        $totalIncomingBloodDetailsBeforeRestore + $totalRestoreData;
+
+      // ---------- Total quantity order ----------
+      $totalQuantityOrder = (int) $orderBlood->total_quantity;
+
+      // ---------- Validasi jika melebihi quantity order ----------
+      if ($totalIncomingBloodDetailsAfterRestore > $totalQuantityOrder) {
+
+        DB::rollBack();
+
+        globalLogger('info', "Restore failed because total blood data exceeds order quantity", [
+          'id' => $incomingBlood->id,
+          'restored_by' => Auth::user()->id,
+          'details' => [
+            'total_before_restore' => $totalIncomingBloodDetailsBeforeRestore,
+            'total_restore_data' => $totalRestoreData,
+            'total_after_restore' => $totalIncomingBloodDetailsAfterRestore,
+            'total_quantity_order' => $totalQuantityOrder,
+          ],
+        ], 200, 'newincomingbloodrestore');
+        return response()->json([
+          'message' => 'Restore failed because total blood data exceeds order quantity',
+          'details' => [
+            'total_before_restore' => $totalIncomingBloodDetailsBeforeRestore,
+            'total_restore_data' => $totalRestoreData,
+            'total_after_restore' => $totalIncomingBloodDetailsAfterRestore,
+            'total_quantity_order' => $totalQuantityOrder,
+          ]
+        ], 422);
+      }
+
+      $incomingBloodDetails->each->restore();
       $incomingBlood->restore();
+
+      // ---------- Update status order blood setelah restore ----------
+      if ($totalIncomingBloodDetailsAfterRestore === $totalQuantityOrder) {
+        if ($orderBlood->status === OrderBloodStatus::SOME_ORDER_STOCK_REGISTERED) {
+          // ---------- Update status ----------
+          $orderBlood->update([
+            'status' => OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED,
+          ]);
+
+          // ---------- Insert order log ----------
+          OrderLogActivity::create([
+            'po_number' => $orderBlood->po_number,
+            'vendor_name' => $orderBlood->vendors?->name,
+            'payload' => $orderBlood->fresh()->toArray(),
+            'created_by_user_name' => $user->name,
+            'status' => OrderLogActivityStatus::ALL_ORDER_STOCK_REGISTERED,
+            'description' => generateOrderLogDescription(
+              OrderLogActivityStatus::ALL_ORDER_STOCK_REGISTERED,
+              $orderBlood->po_number,
+              $user->id
+            ),
+            'timestamp' => now(),
+          ]);
+        }
+      }
 
       // ---------- Insert Incoming Blood Log Activity ----------
       IncomingBloodLogActivity::create([
@@ -210,7 +236,6 @@ class StockInService
         'id' => $incomingBlood->id,
         'restored_by' => Auth::user()->id,
       ], 200, 'newincomingbloodrestore');
-
       return response()->json([
         'message' => "Data stock in restored successfully!",
         'data' => $incomingBlood
@@ -223,7 +248,6 @@ class StockInService
         'error' => $e->getMessage(),
         'restored_by' => Auth::user()->id,
       ], 500, 'newincomingbloodrestore');
-
       return response()->json(['message' => "Data stock in failed to restore!"], 500);
     }
   }
@@ -252,26 +276,4 @@ class StockInService
     }, 100);
   }
   // ---------- Fungsi untuk membuat po number :end ----------
-
-  // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
-  protected function applyDateFilter(Builder $query, Request $request)
-  {
-    $start = $request->start_date;
-    $end = $request->end_date;
-
-    if ($start && $end) {
-      try {
-        $startDate = Carbon::createFromFormat('d-m-Y', $start)->startOfDay();
-        $endDate = Carbon::createFromFormat('d-m-Y', $end)->endOfDay();
-        $table = $query->getModel()->getTable();
-
-        if (Schema::hasColumn($table, 'created_at')) {
-          $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
-      } catch (\Exception $e) {
-        logger()->error('Date filter error: ' . $e->getMessage());
-      }
-    }
-  }
-  // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :end ----------
 }

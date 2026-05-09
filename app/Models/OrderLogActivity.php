@@ -34,6 +34,7 @@ class OrderLogActivity extends Model
     protected $casts = [
         'order_data' => 'array',
         'order_blood_data' => 'array',
+        'payload' => 'array',
     ];
 
     protected static function booted()

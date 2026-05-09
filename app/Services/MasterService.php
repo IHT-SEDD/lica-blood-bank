@@ -57,7 +57,7 @@ class MasterService
     }
 
     // ---------- Tampilkan data ke tabel frontend ----------
-    return $query->paginate($request->get('per_page', 10));
+    return $query->paginate($request->filled('per_page', 50));
   }
   // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------
 
@@ -199,14 +199,17 @@ class MasterService
       $useOnlyId = ['role'];
 
       // ---------- Ambil data master ----------
-      $query = $modelClass::query();
+      $query = $modelClass::query()->withTrashed();
 
       $query->where(function ($q) use ($id, $master, $useOnlyId) {
         if (in_array($master, $useOnlyId)) {
           $q->where('id', $id);
         } else {
-          $q->where('id', $id)
-            ->orWhere('public_id', $id);
+          if (\Illuminate\Support\Str::isUuid($id)) {
+            $q->where('public_id', $id);
+          } else {
+            $q->where('id', $id);
+          }
         }
       });
 
@@ -268,8 +271,20 @@ class MasterService
       // ---------- Bandingkan perubahan data ----------
       $isSame = true;
       foreach ($data as $key => $value) {
-        $old = trim((string)$record->$key);
-        $new = trim((string)$value);
+        $oldValue = $record->$key;
+        $newValue = $value;
+
+        // Handle enum
+        if ($oldValue instanceof \BackedEnum) {
+          $oldValue = $oldValue->value;
+        }
+
+        if ($newValue instanceof \BackedEnum) {
+          $newValue = $newValue->value;
+        }
+
+        $old = trim((string)$oldValue);
+        $new = trim((string)$newValue);
 
         if ($old !== $new) {
           $isSame = false;
@@ -369,8 +384,11 @@ class MasterService
         if (in_array($master, $useOnlyId)) {
           $q->where('id', $id);
         } else {
-          $q->where('id', $id)
-            ->orWhere('public_id', $id);
+          if (\Illuminate\Support\Str::isUuid($id)) {
+            $q->where('public_id', $id);
+          } else {
+            $q->where('id', $id);
+          }
         }
       });
 
@@ -637,8 +655,11 @@ class MasterService
       if (in_array($master, $useOnlyId)) {
         $q->where('id', $id);
       } else {
-        $q->where('id', $id)
-          ->orWhere('public_id', $id);
+        if (\Illuminate\Support\Str::isUuid($id)) {
+          $q->where('public_id', $id);
+        } else {
+          $q->where('id', $id);
+        }
       }
     });
 

@@ -45,7 +45,7 @@ Route::middleware('auth')->group(function () {
          Route::prefix('data')->name('data.')->controller(HistoryOrderController::class)->group(function () {
             Route::get('/', 'historyOrderTable')->name('table'); // Datatable order
             Route::get('{id}', 'getDataOrderByID')->name('get');
-            Route::delete('{id}', 'deleteDataOrder')->name('delete');
+            Route::delete('{id}', 'deleteOrder')->name('delete');
             Route::patch('{id}/restore', 'restoreDataOrder')->name('restore');
          });
 
@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{id}', 'detailOrderIndex')->name('index'); // Halaman detail order
             Route::get('data/{id}', 'detailOrderData')->name('data');
             Route::patch('{id}', 'updateDataOrder')->name('update');
+            Route::post('set-done/{poNumber}', 'setOrderDone')->name('set-done');
          });
 
          // ---------- CRUD ----------
@@ -82,6 +83,7 @@ Route::middleware('auth')->group(function () {
          Route::prefix('data')->name('data.')->controller(StockInController::class)->group(function () {
             Route::get('/', 'stockInTable')->name('stock-in-table'); // Datatable stock in
             Route::get('/get/{id}', 'getData')->name('get-incoming-stock');
+            Route::get('/select/blood-pack/{poNumber}', 'selectBloodPack')->name('select-blood-pack');
             Route::post('/new', 'insertNewStockIn')->name('new-incoming-stock');
             Route::delete('{id}', 'deleteDataStockIn')->name('delete-incoming-stock');
             Route::patch('{id}/restore', 'restoreDataStockIn')->name('restore-incoming-stock');

@@ -50,7 +50,7 @@
         <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-center">
           <button class="btn btn-sm btn-success fw-medium mb-0" id="update_to_done_btn"
             data-bs-title="{{ __('Set Status to') }} {{ __('Done') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-check fs-4 me-2"></i>{{ __('Done') }}
+            <i class="ti ti-check fs-4 me-2"></i>{{ __('Set Order to Done') }}
           </button>
         </div>
 
@@ -173,7 +173,7 @@
 
       {{-- Card Body --}}
       <div class="card-body order-log-data-container">
-        <div class="timeline timeline-icon-bordered">
+        <div class="timeline timeline-icon-bordered timeline-order-log">
           {{-- Populate by JS --}}
         </div>
       </div>

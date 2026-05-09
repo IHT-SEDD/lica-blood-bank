@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\Inventory;
+namespace App\Services\Inventory\StockIn;
 
 use App\Enums\IncomingBloodLogActivityStatus;
 use App\Enums\IncomingBloodStatus;
@@ -69,7 +69,6 @@ class StockInAddService
 
       // ---------- Tentukan & update status order ----------
       $orderStatus = $this->resolveOrderStatus(
-        count($incomingBloodDetails),
         $orderBlood->total_quantity,
         $orderBlood->id,
       );
@@ -88,7 +87,6 @@ class StockInAddService
         'total' => count($incomingBloodDetails),
         'inserted_by' => $user->id,
       ], 200, 'newincomingbloodadd');
-
       return response()->json([
         'message' => 'New incoming blood data inserted successfully!',
         'data' => $incomingBlood,
@@ -101,7 +99,6 @@ class StockInAddService
         'error' => $e->getMessage(),
         'inserted_by' => Auth::id(),
       ], 500, 'newincomingbloodadd');
-
       return response()->json([
         'message' => 'New incoming blood data failed to insert!',
         'error' => $e->getMessage(),
@@ -175,7 +172,6 @@ class StockInAddService
 
       // ---------- Tentukan & update status order ----------
       $orderStatus = $this->resolveOrderStatus(
-        count($incomingBloodDetails),
         $orderBlood->total_quantity,
         $orderBlood->id,
       );
@@ -306,16 +302,13 @@ class StockInAddService
   // ---------- Helper: build incoming blood details array untuk bulk insert :end ----------
 
   // ---------- Helper: tentukan status order berdasarkan jumlah yang diinsert :begin ----------
-  private function resolveOrderStatus(int $newlyInsertedCount, int $totalQuantity, int $orderBloodId): OrderBloodStatus
+  private function resolveOrderStatus(int $totalQuantity, int $orderBloodId): OrderBloodStatus
   {
-    // ---------- Hitung total yang sudah ada di DB sebelum batch ini ----------
-    $alreadyInsertedCount = IncomingBloodDetail::whereHas('incomingBloods', function ($q) use ($orderBloodId) {
+    $totalInserted = IncomingBloodDetail::whereHas('incomingBloods', function ($q) use ($orderBloodId) {
       $q->where('order_blood_id', $orderBloodId);
     })->count();
 
-    $cumulativeCount = $alreadyInsertedCount + $newlyInsertedCount;
-
-    return $cumulativeCount >= $totalQuantity
+    return $totalInserted >= $totalQuantity
       ? OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED
       : OrderBloodStatus::SOME_ORDER_STOCK_REGISTERED;
   }

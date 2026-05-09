@@ -17,7 +17,7 @@ enum OrderLogActivityStatus: string
     case ORDER_EDITED = 'order_edited';
     case ORDER_CANCELLED = 'order_cancelled';
     case ORDER_DELETED = 'order_deleted';
-    case SOME_ORDER_STOCK_REGISTERED = 'order_stock_registered';
+    case SOME_ORDER_STOCK_REGISTERED = 'some_order_stock_registered';
     case ALL_ORDER_STOCK_REGISTERED = 'all_order_stock_registered';
     case ORDER_DONE = 'done';
 

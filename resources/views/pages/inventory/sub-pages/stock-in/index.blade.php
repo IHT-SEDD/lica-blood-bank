@@ -26,13 +26,13 @@
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Select Status --}}
           <div>
-            <select class="form-control" id="filter-stockin-status" name="filter-stockin-status"
+            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-status" name="filter-stockin-status"
               placeholder="{{ __('Filter By') }} {{ __('Status') }}..."></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
-            <select class="form-control" id="filter-stockin-vendor" name="filter-stockin-vendor"
+            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-vendor" name="filter-stockin-vendor"
               placeholder="{{ __('Filter By') }} {{ __('Vendor') }}..."></select>
           </div>
 
@@ -42,7 +42,7 @@
               <span class="input-group-text" id="stockin-table-date-filter">
                 <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
               </span>
-              <input class="form-control stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
+              <input class="form-control form-control-sm stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
                 data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
                 placeholder="{{ __('Choose Date Range') }}" />
             </div>
@@ -62,9 +62,9 @@
               <th>{{ __('Vendor') }}</th>
               <th>{{ __('Batch Number') }}</th>
               <th>{{ __('Total Bloods') }}</th>
+              <th>{{ __('Blood Packs') }}</th>
               <th>{{ __('Status') }}</th>
               <th>{{ __('Created At') }}</th>
-              <th>{{ __('Updated At') }}</th>
               <th>{{ __('Deleted At') }}</th>
               <th>{{ __('Action') }}</th>
             </tr>

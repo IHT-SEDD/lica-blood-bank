@@ -29,7 +29,6 @@
       <th>Rack Capacity</th>
       <th>Status</th>
       <th>Created At</th>
-      <th>Updated At</th>
       <th>Deleted At</th>
       <th>Action</th>
     </tr>
@@ -55,9 +54,7 @@
 
   {{-- Serial Number --}}
   <div class="col-lg-4">
-    <label class="form-label" for="serial_number">Serial Number
-      <span class="text-danger">*</span>
-    </label>
+    <label class="form-label" for="serial_number">Serial Number</label>
     <input autocomplete="off" class="form-control" id="serial_number" name="serial_number" type="text"
       placeholder="storage SN" />
   </div>

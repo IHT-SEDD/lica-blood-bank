@@ -20,6 +20,8 @@ import {
     TableRowBloodData,
 } from "./table.js";
 
+import { renderTimelineItem } from "./timeline.js";
+
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // URL
 const UrlDetailOrder = "/inventory/history-order/detail/data";
@@ -29,6 +31,10 @@ const UrlUpdateOrder = "/inventory/history-order/detail";
 const DONE_STATUS = "done";
 const DRAFT_STATUS = "draft";
 const ORDER_CREATED_STATUS = "order_created";
+
+// TIMELINE
+const OrderLogContainerSelector = ".order-log-data-container";
+const TimelineContainerSelector = ".timeline-order-log";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- State global :begin ----------
@@ -195,7 +201,14 @@ async function fetchDataDetailOrder() {
     showPageLoading();
 
     try {
-        const res = await fetch(`${UrlDetailOrder}/${id}`);
+        const res = await fetch(`${UrlDetailOrder}/${id}`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const data = await res.json();
@@ -230,6 +243,7 @@ function resetToolbarToViewMode(order) {
 async function refreshPageContent() {
     const data = await fetchDataDetailOrder();
     const order = data?.order;
+    const logs = data?.log ?? [];
 
     if (order) {
         populateOrderDetailForm(order);
@@ -244,9 +258,9 @@ async function refreshPageContent() {
     }
 
     SelectVendor(order);
-
     setFormDisabled(true);
     resetToolbarToViewMode(order);
+    GenerateTimeline(logs);
 
     return data;
 }
@@ -371,10 +385,48 @@ function HandleSubmitChanges() {
     });
 }
 
+// ---------- Generate Timeline dari array log ----------
+function GenerateTimeline(logs = []) {
+    const container = document.querySelector(OrderLogContainerSelector);
+    if (!container) return;
+
+    const timelineWrapper = container.querySelector(TimelineContainerSelector);
+    if (!timelineWrapper) return;
+
+    if (!logs.length) {
+        timelineWrapper.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i data-lucide="inbox" class="mb-2" style="width:32px;height:32px;"></i>
+                <p class="mb-0">No activity log found.</p>
+            </div>
+        `;
+        if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+        }
+        return;
+    }
+
+    // Render semua item dan inject ke timeline wrapper
+    timelineWrapper.innerHTML = logs.map(renderTimelineItem).join("");
+
+    // Re-init lucide icons agar icon yang baru di-render tampil
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
+
+    // Re-init Bootstrap tooltips pada elemen baru
+    timelineWrapper
+        .querySelectorAll('[data-bs-toggle="tooltip"]')
+        .forEach((el) => {
+            new bootstrap.Tooltip(el);
+        });
+}
+
 // ---------- Entry point ----------
 document.addEventListener("DOMContentLoaded", async () => {
     const data = await fetchDataDetailOrder();
     const order = data?.order;
+    const logs = data?.log ?? [];
 
     const tableHandler = HandleTableBlood();
     populateTableFromOrder = tableHandler.PopulateTableFromOrder;
@@ -398,4 +450,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     ToolbarHandler.PreviewPoFile(toolbarContext);
     ToolbarHandler.DownloadPoFile(toolbarContext);
     ToolbarHandler.PrintPoFile(toolbarContext);
+    ToolbarHandler.SetOrderToDone(toolbarContext);
+
+    GenerateTimeline(logs);
 });

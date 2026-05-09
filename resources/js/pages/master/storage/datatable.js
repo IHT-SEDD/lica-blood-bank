@@ -77,9 +77,7 @@ function MasterStorageTable() {
             },
         },
         { data: "name", title: "Name" },
-        { data: "model", title: "Model" },
-        { data: "serial_number", title: "Serial Number" },
-        { data: "manufacturer", title: "Manufacturer" },
+        { data: "serial_number", title: "SN" },
         { data: "rack_capacity", title: "Rack Capacity" },
         {
             data: "is_active",
@@ -103,19 +101,14 @@ function MasterStorageTable() {
             },
         },
         {
-            data: "updated_at",
-            title: "Updated At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
             data: "deleted_at",
             title: "Deleted At",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
+        { data: "model", title: "Model" },
+        { data: "manufacturer", title: "Manufacturer" },
         {
             data: null,
             title: "Action",

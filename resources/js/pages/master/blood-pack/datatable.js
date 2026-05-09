@@ -80,11 +80,24 @@ function MasterBloodPackTable() {
                 return meta.row + 1;
             },
         },
-        { data: "blood_group", title: "Blood Group" },
-        { data: "blood_rhesus", title: "Blood Rhesus" },
+        {
+            data: null,
+            title: "Group",
+            render: (data, row) => {
+                return `${data.blood_group}${data.blood_rhesus}`;
+            },
+        },
         { data: "blood_component", title: "Component" },
-        { data: "warning_quantity", title: "Warning Quantity" },
-        { data: "danger_quantity", title: "Danger Quantity" },
+        {
+            data: null,
+            title: "Qty Level",
+            render: (data, row) => {
+                return `<div class="d-flex align-items-center justify-content center m-0 gap-2">
+                    <span class="badge badge-label fs-6 text-bg-warning">Warning: ${data.warning_quantity}</span>
+                    <span class="badge badge-label fs-6 text-bg-danger">Danger: ${data.danger_quantity}</span>
+                </div>`;
+            },
+        },
         {
             data: "is_active",
             title: "Status",
@@ -236,7 +249,9 @@ function EditBloodGroup() {
             searchField: "text",
             preload: true,
             load: function (query, callback) {
-                fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                fetch(
+                    `/utility/select/blood-group?q=${encodeURIComponent(query)}`,
+                )
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());
@@ -253,7 +268,9 @@ function EditBloodRhesus() {
             searchField: "text",
             preload: true,
             load: function (query, callback) {
-                fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
+                fetch(
+                    `/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`,
+                )
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());
@@ -265,12 +282,14 @@ function EditBloodComponent() {
     const editBloodComponent = new TomSelect(
         "#edit_data_blood_pack_select-blood-component",
         {
-            valueField: "text",
+            valueField: "id",
             labelField: "text",
             searchField: "text",
             preload: true,
             load: function (query, callback) {
-                fetch(`/utility/select/blood-component?q=${encodeURIComponent(query)}`)
+                fetch(
+                    `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+                )
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());

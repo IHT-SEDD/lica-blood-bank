@@ -99,3 +99,20 @@ export function setHidden(id, hidden) {
     if (!el) return;
     hidden ? el.classList.add("d-none") : el.classList.remove("d-none");
 }
+
+// ---------- Helper: Timestamp Formatter ----------
+export function TimestampFormatter(isoString, locale) {
+    if (!isoString) return "-";
+
+    const date = new Date(isoString);
+    const options = {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+    };
+
+    return date.toLocaleString(locale, options);
+}

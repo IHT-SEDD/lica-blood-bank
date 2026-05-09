@@ -35,11 +35,9 @@
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
-      <th>Blood Group</th>
-      <th>Blood Rhesus</th>
+      <th>Group Rhesus</th>
       <th>Blood Component</th>
-      <th>Warning Qty</th>
-      <th>Danger Qty</th>
+      <th>Qty Level</th>
       <th>Created At</th>
       <th>Updated At</th>
       <th>Deleted At</th>

@@ -32,7 +32,6 @@
         </div>
     </div>
 
-    @include('layouts.shared/customizer')
     @include('layouts.shared/footer-scripts')
 </body>
 

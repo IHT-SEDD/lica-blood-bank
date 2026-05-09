@@ -1,32 +1,13 @@
 <?php
 
 return [
+
+    // ---------- A ----------
     'add-incoming-stock-method' => [
         'type' => 'enum',
     ],
 
-    'blood-component' => [
-        'type' => 'enum',
-    ],
-
-    'blood-group' => [
-        'type' => 'enum',
-    ],
-
-    'blood-pack' => [
-        'model' => App\Models\BloodPack::class,
-        'label' => 'label',
-        'with' => [],
-    ],
-
-    'blood-rhesus' => [
-        'type' => 'enum',
-    ],
-
-    'blood-status' => [
-        'type' => 'enum',
-    ],
-
+    // ---------- B ----------
     'bag-number' => [
         'model' => App\Models\IncomingBloodDetail::class,
         'label' => 'bag_number',
@@ -51,12 +32,36 @@ return [
         ],
     ],
 
+    'blood-component' => [
+        'type' => 'enum',
+    ],
+
+    'blood-group' => [
+        'type' => 'enum',
+    ],
+
+    'blood-pack' => [
+        'model' => App\Models\BloodPack::class,
+        'label' => 'label',
+        'with' => [],
+    ],
+
+    'blood-rhesus' => [
+        'type' => 'enum',
+    ],
+
+    'blood-status' => [
+        'type' => 'enum',
+    ],
+
+    // ---------- D ----------
     'doctor' => [
         'model' => App\Models\Doctor::class,
         'label' => 'name',
         'with' => [],
     ],
 
+    // ---------- I ----------
     'incoming-stock-status' => [
         'type' => 'enum',
     ],
@@ -66,20 +71,19 @@ return [
         'label' => 'name',
         'with' => [],
     ],
-    'insurance' => [
-    'model' => App\Models\Insurance::class,
-    'label' => 'name',
-    'with' => [],
-    ],
 
-    'room' => [
-    'model' => App\Models\Room::class,
-    'label' => 'name',
-    'with' => [],
-    ],
+    // ---------- O ----------
     'order-status' => [
         'type' => 'enum',
     ],
+
+    // ---------- P ----------
+    'package' => [
+        'model' => App\Models\Package::class,
+        'label' => 'name',
+        'with' => [],
+    ],
+
     'patient' => [
         'model' => App\Models\Patient::class,
         'label' => 'name',
@@ -91,7 +95,11 @@ return [
         'label' => 'po_number',
         'with' => [],
         'conditions' => [
-            ['field' => 'status', 'operator' => 'not_in', 'value' => ['draft', 'done', 'deleted', 'cancelled']],
+            [
+                'field' => 'status',
+                'operator' => 'not_in',
+                'value' => ['draft', 'done', 'deleted', 'cancelled'],
+            ],
         ],
     ],
 
@@ -100,10 +108,15 @@ return [
         'label' => 'po_number',
         'with' => [],
         'conditions' => [
-            ['field' => 'status', 'operator' => 'not_in', 'value' => ['stock_ready', 'deleted']],
+            [
+                'field' => 'status',
+                'operator' => 'not_in',
+                'value' => ['stock_ready', 'deleted'],
+            ],
         ],
     ],
 
+    // ---------- R ----------
     'relation-type' => [
         'type' => 'enum',
     ],
@@ -114,6 +127,13 @@ return [
         'with' => [],
     ],
 
+    'room' => [
+        'model' => App\Models\Room::class,
+        'label' => 'name',
+        'with' => [],
+    ],
+
+    // ---------- S ----------
     'storage' => [
         'model' => App\Models\Storage::class,
         'label' => 'name',
@@ -126,25 +146,23 @@ return [
         'with' => ['storages'],
     ],
 
+    // ---------- T ----------
+    'test' => [
+        'model' => App\Models\Test::class,
+        'label' => 'name',
+        'with' => [],
+    ],
+
+    // ---------- U ----------
     'user' => [
         'model' => App\Models\User::class,
         'label' => 'name',
         'with' => ['roles'],
     ],
 
+    // ---------- V ----------
     'vendor' => [
         'model' => App\Models\Vendor::class,
-        'label' => 'name',
-        'with' => [],
-    ],
-
-    'package' => [
-        'model' => App\Models\Package::class,
-        'label' => 'name',
-        'with' => [],
-    ],
-    'test' => [
-        'model' => App\Models\Test::class,
         'label' => 'name',
         'with' => [],
     ],

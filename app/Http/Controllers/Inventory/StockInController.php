@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\AddNewIncomingStockRequest;
-use App\Services\Inventory\StockInAddService;
-use App\Services\Inventory\StockInService;
+use App\Services\Inventory\StockIn\StockInAddService;
+use App\Services\Inventory\StockIn\StockInDataService;
+use App\Services\Inventory\StockIn\StockInWriteService;
 use App\Services\Inventory\StockInDetailService;
 use Illuminate\Http\Request;
 
@@ -13,7 +14,8 @@ class StockInController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
-        protected StockInService $service,
+        protected StockInWriteService $writeService,
+        protected StockInDataService $dataService,
         protected StockInAddService $serviceAdd,
         protected StockInDetailService $serviceDetail
     ) {}
@@ -35,7 +37,7 @@ class StockInController extends Controller
     public function stockinTable(Request $request)
     {
         return response()->json(
-            $this->service->stockinTable($request)
+            $this->dataService->stockinTable($request)
         );
     }
 
@@ -70,7 +72,7 @@ class StockInController extends Controller
     public function getData(string $id)
     {
         // Panggil dan jalankan service
-        $data = $this->service->getData($id);
+        $data = $this->dataService->getData($id);
 
         // Lempar data not found
         if (!$data) {
@@ -89,13 +91,13 @@ class StockInController extends Controller
     // ---------- Fungsi untuk menghapus data dari database ----------
     public function deleteDataStockIn(string $id)
     {
-        return $this->service->deleteDataStockIn($id);
+        return $this->writeService->deleteDataStockIn($id);
     }
 
     // ---------- Fungsi untuk memulihkan data yang udah dihapus dari database ----------
     public function restoreDataStockIn(string $id)
     {
-        return $this->service->restoreDataStockIn($id);
+        return $this->writeService->restoreDataStockIn($id);
     }
 
     // ---------- Fungsi untuk mengambil data incoming stock ----------
@@ -108,5 +110,13 @@ class StockInController extends Controller
     public function getOrderBlood(string $id)
     {
         return $this->serviceDetail->getDataOrder($id);
+    }
+
+    // ---------- Fungsi untuk select blood pack ----------
+    public function selectBloodPack(Request $request, string $poNumber)
+    {
+        return response()->json(
+            $this->dataService->selectBloodPack($request, $poNumber)
+        );
     }
 }

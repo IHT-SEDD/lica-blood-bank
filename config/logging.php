@@ -150,9 +150,19 @@ return [
             'path' => storage_path('logs/history-order/order-new-data.log'),
             'level' => 'debug',
         ],
+        'deleteorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-delete-data.log'),
+            'level' => 'debug',
+        ],
         'updateorder' => [
             'driver' => 'single',
             'path' => storage_path('logs/history-order/order-updated-data.log'),
+            'level' => 'debug',
+        ],
+        'setorderdone' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-set-done.log'),
             'level' => 'debug',
         ],
         'generatepofile' => [
@@ -174,17 +184,17 @@ return [
         // Stock In Loggings
         'newincomingbloodadd' => [
             'driver' => 'single',
-            'path' => storage_path('logs/incoming-blood-new-data.log'),
+            'path' => storage_path('logs/stock-in/incoming-blood-new-data.log'),
             'level' => 'debug',
         ],
         'newincomingblooddelete' => [
             'driver' => 'single',
-            'path' => storage_path('logs/incoming-blood-delete-data.log'),
+            'path' => storage_path('logs/stock-in/incoming-blood-delete-data.log'),
             'level' => 'debug',
         ],
         'newincomingbloodrestore' => [
             'driver' => 'single',
-            'path' => storage_path('logs/incoming-blood-restore-data.log'),
+            'path' => storage_path('logs/stock-in/incoming-blood-restore-data.log'),
             'level' => 'debug',
         ],
 
