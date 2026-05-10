@@ -1,8 +1,10 @@
 import { GlobalAdvanceDatatable } from "../../../app";
+import TomSelect from "tom-select";
 
 // ---------- Global Variable ----------
 let listRequestTable = "#list-request-table";
 export let listRequestTableInstance;
+export let listBagRequestTableInstance;
 
 // Initialize List Request Datatable
 export function DatatableRequestBlood() {
@@ -108,6 +110,149 @@ export function DatatableRequestBlood() {
             },
         );
     }
+}
+
+// Initialize List Bag Request Datatable
+export function DatatableListBagRequest() {
+    const tableId = "#list-bag-request-table";
+    const tableEl = document.querySelector(tableId);
+
+    if (!tableEl) return;
+
+    if ($.fn.DataTable.isDataTable(tableId)) {
+        return;
+    }
+
+    listBagRequestTableInstance = new GlobalAdvanceDatatable(tableId, {
+        serverSide: true,
+        processing: true,
+        dom: '<"mt-3"f>rtip',
+        ajax: function (data, callback, settings) {
+            if (!window.currentTransfusionPublicId) {
+                callback({
+                    data: [],
+                    recordsTotal: 0,
+                    recordsFiltered: 0,
+                    draw: data.draw,
+                });
+                return;
+            }
+
+            $.ajax({
+                url: `/blood-transfusion/${window.currentTransfusionPublicId}/bag-requests`,
+                type: "GET",
+                data: data,
+                success: function (res) {
+                    callback(res);
+                },
+                error: function () {
+                    callback({
+                        data: [],
+                        recordsTotal: 0,
+                        recordsFiltered: 0,
+                        draw: data.draw,
+                    });
+                },
+            });
+        },
+        columns: [
+            {
+                data: null,
+                name: "bag_number",
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    if (row.has_available_stock) {
+                        let optionsHtml =
+                            '<option value="">Choose Bag Number</option>';
+                        row.available_stocks.forEach((stock) => {
+                            const selected =
+                                row.selected_stock_id == stock.id
+                                    ? "selected"
+                                    : "";
+                            optionsHtml += `<option value="${stock.id}" ${selected}>${stock.text}</option>`;
+                        });
+                        return `
+                            <select class="form-select select-bag-number" data-id="${row.public_id}" placeholder="Choose Bag Number">
+                                ${optionsHtml}
+                            </select>
+                        `;
+                    } else {
+                        return `<span class="text-danger fw-semibold">Not Available Stock</span>`;
+                    }
+                },
+            },
+            {
+                data: "blood_pack_label",
+                name: "blood_pack_label",
+                orderable: false,
+                searchable: false,
+            },
+        ],
+        drawCallback: function () {
+            const selects = document.querySelectorAll(".select-bag-number");
+            selects.forEach((select) => {
+                if (!select.tomselect) {
+                    new TomSelect(select, {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc",
+                        },
+                    });
+
+                    select.addEventListener("change", async function () {
+                        const detailId = this.dataset.id;
+                        const stockId = this.value;
+
+                        if (!stockId) return;
+
+                        try {
+                            const response = await fetch(
+                                `/blood-transfusion/detail/${detailId}/update-stock`,
+                                {
+                                    method: "PATCH",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": document
+                                            .querySelector(
+                                                'meta[name="csrf-token"]',
+                                            )
+                                            .getAttribute("content"),
+                                    },
+                                    body: JSON.stringify({
+                                        blood_stock_id: stockId,
+                                    }),
+                                },
+                            );
+
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                notyf.error({
+                                    message:
+                                        result.message ||
+                                        "Failed to update bag number!",
+                                });
+                            } else {
+                                notyf.success({
+                                    message:
+                                        result.message ||
+                                        "Bag number successfully updated!",
+                                });
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            notyf.error({
+                                message:
+                                    "An error occurred while updating bag number.",
+                            });
+                        }
+                    });
+                }
+            });
+        },
+    });
 }
 
 document.addEventListener("DOMContentLoaded", function () {

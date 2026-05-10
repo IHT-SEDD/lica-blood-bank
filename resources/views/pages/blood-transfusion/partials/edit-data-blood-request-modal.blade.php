@@ -1,6 +1,6 @@
 <x-modal-layout id="edit_data_blood_transfusion_modal" size="modal-lg" title="Edit Blood Transfusion Request">
     {{-- Form Edit :begin --}}
-    <form class="row g-2" id="edit_data_blood_transfusion" autocomplete="off">
+    <form class="row g-2" id="edit_data_blood_transfusion" autocomplete="off" novalidate>
         <input type="hidden" id="edit_data_blood_transfusion_id" name="id" />
 
         <div class="row">

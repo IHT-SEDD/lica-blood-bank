@@ -142,8 +142,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 if (EditBloodGroupSelectInstance && trans.patient_blood_group) {
-                    console.log(trans);
-
                     EditBloodGroupSelectInstance.clear();
                     EditBloodGroupSelectInstance.setValue(
                         trans.patient_blood_group,

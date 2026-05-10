@@ -1,5 +1,5 @@
 {{-- Form Add New Blood Request :begin --}}
-<form  id="add_new_blood_request" autocomplete="off" data-wizard-validation="">
+<form id="add_new_blood_request" autocomplete="off" data-wizard-validation="" novalidate>
     <div class="ins-wizard" data-wizard="">
            <!-- Navigation Tabs -->
                 <ul class="nav nav-tabs wizard-tabs mb-3 justify-content-center gap-4" data-wizard-nav="" role="tablist">

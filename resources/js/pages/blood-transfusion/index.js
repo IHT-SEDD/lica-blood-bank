@@ -3,6 +3,8 @@ import { GlobalAdvanceFlatpickr } from "../../app";
 import {
     DatatableRequestBlood,
     listRequestTableInstance,
+    DatatableListBagRequest,
+    listBagRequestTableInstance,
 } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
 
@@ -36,7 +38,6 @@ function ShowPatientDetail() {
             );
             if (el) el.textContent = text || "-";
         };
-        console.log(data);
 
         setElementText("name", data.patient?.name);
         setElementText("gender", data.patient?.gender);
@@ -60,6 +61,15 @@ function ShowPatientDetail() {
                 btnCheckin.dataset.id = data.public_id;
             }
         }
+
+        // Update list bag request table
+        window.currentTransfusionPublicId = data.public_id;
+        if (
+            listBagRequestTableInstance &&
+            $.fn.DataTable.isDataTable("#list-bag-request-table")
+        ) {
+            $("#list-bag-request-table").DataTable().ajax.reload(null, false);
+        }
     });
 }
 // ---------- Menampilkan detail pasien dari row yang diklik :end ----------
@@ -75,7 +85,8 @@ function CheckInLabNumber() {
 
         // Prevent multiple clicks
         const originalText = this.innerHTML;
-        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         this.disabled = true;
 
         try {
@@ -99,10 +110,10 @@ function CheckInLabNumber() {
                 notyf.success({
                     message: result.message || "Successfully checked in!",
                 });
-                
+
                 // Hide button after successful check-in
                 this.classList.add("d-none");
-                
+
                 // Reload datatable to reflect new lab number
                 window.dispatchEvent(new Event("#list-request-table"));
             }
@@ -123,6 +134,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
     DatatableRequestBlood();
+    DatatableListBagRequest();
     ShowPatientDetail();
     CheckInLabNumber();
 });

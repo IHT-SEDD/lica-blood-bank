@@ -33,6 +33,8 @@ Route::middleware('auth')->group(function () {
         Route::patch('/{id}', 'update')->name('update');
         Route::post('/{id}/checkin', 'checkin')->name('checkin');
         Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+        Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
     });
 
     // --------------------------------------------------------------------------

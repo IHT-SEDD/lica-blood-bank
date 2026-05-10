@@ -163,6 +163,17 @@ function updateHiddenInput() {
     if (hiddenInput) {
         hiddenInput.value = JSON.stringify(selectedBloodPacks);
     }
+
+    // Clear existing feedback
+    document
+        .querySelectorAll("#add_new_blood_request .is-invalid")
+        .forEach((el) => el.classList.remove("is-invalid"));
+    document
+        .querySelectorAll("#add_new_blood_request .invalid-feedback")
+        .forEach((el) => el.remove());
+    document
+        .querySelectorAll("#add_new_blood_request .is-valid")
+        .forEach((el) => el.classList.remove("is-valid"));
 }
 
 // Event delegation untuk button select yang di-render oleh datatable

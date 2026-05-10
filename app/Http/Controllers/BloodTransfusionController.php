@@ -434,4 +434,100 @@ class BloodTransfusionController extends Controller
             ], 500);
         }
     }
+
+    // ---------- List Bag Request Datatable ----------
+    public function datatableListBagRequest(Request $request, $id)
+    {
+        $draw = (int) $request->input('draw', 1);
+
+        $transfusion = BloodTransfusion::where('public_id', $id)->first();
+
+        if (!$transfusion) {
+            return response()->json([
+                'draw' => $draw,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => []
+            ]);
+        }
+
+        $details = BloodTransfusionDetail::with('bloodPack')
+            ->where('blood_transfusion_id', $transfusion->id)
+            ->get();
+
+        $pageData = $details->map(function ($detail) use ($transfusion) {
+            // Find available blood stocks
+            $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)
+                ->where('blood_status', BloodStockStatus::AVAILABLE->value)
+                ->where('expiry_date', '>', $transfusion->blood_request_at)
+                ->get();
+
+            // If a stock is already selected, make sure it's included in the list even if it's no longer AVAILABLE (e.g., IN_USE)
+            $selectedStock = null;
+            if ($detail->blood_stock_id) {
+                $selectedStock = BloodStock::find($detail->blood_stock_id);
+                if ($selectedStock && !$availableStocks->contains('id', $selectedStock->id)) {
+                    $availableStocks->push($selectedStock);
+                }
+            }
+
+            $hasAvailableStock = $availableStocks->isNotEmpty();
+
+            $options = $availableStocks->map(function ($stock) {
+                return [
+                    'id' => $stock->id,
+                    'text' => $stock->bag_number
+                ];
+            })->values()->toArray();
+
+            return [
+                'public_id' => $detail->public_id,
+                'blood_pack_label' => $detail->bloodPack ? $detail->bloodPack->label : '-',
+                'has_available_stock' => $hasAvailableStock,
+                'available_stocks' => $options,
+                'selected_stock_id' => $detail->blood_stock_id,
+            ];
+        });
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $details->count(),
+            'recordsFiltered' => $details->count(),
+            'data' => $pageData
+        ]);
+    }
+
+    // ---------- Update Bag Number (Blood Stock ID) ----------
+    public function updateBagNumber(Request $request, $detailPublicId)
+    {
+        $request->validate([
+            'blood_stock_id' => 'required|exists:blood_stocks,id'
+        ]);
+
+        try {
+            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
+            
+            // Optional: You could update the previous and new BloodStock statuses here if needed.
+            // Currently only updating the detail record.
+            $detail->update([
+                'blood_stock_id' => $request->blood_stock_id
+            ]);
+
+            // Update status Blood Stock to IN_USE
+            $bloodStock = BloodStock::find($request->blood_stock_id);
+            $bloodStock->update([
+                'blood_status' => BloodStockStatus::IN_USE,
+            ]);
+
+            return response()->json([
+                'message' => 'Bag number successfully updated.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update bag number.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
