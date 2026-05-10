@@ -2,8 +2,9 @@ import {
     TomSelectDefault,
     TomSelectWithValue,
 } from "../../../../utility/select.js";
-
 import { getDataFromURL } from "../../../../utility/application.js";
+import { GlobalRenderTimelineItem } from "../../../../utility/ui.js";
+import { OrderLogConfigTL } from "../../../../utility/config/timeline-config.js";
 
 import {
     ToolbarWrapper,
@@ -19,8 +20,6 @@ import {
     AddRowCountInput,
     TableRowBloodData,
 } from "./table.js";
-
-import { renderTimelineItem } from "./timeline.js";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // URL
@@ -387,39 +386,14 @@ function HandleSubmitChanges() {
 
 // ---------- Generate Timeline dari array log ----------
 function GenerateTimeline(logs = []) {
-    const container = document.querySelector(OrderLogContainerSelector);
-    if (!container) return;
+    const orderTimeline = GlobalRenderTimelineItem.create({
+        container: OrderLogContainerSelector,
+        wrapper: TimelineContainerSelector,
+        locale: "en-GB",
+        statusConfig: OrderLogConfigTL,
+    });
 
-    const timelineWrapper = container.querySelector(TimelineContainerSelector);
-    if (!timelineWrapper) return;
-
-    if (!logs.length) {
-        timelineWrapper.innerHTML = `
-            <div class="text-center text-muted py-4">
-                <i data-lucide="inbox" class="mb-2" style="width:32px;height:32px;"></i>
-                <p class="mb-0">No activity log found.</p>
-            </div>
-        `;
-        if (typeof lucide !== "undefined") {
-            lucide.createIcons();
-        }
-        return;
-    }
-
-    // Render semua item dan inject ke timeline wrapper
-    timelineWrapper.innerHTML = logs.map(renderTimelineItem).join("");
-
-    // Re-init lucide icons agar icon yang baru di-render tampil
-    if (typeof lucide !== "undefined") {
-        lucide.createIcons();
-    }
-
-    // Re-init Bootstrap tooltips pada elemen baru
-    timelineWrapper
-        .querySelectorAll('[data-bs-toggle="tooltip"]')
-        .forEach((el) => {
-            new bootstrap.Tooltip(el);
-        });
+    orderTimeline.render(logs);
 }
 
 // ---------- Entry point ----------

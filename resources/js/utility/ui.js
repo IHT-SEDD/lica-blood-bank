@@ -116,3 +116,137 @@ export function TimestampFormatter(isoString, locale) {
 
     return date.toLocaleString(locale, options);
 }
+
+// ---------- Global render timeline item ----------
+export class GlobalRenderTimelineItem {
+    constructor(options = {}) {
+        this.containerSelector = options.container ?? ".timeline-container";
+        this.wrapperSelector = options.wrapper ?? ".timeline-wrapper";
+        this.locale = options.locale ?? "en-GB";
+        this.statusConfig = options.statusConfig;
+        this.formatTimestamp = options.timestampFormatter ?? TimestampFormatter;
+        this.renderItem =
+            options.renderItem ?? this._defaultRenderItem.bind(this);
+
+        // Simpan referensi tooltip Bootstrap agar bisa di-dispose saat destroy
+        this._tooltipInstances = [];
+
+        this._container = document.querySelector(this.containerSelector);
+        this._wrapper =
+            this._container?.querySelector(this.wrapperSelector) ?? null;
+    }
+
+    // ---------- Public: render dari array log ----------
+    render(logs = []) {
+        if (!this._wrapper) {
+            console.warn(
+                `[GlobalRenderTimelineItem] wrapper tidak ditemukan: "${this.wrapperSelector}"`,
+            );
+            return this;
+        }
+
+        this._disposeTooltips();
+
+        if (!logs.length) {
+            this.renderEmpty();
+            return this;
+        }
+
+        this._wrapper.innerHTML = logs.map(this.renderItem).join("");
+        this._initLucide();
+        this._initTooltips();
+
+        return this; // chainable
+    }
+
+    // ---------- Public: render state kosong ----------
+    renderEmpty() {
+        if (!this._wrapper) return this;
+
+        this._wrapper.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <i data-lucide="inbox" class="mb-2" style="width:32px;height:32px;"></i>
+                <p class="mb-0">No activity log found.</p>
+            </div>
+        `;
+        this._initLucide();
+
+        return this;
+    }
+
+    // ---------- Public: update log (alias render, lebih semantik) ----------
+    update(logs = []) {
+        return this.render(logs);
+    }
+
+    // ---------- Public: bersihkan tooltip & referensi DOM ----------
+    destroy() {
+        this._disposeTooltips();
+        this._wrapper = null;
+        this._container = null;
+    }
+
+    // ---------- Static factory: shortcut tanpa new ----------
+    static create(options = {}) {
+        return new GlobalRenderTimelineItem(options);
+    }
+
+    // ---------- Private: render satu item (default, bisa di-override) ----------
+    _defaultRenderItem(log) {
+        const config =
+            this.statusConfig[log.status] ?? this.statusConfig.fallback;
+
+        const timestamp = this.formatTimestamp(
+            log.timestamp ?? log.created_at,
+            this.locale,
+        );
+        const description = log.description ?? "-";
+        const createdByUser = log.created_by_user_name ?? "-";
+
+        return `
+            <div class="timeline-item d-flex align-items-stretch">
+                <div class="timeline-time pe-3 fw-semibold fs-6 text-muted">
+                    ${timestamp}
+                </div>
+                <div class="timeline-dot">
+                    <i class="ti ti-${config.icon} fs-4 ${config.colorClass} align-middle"
+                       data-bs-title="${config.tooltipTitle}"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"></i>
+                </div>
+                <div class="timeline-content ps-3 pb-2">
+                    <h5 class="mb-1 fw-semibold">${config.title}</h5>
+                    <p class="mb-1 fw-medium fs-6 text-muted">${description}</p>
+                    <div class="d-flex align-items-center justify-content-start gap-1">
+                        <span class="text-primary fs-5 fw-medium">${createdByUser}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ---------- Private: re-init lucide icons ----------
+    _initLucide() {
+        if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+        }
+    }
+
+    // ---------- Private: inisialisasi Bootstrap tooltip ----------
+    _initTooltips() {
+        if (typeof bootstrap === "undefined" || !this._wrapper) return;
+
+        this._wrapper
+            .querySelectorAll('[data-bs-toggle="tooltip"]')
+            .forEach((el) => {
+                const instance = new bootstrap.Tooltip(el);
+                this._tooltipInstances.push(instance);
+            });
+    }
+
+    // ---------- Private: buang semua tooltip agar tidak memory leak ----------
+    _disposeTooltips() {
+        this._tooltipInstances.forEach((t) => t.dispose?.());
+        this._tooltipInstances = [];
+    }
+}

@@ -119,4 +119,12 @@ class StockInController extends Controller
             $this->dataService->selectBloodPack($request, $poNumber)
         );
     }
+
+    // ---------- Fungsi untuk select po ----------
+    public function selectPO(Request $request)
+    {
+        return response()->json(
+            $this->dataService->selectPO($request)
+        );
+    }
 }

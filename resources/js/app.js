@@ -524,31 +524,18 @@ class App {
 
         if (!warningIcon || !dangerIcon) return;
 
-        const cacheKey = "blood_stock_status";
-        let result;
-
         try {
-            // Cek cache dulu
-            const cached = sessionStorage.getItem(cacheKey);
+            const response = await fetch(BloodStockStatusURL, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
 
-            if (cached) {
-                result = JSON.parse(cached);
-            } else {
-                const response = await fetch(BloodStockStatusURL, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
+            const result = await response.json();
 
-                result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.message || "Failed to fetch data");
-                }
-
-                // Simpan ke cache
-                sessionStorage.setItem(cacheKey, JSON.stringify(result));
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to fetch data");
             }
 
             const data = result.data;
@@ -1604,6 +1591,10 @@ export class GlobalAdvanceTomselect {
                 element.tomselect.destroy();
             }
 
+            const noResultsText =
+                this.options.noResultsText || "No options available";
+            const blurOnItemAdd = this.options.blurOnItemAdd !== false;
+
             // ---------- Default global config ----------
             const defaultConfig = {
                 labelField: "text",
@@ -1613,19 +1604,21 @@ export class GlobalAdvanceTomselect {
                 allowEmptyOption: true,
                 create: false,
                 plugins: ["remove_button"],
-
                 // ---------- Global styling ----------
                 render: {
                     no_results: () => {
-                        return `<div class="no-results">
-                            No results found
-                        </div>`;
+                        return `
+                            <div class="no-results">
+                                ${noResultsText}
+                            </div>
+                        `;
                     },
                 },
-
                 // ---------- Hilangkan cursor ----------
                 onItemAdd: function () {
-                    this.blur();
+                    if (blurOnItemAdd) {
+                        this.blur();
+                    }
                 },
             };
 

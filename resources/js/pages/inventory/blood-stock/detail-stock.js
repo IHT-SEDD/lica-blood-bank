@@ -8,6 +8,8 @@ import {
     DateTimeFormatter,
 } from "../../../app";
 import TomSelect from "tom-select";
+import { GlobalRenderTimelineItem } from "../../../utility/ui";
+import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let stockBloodDataTableInstance; // instance datatable untuk global
@@ -22,6 +24,7 @@ const ReloadDatatableSelector = "stock-blood-data-reload"; // index reload datat
 // URL
 const StockBloodDataURL = "/inventory/blood-stock/detail/data"; // url fetch data untuk datatable
 const StockBloodDataGetDataURL = "/inventory/blood-stock/detail/get-data";
+const StockBloodLogDataURL = "/inventory/blood-stock/detail/log";
 const PrintBarcodeLicaBloodStockURL =
     "/inventory/blood-stock/detail/print-barcode-lica";
 const DownloadBarcodeLicaBloodStockURL =
@@ -47,9 +50,14 @@ const ModalRestoreSelector = "restore_data_stock_blood_modal"; // id selector mo
 const ActionRestoreSelector = ".btn-restore-stock-blood"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
+
+// TIMELINE
+const BloodStockLogContainerSelector = ".blood-stock-log-data-container";
+const TimelineContainerSelector = ".timeline-blood-stock-log";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 const id = getIdFromUrl();
+let bloodStockLogData = null;
 
 // ---------- Helper: ambil ID dari URL saat ini----------
 function getIdFromUrl() {
@@ -103,8 +111,8 @@ function BloodStockDataTable() {
                 return meta.row + 1;
             },
         },
-        { data: "bag_number", title: "Bag Number" },
-        { data: "bag_number_lica", title: "Bag Number LICA" },
+        { data: "bag_number", title: "Bag No." },
+        { data: "bag_number_lica", title: "Bag No. LICA" },
         {
             data: null,
             title: "Blood Pack",
@@ -114,7 +122,60 @@ function BloodStockDataTable() {
             },
         },
         { data: "blood_volume", title: "Volume" },
-        { data: "blood_status", title: "Status" },
+        {
+            data: null,
+            title: "Status",
+            render: (data, type, row) => {
+                const isDeleted = row.deleted_at !== null;
+                if (isDeleted) {
+                    return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                        <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                        Trashed
+                    </span>`;
+                }
+
+                switch (row.blood_status) {
+                    case "expired":
+                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                            <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
+                            Expired!
+                        </span>`;
+                        break;
+                    case "in_use":
+                        return `<span class="badge badge-label fw-semibold badge-soft-info">
+                            <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
+                            In Use
+                        </span>`;
+                        break;
+                    case "available":
+                        return `<span class="badge badge-label fw-semibold badge-soft-success">
+                            <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
+                            Available
+                        </span>`;
+                        break;
+                    case "destroyed":
+                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                            <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
+                            Destroyed
+                        </span>`;
+                        break;
+
+                    default:
+                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                            <i class="ti ti-droplet align-middle me-2 fs-4"></i>
+                            ${row.blood_status}
+                        </span>`;
+                        break;
+                }
+            },
+        },
+        {
+            data: "expiry_date",
+            title: "Expired",
+            render: (data) => {
+                return DateTimeFormatter.dateOnly(data);
+            },
+        },
         {
             data: "aftap_date",
             title: "Aftap",
@@ -125,13 +186,6 @@ function BloodStockDataTable() {
         {
             data: "process_date",
             title: "Process",
-            render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
-            },
-        },
-        {
-            data: "expiry_date",
-            title: "Expired",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
@@ -484,7 +538,47 @@ function DownloadBarcodeLicaStockBloodAction() {
 }
 // ---------- Handle download barcode lica :end ----------
 
-document.addEventListener("DOMContentLoaded", function () {
+// ---------- Fetch data blood stock log ----------
+async function fetchDataBloodStockLog() {
+    showPageLoading();
+
+    try {
+        const res = await fetch(`${StockBloodLogDataURL}/${id}`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        bloodStockLogData = data;
+        return data;
+    } catch (err) {
+        notyf.error({ message: "Failed to fetch blood stock log data!" });
+        console.error(err);
+    } finally {
+        hidePageLoading();
+    }
+}
+
+// ---------- Generate Timeline dari array log ----------
+function GenerateTimeline(logs = []) {
+    const bloodStockTimeline = GlobalRenderTimelineItem.create({
+        container: BloodStockLogContainerSelector,
+        wrapper: TimelineContainerSelector,
+        locale: "en-GB",
+        statusConfig: BloodStockLogConfigTL,
+    });
+
+    bloodStockTimeline.render(logs);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    const logData = await fetchDataBloodStockLog();
+
     // Datatable
     BloodStockDataTable();
 
@@ -498,6 +592,8 @@ document.addEventListener("DOMContentLoaded", function () {
     RestoreDataStockBloodActionModal();
     PrintBarcodeLicaStockBloodAction();
     DownloadBarcodeLicaStockBloodAction();
+
+    GenerateTimeline(logData);
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

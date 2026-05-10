@@ -1,4 +1,4 @@
-import { OrderStatus } from "./utility";
+import { OrderStatus } from "../../../../utility/config/status-config";
 import { setHidden } from "../../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------

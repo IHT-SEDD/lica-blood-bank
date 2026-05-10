@@ -32,9 +32,9 @@
               <span class="input-group-text" id="blood-stock-table-date-filter">
                 <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
               </span>
-              <input class="form-control blood-stock-table-date-filter" aria-describedby="blood-stock-table-date-filter"
-                data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-                placeholder="{{ __('Choose Date Range') }}" />
+              <input class="form-control form-control-sm blood-stock-table-date-filter"
+                aria-describedby="blood-stock-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+                data-range-date="true" type="text" placeholder="{{ __('Choose Date Range') }}" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -49,9 +49,7 @@
           id="blood-stock-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              <th>{{ __('Group') }}</th>
-              <th>{{ __('Rhesus') }}</th>
-              <th>{{ __('Component') }}</th>
+              <th>{{ __('Blood Pack') }}</th>
               <th>{{ __('Quantity') }}</th>
               <th>{{ __('Status') }}</th>
               <th>{{ __('Updated At') }}</th>

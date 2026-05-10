@@ -62,10 +62,28 @@ function BloodStockTable() {
                 return meta.row + 1;
             },
         },
-        { data: "blood_group", title: "Group" },
-        { data: "blood_rhesus", title: "Rhesus" },
-        { data: "blood_component", title: "Component" },
-        { data: "total_blood_data", title: "Quantity" },
+        {
+            data: null,
+            title: "Blood Pack",
+            render: (data, type, row) => {
+                const bloodGroup = row.blood_group || "";
+                const bloodRhesus = row.blood_rhesus || "";
+                const bloodComponent = row.blood_component || "";
+                const bloodPack =
+                    bloodGroup && bloodRhesus
+                        ? `${bloodGroup}${bloodRhesus} ${bloodComponent}`
+                        : bloodGroup || "-";
+
+                return `<span class="fw-semibold fs-5">${bloodPack}</span>`;
+            },
+        },
+        {
+            data: "total_blood_data",
+            title: "Quantity",
+            render: (data) => {
+                return `<span class="fw-semibold fs-5">${data} Bags</span>`;
+            },
+        },
         {
             data: null,
             title: "Status",
@@ -78,14 +96,13 @@ function BloodStockTable() {
                 const isWarning = total <= warning && total > danger;
 
                 if (isDanger) {
-                    return `<span class="badge badge-label badge-soft-danger">Stock in Danger</span>`;
+                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-danger">Stock in Danger</span>`;
                 }
-
                 if (isWarning) {
-                    return `<span class="badge badge-label badge-soft-warning">Stock Qty Warning</span>`;
+                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-warning">Stock Qty Warning</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-success">Stock Safe</span>`;
+                return `<span class="badge badge-label fs-5 fw-semibold badge-soft-success">Stock Safe</span>`;
             },
         },
         {

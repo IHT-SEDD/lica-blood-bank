@@ -29,6 +29,7 @@ const TemplateExcelPath = "/assets/files/Template Add Incoming Stock.xlsx";
 
 // URLS
 const URLSelectBloodPack = "/inventory/stock-in/data/select/blood-pack";
+const URLSelectPO = "/inventory/stock-in/data/select/po";
 const UrlPostIncomingStock = "/inventory/stock-in/data/new";
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 
@@ -141,9 +142,7 @@ function SelectPO() {
         sortField: { field: "id", direction: "asc" },
         preload: true,
         load: function (query, callback) {
-            fetch(
-                `/utility/select/purchase-order?q=${encodeURIComponent(query)}`,
-            )
+            fetch(`${URLSelectPO}?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
@@ -151,6 +150,7 @@ function SelectPO() {
         onChange: function (value) {
             selectedPoNumber = value;
         },
+        noResultsText: "PO Number not found",
     });
 }
 // ---------- Select po dari tom-select untuk form add new data :begin ----------

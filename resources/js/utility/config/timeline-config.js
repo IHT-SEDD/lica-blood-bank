@@ -1,29 +1,5 @@
-// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-// ORDER STATUS
-const ORDER_STATUS = window.AppEnum.orderBloodStatus;
-// ---------- Global variable untuk memudahkan penyesuaian :end ----------
-
-// ---------- Helper: ORDER STATUS CHECKER ----------
-export const OrderStatus = {
-    DONE: ORDER_STATUS.DONE,
-    DRAFT: ORDER_STATUS.DRAFT,
-    ORDER_CREATED: ORDER_STATUS.ORDER_CREATED,
-
-    isDone(status) {
-        return status?.toLowerCase() === this.DONE;
-    },
-
-    isDraft(status) {
-        return status?.toLowerCase() === this.DRAFT;
-    },
-
-    isOrderCreated(status) {
-        return status?.toLowerCase() === this.ORDER_CREATED;
-    },
-};
-
-// ---------- Helper: TIMELINE ORDER LOG ----------
-export const TimelineStatusConfig = {
+// ---------- TIMELINE ORDER LOG CONFIG ----------
+export const OrderLogConfigTL = {
     draft_created: {
         icon: "clipboard-plus",
         colorClass: "text-secondary fill-secondary",
@@ -111,6 +87,67 @@ export const TimelineStatusConfig = {
         title: "Order Done",
         tooltipTitle: "Order Done",
     },
+    fallback: {
+        icon: "activity",
+        colorClass: "text-secondary fill-secondary",
+        title: "Activity",
+        tooltipTitle: "Activity",
+    },
+};
+
+// ---------- TIMELINE BLOOD STOCK LOG CONFIG ----------
+export const BloodStockLogConfigTL = {
+    blood_stock_created_by_manual: {
+        icon: "droplet-plus",
+        colorClass: "text-info fill-info",
+        title: "Blood Stock Created by Manual Method",
+        tooltipTitle: "Blood Stock Created by Manual Method",
+    },
+    blood_stock_created_by_scan: {
+        icon: "droplet-plus",
+        colorClass: "text-info fill-info",
+        title: "Blood Stock Created by Scan Method",
+        tooltipTitle: "Blood Stock Created by Scan Method",
+    },
+
+    blood_stock_deleted: {
+        icon: "trash-x",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Stock Deleted",
+        tooltipTitle: "Blood Stock Deleted",
+    },
+    blood_stock_restored: {
+        icon: "droplets",
+        colorClass: "text-secondary fill-secondary",
+        title: "Blood Stock Restored",
+        tooltipTitle: "Blood Stock Restored",
+    },
+    blood_stock_in_use: {
+        icon: "droplet-heart",
+        colorClass: "text-primary fill-primary",
+        title: "Blood Stock Currently In Use",
+        tooltipTitle: "Blood Stock Currently In Use",
+    },
+    blood_stock_taken_out: {
+        icon: "droplet-minus",
+        colorClass: "text-warning fill-warning",
+        title: "Blood Stock Has Taken Out From Storage",
+        tooltipTitle: "Blood Stock Has Taken Out From Storage",
+    },
+
+    blood_stock_expired: {
+        icon: "droplet-x",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Stock Expired",
+        tooltipTitle: "Blood Stock Expired",
+    },
+    blood_stock_destroyed: {
+        icon: "trash",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Stock Destroyed",
+        tooltipTitle: "Blood Stock Destroyed",
+    },
+
     fallback: {
         icon: "activity",
         colorClass: "text-secondary fill-secondary",

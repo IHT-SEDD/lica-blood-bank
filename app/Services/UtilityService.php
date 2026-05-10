@@ -106,7 +106,7 @@ class UtilityService
       $this->applySearch($query, $labelField, $search);
     }
 
-    $data = $query->limit(100)->get();
+    $data = $query->limit(100)->orderBy('id', 'asc')->get();
 
     return [
       'results' => $data->map(function ($item) use ($modules, $labelField) {

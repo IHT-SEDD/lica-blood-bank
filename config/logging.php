@@ -201,7 +201,7 @@ return [
         // Blood Stock Loggings
         'newbloodstock' => [
             'driver' => 'single',
-            'path' => storage_path('logs/new-blood-stock-data.log'),
+            'path' => storage_path('logs/blood-stock/new-blood-stock-data.log'),
             'level' => 'debug',
         ]
     ],

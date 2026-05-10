@@ -83,6 +83,7 @@ Route::middleware('auth')->group(function () {
          Route::prefix('data')->name('data.')->controller(StockInController::class)->group(function () {
             Route::get('/', 'stockInTable')->name('stock-in-table'); // Datatable stock in
             Route::get('/get/{id}', 'getData')->name('get-incoming-stock');
+            Route::get('/select/po', 'selectPO')->name('select-po');
             Route::get('/select/blood-pack/{poNumber}', 'selectBloodPack')->name('select-blood-pack');
             Route::post('/new', 'insertNewStockIn')->name('new-incoming-stock');
             Route::delete('{id}', 'deleteDataStockIn')->name('delete-incoming-stock');
@@ -103,18 +104,20 @@ Route::middleware('auth')->group(function () {
          // ---------- Data ----------
          Route::prefix('data')->name('data.')->controller(BloodStockController::class)->group(function () {
             Route::get('/', 'bloodStockTable')->name('table'); // Datatable
+            Route::get('/select/po', 'selectPO')->name('select-po');
             Route::post('/new', 'insertNewBloodStock')->name('new');
          });
 
          // ---------- Detail group routes ----------
          Route::prefix('detail')->name('detail.')->controller(BloodStockController::class)->group(function () {
             Route::get('{id}', 'detailBloodStockIndex')->name('index');
-            Route::get('/data/{id}', 'detailStockBloodDataTable')->name('table');
-            Route::get('/get-data/{id}', 'getDataDetailStockBlood')->name('get-data');
-            Route::get('/print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica');
-            Route::get('/download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica');
-            Route::delete('/data/{id}', 'deleteStockBloodData')->name('delete');
-            Route::patch('/data/{id}/restore', 'restoreStockBloodData')->name('restore');
+            Route::get('data/{id}', 'detailStockBloodDataTable')->name('table');
+            Route::get('log/{id}', 'stockBloodLogData')->name('log');
+            Route::get('get-data/{id}', 'getDataDetailStockBlood')->name('get-data');
+            Route::get('print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica');
+            Route::get('download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica');
+            Route::delete('data/{id}', 'deleteStockBloodData')->name('delete');
+            Route::patch('data/{id}/restore', 'restoreStockBloodData')->name('restore');
          });
       });
    });
