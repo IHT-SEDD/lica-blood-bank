@@ -4,7 +4,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Name') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="name">
-   Dadang
+  
   </div>
  </div>
 
@@ -12,7 +12,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Gender') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="gender">
-   Male
+   
   </div>
  </div>
 
@@ -20,7 +20,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Email') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="email">
-   dadang@gmail.com
+ 
   </div>
  </div>
 
@@ -28,9 +28,34 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Age') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="age">
-   40Y/9M/21D
+ 
   </div>
  </div>
+
+ {{-- Patient Address --}}
+ <div class="row mb-2">
+  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Address') }}</div>
+  <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="address">
+ 
+  </div>
+ </div>
+ 
+ {{-- Patient Blood Group --}}
+ <div class="row mb-2">
+  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Blood Group') }}</div>
+  <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="blood_group">
+ 
+  </div>
+ </div>
+
+ {{-- Patient Blood Rhesus --}}
+ <div class="row mb-2">
+  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Blood Rhesus') }}</div>
+  <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="blood_rhesus">
+ 
+  </div>
+ </div>
+
 </div>
 {{-- Left Side Patient Details :end --}}
 
@@ -41,7 +66,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Insurance') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="insurance">
-   ASKES
+   
   </div>
  </div>
 
@@ -49,7 +74,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Room') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="room">
-   Thalasemia
+  
   </div>
  </div>
 
@@ -57,7 +82,7 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Doctor') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="doctor">
-   Dr. Siti Aminah, Sp.A
+ 
   </div>
  </div>
 
@@ -65,8 +90,18 @@
  <div class="row mb-2">
   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Patient Type') }}</div>
   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="type_patient">
-   Rawat Jalan
+   
   </div>
  </div>
+
+ {{-- Patient Diagnosis --}}
+ <div class="row mb-2">
+  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Diagnosis') }}</div>
+  <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail" data-patient-detail="diagnosis">
+   
+  </div>
+ </div>
+
+
 </div>
 {{-- Right Side Patient Details :end --}}

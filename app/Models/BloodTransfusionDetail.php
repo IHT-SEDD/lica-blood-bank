@@ -16,8 +16,10 @@ class BloodTransfusionDetail extends Model
         'public_id',
         'blood_transfusion_id',
         'blood_stock_id',
+        'blood_pack_id',
         'transfusion_text',
         'transfusion_at',
+        'deleted_at'
     ];
 
     protected $hidden = [
@@ -41,6 +43,11 @@ class BloodTransfusionDetail extends Model
     public function bloodStock(): BelongsTo
     {
         return $this->belongsTo(BloodStock::class, 'blood_stock_id');
+    }
+
+    public function bloodPack(): BelongsTo
+    {
+        return $this->belongsTo(BloodPack::class, 'blood_pack_id');
     }
 
     public function bloodTransfusionDetailTest()

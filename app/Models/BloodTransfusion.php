@@ -49,6 +49,16 @@ class BloodTransfusion extends Model
         return $this->belongsTo(Patient::class, 'patient_id');
     }
 
+    public function doctor()
+    {
+        return $this->belongsTo(Doctor::class, 'doctor_id');
+    }
+
+    public function insurance()
+    {
+        return $this->belongsTo(Insurance::class, 'insurance_id');
+    }
+
     public function details()
     {
         return $this->hasMany(BloodTransfusionDetail::class, 'blood_transfusion_id');

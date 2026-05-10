@@ -29,6 +29,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/datatable-blood-pack', 'datatableBloodPack')->name('datatable-blood-pack');
         Route::get('/datatable-blood-request', 'datatableBloodRequest')->name('datatable-blood-request');
         Route::post('store', 'store')->name('store');
+        Route::get('/{id}', 'getDataById')->name('get-data');
+        Route::patch('/{id}', 'update')->name('update');
+        Route::post('/{id}/checkin', 'checkin')->name('checkin');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+        Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
     });
 
     // --------------------------------------------------------------------------
