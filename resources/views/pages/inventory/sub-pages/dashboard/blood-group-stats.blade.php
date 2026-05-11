@@ -1,8 +1,8 @@
 {{-- Type A - B :begin --}}
 <div class="row" id="blood_group_stat_row_1">
   {{-- Type A+ Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="a" data-blood-rhesus="+">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -18,9 +18,12 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="a" data-blood-rhesus="+"></h3>
-          <div class="spinner-grow text-warning m-2" role="status" data-blood-type="a" data-blood-rhesus="+"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="a" data-blood-rhesus="+">
+          </h3>
+          <div class="spinner-grow text-warning m-2 loading_spinner" role="status" data-blood-group="a"
+            data-blood-rhesus="+" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -30,8 +33,8 @@
   {{-- Type A+ Stats :end --}}
 
   {{-- Type A- Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="a" data-blood-rhesus="-">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -47,9 +50,12 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="a" data-blood-rhesus="-"></h3>
-          <div class="spinner-grow text-warning m-2" role="status" data-blood-type="a" data-blood-rhesus="-"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="a" data-blood-rhesus="-">
+          </h3>
+          <div class="spinner-grow text-warning m-2 loading_spinner" role="status" data-blood-group="a"
+            data-blood-rhesus="-" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -59,8 +65,8 @@
   {{-- Type A- Stats :end --}}
 
   {{-- Type B+ Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="b" data-blood-rhesus="+">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -76,9 +82,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="b" data-blood-rhesus="+"></h3>
-          <div class="spinner-grow text-danger m-2" role="status" data-blood-type="b" data-blood-rhesus="+"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="b" data-blood-rhesus="+"></h3>
+          <div class="spinner-grow text-danger m-2 loading_spinner" role="status" data-blood-group="b"
+            data-blood-rhesus="+" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -88,8 +96,8 @@
   {{-- Type B+ Stats :end --}}
 
   {{-- Type B- Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="b" data-blood-rhesus="-">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -112,9 +120,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="b" data-blood-rhesus="-"></h3>
-          <div class="spinner-grow text-danger m-2" role="status" data-blood-type="b" data-blood-rhesus="-"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="b" data-blood-rhesus="-"></h3>
+          <div class="spinner-grow text-danger m-2 loading_spinner" role="status" data-blood-group="b"
+            data-blood-rhesus="-" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -128,8 +138,8 @@
 {{-- Type O - AB :begin --}}
 <div class="row" id="blood_group_stat_row_2">
   {{-- Type O+ Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="o" data-blood-rhesus="+">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -145,9 +155,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="o" data-blood-rhesus="+"></h3>
-          <div class="spinner-grow text-info m-2" role="status" data-blood-type="o" data-blood-rhesus="+"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="o" data-blood-rhesus="+"></h3>
+          <div class="spinner-grow text-info m-2 loading_spinner" role="status" data-blood-group="o"
+            data-blood-rhesus="+" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -157,8 +169,8 @@
   {{-- Type O+ Stats :end --}}
 
   {{-- Type O- Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="o" data-blood-rhesus="-">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -174,9 +186,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="o" data-blood-rhesus="-"></h3>
-          <div class="spinner-grow text-info m-2" role="status" data-blood-type="o" data-blood-rhesus="-"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="o" data-blood-rhesus="-"></h3>
+          <div class="spinner-grow text-info m-2 loading_spinner" role="status" data-blood-group="o"
+            data-blood-rhesus="-" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -186,8 +200,8 @@
   {{-- Type O- Stats :end --}}
 
   {{-- Type AB+ Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="ab" data-blood-rhesus="+">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -203,9 +217,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="ab" data-blood-rhesus="+"></h3>
-          <div class="spinner-grow text-ligth m-2" role="status" data-blood-type="ab" data-blood-rhesus="+"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="ab" data-blood-rhesus="+"></h3>
+          <div class="spinner-grow text-secondary m-2 loading_spinner" role="status" data-blood-group="ab"
+            data-blood-rhesus="+" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>
@@ -215,8 +231,8 @@
   {{-- Type AB+ Stats :end --}}
 
   {{-- Type AB- Stats :begin --}}
-  <a type="button" class="col-xxl-3 col-6" id="blood_stat_card_btn" data-blood-type="a" data-blood-rhesus="+">
-    <div class="card">
+  <a type="button" class="col-xxl-3 col-6 blood_stat_card_btn" data-blood-group="ab" data-blood-rhesus="-">
+    <div class="card card-hovered">
       {{-- Card Body :begin --}}
       <div class="card-body">
         {{-- Icon & Text Data :begin --}}
@@ -232,9 +248,11 @@
           </svg>
 
           {{-- Text Data --}}
-          <h3 class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood" data-blood-type="ab" data-blood-rhesus="-"></h3>
-          <div class="spinner-grow text-ligth m-2" role="status" data-blood-type="ab" data-blood-rhesus="-"
-            id="loading_spinner"></div>
+          <h3
+            class="d-flex align-items-center justify-content-center gap-2 fw-bold my-0 text-primary total-blood d-none"
+            data-blood-group="ab" data-blood-rhesus="-"></h3>
+          <div class="spinner-grow text-secondary m-2 loading_spinner" role="status" data-blood-group="ab"
+            data-blood-rhesus="-" id="loading_spinner"></div>
         </div>
         {{-- Icon & Text Data :end --}}
       </div>

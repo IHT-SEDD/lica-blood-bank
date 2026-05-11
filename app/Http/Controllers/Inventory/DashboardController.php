@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
-use App\Services\Inventory\DashboardService;
+use App\Services\Inventory\Dashboard\DashboardDataService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -11,7 +11,7 @@ class DashboardController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
-        protected DashboardService $service,
+        protected DashboardDataService $dataService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -19,17 +19,17 @@ class DashboardController extends Controller
     public function bloodStatData()
     {
         try {
-            return response()->json($this->service->bloodStatData());
+            return response()->json($this->dataService->bloodStatData());
         } catch (\Throwable $e) {
             return response()->json(['message' => 'Failed to fetch blood stat data!'], 500);
         }
     }
-    public function bloodStockData(Request $request)
+
+    // ---------- Fungsi ambil data untuk blood stock table ----------
+    public function bloodStockTabe(Request $request)
     {
-        try {
-            return response()->json($this->service->bloodStockData($request));
-        } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to fetch blood stock data!' . $e->getMessage()], 500);
-        }
+        return response()->json(
+            $this->dataService->bloodStockTable($request)
+        );
     }
 }

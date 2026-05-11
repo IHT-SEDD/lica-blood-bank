@@ -22,8 +22,6 @@ const GetDataURL = "/inventory/stock-in/data/get"; // url fetch data
 const ReloadDatatableSelector = "stock-in-reload"; // index reload datatable
 
 // See More Action
-const FormSeeSelector = "#see_data_stock_in"; // id selector form see
-const ModalSeeSelector = "see_data_stock_in_modal"; // id selector modal see
 const ActionSeeSelector = ".btn-see-stock-in"; // class selector button see
 const AttributeSee = "seeId"; // attribute data id see
 
@@ -385,6 +383,20 @@ function RestoreDataStockInActionModal() {
 }
 // ---------- Handle modal restore data :end ----------
 
+// ---------- Handle see more :begin ----------
+function SeeMoreDataAction() {
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(ActionSeeSelector);
+        if (!btn) return;
+
+        const id = btn.dataset[AttributeSee];
+        if (!id) return;
+
+        window.location.href = `/inventory/stock-in/detail/${id}`;
+    });
+}
+// ---------- Handle see more :end ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     StockInTable();
@@ -399,7 +411,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Action data
     DeleteDataStockInActionModal();
     RestoreDataStockInActionModal();
-    // SeeDataHistoryDataAction();
+    SeeMoreDataAction();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

@@ -194,4 +194,17 @@ class HistoryOrderController extends Controller
             return response()->json(['message' => 'Failed to delete order!'], 500);
         }
     }
+
+    // ---------- Fungsi untuk memulihkan order ----------
+    public function restoreOrder(string $id)
+    {
+        try {
+            $result = $this->writeService->restoreOrder($id);
+            return $result;
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'Order not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to restore order!'], 500);
+        }
+    }
 }

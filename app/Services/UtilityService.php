@@ -182,8 +182,14 @@ class UtilityService
       case 'blood-status':
         $data = collect(\App\Enums\BloodPackStatus::toSelect());
         break;
+      case 'blood-stock-status':
+        $data = collect(\App\Enums\BloodStockStatus::toSelect());
+        break;
       case 'relation-type':
         $data = collect(\App\Enums\RelationType::toSelect());
+        break;
+      case 'rack-type':
+        $data = collect(\App\Enums\StorageRackType::toSelect());
         break;
       case 'incoming-stock-status':
         $data = collect(\App\Enums\IncomingBloodStatus::toSelect());

@@ -155,6 +155,11 @@ return [
             'path' => storage_path('logs/history-order/order-delete-data.log'),
             'level' => 'debug',
         ],
+        'restoredorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-restore-data.log'),
+            'level' => 'debug',
+        ],
         'updateorder' => [
             'driver' => 'single',
             'path' => storage_path('logs/history-order/order-updated-data.log'),
@@ -202,6 +207,11 @@ return [
         'newbloodstock' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-stock/new-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'editbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/edit-blood-stock-data.log'),
             'level' => 'debug',
         ]
     ],

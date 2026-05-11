@@ -1,5 +1,9 @@
 import TomSelect from "tom-select";
-import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
+import {
+    GlobalSubmitForm,
+    GlobalFormValidation,
+    GlobalAdvanceTomselect,
+} from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_storage_rack"; // id selector untuk form add new
@@ -9,18 +13,18 @@ const ReloadDatatableSelector = "master-storage-rack-reload"; // reload datatabl
 const ModalEditSelector = "edit_data_master_storage_rack_modal"; // id selector untuk modal edit
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
-// ---------- Select storage dari tom-select untuk form add new data :begin ----------
+// ---------- State gobal :begin ----------
+let selectStorage = null;
+let selectRackType = null;
+let selectBloodGroup = null;
+// ---------- State gobal :end ----------
+
+// ---------- Select tom-select untuk form add new data :begin ----------
 function SelectStorage() {
-    new TomSelect("#select-storage", {
+    const wrapperSelectStorage = new GlobalAdvanceTomselect("#select-storage", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
-        sortField: {
-            field: "id",
-            direction: "asc",
-        },
-        create: false,
         preload: true,
+        noResultsText: "Storage not found",
         load: function (query, callback) {
             fetch(`/utility/select/storage?q=${encodeURIComponent(query)}`)
                 .then((response) => response.json())
@@ -32,8 +36,98 @@ function SelectStorage() {
                 });
         },
     });
+    selectStorage = wrapperSelectStorage.getInstances()[0];
 }
-// ---------- Select storage dari tom-select untuk form add new data :begin ----------
+function SelectRackType() {
+    const wrapperSelectRackType = new GlobalAdvanceTomselect(
+        "#select-rack-type",
+        {
+            valueField: "id",
+            preload: true,
+            noResultsText: "Rack type not found",
+            load: function (query, callback) {
+                fetch(
+                    `/utility/select/rack-type?q=${encodeURIComponent(query)}`,
+                )
+                    .then((response) => response.json())
+                    .then((json) => {
+                        callback(json.results);
+                    })
+                    .catch(() => {
+                        callback();
+                    });
+            },
+        },
+    );
+    selectRackType = wrapperSelectRackType.getInstances()[0];
+}
+function SelectBloodGroup() {
+    const wrapperSelectBloodGroup = new GlobalAdvanceTomselect(
+        "#select-blood-group",
+        {
+            valueField: "id",
+            preload: true,
+            noResultsText: "Blood group not found",
+            load: function (query, callback) {
+                fetch(
+                    `/utility/select/blood-group?q=${encodeURIComponent(query)}`,
+                )
+                    .then((response) => response.json())
+                    .then((json) => {
+                        callback(json.results);
+                    })
+                    .catch(() => {
+                        callback();
+                    });
+            },
+        },
+    );
+    selectBloodGroup = wrapperSelectBloodGroup.getInstances()[0];
+}
+// ---------- Select tom-select untuk form add new data :end ----------
+
+// ---------- Dynamic rack type handler ----------
+function HandleRackTypeBehavior(validationInstance, formSelector) {
+    const form = document.getElementById(formSelector);
+    if (!form) return;
+
+    const rackTypeSelect = form.querySelector("#select-rack-type");
+    const bloodGroupWrapper = form.querySelector("#blood-group-wrapper");
+    const bloodGroupSelect = form.querySelector("#select-blood-group");
+
+    if (!bloodGroupWrapper || !bloodGroupSelect || !rackTypeSelect) {
+        console.warn(
+            `HandleRackTypeBehavior: required elements not found in form #${formSelector}`,
+        );
+        return;
+    }
+
+    function toggleBloodGroup() {
+        const rackTypeValue = selectRackType?.getValue()?.toLowerCase();
+        const isBlood = rackTypeValue === "blood";
+
+        bloodGroupWrapper.classList.toggle("d-none", !isBlood);
+
+        if (isBlood) {
+            bloodGroupSelect.disabled = false;
+            validationInstance.addField("blood_group", {
+                validators: {
+                    notEmpty: { message: "Blood group is required" },
+                },
+            });
+        } else {
+            validationInstance.removeField("blood_group");
+            selectBloodGroup?.clear();
+            bloodGroupSelect.disabled = true;
+        }
+    }
+
+    selectRackType.on("change", function () {
+        toggleBloodGroup();
+    });
+
+    toggleBloodGroup();
+}
 
 // ---------- Handle form penambahan data baru :begin ----------
 function AddNewStorageRack() {
@@ -55,9 +149,18 @@ function AddNewStorageRack() {
                     },
                 },
             },
+            rack_type: {
+                validators: {
+                    notEmpty: {
+                        message: "Rack type is required",
+                    },
+                },
+            },
         },
     );
     // ---------- Validasi inputan form :end ----------
+
+    HandleRackTypeBehavior(AddNewStorageRackValidation, FormAddSelector);
 
     // ---------- Submit form ke url :begin ----------
     new GlobalSubmitForm({
@@ -105,9 +208,18 @@ function EditDataStorageRack() {
                     },
                 },
             },
+            rack_type: {
+                validators: {
+                    notEmpty: {
+                        message: "Rack type is required",
+                    },
+                },
+            },
         },
     );
     // ---------- Validasi inputan form :end ----------
+
+    HandleRackTypeBehavior(EditDataStorageRackValidation, FormEditSelector);
 
     // ---------- Submit form ke url :begin ----------
     new GlobalSubmitForm({
@@ -141,6 +253,9 @@ function EditDataStorageRack() {
 
 document.addEventListener("DOMContentLoaded", function () {
     SelectStorage();
+    SelectRackType();
+    SelectBloodGroup();
+
     AddNewStorageRack();
     EditDataStorageRack();
 });
