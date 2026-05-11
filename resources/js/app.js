@@ -1187,21 +1187,47 @@ menuObserver.observe(document.documentElement, {
 export class GlobalAdvanceDatatable {
     // Mulai constructor untuk global config datatable
     constructor(selector, options = {}) {
-        // Ambil id berdasarkan selector untuk tableElement
         this.tableElement = document.querySelector(selector);
-
-        // Return error jika selector datatable tidak ditemukan
         if (!this.tableElement) {
             console.error("DataTable element not found:", selector);
             return;
         }
 
-        // Ambil status fitur show/hide column
+        // hidecolumn option
         this.useHideColumn = options.useHideColumn === true;
 
-        // Bikin default config untuk instance datatable
-        let config = {
+        // Extra option
+        const removeSearch = options.removeSearch ?? false;
+        const removePagination = options.removePagination ?? false;
+        const removePageInfo = options.removePageInfo ?? false;
+        const {
+            removeSearch: _s,
+            removePagination: _p,
+            removePageInfo: _i,
+            ...restOptions
+        } = options;
+
+        // Dom Variable
+        const topLeft = [
+            this.useHideColumn ? "<'columnToggleWrapper'>" : "",
+            !removeSearch ? "f" : "",
+        ].join("");
+        const bottomLeft = [
+            "l",
+            !removePageInfo ? "i" : "",
+            !removePagination ? "p" : "",
+        ].join("");
+
+        // Dom config
+        const dom =
+            `<'d-lg-flex justify-content-between align-items-center mt-2 mb-3'${topLeft}>` +
+            `rt` +
+            `<'d-lg-flex justify-content-between align-items-center mt-2'${bottomLeft}>`;
+
+        // Default config
+        const config = {
             processing: true,
+            dom,
             language: {
                 paginate: {
                     first: '<i class="ti ti-chevrons-left"></i>',
@@ -1212,27 +1238,20 @@ export class GlobalAdvanceDatatable {
                 lengthMenu: "_MENU_ Entries per page",
                 info: 'Showing <span class="fw-semibold">_START_</span> to <span class="fw-semibold">_END_</span> of <span class="fw-semibold">_TOTAL_</span> Entries',
             },
+            paging: !removePagination,
         };
 
-        // Bikin config tambahan untuk instance jika useHideColumn true
         if (this.useHideColumn) {
             config.responsive = true;
-            config.dom =
-                "<'d-md-flex justify-content-between align-items-center mt-2 mb-3'<'columnToggleWrapper'>f>" +
-                "rt" +
-                "<'d-md-flex justify-content-between align-items-center mt-2'lip>";
         }
 
-        // Bangun datatable instance dengan default config, serta gabungkan config option yang diterima
+        // Simpan instance
         this.instance = new DataTable(this.tableElement, {
             ...config,
-            ...options,
+            ...restOptions,
         });
-
-        // Simpan instance _datatable
         this.tableElement._datatable = this.instance;
 
-        // Init toggle column setelah table ready
         if (this.useHideColumn) {
             this.initColumnToggle();
         }
@@ -1247,7 +1266,6 @@ export class GlobalAdvanceDatatable {
     // Generate dropdown show/hide column
     initColumnToggle() {
         const columnLabels = this.getColumnLabels();
-
         const dtContainer = this.instance.table().container();
         const wrapper = dtContainer.querySelector(".columnToggleWrapper");
         if (!wrapper) return;
@@ -1263,17 +1281,17 @@ export class GlobalAdvanceDatatable {
                 ${columnLabels
                     .map(
                         (label, index) => `
-                        <li class="dropdown-item">
-                            <div class="form-check">
-                                <input class="form-check-input toggle-vis"
-                                    type="checkbox" data-column="${index}"
-                                    id="colToggle${index}" checked>
-                                <label class="form-check-label" for="colToggle${index}">
-                                    ${label}
-                                </label>
-                            </div>
-                        </li>
-                    `,
+                    <li class="dropdown-item">
+                        <div class="form-check">
+                            <input class="form-check-input toggle-vis"
+                                type="checkbox" data-column="${index}"
+                                id="colToggle${index}" checked>
+                            <label class="form-check-label" for="colToggle${index}">
+                                ${label}
+                            </label>
+                        </div>
+                    </li>
+                `,
                     )
                     .join("")}
             </ul>
@@ -1281,7 +1299,6 @@ export class GlobalAdvanceDatatable {
 
         wrapper.appendChild(dropdown);
 
-        // event toggle
         dropdown.addEventListener("change", (e) => {
             if (e.target.classList.contains("toggle-vis")) {
                 const colIndex = parseInt(e.target.dataset.column, 10);
@@ -1601,6 +1618,9 @@ export class GlobalAdvanceTomselect {
                 this.options.noResultsText || "No options available";
             const blurOnItemAdd = this.options.blurOnItemAdd !== false;
 
+            const loadOnClick = this.options.loadOnClick ?? false;
+            const loadFn = this.options.load;
+
             // ---------- Default global config ----------
             const defaultConfig = {
                 labelField: "text",
@@ -1610,17 +1630,11 @@ export class GlobalAdvanceTomselect {
                 allowEmptyOption: true,
                 create: false,
                 plugins: ["remove_button"],
-                // ---------- Global styling ----------
                 render: {
                     no_results: () => {
-                        return `
-                            <div class="no-results">
-                                ${noResultsText}
-                            </div>
-                        `;
+                        return `<div class="no-results">${noResultsText}</div>`;
                     },
                 },
-                // ---------- Hilangkan cursor ----------
                 onItemAdd: function () {
                     if (blurOnItemAdd) {
                         this.blur();
@@ -1628,10 +1642,27 @@ export class GlobalAdvanceTomselect {
                 },
             };
 
+            // ---------- Sisipkan onDropdownOpen jika loadOnClick true ----------
+            if (loadOnClick && typeof loadFn === "function") {
+                defaultConfig.onDropdownOpen = function () {
+                    // Jangan fetch ulang jika sudah ada options
+                    if (this.hasOptions) return;
+
+                    // Panggil load dengan query kosong untuk ambil initial data
+                    loadFn.call(this, "", (results) => {
+                        if (!results) return;
+                        this.addOptions(results);
+                        this.refreshOptions(false);
+                    });
+                };
+            }
+
             // ---------- Merge config ----------
+            const { loadOnClick: _omit, ...restOptions } = this.options;
+
             const config = {
                 ...defaultConfig,
-                ...this.options,
+                ...restOptions,
                 plugins: [
                     ...new Set([
                         ...(defaultConfig.plugins || []),
@@ -1642,10 +1673,7 @@ export class GlobalAdvanceTomselect {
 
             // ---------- Create instance ----------
             const instance = new TomSelect(element, config);
-
-            // ---------- Simpan instance ----------
             element._tomselectInstance = instance;
-
             this.instances.push(instance);
         });
     }
