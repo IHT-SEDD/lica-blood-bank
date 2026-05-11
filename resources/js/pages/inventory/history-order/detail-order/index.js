@@ -2,8 +2,9 @@ import {
     TomSelectDefault,
     TomSelectWithValue,
 } from "../../../../utility/select.js";
-
 import { getDataFromURL } from "../../../../utility/application.js";
+import { GlobalRenderTimelineItem } from "../../../../utility/ui.js";
+import { OrderLogConfigTL } from "../../../../utility/config/timeline-config.js";
 
 import {
     ToolbarWrapper,
@@ -29,6 +30,10 @@ const UrlUpdateOrder = "/inventory/history-order/detail";
 const DONE_STATUS = "done";
 const DRAFT_STATUS = "draft";
 const ORDER_CREATED_STATUS = "order_created";
+
+// TIMELINE
+const OrderLogContainerSelector = ".order-log-data-container";
+const TimelineContainerSelector = ".timeline-order-log";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- State global :begin ----------
@@ -195,7 +200,14 @@ async function fetchDataDetailOrder() {
     showPageLoading();
 
     try {
-        const res = await fetch(`${UrlDetailOrder}/${id}`);
+        const res = await fetch(`${UrlDetailOrder}/${id}`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
         const data = await res.json();
@@ -230,6 +242,7 @@ function resetToolbarToViewMode(order) {
 async function refreshPageContent() {
     const data = await fetchDataDetailOrder();
     const order = data?.order;
+    const logs = data?.log ?? [];
 
     if (order) {
         populateOrderDetailForm(order);
@@ -244,9 +257,9 @@ async function refreshPageContent() {
     }
 
     SelectVendor(order);
-
     setFormDisabled(true);
     resetToolbarToViewMode(order);
+    GenerateTimeline(logs);
 
     return data;
 }
@@ -371,10 +384,23 @@ function HandleSubmitChanges() {
     });
 }
 
+// ---------- Generate Timeline dari array log ----------
+function GenerateTimeline(logs = []) {
+    const orderTimeline = GlobalRenderTimelineItem.create({
+        container: OrderLogContainerSelector,
+        wrapper: TimelineContainerSelector,
+        locale: "en-GB",
+        statusConfig: OrderLogConfigTL,
+    });
+
+    orderTimeline.render(logs);
+}
+
 // ---------- Entry point ----------
 document.addEventListener("DOMContentLoaded", async () => {
     const data = await fetchDataDetailOrder();
     const order = data?.order;
+    const logs = data?.log ?? [];
 
     const tableHandler = HandleTableBlood();
     populateTableFromOrder = tableHandler.PopulateTableFromOrder;
@@ -398,4 +424,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     ToolbarHandler.PreviewPoFile(toolbarContext);
     ToolbarHandler.DownloadPoFile(toolbarContext);
     ToolbarHandler.PrintPoFile(toolbarContext);
+    ToolbarHandler.SetOrderToDone(toolbarContext);
+
+    GenerateTimeline(logs);
 });

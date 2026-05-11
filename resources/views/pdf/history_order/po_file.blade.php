@@ -33,13 +33,13 @@
   }
 
   .header {
-   margin-bottom: 16px;
-   border-bottom: 2px solid #c0392b;
-   padding-bottom: 16px;
+   margin-bottom: 10px;
+   border-bottom: 4px solid #c0392b;
+   padding-bottom: 2px;
   }
 
   .logo {
-   height: 52px;
+   height: 9%;
    width: auto;
    object-fit: contain;
   }
@@ -60,24 +60,34 @@
   }
 
   .heading-2 {
-   font-size: 15px;
+   font-size: 14px;
    font-weight: bold;
-   color: #3d3d3d;
   }
 
   .heading-3 {
-   font-size: 13px;
-   font-weight: 700;
-   color: #3d3d3d;
+   font-size: 12px;
+   font-weight: bold;
+  }
+
+  .paragraph {
+   font-size: 12px;
+  }
+
+  .paragraph-2 {
+   font-size: 11px;
   }
 
   .subheading {
    font-size: 10.5px;
-   color: #494949;
+   color: #666;
   }
 
   .text-center {
    text-align: center;
+  }
+
+  .text-left {
+   text-align: left;
   }
 
   .text-right {
@@ -91,7 +101,8 @@
   }
 
   .table-order {
-   margin-top: 22px;
+   margin-top: 15px;
+   margin-bottom: 15px;
    border: 1px solid #ccc;
   }
 
@@ -106,7 +117,7 @@
    font-size: 10px;
    font-weight: 700;
    border: 1px solid #a93226;
-   text-align: left;
+   text-align: center;
   }
 
   .table-order td {
@@ -153,42 +164,77 @@
   <div class="header">
    <table>
     <tr>
-     <td width="70%" align="left">
-      <div class="title">{{ __('PURCHASE ORDER') }}</div>
-      <div class="subtitle">{{ __('Blood Bank Information System') }}</div>
+     <td width="10%" align="left">
+      <img class="logo" src="{{ public_path('assets/images/logos/logo_rsud_indramayu.png') }}"
+       alt="Logo RSUD Indramayu - Full Color">
      </td>
-     <td width="30%" align="right">
-      <img class="logo" src="{{ public_path('assets/images/logos/logo-lica-bb.png') }}" alt="Logo">
-     </td>
-    </tr>
-   </table>
-
-   <table style="margin-top: 22px;">
-    <tr>
-     <td width="60%" align="left">
-      <div class="heading-2">{{ $order->po_number }}</div>
-     </td>
-     <td width="40%" align="right">
-      <div class="heading-2">
-       {{ \Carbon\Carbon::parse($order->created_at)->format('d F Y') }}
+     <td width="90%" align="center">
+      <div class="heading">{{ __('PEMERINTAH KABUPATEN INDRAMAYU') }}</div>
+      <div class="heading">{{ __('DINAS KESEHATAN') }}</div>
+      <div class="heading-2">{{ __('UPTD RUMAH SAKIT UMUM DAERAH KABUPATEN INDRAMAYU') }}
+      </div>
+      <div class="heading-3">{{ __('Jl. Murah Nara No. 7 Indramayu Kode Pos 45222 Jawa
+       Barat') }}
+      </div>
+      <div class="subheading">{{ __('Telp: (0234) 272655, E-mail:
+       rsudkabindramayu@yahoo.co.id, Faks:
+       (0234) 275330') }}
       </div>
      </td>
     </tr>
    </table>
   </div>
 
-  {{-- Vendor & Ordered By --}}
+  {{-- Title --}}
   <table>
    <tr>
-    <td width="60%" align="left">
-     <div class="heading">{{ __('Vendor') }}</div>
-     <div class="subheading">{{ $vendor?->name ?? '-' }}</div>
-     <div class="subheading">{{ $vendor?->address ?? '-' }}</div>
+    <td width="100%" align="center">
+     <div class="heading-2">{{ __('SURAT PERMINTAAN DARAH') }}</div>
     </td>
+   </tr>
+  </table>
 
-    <td width="40%" align="right">
-     <div class="heading">{{ __('Ordered By') }}</div>
-     <div class="subheading">{{ $order->users?->name ?? '-' }}</div>
+  {{-- Detail User --}}
+  <table width="100%">
+   <tr>
+    <td colspan="3">
+     <div class="paragraph">
+      {{ __('Yang bertanda tangan dibawah ini,') }}
+     </div>
+    </td>
+   </tr>
+   <tr>
+    <td width="17%">
+     <div class="paragraph">{{ __('Nama') }}</div>
+    </td>
+    <td width="3%">
+     <div class="paragraph">:</div>
+    </td>
+    <td width="80%">
+     <div class="paragraph">{{ $order->users?->name ?? '-' }}</div>
+    </td>
+   </tr>
+   <tr>
+    <td width="17%">
+     <div class="paragraph">{{ __('Jabatan') }}</div>
+    </td>
+    <td width="3%">
+     <div class="paragraph">:</div>
+    </td>
+    <td width="80%">
+     <div class="paragraph">{{ $order->users?->roles->first()?->name ?? '-' }}</div>
+    </td>
+   </tr>
+  </table>
+
+  {{-- Detail Vendor --}}
+  <table>
+   <tr>
+    <td width="100%" align="left">
+     <div class="paragraph">{{ __('Dengan ini kami mengajukan permintaan darah kepada ') }}
+      <span class="paragraph" style="font-weight: bold !important;">{{ $vendor?->name ?? '-' }},</span>
+      {{ __('dengan detail sebagai berikut :') }}
+     </div>
     </td>
    </tr>
   </table>
@@ -198,36 +244,71 @@
    <thead>
     <tr>
      <th class="text-center" style="width: 5%;">{{ __('No.') }}</th>
-     <th style="width: 35%;">{{ __('Blood Pack') }}</th>
-     <th class="text-right" style="width: 12%;">{{ __('Quantity') }}</th>
-     <th>{{ __('Note') }}</th>
+     <th style="width: 35%;">{{ __('Jenis Komponen') }}</th>
+     <th class="text-right" style="width: 12%;">{{ __('Jumlah') }}</th>
+     <th>{{ __('Catatan') }}</th>
     </tr>
    </thead>
 
-   <tbody>
-    @forelse($details as $i => $detail)
-    <tr>
-     <td class="text-center">{{ $i + 1 }}</td>
+   @php
+   $componentLabels = [
+   'WB' => 'Whole Blood (WB)',
+   'PRC' => 'Packed Red Cell (PRC)',
+   'FFP' => 'Fresh Frozen Plasma (FFP)',
+   'TC' => 'Thrombocyte Concentrate (TC)',
+   'CRYO' => 'Cryoprecipitate (CRYO)',
+   'WRC' => 'Washed Red Cell (WRC)',
+   ];
+   $groupedDetails = collect($details)
+   ->groupBy(fn($detail) =>
+   $detail->bloodPacks?->blood_component?->value
+   );
+   @endphp
 
+   <tbody>
+    @forelse($groupedDetails as $component => $items)
+
+    {{-- Header Component --}}
+    <tr>
+     <td class="text-center align-top">
+      {{ $loop->iteration }}
+     </td>
+     <td colspan="3">
+      <strong>
+       {{ $componentLabels[$component] ?? $component }}
+      </strong>
+     </td>
+    </tr>
+
+    {{-- Detail Blood --}}
+    @foreach($items as $detail)
+    <tr>
+     {{-- Empty column nomor --}}
+     <td></td>
+     {{-- Golongan darah --}}
      <td>
       @if($detail->bloodPacks)
-      <strong>
-       {{ $detail->bloodPacks->blood_group }}{{ $detail->bloodPacks->blood_rhesus }}
-      </strong>
-      {{ $detail->bloodPacks->blood_component }}
+      <div>
+       {{ $detail->bloodPacks->blood_group->value }}
+       {{ $detail->bloodPacks->blood_rhesus }}
+      </div>
       @else
       -
       @endif
      </td>
 
-     <td class="text-right">
+     {{-- Quantity --}}
+     <td class="text-center">
       {{ number_format($detail->quantity) }}
      </td>
 
+     {{-- Note --}}
      <td>
       {{ $detail->note ?? '-' }}
      </td>
     </tr>
+    @endforeach
+
     @empty
     <tr>
      <td colspan="4" class="text-center" style="color:#aaa;">
@@ -239,8 +320,8 @@
 
    <tfoot>
     <tr>
-     <td colspan="2">{{ __('Total Quantity') }}</td>
-     <td class="text-right">
+     <td colspan="2">{{ __('Jumlah Total') }}</td>
+     <td class="text-center">
       {{ number_format($order->total_quantity) }}
      </td>
      <td></td>
@@ -248,21 +329,41 @@
    </tfoot>
   </table>
 
+  {{-- Order Text --}}
+  <table>
+   <tr>
+    <td width="100%" align="left">
+     <div class="paragraph">{{ __('Untuk keperluan bulan ') }}<strong>{{ now()->format('F Y') }}</strong>
+      {{ __(' pada sub bagian') }}<strong>{{ __('Bank Darah Rumah Sakit (BDRS)') }}</strong>
+     </div>
+     <div class="paragraph">
+      {{ __('Demikian surat permohonan ini kami ajukan untuk dapat direalisasikan ') }}
+     </div>
+    </td>
+   </tr>
+  </table>
+
+  {{-- Order Description --}}
   @if($order->description)
   <table>
    <tr>
-    <td width="50%" align="left">
-     <div class="heading-3">{{ __('Description / Notes') }}</div>
-     <div class="subheading">{{ $order->description }}</div>
+    <td width="100%" align="left">
+     <div class="paragraph">{{ __('Description / Notes') }} :</div>
+     <div class="paragraph">{{ $order->description }}</div>
     </td>
    </tr>
   </table>
   @endif
 
   {{-- Signature --}}
-  <table>
+  <table style="margin-top: 18px;">
    <tr>
-    <td width="50%" align="right">
+    <td width="65%" align="center">
+    </td>
+    <td width="35%" align="center">
+     <div class="paragraph">{{ __('Indramayu') }}, {{ now()->format('d F Y') }}</div>
+     <div class="paragraph">{{ __('Pemohon') }}</div>
+     <div class="paragraph">{{ $order->users?->roles->first()?->name ?? '-' }}</div>
      <br>
      <br>
      <br>

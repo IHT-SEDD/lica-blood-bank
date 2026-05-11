@@ -31,7 +31,7 @@ class AddNewBloodStockRequest extends FormRequest
             // Validasi untuk method manual — tiap item blood_data wajib diisi
             $manualRules = [
                 'bag_numbers' => ['required', 'array', 'min:1'],
-                'bag_numbers.*' => ['required', 'string', 'exists:incoming_blood_details,public_id'],
+                'bag_numbers.*' => ['required', 'string', 'exists:incoming_blood_details,bag_number'],
             ];
 
             return array_merge($baseRules, $manualRules);

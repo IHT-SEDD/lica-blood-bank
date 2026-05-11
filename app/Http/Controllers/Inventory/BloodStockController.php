@@ -4,16 +4,17 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\AddNewBloodStockRequest;
-use App\Services\Inventory\BloodStockAddService;
-use App\Services\Inventory\BloodStockService;
+use App\Services\Inventory\BloodStock\BloodStockDataService;
+use App\Services\Inventory\BloodStock\BloodStockAddService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class BloodStockController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
-        protected BloodStockService $service,
         protected BloodStockAddService $serviceAdd,
+        protected BloodStockDataService $dataService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -21,7 +22,7 @@ class BloodStockController extends Controller
     public function bloodStockTable(Request $request)
     {
         return response()->json(
-            $this->service->bloodStockTable($request)
+            $this->dataService->bloodStockTable($request)
         );
     }
 
@@ -30,7 +31,7 @@ class BloodStockController extends Controller
     {
         return response()->json([
             'message' => 'Success get blood stock status',
-            'data' => $this->service->bloodStockStatusLabel()
+            'data' => $this->dataService->bloodStockStatusLabel()
         ]);
     }
 
@@ -40,8 +41,7 @@ class BloodStockController extends Controller
         if ($request->method_add === 'manual') {
             return $this->serviceAdd->insertBloodStockByManual($request);
         }
-
-        // return $this->service->insertBloodStockByScan($request);
+        return $this->serviceAdd->insertBloodStockByScan($request);
     }
 
     // ---------- Halaman Detail Stock ----------
@@ -54,7 +54,7 @@ class BloodStockController extends Controller
     public function detailStockBloodDataTable(Request $request, string $id)
     {
         return response()->json(
-            $this->service->detailStockBloodDataTable($request, $id)
+            $this->dataService->detailStockBloodDataTable($request, $id)
         );
     }
 
@@ -62,7 +62,7 @@ class BloodStockController extends Controller
     public function getDataDetailStockBlood(string $id)
     {
         // Panggil dan jalankan service
-        $data = $this->service->getDataDetailStockBlood($id);
+        $data = $this->dataService->getDataDetailStockBlood($id);
 
         // Lempar data not found
         if (!$data) {
@@ -76,5 +76,28 @@ class BloodStockController extends Controller
             'message' => 'Data fetched succesfully!',
             'data' => $data
         ]);
+    }
+
+    // ---------- Fungsi untuk select po ----------
+    public function selectPO(Request $request)
+    {
+        return response()->json(
+            $this->dataService->selectPO($request)
+        );
+    }
+
+    // ---------- Get Log Data ----------
+    public function stockBloodLogData(string $id)
+    {
+        try {
+            $data = $this->dataService->getDataLogById($id);
+            return response()->json($data)
+                ->setEtag(md5(json_encode($data)))
+                ->header('Cache-Control', 'public, max-age=600');
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
+        }
     }
 }

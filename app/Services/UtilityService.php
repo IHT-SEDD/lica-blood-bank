@@ -15,6 +15,8 @@ class UtilityService
   {
     $select = Str::kebab($select);
 
+    $search = $request->filled('q', '');
+
     // ---------- Ambil data config utility.php ----------
     $modules = $this->getUtilityConfig($select);
 
@@ -28,7 +30,6 @@ class UtilityService
       abort(404, "Invalid select configuration [$select]");
     }
 
-    $search = $request->filled('q', '');
     $modelClass = $modules['model'];
     $with = $this->normalizeWith($modules['with'] ?? []);
     $labelField = $modules['label'];
@@ -105,7 +106,7 @@ class UtilityService
       $this->applySearch($query, $labelField, $search);
     }
 
-    $data = $query->limit(100)->get();
+    $data = $query->limit(100)->orderBy('id', 'asc')->get();
 
     return [
       'results' => $data->map(function ($item) use ($modules, $labelField) {

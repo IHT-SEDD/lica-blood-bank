@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services\Inventory;
+namespace App\Services\Inventory\BloodStock;
 
 use App\Enums\BloodStockLogActivityStatus;
 use App\Enums\BloodStockStatus;
 use App\Enums\IncomingBloodLogActivityStatus;
 use App\Enums\IncomingBloodStatus;
+use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
 use App\Models\IncomingBlood;
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\DB;
 
 class BloodStockAddService
 {
- // ---------- Fungsi untuk menambahkan data order baru :begin ----------
+ // ---------- Fungsi untuk menambahkan data order baru via manual ----------
  public function insertBloodStockByManual(Request $request)
  {
   DB::beginTransaction();
@@ -26,13 +27,12 @@ class BloodStockAddService
    $user = Auth::user();
    $bagNumberItems = $request->input('bag_numbers', []);
 
-   // ---------- Validasi bag_numbers tidak kosong :begin ----------
+   // ---------- Validasi bag_numbers tidak kosong ----------
    if (empty($bagNumberItems)) {
     return response()->json(['message' => 'Bag number list cannot be empty!'], 422);
    }
-   // ---------- Validasi bag_numbers tidak kosong :end ----------
 
-   // ---------- Validasi & klasifikasi tiap bag number :begin ----------
+   // ---------- Validasi & klasifikasi tiap bag number ----------
    [$validDetails, $notFoundBags, $alreadyInStockBags] = $this->classifyBagNumbers($bagNumberItems);
 
    if (!empty($notFoundBags)) {
@@ -48,19 +48,15 @@ class BloodStockAddService
      'duplicate_bags' => $alreadyInStockBags,
     ], 422);
    }
-   // ---------- Validasi & klasifikasi tiap bag number :end ----------
 
-   // ---------- Insert BloodStock & update IncomingBloodDetail :begin ----------
+   // ---------- Insert BloodStock & update IncomingBloodDetail ----------
    $insertedStocks = $this->insertBloodStocks($validDetails, $request, $user);
-   // ---------- Insert BloodStock & update IncomingBloodDetail :end ----------
 
-   // ---------- Insert BloodStock log activity :begin ----------
+   // ---------- Insert BloodStock log activity ----------
    $this->insertBloodStockLogs($insertedStocks, $request, $user);
-   // ---------- Insert BloodStock log activity :end ----------
 
-   // ---------- Cek & update status IncomingBlood jika semua detail sudah ready :begin ----------
+   // ---------- Cek & update status IncomingBlood jika semua detail sudah ready ----------
    $this->syncIncomingBloodReadyStatus($validDetails, $request, $user);
-   // ---------- Cek & update status IncomingBlood jika semua detail sudah ready :end ----------
 
    DB::commit();
 
@@ -71,7 +67,6 @@ class BloodStockAddService
     'inserted_bags' => collect($insertedStocks)->pluck('stock.bag_number'),
     'inserted_by' => $user->id,
    ], 200, 'newbloodstock');
-
    return response()->json([
     'message' => 'New blood stock added successfully!',
     'total' => count($insertedStocks),
@@ -85,53 +80,147 @@ class BloodStockAddService
     'error' => $e->getMessage(),
     'inserted_by' => Auth::id(),
    ], 500, 'newbloodstock');
-
    return response()->json([
     'message' => 'New blood stock failed to insert!',
     'error' => $e->getMessage(),
    ], 500);
   }
  }
- // ---------- Fungsi untuk menambahkan data order baru :end ----------
+
+ // ---------- Fungsi untuk menambahkan data blood stock baru via scan barcode ----------
+ // Textarea dari frontend berisi bag numbers satu per baris (diinput oleh hardware
+ // barcode reader). Fungsi ini mem-parse string tersebut menjadi array, lalu
+ // menjalankan pipeline yang sama dengan insertBloodStockByManual.
+ public function insertBloodStockByScan(Request $request)
+ {
+  DB::beginTransaction();
+  try {
+   $user = Auth::user();
+
+   // ---------- Parse textarea: split by newline, trim, buang baris kosong ----------
+   $rawInput = $request->input('bag_numbers', '');
+   $bagNumberItems = collect(explode("\n", $rawInput))
+    ->map(fn($line) => trim($line))
+    ->filter(fn($line) => $line !== '')
+    ->values()
+    ->all();
+
+   // ---------- Validasi bag_numbers tidak kosong ----------
+   if (empty($bagNumberItems)) {
+    return response()->json(['message' => 'Bag number list cannot be empty!'], 422);
+   }
+
+   // ---------- Validasi duplikat di sisi backend (safety net) ----------
+   $duplicateBags = collect($bagNumberItems)
+    ->duplicates()
+    ->unique()
+    ->values()
+    ->all();
+
+   if (!empty($duplicateBags)) {
+    return response()->json([
+     'message' => 'Bag number list contains duplicates!',
+     'duplicate_bags' => $duplicateBags,
+    ], 422);
+   }
+
+   // ---------- Validasi & klasifikasi tiap bag number ----------
+   [$validDetails, $notFoundBags, $alreadyInStockBags] = $this->classifyBagNumbers($bagNumberItems);
+
+   if (!empty($notFoundBags)) {
+    return response()->json([
+     'message' => 'Some bag numbers are not found or not ready!',
+     'invalid_bags' => $notFoundBags,
+    ], 422);
+   }
+
+   if (!empty($alreadyInStockBags)) {
+    return response()->json([
+     'message' => 'Some bag numbers are already in blood stock!',
+     'duplicate_bags' => $alreadyInStockBags,
+    ], 422);
+   }
+
+   // ---------- Insert BloodStock & update IncomingBloodDetail ----------
+   $insertedStocks = $this->insertBloodStocks($validDetails, $request, $user);
+
+   // ---------- Insert BloodStock log activity ----------
+   $this->insertBloodStockLogs($insertedStocks, $request, $user);
+
+   // ---------- Cek & update status IncomingBlood jika semua detail sudah ready ----------
+   $this->syncIncomingBloodReadyStatus($validDetails, $request, $user);
+
+   DB::commit();
+
+   globalLogger('info', 'New blood stock added successfully via scan!', [
+    'po_number' => $request->po_number,
+    'note' => $request->note,
+    'total_inserted' => count($insertedStocks),
+    'inserted_bags' => collect($insertedStocks)->pluck('stock.bag_number'),
+    'inserted_by' => $user->id,
+   ], 200, 'newbloodstock');
+   return response()->json([
+    'message' => 'New blood stock added successfully!',
+    'total' => count($insertedStocks),
+    'data' => collect($insertedStocks)->pluck('stock'),
+   ]);
+  } catch (\Throwable $e) {
+   DB::rollBack();
+
+   globalLogger('error', 'New blood stock failed to insert via scan!', [
+    'payload' => $request->all(),
+    'error' => $e->getMessage(),
+    'inserted_by' => Auth::id(),
+   ], 500, 'newbloodstock');
+   return response()->json([
+    'message' => 'New blood stock failed to insert!',
+    'error' => $e->getMessage(),
+   ], 500);
+  }
+ }
 
  // ==========================================================================
  // PRIVATE HELPERS
  // ==========================================================================
 
- // ---------- Helper: klasifikasi bag number menjadi valid / not found / duplicate :begin ----------
- private function classifyBagNumbers(array $publicIds): array
+ // ---------- Helper: klasifikasi bag number menjadi valid / not found / duplicate ----------
+ private function classifyBagNumbers(array $bagNumbers): array
  {
-  // ---------- Ambil semua IncomingBloodDetail sekaligus :begin ----------
-  $details = IncomingBloodDetail::with(['incomingBloods', 'bloodPacks'])
-   ->whereIn('public_id', $publicIds)
-   ->where('is_active', true)
+  // ---------- Ambil data incoming_blood_details ----------
+  $details = IncomingBloodDetail::withoutTrashed()
+   ->with([
+    'incomingBloods:id,public_id,po_number,order_blood_id,status,batch_number',
+    'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
+   ])
+   ->whereIn('bag_number', $bagNumbers)
    ->where('is_ready', false)
    ->get()
-   ->keyBy('public_id');
-  // ---------- Ambil semua IncomingBloodDetail sekaligus :end ----------
+   ->keyBy('bag_number');
 
-  // ---------- Ambil semua incoming_blood_detail_id yang sudah ada di BloodStock sekaligus :begin ----------
+  // ---------- Ambil id incoming_blood_details ----------
   $detailIds = $details->pluck('id')->all();
+
+  // ---------- Check tiap id incoming_blood_details apakah ada di blood_stocks atau tidak ----------
   $existingInStock = BloodStock::whereIn('incoming_blood_detail_id', $detailIds)
    ->whereNull('deleted_at')
    ->pluck('incoming_blood_detail_id')
    ->flip(); // flip agar O(1) lookup
-  // ---------- Ambil semua incoming_blood_detail_id yang sudah ada di BloodStock sekaligus :end ----------
 
+  // ---------- Buat variabel array penampung klasifikasi ----------
   $validDetails = [];
   $notFoundBags = [];
   $alreadyInStockBags = [];
 
-  foreach ($publicIds as $publicId) {
-   $detail = $details->get($publicId);
+  foreach ($bagNumbers as $bagNumber) {
+   $detail = $details->get($bagNumber);
 
    if (!$detail) {
-    $notFoundBags[] = $publicId;
+    $notFoundBags[] = $bagNumber;
     continue;
    }
 
    if ($existingInStock->has($detail->id)) {
-    $alreadyInStockBags[] = $publicId;
+    $alreadyInStockBags[] = $bagNumber;
     continue;
    }
 
@@ -140,21 +229,18 @@ class BloodStockAddService
 
   return [$validDetails, $notFoundBags, $alreadyInStockBags];
  }
- // ---------- Helper: klasifikasi bag number menjadi valid / not found / duplicate :end ----------
 
- // ---------- Helper: insert BloodStock & update is_ready di IncomingBloodDetail :begin ----------
- // Mengembalikan array of ['stock' => BloodStock, 'detail' => IncomingBloodDetail]
+ // ---------- Helper: insert BloodStock & update is_ready di IncomingBloodDetail ----------
  private function insertBloodStocks(array $validDetails, Request $request, ?User $user): array
  {
   $insertedStocks = [];
   $now = now();
 
   foreach ($validDetails as $detail) {
-   // ---------- Generate bag_number_lica :begin ----------
+   // ---------- Generate bag_number_lica ----------
    $bagNumberLica = $this->generateBagNumberLica($detail->bloodPacks);
-   // ---------- Generate bag_number_lica :end ----------
 
-   // ---------- Insert ke BloodStock :begin ----------
+   // ---------- Insert ke BloodStock ----------
    $bloodStock = BloodStock::create([
     'bag_number' => $detail->bag_number,
     'bag_number_lica' => $bagNumberLica,
@@ -171,25 +257,21 @@ class BloodStockAddService
     'is_expired' => $detail->is_expired,
     'blood_status' => BloodStockStatus::AVAILABLE,
     'add_new_note' => $request->note,
-    'note' => null,
    ]);
-   // ---------- Insert ke BloodStock :end ----------
 
-   // ---------- Update is_ready & ready_at di IncomingBloodDetail :begin ----------
+   // ---------- Update is_ready & ready_at di IncomingBloodDetail ----------
    $detail->update([
     'is_ready' => true,
     'ready_at' => $now,
    ]);
-   // ---------- Update is_ready & ready_at di IncomingBloodDetail :end ----------
 
    $insertedStocks[] = ['stock' => $bloodStock, 'detail' => $detail];
   }
 
   return $insertedStocks;
  }
- // ---------- Helper: insert BloodStock & update is_ready di IncomingBloodDetail :end ----------
 
- // ---------- Helper: insert BloodStock log activity untuk semua stock yang berhasil diinsert :begin ----------
+ // ---------- Helper: insert BloodStock log activity untuk semua stock yang berhasil diinsert ----------
  private function insertBloodStockLogs(array $insertedStocks, Request $request, ?User $user): void
  {
   $logs = [];
@@ -204,15 +286,11 @@ class BloodStockAddService
      'po_number' => $request->po_number,
      'bag_number' => $item['detail']->bag_number,
      'bag_number_lica' => $item['stock']->bag_number_lica,
-     'note' => $request->note,
+     'add_new_note' => $request->note,
      'method_add' => $request->method_add,
     ]),
-    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL->value,
-    'description' => generateBloodStockLogDescription(
-     BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL,
-     $item['detail']->bag_number,
-     $user->id
-    ),
+    'status' => $request->method_add === 'scan' ? BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_SCAN : BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL,
+    'description' => generateBloodStockLogDescription($request->method_add === 'scan' ? BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_SCAN : BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL, $item['detail']->bag_number, $user->id),
     'created_by_user_name' => $user->name,
     'timestamp' => $now,
     'created_at' => $now,
@@ -220,22 +298,20 @@ class BloodStockAddService
    ];
   }
 
-  // ---------- Bulk insert log agar tidak N query :begin ----------
+  // ---------- Bulk insert log agar tidak N query ----------
   BloodStockLogActivity::insert($logs);
-  // ---------- Bulk insert log agar tidak N query :end ----------
  }
- // ---------- Helper: insert BloodStock log activity untuk semua stock yang berhasil diinsert :end ----------
 
- // ---------- Helper: cek apakah semua detail di IncomingBlood sudah ready, lalu update :begin ----------
+ // ---------- Helper: cek apakah semua detail di IncomingBlood sudah ready, lalu update ----------
  private function syncIncomingBloodReadyStatus(array $validDetails, Request $request, ?User $user): void
  {
-  // ---------- Ambil semua incoming_blood_id yang unik dari detail yang baru diinsert :begin ----------
+  // ---------- Ambil semua incoming_blood_id yang unik dari detail yang baru diinsert ----------
   $incomingBloodIds = collect($validDetails)
    ->pluck('incoming_blood_id')
    ->unique()
    ->all();
-  // ---------- Ambil semua incoming_blood_id yang unik dari detail yang baru diinsert :end ----------
 
+  // Ambil data incoming_bloods
   $incomingBloods = IncomingBlood::with(['incomingBloodDetails'])
    ->whereIn('id', $incomingBloodIds)
    ->get();
@@ -243,22 +319,21 @@ class BloodStockAddService
   $now = now();
 
   foreach ($incomingBloods as $incomingBlood) {
+   // ---------- Cek apakah semuanya sudah ready atau belum dari incoming_blood_details ----------
    $allReady = $incomingBlood->incomingBloodDetails->every(
     fn($d) => (bool) $d->is_ready === true
    );
-
    if (!$allReady) continue;
 
-   // ---------- Update IncomingBlood jika semua detail sudah ready :begin ----------
+   // ---------- Update IncomingBlood jika semua detail sudah ready ----------
    $incomingBlood->update([
     'received_by_user_id' => $user->id,
     'received_at' => $now,
     'stock_ready_at' => $now,
     'status' => IncomingBloodStatus::STOCK_READY,
    ]);
-   // ---------- Update IncomingBlood jika semua detail sudah ready :end ----------
 
-   // ---------- Insert IncomingBloodLogActivity :begin ----------
+   // ---------- Insert IncomingBloodLogActivity ----------
    IncomingBloodLogActivity::create([
     'incoming_blood_public_id' => $incomingBlood->public_id,
     'po_number' => $incomingBlood->po_number,
@@ -275,32 +350,31 @@ class BloodStockAddService
      $user->id
     ),
    ]);
-   // ---------- Insert IncomingBloodLogActivity :end ----------
   }
  }
- // ---------- Helper: cek apakah semua detail di IncomingBlood sudah ready, lalu update :end ----------
 
- // ---------- Helper: generate bag_number_lica yang unik :begin ----------
- // Format: BS{bloodGroup}{bloodComponent}{4angkaRandom}{P/N}{sequence 7 digit}
- // Contoh: BSAWHC1234P0000001
- // - BS      = prefix tetap
- // - A       = blood group (A/B/AB/O)
- // - WH      = blood component code (2 huruf)
- // - C       = 4 karakter random alfanumerik
- // - 1234    = 4 digit random
- // - P       = rhesus (P = positif, N = negatif)
- // - 0000001 = sequence auto-increment 7 digit
- private function generateBagNumberLica(\App\Models\BloodPack $bloodPack): string
+ // ---------- Helper: generate bag_number_lica yang unik ----------
+ /**
+  * Format: BS{bloodGroup}{bloodComponent}{4angkaRandom}{P/N}{sequence 7 digit}
+  * Contoh: BSAWHC1234P0000001
+  * BS      = prefix tetap
+  *- A       = blood group (A/B/AB/O)
+  *- WH      = blood component code (2 huruf)
+  *- C       = 4 karakter random alfanumerik
+  *- 1234    = 4 digit random
+  *- P       = rhesus (P = positif, N = negatif)
+  *- 0000001 = sequence auto-increment 7 digit 
+  */
+ private function generateBagNumberLica(BloodPack $bloodPack): string
  {
   $bloodGroup = strtoupper($bloodPack->blood_group->value);
   $bloodComponent = strtoupper(substr($bloodPack->blood_component->value, 0, 2));
   $rhesus = $bloodPack->blood_rhesus === '+' ? 'P' : 'N';
 
-  // ---------- Prefix tetap per kombinasi blood pack :begin ----------
+  // ---------- Prefix tetap per kombinasi blood pack ----------
   $prefix = "BS{$bloodGroup}{$bloodComponent}";
-  // ---------- Prefix tetap per kombinasi blood pack :end ----------
 
-  // ---------- Ambil sequence terakhir untuk prefix+rhesus ini agar tidak duplikat :begin ----------
+  // ---------- Ambil sequence terakhir untuk prefix+rhesus ini agar tidak duplikat ----------
   // Lock row agar concurrent insert tidak menghasilkan sequence yang sama
   $last = DB::table('blood_stocks')
    ->where('bag_number_lica', 'like', "{$prefix}%{$rhesus}%")
@@ -308,31 +382,24 @@ class BloodStockAddService
    ->lockForUpdate()
    ->orderByDesc('bag_number_lica')
    ->value('bag_number_lica');
-  // ---------- Ambil sequence terakhir untuk prefix+rhesus ini agar tidak duplikat :end ----------
 
-  // ---------- Parse sequence dari bag_number_lica terakhir :begin ----------
-  // Format: BS{group}{comp}{4rand}{rhesus}{7digit}
-  // Panjang prefix + rhesus sebelum sequence = len(BS) + len(group) + len(comp) + 4(rand) + 1(rhesus) = dinamis
-  // Sequence selalu 7 digit di paling akhir
+  // ---------- Parse sequence dari bag_number_lica terakhir ----------
   if ($last) {
    $lastSequence = (int) substr($last, -7);
    $sequence = $lastSequence + 1;
   } else {
    $sequence = 1;
   }
-  // ---------- Parse sequence dari bag_number_lica terakhir :end ----------
 
   if ($sequence > 9999999) {
    throw new \RuntimeException("Bag number LICA sequence limit reached for prefix {$prefix}{$rhesus}");
   }
 
-  // ---------- 4 karakter random alfanumerik (huruf besar + angka) :begin ----------
+  // ---------- 4 karakter random alfanumerik (huruf besar + angka) ----------
   $random = strtoupper(\Illuminate\Support\Str::random(4));
-  // ---------- 4 karakter random alfanumerik (huruf besar + angka) :end ----------
 
   $sequencePadded = str_pad($sequence, 7, '0', STR_PAD_LEFT);
 
   return "{$prefix}{$random}{$rhesus}{$sequencePadded}";
  }
- // ---------- Helper: generate bag_number_lica yang unik :end ----------
 }

@@ -1,4 +1,4 @@
-import { OrderStatus } from "./utility";
+import { OrderStatus } from "../../../../utility/config/status-config";
 import { setHidden } from "../../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -19,6 +19,7 @@ const UrlGeneratePO = "/inventory/history-order/po-file/generate";
 const UrlPreviewPO = "/inventory/history-order/po-file/preview";
 const UrlDownloadPO = "/inventory/history-order/po-file/download";
 const UrlPrintPO = "/inventory/history-order/po-file/print";
+const UrlSetOrderToDone = "/inventory/history-order/detail/set-done";
 
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
@@ -317,6 +318,60 @@ export const ToolbarHandler = {
             } finally {
                 hidePageLoading();
                 printBtn.disabled = false;
+            }
+        });
+    },
+
+    // ---------- Handler tombol Set Order to Done ----------
+    SetOrderToDone(context) {
+        const setToDoneBtn = document.getElementById(BtnDone);
+        if (!setToDoneBtn) return;
+
+        setToDoneBtn.addEventListener("click", async () => {
+            const currentOrderData = context.getCurrentOrderData();
+            
+            if (!currentOrderData?.order?.po_number) {
+                notyf.error({ message: "PO Number not found!" });
+                return;
+            }
+
+            const poNumber = currentOrderData.order.po_number;
+            setToDoneBtn.disabled = true;
+            showPageLoading();
+
+            try {
+                const res = await fetch(`${UrlSetOrderToDone}/${poNumber}`, {
+                    method: "POST",
+                    headers: {
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            ?.getAttribute("content"),
+                    },
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(
+                        err?.message ?? `HTTP error! status: ${res.status}`,
+                    );
+                }
+
+                notyf.success({
+                    message: "Order set to done successfully!",
+                });
+
+                // Refresh data agar toolbar update
+                const data = await context.fetchDataDetailOrder();
+                context.setCurrentOrderData(data);
+                ToolbarState(data?.order);
+            } catch (err) {
+                notyf.error({
+                    message: err.message ?? "Failed to set order done!",
+                });
+                console.error(err);
+            } finally {
+                hidePageLoading();
+                setToDoneBtn.disabled = false;
             }
         });
     },

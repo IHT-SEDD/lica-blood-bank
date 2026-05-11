@@ -35,6 +35,10 @@ class IncomingBloodDetail extends Model
         'id',
     ];
 
+    protected $appends = [
+        'incoming_blood_groups',
+    ];
+
     protected static function booted()
     {
         static::creating(function ($incomingBloodDetail) {
@@ -43,6 +47,19 @@ class IncomingBloodDetail extends Model
                 $incomingBloodDetail->public_id = (string) Str::uuid();
             }
         });
+    }
+
+    public function getIncomingBloodGroupsAttribute(): ?string
+    {
+        if (!$this->bloodPacks) {
+            return null;
+        }
+
+        return collect([
+            $this->bloodPacks->blood_group->value,
+            $this->bloodPacks->blood_rhesus,
+        ])->filter()->join('') . ' ' .
+            ($this->bloodPacks->blood_component->value ?? '');
     }
 
     // Relation to incoming_bloods

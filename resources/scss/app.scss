@@ -4,7 +4,7 @@
  * Module/App (File Name): App CSS File
  * Version: 3.0.0
 */
-@import url("https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.34.0/tabler-icons.min.css");
+@import "../../node_modules/@tabler/icons-webfont/dist/tabler-icons.min.css";
 
 // Core files
 @import "../../node_modules/bootstrap/scss/functions";

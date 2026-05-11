@@ -1,8 +1,8 @@
-import TomSelect from "tom-select";
 import {
     GlobalSubmitForm,
     GlobalFormValidation,
     GlobalAdvanceFlatpickr,
+    GlobalAdvanceTomselect,
 } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -18,7 +18,6 @@ const FormExcelWrapper = "add_excel_method_wrapper";
 
 // Form Utilities
 const LoadingForm = "loading_form_add_new_incoming_stock";
-const UrlPostIncomingStock = "/inventory/stock-in/data/new";
 
 // Form Manual
 const TableRowBloodData = "blood_data_row";
@@ -27,12 +26,18 @@ const AddRowCountInput = "#add_row_blood_data_count";
 
 // Form Excel
 const TemplateExcelPath = "/assets/files/Template Add Incoming Stock.xlsx";
-const TemplateExcelFileName = "Template_Add_Incoming_Stock.xlsx";
+
+// URLS
+const URLSelectBloodPack = "/inventory/stock-in/data/select/blood-pack";
+const URLSelectPO = "/inventory/stock-in/data/select/po";
+const UrlPostIncomingStock = "/inventory/stock-in/data/new";
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 
 // ---------- State global :begin ----------
 let currentMethod = "manual";
 let formValidation = null;
+let selectedPoNumber = null;
+let selectedBatchNumber = null;
 // ---------- State global :end ----------
 
 const REQUIRED_FIELDS = [
@@ -46,6 +51,12 @@ const REQUIRED_FIELDS = [
 
 function f(idx, field) {
     return `blood_data[${idx}][${field}]`;
+}
+
+function getTemplateExcelFileName() {
+    const batch = selectedBatchNumber ?? "Unknown";
+    const po = selectedPoNumber ?? "Unknown";
+    return `New Incoming Blood for Batch - ${batch}_${po}.xlsx`;
 }
 
 // ---------- Helper: toggle tampilan form berdasarkan method :begin ----------
@@ -110,15 +121,9 @@ function initFlatpickr(el) {
 
 // ---------- Helper: init TomSelect pada elemen dengan value default :begin ----------
 function initTomSelect(el, url) {
-    if (!el) return;
-    if (el.tomselect) el.tomselect.destroy();
-
-    return new TomSelect(el, {
+    return new GlobalAdvanceTomselect(el, {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         preload: true,
-        create: false,
         dropdownParent: "body",
         load: function (query, callback) {
             fetch(`${url}?q=${encodeURIComponent(query)}`)
@@ -132,33 +137,29 @@ function initTomSelect(el, url) {
 
 // ---------- Select po dari tom-select untuk form add new data :begin ----------
 function SelectPO() {
-    new TomSelect(ChoosePOSelector, {
+    new GlobalAdvanceTomselect(ChoosePOSelector, {
         valueField: "text",
-        labelField: "text",
-        searchField: "text",
         sortField: { field: "id", direction: "asc" },
-        create: false,
         preload: true,
         load: function (query, callback) {
-            fetch(
-                `/utility/select/purchase-order?q=${encodeURIComponent(query)}`,
-            )
+            fetch(`${URLSelectPO}?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: function (value) {
+            selectedPoNumber = value;
+        },
+        noResultsText: "PO Number not found",
     });
 }
 // ---------- Select po dari tom-select untuk form add new data :begin ----------
 
 // ---------- Select add method dari tom-select :begin ----------
 function SelectAddMethod() {
-    const ts = new TomSelect(ChooseAddMethodSelector, {
+    const ts = new GlobalAdvanceTomselect(ChooseAddMethodSelector, {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         sortField: { field: "id", direction: "asc" },
-        create: false,
         preload: true,
         load: function (query, callback) {
             fetch(
@@ -167,7 +168,10 @@ function SelectAddMethod() {
                 .then((res) => res.json())
                 .then((json) => {
                     callback(json.results);
-                    ts.setValue("manual", true);
+                    const realInstance = ts.instances[0];
+                    if (realInstance) {
+                        realInstance.setValue("manual", true);
+                    }
                     toggleFormMethod("manual");
                 })
                 .catch(() => callback());
@@ -178,18 +182,18 @@ function SelectAddMethod() {
 // ---------- Select add method dari tom-select :end ----------
 
 // ---------- Download Template Excel :begin ----------
-/**
- * Menggunakan fetch + streaming ke Blob agar file langsung didownload
- * tanpa membuka tab baru, dan bekerja meski path mengandung spasi.
- */
 function HandleDownloadTemplate() {
     const btn = document.getElementById("download_template_excel");
     if (!btn) return;
+
     btn.addEventListener("click", async () => {
-        // Tampilkan loading state di tombol
-        const originalHTML = btn.innerHTML;
+        if (!selectedPoNumber || !selectedBatchNumber) {
+            notyf.error({
+                message: "Please select a PO and fill the batch number first!",
+            });
+            return;
+        }
         btn.disabled = true;
-        btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status"></span>Downloading...`;
 
         try {
             const response = await fetch(TemplateExcelPath);
@@ -204,7 +208,7 @@ function HandleDownloadTemplate() {
 
             const a = document.createElement("a");
             a.href = url;
-            a.download = TemplateExcelFileName;
+            a.download = getTemplateExcelFileName();
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -213,21 +217,15 @@ function HandleDownloadTemplate() {
             setTimeout(() => URL.revokeObjectURL(url), 10_000);
         } catch (err) {
             console.error("Download template failed:", err);
-            notyf.error({ message: "Gagal mengunduh template excel!" });
+            notyf.error({ message: "Failed to download excel template!" });
         } finally {
             btn.disabled = false;
-            btn.innerHTML = originalHTML;
         }
     });
 }
 // ---------- Download Template Excel :end ----------
 
 // ---------- Validasi file excel saat submit :begin ----------
-/**
- * Validasi input file saat method adalah excel.
- * Dipanggil di dalam beforeSubmit sebelum dikirim ke server.
- * Return: true jika valid, false jika tidak.
- */
 function validateExcelFile() {
     const fileInput = document.getElementById("incoming_stock_excel");
 
@@ -283,8 +281,8 @@ function HandleFormManual() {
                         id="${f(idx, "bag_number")}" name="${f(idx, "bag_number")}" placeholder="Bag number" />
                 </td>
                 <td>
-                    <select class="form-control form-control-sm"
-                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Blood pack"></select>
+                    <select class="form-control form-control-sm tomselect-sm"
+                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Blood pack" ${!selectedPoNumber ? "disabled" : ""}></select>
                 </td>
                 <td>
                     <input type="text" class="form-control form-control-sm"
@@ -339,6 +337,29 @@ function HandleFormManual() {
         `;
     }
 
+    // ---------- Refresh semua TomSelect blood_pack setelah PO dipilih :begin ----------
+    function refreshBloodPackSelects() {
+        const rows = tableBody.querySelectorAll("tr");
+        rows.forEach((row, index) => {
+            const selectEl = row.querySelector(
+                `[id="${f(index, "blood_pack_id")}"]`,
+            );
+            if (!selectEl) return;
+
+            // Destroy instance lama jika ada
+            if (selectEl.tomselect) selectEl.tomselect.destroy();
+
+            // Enable elemen
+            selectEl.disabled = false;
+
+            // Init ulang TomSelect dengan PO yang sudah dipilih
+            initTomSelect(
+                selectEl,
+                `${URLSelectBloodPack}/${selectedPoNumber}`,
+            );
+        });
+    }
+
     // ---------- Init Flatpickr untuk 1 row (by idx) ----------
     function initDatePickersForRow(idx) {
         ["aftap_date", "expiry_date", "process_date"].forEach((field) => {
@@ -349,9 +370,10 @@ function HandleFormManual() {
 
     // ---------- Init TomSelect untuk 1 row (by idx) ----------
     function initTomSelectsForRow(idx) {
+        if (!selectedPoNumber) return;
         initTomSelect(
             tableBody.querySelector(`[id="${f(idx, "blood_pack_id")}"]`),
-            "/utility/select/blood-pack",
+            `${URLSelectBloodPack}/${selectedPoNumber}`,
         );
     }
 
@@ -612,6 +634,8 @@ function HandleFormManual() {
         resetOnSuccess: true,
     });
     // ---------- Init GlobalSubmitForm untuk handle submit dan validasi :end ----------
+
+    return { refreshBloodPackSelects };
 }
 // ---------- Fungsi untuk form method manual :end ----------
 
@@ -636,7 +660,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
     SelectPO();
     SelectAddMethod();
-    HandleFormManual();
+
+    const { refreshBloodPackSelects } = HandleFormManual();
 
     HandleDownloadTemplate();
+
+    const poEl = document.querySelector(ChoosePOSelector);
+    if (poEl) {
+        poEl.addEventListener("change", () => {
+            if (selectedPoNumber) refreshBloodPackSelects();
+        });
+    }
+
+    const batchNumberEl = document.querySelector("#batch_number");
+    if (batchNumberEl) {
+        batchNumberEl.addEventListener("input", () => {
+            selectedBatchNumber = batchNumberEl.value.trim() || null;
+        });
+    }
 });
