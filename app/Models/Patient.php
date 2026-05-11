@@ -14,6 +14,8 @@ class Patient extends Model
     protected $fillable = [
         'public_id',
         'name',
+        'blood_group',
+        'blood_rhesus',
         'medrec',
         'gender',
         'birthdate',
@@ -44,9 +46,9 @@ class Patient extends Model
             if (empty($patient->medrec)) {
                 $patient->updateQuietly([
                     'medrec' => date('y') . str_pad($patient->id, 5, '0', STR_PAD_LEFT)
-            ]);
-    }
-    });
+                ]);
+            }
+        });
     }
 
     public static function rules($context = 'store', $id = null)

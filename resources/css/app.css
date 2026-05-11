@@ -1,1 +1,7 @@
 @import "../../node_modules/notyf/notyf.min.css";
+
+.tomselect-sm .ts-control,
+.tomselect-sm .ts-dropdown,
+.tomselect-sm .option {
+    font-size: 13px !important;
+}

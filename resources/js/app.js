@@ -23,6 +23,7 @@ Chart.register(ChartDataLabels);
 
 import "simplebar";
 import flatpickr from "flatpickr";
+import TomSelect from "tom-select";
 
 // Import library datatable bootstrap 5 utama
 import DataTable from "datatables.net-bs5";
@@ -49,30 +50,8 @@ import "pdfmake/build/vfs_fonts.js";
 // Import choices select
 import Choices from "choices.js";
 
-// Import notyf
-import { Notyf } from "notyf";
-
-window.notyf = new Notyf({
-    duration: 4000,
-    ripple: true,
-    dismissible: true,
-    position: {
-        x: "right",
-        y: "top",
-    },
-    types: [
-        {
-            type: "error",
-            background: "red",
-            className: "notyf-allow-html",
-        },
-        {
-            type: "success",
-            background: "green",
-            className: "notyf-allow-html",
-        },
-    ],
-});
+// Import global utility functions
+import "./utility/ui";
 
 // Common
 class App {
@@ -89,6 +68,7 @@ class App {
         this.initTitleTextAnimation();
         // Custom
         this.initBloodStockStatusLabel();
+        this.initLanguageSwitcher();
     }
 
     // Bootstrap Components
@@ -544,31 +524,18 @@ class App {
 
         if (!warningIcon || !dangerIcon) return;
 
-        const cacheKey = "blood_stock_status";
-        let result;
-
         try {
-            // Cek cache dulu
-            const cached = sessionStorage.getItem(cacheKey);
+            const response = await fetch(BloodStockStatusURL, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
 
-            if (cached) {
-                result = JSON.parse(cached);
-            } else {
-                const response = await fetch(BloodStockStatusURL, {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                });
+            const result = await response.json();
 
-                result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.message || "Failed to fetch data");
-                }
-
-                // Simpan ke cache
-                sessionStorage.setItem(cacheKey, JSON.stringify(result));
+            if (!response.ok) {
+                throw new Error(result.message || "Failed to fetch data");
             }
 
             const data = result.data;
@@ -590,6 +557,73 @@ class App {
                 message: "Failed to load blood stock status!",
             });
         }
+    }
+
+    // Language Switcher
+    initLanguageSwitcher() {
+        document.querySelectorAll(".language-switcher").forEach((el) => {
+            el.addEventListener("click", async function () {
+                const lang = this.dataset.lang;
+                const flag = this.dataset.flag;
+
+                try {
+                    const response = await fetch(
+                        window.AppConfig.languageSwitchUrl,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type": "application/json",
+
+                                "X-CSRF-TOKEN": document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    ?.getAttribute("content"),
+                            },
+
+                            body: JSON.stringify({
+                                lang,
+                            }),
+                        },
+                    );
+
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.message || "Failed to switch language",
+                        );
+                    }
+
+                    if (data.success) {
+                        // Optional realtime update
+                        const imageEl = document.getElementById(
+                            "selected-language-image",
+                        );
+
+                        const codeEl = document.getElementById(
+                            "selected-language-code",
+                        );
+
+                        if (imageEl) {
+                            imageEl.src = flag;
+                        }
+
+                        if (codeEl) {
+                            codeEl.textContent = lang.toUpperCase();
+                        }
+
+                        // Reload translation
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error("Language Switch Error:", error);
+
+                    notyf.error({
+                        message: "Failed to switch language!",
+                    });
+                }
+            });
+        });
     }
 }
 
@@ -1149,7 +1183,7 @@ menuObserver.observe(document.documentElement, {
     attributeFilter: ["data-sidenav-size"],
 });
 
-// ------------------------------ Advance Datatable for global config :begin ------------------------------
+// ------------------------------ Advance Datatable for global config ------------------------------
 export class GlobalAdvanceDatatable {
     // Mulai constructor untuk global config datatable
     constructor(selector, options = {}) {
@@ -1214,7 +1248,8 @@ export class GlobalAdvanceDatatable {
     initColumnToggle() {
         const columnLabels = this.getColumnLabels();
 
-        const wrapper = document.querySelector(".columnToggleWrapper");
+        const dtContainer = this.instance.table().container();
+        const wrapper = dtContainer.querySelector(".columnToggleWrapper");
         if (!wrapper) return;
 
         const dropdown = document.createElement("div");
@@ -1255,10 +1290,15 @@ export class GlobalAdvanceDatatable {
             }
         });
     }
-}
-// ------------------------------ Advance Datatable for global config :end ------------------------------
 
-// ------------------------------ Dynamic Datetime Formatter Config :begin ------------------------------
+    // Method untuk mendapatkan data per baris
+    getRowData(rowSelector) {
+        if (!this.instance) return null;
+        return this.instance.row(rowSelector).data();
+    }
+}
+
+// ------------------------------ Dynamic Datetime Formatter Config ------------------------------
 export class DateTimeFormatter {
     static format(date, format = "d M Y H:i") {
         if (!date) return "-";
@@ -1401,9 +1441,8 @@ export class DateTimeFormatter {
         return days[index];
     }
 }
-// ------------------------------ Dynamic Datetime Formatter Config :end ------------------------------
 
-// ------------------------------ Advance Flatpickr for global config :begin ------------------------------
+// ------------------------------ Advance Flatpickr for global config ------------------------------
 export class GlobalAdvanceFlatpickr {
     // Mulai constructor untuk global config flatpickr
     constructor(selector, options = {}) {
@@ -1523,9 +1562,110 @@ export class GlobalAdvanceFlatpickr {
         });
     }
 }
-// ------------------------------ Advance Flatpickr for global config :end ------------------------------
 
-// ------------------------------ Global Config for submit data Form :begin ------------------------------
+// ------------------------------ Advance Tomselect for global config ------------------------------
+export class GlobalAdvanceTomselect {
+    // Mulai constructor untuk global config
+    constructor(selector, options = {}) {
+        // ---------- Handle selector ----------
+        if (typeof selector === "string") {
+            this.elements = document.querySelectorAll(selector);
+        } else if (selector instanceof HTMLElement) {
+            this.elements = [selector];
+        } else if (selector instanceof NodeList || Array.isArray(selector)) {
+            this.elements = selector;
+        } else {
+            this.elements = [];
+        }
+
+        if (!this.elements.length) {
+            console.error("TomSelect element not found:", selector);
+            return;
+        }
+
+        this.options = options;
+        this.instances = [];
+
+        this.init();
+    }
+
+    // Bangun init
+    init() {
+        this.elements.forEach((element) => {
+            // Hindari double init
+            if (element.tomselect) {
+                element.tomselect.destroy();
+            }
+
+            const noResultsText =
+                this.options.noResultsText || "No options available";
+            const blurOnItemAdd = this.options.blurOnItemAdd !== false;
+
+            // ---------- Default global config ----------
+            const defaultConfig = {
+                labelField: "text",
+                searchField: "text",
+                maxOptions: 500,
+                closeAfterSelect: true,
+                allowEmptyOption: true,
+                create: false,
+                plugins: ["remove_button"],
+                // ---------- Global styling ----------
+                render: {
+                    no_results: () => {
+                        return `
+                            <div class="no-results">
+                                ${noResultsText}
+                            </div>
+                        `;
+                    },
+                },
+                // ---------- Hilangkan cursor ----------
+                onItemAdd: function () {
+                    if (blurOnItemAdd) {
+                        this.blur();
+                    }
+                },
+            };
+
+            // ---------- Merge config ----------
+            const config = {
+                ...defaultConfig,
+                ...this.options,
+                plugins: [
+                    ...new Set([
+                        ...(defaultConfig.plugins || []),
+                        ...(this.options.plugins || []),
+                    ]),
+                ],
+            };
+
+            // ---------- Create instance ----------
+            const instance = new TomSelect(element, config);
+
+            // ---------- Simpan instance ----------
+            element._tomselectInstance = instance;
+
+            this.instances.push(instance);
+        });
+    }
+
+    // ---------- Ambil semua instance ----------
+    getInstances() {
+        return this.instances;
+    }
+
+    // ---------- Destroy semua ----------
+    destroy() {
+        this.instances.forEach((instance) => {
+            instance.destroy();
+        });
+
+        this.instances = [];
+    }
+}
+
+// ------------------------------ Global Config for submit data Form ------------------------------
 export class GlobalSubmitForm {
     // Mulai constructor untuk global config submit data Form
     constructor({
@@ -1660,9 +1800,8 @@ export class GlobalSubmitForm {
             });
     }
 }
-// ------------------------------ Global Config for submit data Form :end ------------------------------
 
-// ------------------------------ Global Config for Form Validation :begin ------------------------------
+// ------------------------------ Global Config for Form Validation ------------------------------
 export class GlobalFormValidation {
     // ------------------------------ Mulai static init ------------------------------
     static init(formSelector, initialRules = {}) {
@@ -1803,9 +1942,8 @@ export class GlobalFormValidation {
         input.parentNode.appendChild(div);
     }
 }
-// ------------------------------ Global Config for Form Validation :end ------------------------------
 
-// ------------------------------ Global Config for Delete Data Confirmation :begin ------------------------------
+// ------------------------------ Global Config for Delete Data Confirmation ------------------------------
 export class GlobalDeleteDataConfirmation {
     // ------------------------------ Buat constructor untuk terima option dari client js ------------------------------
     constructor(options = {}) {
@@ -1885,9 +2023,8 @@ export class GlobalDeleteDataConfirmation {
         });
     }
 }
-// ------------------------------ Global Config for Delete Data Confirmation :end ------------------------------
 
-// ------------------------------ Global Config for Edit Data :begin ------------------------------
+// ------------------------------ Global Config for Edit Data ------------------------------
 export class GlobalEditData {
     constructor(options = {}) {
         this.buttonSelector = options.ButtonSelector || ".btn-edit";
@@ -1969,9 +2106,8 @@ export class GlobalEditData {
         });
     }
 }
-// ------------------------------ Global Config for Edit Data :end ------------------------------
 
-// ------------------------------ Global Config for Restore Data Confirmation :begin ------------------------------
+// ------------------------------ Global Config for Restore Data Confirmation ------------------------------
 export class GlobalRestoreDataConfirmation {
     // ------------------------------ Buat constructor untuk terima option dari client js ------------------------------
     constructor(options = {}) {
@@ -2051,4 +2187,3 @@ export class GlobalRestoreDataConfirmation {
         });
     }
 }
-// ------------------------------ Global Config for Restore Data Confirmation :end ------------------------------

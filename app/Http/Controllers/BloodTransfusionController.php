@@ -1,0 +1,533 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\BloodPack;
+use App\Models\BloodStock;
+use App\Models\BloodTransfusion;
+use App\Models\BloodTransfusionDetail;
+use App\Models\Patient;
+use App\Models\Package;
+use App\Models\BloodTransfusionDetailTest;
+use App\Enums\BloodStockStatus;
+use App\Enums\BloodTransfusionStatus;
+use App\Http\Requests\BloodTransfusion\StoreBloodTransfusionRequest;
+use App\Http\Requests\BloodTransfusion\UpdateBloodTransfusionRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class BloodTransfusionController extends Controller
+{
+    // ---------- Halaman index ----------
+    public function index()
+    {
+        return view('pages.blood-transfusion.index');
+    }
+
+    // ---------- Datatable Blood Pack ----------
+    public function datatableBloodPack(Request $request)
+    {
+        $searchValue = trim($request->input('search.value', ''));
+        $start = max((int) $request->input('start', 0), 0);
+        $length = (int) $request->input('length', 10);
+        $draw = (int) $request->input('draw', 1);
+// dd($request->all());
+        $allItemsCacheKey = sprintf('blood-transfusion.blood-pack.all.%s', md5($searchValue ?: 'all'));
+
+        $filteredItems = Cache::remember($allItemsCacheKey, 60, function () use ($searchValue) {
+            $query = BloodPack::select(
+                'blood_packs.id',
+                'blood_packs.public_id',
+                'blood_packs.blood_group',
+                'blood_packs.blood_rhesus',
+                'blood_packs.blood_component'
+            )
+                ->where('blood_packs.is_active', 1)
+                ->whereNull('blood_packs.deleted_at');
+                
+            // if ($request->blood_group !== '') {
+            //     $query->where('blood_packs.blood_group', $request->blood_group);
+            // }
+
+            // if ($request->blood_rhesus !== '') {
+            //     $query->where('blood_packs.blood_rhesus', $request->blood_rhesus);
+            // }
+
+            if ($searchValue !== '') {
+                $query->where(function ($sub) use ($searchValue) {
+                    $sub->where('blood_packs.blood_group', 'like', "{$searchValue}%")
+                        ->orWhere('blood_packs.blood_rhesus', 'like', "{$searchValue}%")
+                        ->orWhere('blood_packs.blood_component', 'like', "{$searchValue}%");
+                });
+            }
+
+            return $query->orderBy('blood_packs.blood_group')
+                ->orderBy('blood_packs.blood_rhesus')
+                ->orderBy('blood_packs.blood_component')
+                ->get();
+        });
+
+        $recordsTotal = Cache::remember('blood-transfusion.blood-pack.records-total', 60, function () {
+            return BloodPack::where('is_active', 1)
+                ->whereNull('deleted_at')
+                ->count();
+        });
+
+        $recordsFiltered = $filteredItems->count();
+        if ($length === -1) {
+            $pageData = $filteredItems->slice($start)->values();
+        } else {
+            $pageData = $filteredItems->slice($start, max($length, 1))->values();
+        }
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $pageData,
+        ]);
+    }
+
+    // ---------- Datatable Blood Request ----------
+    public function datatableBloodRequest(Request $request)
+    {
+        $searchValue = trim($request->input('search.value', ''));
+        $start = max((int) $request->input('start', 0), 0);
+        $length = (int) $request->input('length', 10);
+        $draw = (int) $request->input('draw', 1);
+        $dateRange = $request->input('date_range');
+
+        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
+            ->whereNull('deleted_at');
+
+        // Handle Date Range
+        if (!empty($dateRange)) {
+            $dates = explode(' to ', $dateRange);
+            try {
+                if (count($dates) === 2) {
+                    $startDate = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
+                    $endDate = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[1]))->endOfDay();
+                    $query->whereBetween('blood_request_at', [$startDate, $endDate]);
+                } elseif (count($dates) === 1) {
+                    $date = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
+                    $query->whereDate('blood_request_at', $date);
+                }
+            } catch (\Exception $e) {
+                // If parsing fails, do not apply date filter
+            }
+        }
+
+        // Handle Search
+        if ($searchValue !== '') {
+            $query->where(function ($sub) use ($searchValue) {
+                $sub->where('order_number', 'like', "{$searchValue}%")
+                    ->orWhere('lab_number', 'like', "{$searchValue}%")
+                    ->orWhereHas('patient', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "{$searchValue}%")
+                          ->orWhere('medrec', 'like', "{$searchValue}%");
+                    })
+                    ->orWhereHas('room', function ($q) use ($searchValue) {
+                        $q->where('name', 'like', "{$searchValue}%");
+                    });
+            });
+        }
+
+        $recordsTotal = BloodTransfusion::whereNull('deleted_at')->count();
+        $recordsFiltered = $query->count();
+
+        // Handle Pagination
+        if ($length !== -1) {
+            $query->offset($start)->limit($length);
+        }
+
+        $data = $query->orderBy('blood_request_at', 'desc')->get();
+
+        // Transform data
+        $pageData = $data->map(function ($item) {
+            return [
+                'public_id' => $item->public_id,
+                'blood_request_at' => $item->blood_request_at ? \Carbon\Carbon::parse($item->blood_request_at)->format('Y/m/d') : '-',
+                'order_number' => $item->order_number ?? '-',
+                'lab_number' => $item->lab_number ?? '-',
+                'diagnosis' => $item->diagnosis ?? '-',
+                'patient' => [
+                    'medrec' => $item->patient->medrec ?? '-',
+                    'name' => $item->patient->name ?? '-',
+                    'gender' => $item->patient->gender === 'M' ? 'Male' : ($item->patient->gender === 'F' ? 'Female' : '-'),
+                    'email' => $item->patient->email ?? '-',
+                    'address' => $item->patient->address ?? '-',
+                    'age' => $item->patient->birthdate ? \Carbon\Carbon::parse($item->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
+                    'blood_group' => $item->patient->blood_group ?? '-',
+                    'blood_rhesus' => $item->patient->blood_rhesus ?? '-', 
+                ],
+                'room' => [
+                    'name' => $item->room->name ?? '-',
+                    'type' => $item->room->type ? str_replace('_', ' ', str::kebab($item->room->type)) : '-' 
+                ],
+                'insurance' => [
+                    'name' => $item->insurance->name ?? '-',
+                ],
+                'doctor' => [
+                    'name' => $item->doctor->name ?? '-',
+                ],
+                'is_cito' => false, // Placeholder since we don't have is_cito column yet
+            ];
+        });
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $recordsTotal,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $pageData,
+        ]);
+    }
+
+    // ---------- Store Blood Request ----------
+    public function store(StoreBloodTransfusionRequest $request)
+    {
+        // dd($request->all());
+        // selectedPacks() adalah helper dari Form Request yang decode JSON
+        $selected_blood_packs = json_decode($request->selected_blood_packs);
+
+        if (empty($selected_blood_packs)) {
+            return response()->json([
+                'message' => 'At least one blood pack must be selected.',
+            ], 422);
+        }
+
+        DB::beginTransaction();
+        try {
+            // ---------- 1. Upsert / create patient ----------
+            // public_id dan medrec di-generate otomatis oleh model booted()
+            if (!empty($request->patient_id)) {
+                $patient = Patient::findOrFail($request->patient_id);
+                $patient->update([
+                    'name'         => $request->name,
+                    'gender'       => $request->gender,
+                    'birthdate'    => $request->birthdate,
+                    'email'        => $request->email,
+                    'phone'        => $request->phone_number,
+                    'blood_group'  => $request->blood_group,
+                    'blood_rhesus' => $request->blood_rhesus,
+                    'address'      => $request->address,
+                ]);
+            } else {
+                $patient = Patient::create([
+                    'name'         => $request->name,
+                    'gender'       => $request->gender,
+                    'birthdate'    => $request->birthdate,
+                    'email'        => $request->email,
+                    'phone'        => $request->phone_number,
+                    'blood_group'  => $request->blood_group,
+                    'blood_rhesus' => $request->blood_rhesus,
+                    'address'      => $request->address,
+                    'is_active'    => true,
+                ]);
+            }
+
+            // ---------- 2. Buat blood transfusion ----------
+            // public_id di-generate otomatis oleh model booted()
+            $transfusion = BloodTransfusion::create([
+                'patient_id'       => $patient->id,
+                'insurance_id'     => $request->insurance_id,
+                'room_id'          => $request->room_id,
+                'doctor_id'        => $request->doctor_id,
+                'relation_name'    => $request->relation_name,
+                'relation_type'    => $request->relation_type,
+                'blood_request_at' => $request->blood_required_at,
+                'diagnosis'        => $request->diagnosis,
+                'status'           => BloodTransfusionStatus::BLOOD_TRANSFUSION_REGISTERED,
+                'blood_quantity'   => count($selected_blood_packs),
+            ]);
+
+            // ---------- 3. Buat blood transfusion details (satu per blood pack) ----------
+            // Cari blood_stock_id: blood_pack_id match + belum expired + status available
+            // Dapatkan test yang active
+            $package = Package::with(['package_tests'])->where('is_active', 1)->first();
+            // dd($package->package_tests);
+            foreach ($selected_blood_packs as $pack) {
+
+                $bloodPack = BloodPack::where('public_id', $pack->public_id)
+                    ->where('is_active', 1)
+                    ->whereNull('deleted_at')
+                    ->first();
+   
+                // public_id di-generate otomatis oleh model booted()
+                $transfusionDetail = BloodTransfusionDetail::create([
+                    'blood_transfusion_id' => $transfusion->id,
+                    'blood_pack_id'        => $bloodPack?->id,
+                ]);
+
+                foreach ($package->package_tests as $key => $test) {
+                    BloodTransfusionDetailTest::create([
+                        'bt_detail_id' => $transfusionDetail->id,
+                        'test_id'      => $test->test_id,
+                        'type'         => 'package',
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message'      => 'Blood request successfully created.',
+                'public_id'    => $transfusion->public_id,
+                'patient_name' => $patient->name,
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to create blood request.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Get Data By Id ----------
+    public function getDataById($public_id)
+    {
+        $data = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor'])->where('public_id', $public_id)->first();
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => [
+                'id'                       => $data->public_id,
+                'insurance_public_id'     => $data->insurance->public_id,
+                'room_public_id'          => $data->room->public_id,
+                'doctor_public_id'        => $data->doctor->public_id,
+                'relation_name'           => $data->relation_name,
+                'relation_type'           => $data->relation_type,
+                'blood_request_at'        => $data->blood_request_at,
+                'diagnosis'               => $data->diagnosis,
+                'patient_public_id'       => $data->patient->public_id,
+                'patient_name'       => $data->patient->name,
+                'patient_blood_group'     => $data->patient->blood_group,
+                'patient_blood_rhesus'    => $data->patient->blood_rhesus,
+            ],
+        ]);
+    }
+
+    // ---------- Update Blood Request ----------
+    public function update(UpdateBloodTransfusionRequest $request, $id)
+    {
+
+        DB::beginTransaction();
+        try {
+            $transfusion = BloodTransfusion::findOrFail($request->id);
+            
+            // Update transaksi
+            $transfusion->update([
+                'insurance_id'     => $request->insurance_id,
+                'room_id'          => $request->room_id,
+                'doctor_id'        => $request->doctor_id,
+                'relation_name'    => $request->relation_name,
+                'relation_type'    => $request->relation_type,
+                'blood_request_at' => $request->blood_required_at,
+                'diagnosis'        => $request->diagnosis,
+            ]);
+
+            // Update data pasien (blood_group & blood_rhesus)
+            if ($transfusion->patient_id) {
+                Patient::where('id', $transfusion->patient_id)->update([
+                    'blood_group'  => $request->blood_group,
+                    'blood_rhesus' => $request->blood_rhesus,
+                ]);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Blood request successfully updated.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'message' => 'Failed to update blood request.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Delete Blood Request ----------
+    public function destroy($id)
+    {
+        try {
+            $transfusion = BloodTransfusion::where('public_id', $id)->first();
+            // Anda bisa tambahkan validasi status di sini (misal hanya status REGISTERED yang boleh dihapus)
+            
+            $transfusion->delete(); // Soft delete
+
+            return response()->json([
+                'message' => 'Blood request successfully deleted.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete blood request.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Check In Blood Request ----------
+    public function checkin($id)
+    {
+        try {
+            $transfusion = BloodTransfusion::where('public_id', $id)->firstOrFail();
+
+            if ($transfusion->lab_number) {
+                return response()->json([
+                    'message' => 'This request has already been checked in.',
+                ], 400);
+            }
+
+            $datePrefix = now()->format('ymd');
+
+            // Use Cache lock to prevent race condition
+            $lock = Cache::lock('generate_lab_number', 10);
+
+            if ($lock->get()) {
+                try {
+                    $latestLabNumber = BloodTransfusion::where('lab_number', 'like', $datePrefix . '%')
+                        ->orderBy('lab_number', 'desc')
+                        ->value('lab_number');
+
+                    if ($latestLabNumber) {
+                        $sequence = (int) substr($latestLabNumber, -3);
+                        $nextSequence = $sequence + 1;
+                    } else {
+                        $nextSequence = 1;
+                    }
+
+                    $labNumber = $datePrefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
+
+                    $transfusion->update([
+                        'lab_number' => $labNumber,
+                        'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CHECKED_IN ?? $transfusion->status, // Use appropriate status if you have it
+                        'checkin_by_user_id' => Auth::id(),
+                    ]);
+                } finally {
+                    $lock->release();
+                }
+            } else {
+                return response()->json([
+                    'message' => 'System is currently processing another request, please try again in a moment.',
+                ], 429);
+            }
+
+            return response()->json([
+                'message' => 'Successfully checked in with Lab Number: ' . $labNumber,
+                'lab_number' => $labNumber,
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to check in blood request.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- List Bag Request Datatable ----------
+    public function datatableListBagRequest(Request $request, $id)
+    {
+        $draw = (int) $request->input('draw', 1);
+
+        $transfusion = BloodTransfusion::where('public_id', $id)->first();
+
+        if (!$transfusion) {
+            return response()->json([
+                'draw' => $draw,
+                'recordsTotal' => 0,
+                'recordsFiltered' => 0,
+                'data' => []
+            ]);
+        }
+
+        $details = BloodTransfusionDetail::with('bloodPack')
+            ->where('blood_transfusion_id', $transfusion->id)
+            ->get();
+
+        $pageData = $details->map(function ($detail) use ($transfusion) {
+            // Find available blood stocks
+            $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)
+                ->where('blood_status', BloodStockStatus::AVAILABLE->value)
+                ->where('expiry_date', '>', $transfusion->blood_request_at)
+                ->get();
+
+            // If a stock is already selected, make sure it's included in the list even if it's no longer AVAILABLE (e.g., IN_USE)
+            $selectedStock = null;
+            if ($detail->blood_stock_id) {
+                $selectedStock = BloodStock::find($detail->blood_stock_id);
+                if ($selectedStock && !$availableStocks->contains('id', $selectedStock->id)) {
+                    $availableStocks->push($selectedStock);
+                }
+            }
+
+            $hasAvailableStock = $availableStocks->isNotEmpty();
+
+            $options = $availableStocks->map(function ($stock) {
+                return [
+                    'id' => $stock->id,
+                    'text' => $stock->bag_number
+                ];
+            })->values()->toArray();
+
+            return [
+                'public_id' => $detail->public_id,
+                'blood_pack_label' => $detail->bloodPack ? $detail->bloodPack->label : '-',
+                'has_available_stock' => $hasAvailableStock,
+                'available_stocks' => $options,
+                'selected_stock_id' => $detail->blood_stock_id,
+            ];
+        });
+
+        return response()->json([
+            'draw' => $draw,
+            'recordsTotal' => $details->count(),
+            'recordsFiltered' => $details->count(),
+            'data' => $pageData
+        ]);
+    }
+
+    // ---------- Update Bag Number (Blood Stock ID) ----------
+    public function updateBagNumber(Request $request, $detailPublicId)
+    {
+        $request->validate([
+            'blood_stock_id' => 'required|exists:blood_stocks,id'
+        ]);
+
+        try {
+            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
+            
+            // Optional: You could update the previous and new BloodStock statuses here if needed.
+            // Currently only updating the detail record.
+            $detail->update([
+                'blood_stock_id' => $request->blood_stock_id
+            ]);
+
+            // Update status Blood Stock to IN_USE
+            $bloodStock = BloodStock::find($request->blood_stock_id);
+            $bloodStock->update([
+                'blood_status' => BloodStockStatus::IN_USE,
+            ]);
+
+            return response()->json([
+                'message' => 'Bag number successfully updated.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update bag number.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+}

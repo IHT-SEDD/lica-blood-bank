@@ -10,15 +10,18 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
         "doctrine/dbal": "^4.4",
         "laravel/framework": "^12.0",
         "laravel/telescope": "^5.20",
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^1.1",
         "phpoffice/phpspreadsheet": "^5.7",
-        "spatie/laravel-permission": "^7.3"
+        "spatie/laravel-permission": "^7.3",
+        "yajra/laravel-datatables-oracle": "^12.7"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.23",
         "laravel/breeze": "^2.4",
         "laravel/pail": "^1.2.2",
@@ -38,7 +41,8 @@
         "files": [
             "app/Helpers/service_utility.php",
             "app/Helpers/order_log_activity.php",
-            "app/Helpers/incoming_blood_log_activity.php"
+            "app/Helpers/incoming_blood_log_activity.php",
+            "app/Helpers/blood_stock_log_activity.php"
         ]
     },
     "autoload-dev": {
@@ -62,13 +66,9 @@
             "@php -r \"file_exists('database/database.sqlite') || touch('database/database.sqlite');\"",
             "@php artisan migrate --graceful --ansi"
         ],
-        "dev-demo": [
-            "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host=127.0.0.1 --port=8000\" \"php artisan serve --host=0.0.0.0 --port=8099\" \"php artisan queue:listen --tries=1\" \"npm run dev\" \"npm run dev -- --mode demo\" --names=server-local,server-demo,queue,logs,vite-local,vite-demo"
-        ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
-            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names=server,queue,logs,vite"
+            "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve --host=0.0.0.0 --port=8000\" \"php artisan queue:listen --tries=1\" \"npm run dev\" --names=server,queue,logs,vite"
         ],
         "test": [
             "@php artisan config:clear --ansi",

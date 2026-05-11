@@ -1,3 +1,4 @@
+import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation, GlobalAdvanceFlatpickr } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -133,6 +134,80 @@ function EditDataPatient() {
 }
 // ---------- Handle form pembaharuan data patient :begin ----------
 
+// ---------- Select dari tom-select untuk form add new data :begin ----------
+function SelectBloodGroup() {
+    new TomSelect("#select-blood-group", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        sortField: {
+            field: "id",
+            direction: "asc",
+        },
+        create: false,
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
+// function SelectBloodComponent() {
+//     new TomSelect("#select-blood-component", {
+//         valueField: "id",
+//         labelField: "text",
+//         searchField: "text",
+//         sortField: {
+//             field: "id",
+//             direction: "asc",
+//         },
+//         create: false,
+//         preload: true,
+//         load: function (query, callback) {
+//             fetch(
+//                 `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+//             )
+//                 .then((response) => response.json())
+//                 .then((json) => {
+//                     callback(json.results);
+//                 })
+//                 .catch(() => {
+//                     callback();
+//                 });
+//         },
+//     });
+// }
+function SelectBloodRhesus() {
+    new TomSelect("#select-blood-rhesus", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        sortField: {
+            field: "id",
+            direction: "asc",
+        },
+        create: false,
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
+// ---------- Select dari tom-select untuk form add new data :begin ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
     new GlobalAdvanceFlatpickr('.birthdate', {
@@ -143,4 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     AddNewPatient();
     EditDataPatient();
+    SelectBloodGroup();
+    // SelectBloodComponent();
+    SelectBloodRhesus();
 });

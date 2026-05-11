@@ -16,9 +16,9 @@ class BloodStock extends Model
 
     protected $fillable = [
         'public_id',
-        'incoming_blood_id',
         'bag_number',
         'bag_number_lica',
+        'incoming_blood_detail_id',
         'blood_pack_id',
         'blood_volume',
         'aftap_date',
@@ -29,8 +29,10 @@ class BloodStock extends Model
         'is_hcv',
         'is_syphilis',
         'is_expired',
-        'used_at',
         'blood_status',
+        'add_new_note',
+        'note',
+        'used_at',
     ];
 
     protected $hidden = [
@@ -52,10 +54,10 @@ class BloodStock extends Model
         });
     }
 
-    // Relation to incoming_bloods
-    public function incomingBloods(): BelongsTo
+    // Relation to incoming_blood_details
+    public function incomingBloodDetails(): BelongsTo
     {
-        return $this->belongsTo(IncomingBlood::class, 'incoming_blood_id');
+        return $this->belongsTo(IncomingBloodDetail::class, 'incoming_blood_detail_id');
     }
 
     // Relation to blood_packs

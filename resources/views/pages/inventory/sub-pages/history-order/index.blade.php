@@ -1,6 +1,10 @@
 @extends('layouts.vertical', ['title' => 'History Order'])
 
 @section('styles')
+@vite([
+'node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css',
+'node_modules/datatables.net-select-bs5/css/select.bootstrap5.min.css',
+])
 @endsection
 
 @section('content')
@@ -8,11 +12,11 @@
   {{-- Title & Add New Order :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Title --}}
-    <h1 class="fw-bold">History Order</h1>
+    <h1 class="fw-bold">{{ __('History Order') }}</h1>
 
     {{-- Button Add New Order --}}
     <a href="{{ route('inventory.history-order.new-order') }}" class="btn btn-soft-info">
-      Add New Order
+      {{ __('Add New Order') }}
     </a>
   </div>
   {{-- Title & Add New Order :end --}}
@@ -23,32 +27,20 @@
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">List Data of History Order</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('List Data of History Order') }}</h5>
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Select Status --}}
           <div>
-            <select class="form-control" id="filter-order-status" name="filter-order-status"
-              placeholder="Filter by status..."></select>
+            <select class="form-control form-control-sm tomselect-sm" id="filter-order-status"
+              name="filter-order-status" placeholder="Filter by status..."></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
-            <select class="form-control" id="filter-order-vendor" name="filter-order-vendor"
-              placeholder="Filter by vendor..."></select>
-          </div>
-
-          {{-- Select Blood Group --}}
-          <div>
-            <select class="form-control" id="filter-order-blood-group" name="filter-order-blood-group"
-              placeholder="Filter by blood group..."></select>
-          </div>
-
-          {{-- Select Blood Component --}}
-          <div>
-            <select class="form-control" id="filter-order-blood-component" name="filter-order-blood-component"
-              placeholder="Filter by blood component..."></select>
+            <select class="form-control form-control-sm tomselect-sm" id="filter-order-vendor"
+              name="filter-order-vendor" placeholder="Filter by vendor..."></select>
           </div>
 
           {{-- Date Range Picker :begin --}}
@@ -57,7 +49,7 @@
               <span class="input-group-text" id="history-order-table-date-filter">
                 <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
               </span>
-              <input class="form-control history-order-table-date-filter"
+              <input class="form-control form-control-sm history-order-table-date-filter"
                 aria-describedby="history-order-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
                 data-range-date="true" type="text" placeholder="Choose date range" />
             </div>
@@ -70,18 +62,18 @@
 
       {{-- Card Body :begin --}}
       <div class="card-body">
-        <table class="table table-sm table-striped dt-responsive align-middle mb-0 history-order-table" id="history-order-table">
+        <table class="table table-sm table-striped dt-responsive align-middle mb-0 history-order-table"
+          id="history-order-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              <th>PO Number</th>
-              <th>Vendor</th>
-              <th>Total Qty</th>
-              <th>Blood Group</th>
-              <th>Status</th>
-              <th>Created At</th>
-              <th>Updated At</th>
-              <th>Deleted At</th>
-              <th>Action</th>
+              <th>{{ __('PO Number') }}</th>
+              <th>{{ __('Vendor') }}</th>
+              <th>{{ __('Total Qty') }}</th>
+              <th>{{ __('Blood Group') }}</th>
+              <th>{{ __('Status') }}</th>
+              <th>{{ __('Created At') }}</th>
+              <th>{{ __('Deleted At') }}</th>
+              <th>{{ __('Action') }}</th>
             </tr>
           </thead>
         </table>
@@ -100,6 +92,5 @@
 @section('scripts')
 @vite([
 'resources/js/pages/inventory/history-order/datatable.js',
-'resources/js/pages/inventory/history-order/index.js',
 ])
 @endsection

@@ -18,6 +18,10 @@ const DateFilterSelector = ".blood-stock-table-date-filter"; // class selector f
 const DatatableSelector = "#blood-stock-table"; // id selector datatable
 const DataURL = "/inventory/blood-stock/data"; // url fetch data untuk datatable
 const ReloadDatatableSelector = "blood-stock-reload"; // index reload datatable
+
+// See Detail Action
+const ActionDetailSelector = ".btn-see-detail-blood-stock";
+const AttributeSeeDetail = "seeDetailId";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
@@ -58,10 +62,28 @@ function BloodStockTable() {
                 return meta.row + 1;
             },
         },
-        { data: "blood_group", title: "Blood Group" },
-        { data: "blood_rhesus", title: "Blood Rhesus" },
-        { data: "blood_component", title: "Blood Component" },
-        { data: "total_blood_data", title: "Quantity" },
+        {
+            data: null,
+            title: "Blood Pack",
+            render: (data, type, row) => {
+                const bloodGroup = row.blood_group || "";
+                const bloodRhesus = row.blood_rhesus || "";
+                const bloodComponent = row.blood_component || "";
+                const bloodPack =
+                    bloodGroup && bloodRhesus
+                        ? `${bloodGroup}${bloodRhesus} ${bloodComponent}`
+                        : bloodGroup || "-";
+
+                return `<span class="fw-semibold fs-5">${bloodPack}</span>`;
+            },
+        },
+        {
+            data: "total_blood_data",
+            title: "Quantity",
+            render: (data) => {
+                return `<span class="fw-semibold fs-5">${data} Bags</span>`;
+            },
+        },
         {
             data: null,
             title: "Status",
@@ -74,14 +96,13 @@ function BloodStockTable() {
                 const isWarning = total <= warning && total > danger;
 
                 if (isDanger) {
-                    return `<span class="badge badge-label badge-soft-danger">Stock in Danger</span>`;
+                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-danger">Stock in Danger</span>`;
                 }
-
                 if (isWarning) {
-                    return `<span class="badge badge-label badge-soft-warning">Stock Qty Warning</span>`;
+                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-warning">Stock Qty Warning</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-success">Stock Safe</span>`;
+                return `<span class="badge badge-label fs-5 fw-semibold badge-soft-success">Stock Safe</span>`;
             },
         },
         {
@@ -95,24 +116,16 @@ function BloodStockTable() {
             data: null,
             title: "Action",
             render: (data, type, row, meta) => {
-                const isDeleted = row.deleted_at !== null;
-
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
                 data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-storage" data-edit-id="${row.public_id}" type="button">
-                            Edit</button>
-                        </li>
-                        <li>
-                            <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-storage ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
-                            Restore</button>
-                        </li>
-                        <li>
-                            <button id="delete-data-${row.public_id}" class="dropdown-item btn-delete-storage text-danger" data-delete-id="${row.public_id}" type="button">
-                            Delete</button>
+                            <button id="see-detail-${row.public_id}" class="dropdown-item fw-medium btn-see-detail-blood-stock text-primary" data-see-detail-id="${row.public_id}" type="button">
+                            <i class="ti ti-heart-search align-middle me-2 fs-4"></i>
+                            Detail
+                            </button>
                         </li>
                     </ul>
                 `;
@@ -154,6 +167,20 @@ function DateRangeFilter() {
 }
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
+// ---------- Handle see detail :begin ----------
+function SeeDetailBloodStockAction() {
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(ActionDetailSelector);
+        if (!btn) return;
+
+        const id = btn.dataset[AttributeSeeDetail];
+        if (!id) return;
+
+        window.location.href = `/inventory/blood-stock/detail/${id}`;
+    });
+}
+// ---------- Handle see detail :end ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     BloodStockTable();
@@ -164,6 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
     DateRangeFilter();
 
     // Action data
+    SeeDetailBloodStockAction();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

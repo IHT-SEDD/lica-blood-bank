@@ -3,7 +3,7 @@ import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_user"; // id selector untuk form add new
-const FormAddURL = "/master/storage-rack"; // url submit form add
+const FormAddURL = "/master/user"; // url submit form add
 const FormEditSelector = "edit_data_user"; // id selector untuk form edit
 const ReloadDatatableSelector = "master-user-reload"; // reload datatable index
 const ModalEditSelector = "edit_data_master_user_modal"; // id selector untuk modal edit

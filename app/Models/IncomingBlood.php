@@ -22,6 +22,7 @@ class IncomingBlood extends Model
         'status',
         'received_by_user_id',
         'received_at',
+        'registered_by_user_id',
         'stock_ready_at',
     ];
 
@@ -33,6 +34,10 @@ class IncomingBlood extends Model
         'status' => IncomingBloodStatus::class,
     ];
 
+    protected $appends = [
+        'incoming_blood_groups',
+    ];
+
     protected static function booted()
     {
         static::creating(function ($incomingBlood) {
@@ -41,6 +46,31 @@ class IncomingBlood extends Model
                 $incomingBlood->public_id = (string) Str::uuid();
             }
         });
+    }
+
+    public function getIncomingBloodGroupsAttribute(): string
+    {
+        if (!$this->relationLoaded('incomingBloodDetails')) {
+            return '';
+        }
+
+        return $this->incomingBloodDetails
+            ->map(function ($detail) {
+
+                if (!$detail->bloodPacks) {
+                    return null;
+                }
+
+                return collect([
+                    $detail->bloodPacks->blood_group->value .
+                        $detail->bloodPacks->blood_rhesus,
+
+                    $detail->bloodPacks->blood_component->value,
+                ])->filter()->join(' ');
+            })
+            ->filter()
+            ->unique()
+            ->implode(', ');
     }
 
     // Relasi ke order_bloods
@@ -55,9 +85,9 @@ class IncomingBlood extends Model
         return $this->belongsTo(User::class, 'received_by_user_id');
     }
 
-    // Relasi dari blood_stocks
-    public function bloodStocks(): HasMany
+    // Relasi dari incoming_blood_details
+    public function incomingBloodDetails(): HasMany
     {
-        return $this->hasMany(BloodStock::class, 'incoming_blood_id');
+        return $this->hasMany(IncomingBloodDetail::class, 'incoming_blood_id');
     }
 }

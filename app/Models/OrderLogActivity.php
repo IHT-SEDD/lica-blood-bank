@@ -17,10 +17,11 @@ class OrderLogActivity extends Model
         'vendor_name',
         'order_data',
         'order_blood_data',
-        'order_by_user_name',
+        'payload',
+        'created_by_user_name',
         'status',
         'description',
-        'ordered_at',
+        'timestamp',
         'deleted_at',
         'po_file_path',
         'po_file_name',
@@ -33,6 +34,7 @@ class OrderLogActivity extends Model
     protected $casts = [
         'order_data' => 'array',
         'order_blood_data' => 'array',
+        'payload' => 'array',
     ];
 
     protected static function booted()

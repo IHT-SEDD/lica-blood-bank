@@ -40,12 +40,10 @@ class Storage extends Model
         return match ($context) {
             'store' => [
                 'name' => 'string|required',
-                'serial_number' => 'string|required|unique:storages,serial_number',
                 'rack_capacity' => 'required',
             ],
             'update' => [
                 'name' => 'sometimes|string|required',
-                'serial_number' => "sometimes|string|required|unique:storages,serial_number,$id",
                 'rack_capacity' => 'sometimes|required',
             ]
         };

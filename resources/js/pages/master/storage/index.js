@@ -21,13 +21,6 @@ function AddNewStorage() {
                     },
                 },
             },
-            serial_number: {
-                validators: {
-                    notEmpty: {
-                        message: "Serial Number is required",
-                    },
-                },
-            },
             rack_capacity: {
                 validators: {
                     notEmpty: {

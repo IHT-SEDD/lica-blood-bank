@@ -26,6 +26,8 @@
       <th>Medical Record</th>
       <th>Gender</th>
       <th>Birthdate</th>
+      <th>Blood Group</th>
+      <th>Blood Rhesus</th>
       <th>Phone</th>
       <th>Email</th>
       <th>Address</th>
@@ -85,6 +87,24 @@
   <div class="col-lg-6">
     <label class="col-form-label" for="email">Email</label>
     <input autocomplete="off" class="form-control" id="email" name="email" type="email" placeholder="youremail@mail.com" />
+  </div>
+
+    {{-- Blood Group --}}
+    <div class="col-lg-6">
+    <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-blood-group" name="blood_group"
+      placeholder="{{ __('Choose') }} {{ __('Blood Group') }}..."></select>
+  </div>
+
+  {{-- Blood Rhesus --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="select-blood-rhesus">{{ __('Blood Rhesus') }}
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-blood-rhesus" name="blood_rhesus"
+      placeholder="{{ __('Choose') }} {{ __('Blood Rhesus') }}..."></select>
   </div>
 
   {{-- Address --}}

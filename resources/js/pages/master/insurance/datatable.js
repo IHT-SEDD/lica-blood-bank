@@ -41,8 +41,8 @@ const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restor
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
-    const dateVal = document.querySelector(DateFilterSelector) ?.value;
-    const role = document.querySelector("#filter-role") ?.value || "";
+    const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const role = document.querySelector("#filter-role")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -61,8 +61,8 @@ function getFilters() {
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterinsuranceTableInstance ?.instance) {
-        masterinsuranceTableInstance.instance.ajax.reload();
+    if (masterInsuranceTableInstance?.instance) {
+        masterInsuranceTableInstance.instance.ajax.reload();
     }
 }
 // ---------- Helper: Reload tabel :end ----------
@@ -70,7 +70,8 @@ function reloadTable() {
 // ---------- Datatable untuk master insurance :begin ----------
 function MasterInsuranceTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterInsuranceTableColumns = [{
+    const MasterInsuranceTableColumns = [
+        {
             data: null,
             title: "No",
             render: (data, type, row, meta) => {
@@ -78,6 +79,7 @@ function MasterInsuranceTable() {
             },
         },
         { data: "name", title: "Name" },
+        { data: "general_code", title: "General Code" },
         {
             data: "created_at",
             title: "Created At",
@@ -129,28 +131,32 @@ function MasterInsuranceTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterInsuranceTableInstance = new GlobalAdvanceDatatable("#master-insurance-table", {
-        ajax: {
-            url: MasterDataURL,
-            data: function(d) {
-                const filters = getFilters();
-                d.role = filters.role;
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterInsuranceTableInstance = new GlobalAdvanceDatatable(
+        "#master-insurance-table",
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.role = filters.role;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterInsuranceTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                {
+                    targets: -1,
+                    responsivePriority: 1,
+                },
+                {
+                    targets: 0,
+                    responsivePriority: 2,
+                },
+            ],
         },
-        columns: MasterInsuranceTableColumns,
-        useHideColumn: true,
-        columnDefs: [{
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master insurance :end ----------
 
@@ -172,14 +178,15 @@ function EditDataInsuranceActionModal() {
         FormSelector: FormEditSelector,
     });
 
-    document.addEventListener("edit:open", function(e) {
+    document.addEventListener("edit:open", function (e) {
         const { data } = e.detail;
 
         if (!data) return;
 
-        document.querySelector("#edit_data_insurance_name").value = data.name ?? "";
-
-
+        document.querySelector("#edit_data_insurance_name").value =
+            data.name ?? "";
+        document.querySelector("#edit_data_insurance_general_code").value =
+            data.general_code ?? "";
     });
 }
 // ---------- Handle modal edit data :end ----------
@@ -195,7 +202,7 @@ function DeleteDataInsuranceActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("delete:open", function(e) {
+    document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -211,7 +218,7 @@ function DeleteDataInsuranceActionModal() {
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -273,7 +280,7 @@ function RestoreDataInsuranceActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("restore:open", function(e) {
+    document.addEventListener("restore:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -289,7 +296,7 @@ function RestoreDataInsuranceActionModal() {
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -340,7 +347,7 @@ function RestoreDataInsuranceActionModal() {
 }
 // ---------- Handle modal restore data :end ----------
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     MasterInsuranceTable();
 
@@ -357,7 +364,8 @@ document.addEventListener("DOMContentLoaded", function() {
     RestoreDataInsuranceActionModal();
 
     // Reload table
-    window.addEventListener(ReloadDatatableSelector, function() {
+    window.addEventListener(ReloadDatatableSelector, function () {
+        console.log('testing ini reaload')
         reloadTable();
     });
 });

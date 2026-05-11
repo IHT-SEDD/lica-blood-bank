@@ -6,8 +6,8 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
     DateTimeFormatter,
+    GlobalAdvanceTomselect,
 } from "../../../app";
-import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let stockInTableInstance; // instance datatable untuk global
@@ -18,7 +18,7 @@ const DateFilterSelector = ".stockin-table-date-filter"; // class selector filte
 // Datatable
 const DatatableSelector = "#stockin-table"; // id selector datatable
 const DataURL = "/inventory/stock-in/data"; // url fetch data untuk datatable
-const GetDataURL = "/inventory/stock-in/get-data"; // url fetch data
+const GetDataURL = "/inventory/stock-in/data/get"; // url fetch data
 const ReloadDatatableSelector = "stock-in-reload"; // index reload datatable
 
 // See More Action
@@ -86,6 +86,16 @@ function StockInTable() {
         { data: "batch_number", title: "Batch Number" },
         { data: "total_blood_data", title: "Total Bloods" },
         {
+            data: null,
+            title: "Blood Packs",
+            render: (data, type, row) => {
+                const incomingBloodGroup = row.incoming_blood_groups;
+                if (!incomingBloodGroup.length) return "-";
+
+                return `<span class="fw-semibold text-muted">${incomingBloodGroup}</span>`;
+            },
+        },
+        {
             data: "status",
             title: "Status",
             render: (data, type, row) => {
@@ -100,13 +110,6 @@ function StockInTable() {
         {
             data: "created_at",
             title: "Created At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "updated_at",
-            title: "Updated At",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
@@ -132,15 +135,21 @@ function StockInTable() {
                         <li>
                             <button id="see-data-${row.public_id}" class="dropdown-item fw-medium btn-see-stock-in ${isDeleted ? "disabled" : ""}" 
                             data-see-id="${row.public_id}" type="button">
-                            See More</button>
+                            <i class="ti ti-file-search align-middle me-2 fs-4"></i>
+                            See More
+                            </button>
                         </li>
                         <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-stock-in ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
-                            Restore</button>
+                            <i class="ti ti-recycle align-middle me-2 fs-4"></i>
+                            Restore
+                            </button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-stock-in ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
-                            Delete</button>
+                            <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                            Delete
+                            </button>
                         </li>
                     </ul>
                 `;
@@ -178,10 +187,8 @@ function StockInTable() {
 
 // ---------- Filter dari tom-select untuk data di tabel :begin ----------
 function FilterVendor() {
-    const filterVendor = new TomSelect("#filter-stockin-vendor", {
+    new GlobalAdvanceTomselect("#filter-stockin-vendor", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         preload: true,
         load: function (query, callback) {
             fetch(`/utility/select/vendor?q=${encodeURIComponent(query)}`)
@@ -189,16 +196,15 @@ function FilterVendor() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: function () {
+            reloadTable();
+        },
     });
-
-    filterVendor.on("change", reloadTable);
 }
 
 function FilterStatus() {
-    const filterOrderStatus = new TomSelect("#filter-stockin-status", {
+    new GlobalAdvanceTomselect("#filter-stockin-status", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         preload: true,
         load: function (query, callback) {
             fetch(
@@ -208,9 +214,10 @@ function FilterStatus() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: function () {
+            reloadTable();
+        },
     });
-
-    filterOrderStatus.on("change", reloadTable);
 }
 // ---------- Filter dari tom-select untuk data di tabel :end ----------
 

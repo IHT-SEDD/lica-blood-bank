@@ -1,4 +1,5 @@
 // ---------- Import Libraries ----------
+import TomSelect from "tom-select";
 import {
     GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
@@ -7,6 +8,7 @@ import {
     GlobalEditData,
     DateTimeFormatter,
 } from "../../../app";
+import { log } from "handlebars/runtime";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterPatientTableInstance; // instance datatable untuk global
@@ -36,6 +38,10 @@ const ModalRestoreSelector = "restore_data_master_patient_modal"; // id selector
 const ActionRestoreSelector = ".btn-restore-patient"; // class selector button restore
 const AttributeRestore = "restoreId"; // attribute data id restore
 const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
+
+// Select Blood Group and Rhesus
+let BloodGroupSelectInstance;
+let BloodRhesusSelectInstance;
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Helper: Ambil semua filter :begin ----------
@@ -53,9 +59,57 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { start_date, end_date, date_field: 'created_at' };
+    return { start_date, end_date, date_field: "created_at" };
 }
 // ---------- Helper: Ambil semua filter :end ----------
+
+function SelectBloodGroup() {
+   BloodGroupSelectInstance = new TomSelect("#edit-select-blood-group", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        sortField: {
+            field: "id",
+            direction: "asc",
+        },
+        create: false,
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
+
+function SelectBloodRhesus() {
+   BloodRhesusSelectInstance = new TomSelect("#edit-select-blood-rhesus", {
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        sortField: {
+            field: "id",
+            direction: "asc",
+        },
+        create: false,
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-rhesus?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
@@ -78,16 +132,22 @@ function MasterPatientTable() {
         },
         { data: "name", title: "Name" },
         { data: "medrec", title: "Medical Record" },
-        { data: "gender", title: "Gender",
+        {
+            data: "gender",
+            title: "Gender",
             render: (data) => {
-              return  data == 'M' ? 'Male' : 'Female';
-            }
-         },
-        { data: "birthdate", title: "Birthdate",
+                return data == "M" ? "Male" : "Female";
+            },
+        },
+        {
+            data: "birthdate",
+            title: "Birthdate",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             }
          },
+        { data: "blood_group", title: "Blood Group" },
+        { data: "blood_rhesus", title: "Blood Rhesus" },
         { data: "phone", title: "Phone" },
         { data: "email", title: "Email" },
         { data: "address", title: "Address" },
@@ -175,21 +235,24 @@ function EditDataPatientActionModal() {
         if (!data) return;
 
             // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
-    new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
-          dateFormat: "Y-m-d",
+         new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
+            dateFormat: "Y-m-d",
             maxDate: "today",
-    });
+            defaultDate: data.birthdate ?? "",
+            static : true
+        });
     // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
 
-        document.querySelector("#edit_data_patient_name").value = data.name ?? "";
+        document.querySelector("#edit_data_patient_name").value =
+            data.name ?? "";
         // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
         document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
-        document.querySelector("#edit_data_patient_birthdate").value = data.birthdate ?? "";
         document.querySelector("#edit_data_patient_phone").value = data.phone ?? "";
         document.querySelector("#edit_data_patient_email").value = data.email ?? "";
         document.querySelector("#edit_data_patient_address").value = data.address ?? "";
         document.querySelector("#edit_data_patient_is_active").checked = data.is_active == 1;
-
+        BloodGroupSelectInstance.setValue(data.blood_group ?? "");
+        BloodRhesusSelectInstance.setValue(data.blood_rhesus ?? "");
         document.querySelector(FormEditSelector).dataset.id = data.public_id;
     });
 }
@@ -210,7 +273,8 @@ function DeleteDataPatientActionModal() {
 
         document.querySelector("#deleted_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-        document.querySelector(ConfirmDeleteSelector).dataset.id = data.public_id;
+        document.querySelector(ConfirmDeleteSelector).dataset.id =
+            data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
@@ -278,7 +342,8 @@ function RestoreDataPatientActionModal() {
 
         document.querySelector("#restored_data").textContent =
             `${data.name} with ID ${data.public_id}`;
-        document.querySelector(ConfirmRestoreSelector).dataset.id = data.public_id;
+        document.querySelector(ConfirmRestoreSelector).dataset.id =
+            data.public_id;
     });
 
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);
@@ -337,6 +402,8 @@ document.addEventListener("DOMContentLoaded", function () {
     EditDataPatientActionModal();
     DeleteDataPatientActionModal();
     RestoreDataPatientActionModal();
+    SelectBloodGroup();
+    SelectBloodRhesus();
     window.addEventListener(ReloadDatatableSelector, function () {
         reloadTable();
     });

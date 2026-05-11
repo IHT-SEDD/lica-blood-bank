@@ -10,7 +10,7 @@
       <div class="col-xxl-5 col-xl-7 text-center pb-1 mb-2">
         {{-- Message --}}
         <h1 class="fw-bold">
-          WELCOME TO,
+          {{ __('WELCOME TO') }},
         </h1>
 
         {{-- Logo --}}
@@ -26,13 +26,15 @@
     {{-- Menu List :begin --}}
     <div class="row gy-3 gy-md-0">
       {{-- Tranfusion Menu :begin --}}
-      <a href="{{ route('blood-tranfusion.index') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('blood-transfusion.index') }}" class="col-xl-3 col-md-6">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">Blood Tranfusion</h2>
-              <p class="text-muted mb-0">Manage blood transfusion requests, donor matching, and patient records.</p>
+              <h2 class="fw-bold mb-0">{{ __('Blood Transfusion') }}</h2>
+              <p class="text-muted mb-0">
+                {{ __('Manage blood transfusion requests, donor matching, and patient records.') }}
+              </p>
             </div>
 
             {{-- Logo --}}
@@ -65,9 +67,11 @@
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">Inventory</h2>
-              <p class="text-muted mb-0">Manage blood inventory, including stock levels, expiration dates, and blood
-                type availability.</p>
+              <h2 class="fw-bold mb-0">{{ __('Inventory') }}</h2>
+              <p class="text-muted mb-0">
+                {{ __('Manage blood inventory, including stock levels, expiration dates, and blood type availability.')
+                }}
+              </p>
             </div>
 
             {{-- Logo --}}
@@ -105,8 +109,10 @@
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">Donor</h2>
-              <p class="text-muted mb-0">Manage donor information, donation history, and eligibility status.</p>
+              <h2 class="fw-bold mb-0">{{ __('Donor') }}</h2>
+              <p class="text-muted mb-0">
+                {{ __('Manage donor information, donation history, and eligibility status.') }}
+              </p>
             </div>
 
             {{-- Logo --}}
@@ -137,8 +143,10 @@
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">Master</h2>
-              <p class="text-muted mb-0">Manage core system entities and reference data</p>
+              <h2 class="fw-bold mb-0">{{ __('Master') }}</h2>
+              <p class="text-muted mb-0">
+                {{ __('Manage core system entities and reference data.') }}
+              </p>
             </div>
 
             {{-- Logo --}}

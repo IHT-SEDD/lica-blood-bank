@@ -5,21 +5,6 @@
 
 @section('content')
 <div class="row py-4">
-  {{-- Full Screen Loading Overlay :begin --}}
-  <div id="fullscreen_loading_overlay" style="
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(2px);
-    " class="d-flex align-items-center justify-content-center d-none">
-    <div class="text-center text-white">
-      <div class="spinner-border avatar-lg text-primary mb-2" role="status"></div>
-      <p class="fw-semibold fs-5 mb-0">{{ __('Processing') }}...</p>
-    </div>
-  </div>
-  {{-- Full Screen Loading Overlay :end --}}
-
   {{-- Header :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Button Back to Order List --}}
@@ -52,24 +37,20 @@
             data-bs-title="{{ __('Generate') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-file-spark fs-4 me-2"></i>{{ __('Generate') }} PO
           </button>
+
+          @role('superadmin')
+          <button class="btn btn-sm btn-secondary fw-medium mb-0" id="preview_po_btn"
+            data-bs-title="{{ __('Preview') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-eye-spark fs-4 me-2"></i>{{ __('Preview') }} PO
+          </button>
+          @endrole
         </div>
 
         {{-- CENTER --}}
         <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-center">
-          <button class="btn btn-sm btn-secondary fw-medium mb-0" id="update_to_draft_btn"
-            data-bs-title="{{ __('Set Status to') }} {{ __('Draft') }}" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
-            <i class="ti ti-notes fs-4 me-2"></i>{{ __('Draft') }}
-          </button>
-
           <button class="btn btn-sm btn-success fw-medium mb-0" id="update_to_done_btn"
             data-bs-title="{{ __('Set Status to') }} {{ __('Done') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-check fs-4 me-2"></i>{{ __('Done') }}
-          </button>
-
-          <button class="btn btn-sm btn-danger fw-medium mb-0" id="delete_order_btn"
-            data-bs-title="{{ __('Delete') }} {{ __('Order Data') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-trash fs-4 me-2"></i>{{ __('Delete') }}
+            <i class="ti ti-check fs-4 me-2"></i>{{ __('Set Order to Done') }}
           </button>
         </div>
 
@@ -153,14 +134,14 @@
       <div class="card-body">
         <div class="row g-2">
           {{-- PO Number --}}
-          <div class="col-lg-6 col-12">
+          <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="po_number">{{ __('PO Number') }}</label>
             <input autocomplete="off" class="form-control" id="po_number" type="text" placeholder="PO Number"
               disabled />
           </div>
 
           {{-- Vendor --}}
-          <div class="col-lg-6 col-12">
+          <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="select-vendor">{{ __('Vendor') }}
               <span class="text-danger">*</span>
             </label>
@@ -192,7 +173,7 @@
 
       {{-- Card Body --}}
       <div class="card-body order-log-data-container">
-        <div class="timeline timeline-icon-bordered">
+        <div class="timeline timeline-icon-bordered timeline-order-log">
           {{-- Populate by JS --}}
         </div>
       </div>
@@ -204,6 +185,6 @@
 
 @section('scripts')
 @vite([
-'resources/js/pages/inventory/history-order/detail-order.js'
+'resources/js/pages/inventory/history-order/detail-order/index.js',
 ])
 @endsection

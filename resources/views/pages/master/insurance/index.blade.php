@@ -26,6 +26,7 @@
     <tr>
       <th>No</th>
       <th>Name</th>
+      <th>General Code</th>
       <th>Deleted At</th>
       <th>Action</th>
     </tr>
@@ -41,6 +42,12 @@
       <span class="text-danger">*</span>
     </label>
     <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter Insurance Name" />
+  </div>
+  <div class="col-lg-12">
+    <label class="form-label" for="general_code">General Code
+ 
+    </label>
+    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text" placeholder="Enter General Code" />
   </div>
 
   {{-- Is Active? --}}

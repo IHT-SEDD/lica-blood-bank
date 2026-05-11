@@ -6,8 +6,9 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
     DateTimeFormatter,
+    GlobalAdvanceTomselect,
 } from "../../../app";
-import TomSelect from "tom-select";
+import { TextFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let historyOrderTableInstance; // instance datatable untuk global
@@ -21,8 +22,6 @@ const DataURL = "/inventory/history-order/data"; // url fetch data untuk datatab
 const ReloadDatatableSelector = "history-order-reload"; // index reload datatable
 
 // See More Action
-const FormSeeSelector = "#see_data_history_order"; // id selector form see
-const ModalSeeSelector = "see_data_history_order_modal"; // id selector modal see
 const ActionSeeSelector = ".btn-see-history-order"; // class selector button see
 const AttributeSee = "seeId"; // attribute data id see
 
@@ -43,10 +42,6 @@ const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restor
 function getFilters() {
     const vendor = document.querySelector("#filter-order-vendor")?.value || "";
     const status = document.querySelector("#filter-order-status")?.value || "";
-    const bloodGroup =
-        document.querySelector("#filter-order-blood-group")?.value || "";
-    const bloodComponent =
-        document.querySelector("#filter-order-blood-component")?.value || "";
     const dateVal = document.querySelector(DateFilterSelector)?.value;
 
     let start_date = "";
@@ -60,7 +55,7 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { status, vendor, bloodGroup, bloodComponent, start_date, end_date };
+    return { status, vendor, start_date, end_date };
 }
 // ---------- Helper: Ambil semua filter :end ----------
 
@@ -89,21 +84,23 @@ function HistoryOrderTable() {
             data: null,
             title: "Blood Group",
             render: (data, type, row) => {
-                const orderBlood = row.order_bloods || [];
-                if (!orderBlood.length) return "-";
+                const orderBloodDetail = row.order_blood_details || [];
+                if (!orderBloodDetail.length) return "-";
 
-                const bloodGroups = orderBlood
+                const bloodGroups = orderBloodDetail
                     .map((item) => {
                         const group = item.blood_packs.blood_group || "";
                         const rhesus = item.blood_packs.blood_rhesus || "";
+                        const component =
+                            item.blood_packs.blood_component || "";
                         return group && rhesus
-                            ? `${group}${rhesus}`
+                            ? `${group}${rhesus} ${component}`
                             : group || "-";
                     })
                     .filter(Boolean)
                     .join(", ");
 
-                return `<span class="fw-medium text-muted">${bloodGroups}</span>`;
+                return `<span class="fw-semibold text-muted">${bloodGroups}</span>`;
             },
         },
         {
@@ -120,20 +117,13 @@ function HistoryOrderTable() {
                 } else if (isDraft) {
                     return `<span class="badge badge-label badge-soft-warning">Draft</span>`;
                 } else {
-                    return `<span class="badge badge-label badge-soft-secondary">Order Created</span>`;
+                    return `<span class="badge badge-label badge-soft-secondary">${TextFormatter.format(data)}</span>`;
                 }
             },
         },
         {
             data: "created_at",
             title: "Created At",
-            render: (data) => {
-                return DateTimeFormatter.human(data);
-            },
-        },
-        {
-            data: "updated_at",
-            title: "Updated At",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
@@ -159,15 +149,21 @@ function HistoryOrderTable() {
                         <li>
                             <button id="see-data-${row.public_id}" class="dropdown-item fw-medium btn-see-history-order ${isDeleted ? "disabled" : ""}" 
                             data-see-id="${row.public_id}" type="button">
-                            See More</button>
+                            <i class="ti ti-file-search align-middle me-2 fs-4"></i>
+                            See More
+                            </button>
                         </li>
                         <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-history-order ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
-                            Restore</button>
+                            <i class="ti ti-recycle align-middle me-2 fs-4"></i>
+                            Restore
+                            </button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-history-order ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
-                            Delete</button>
+                            <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                            Delete
+                            </button>
                         </li>
                     </ul>
                 `;
@@ -183,8 +179,11 @@ function HistoryOrderTable() {
                 const filters = getFilters();
                 d.start_date = filters.start_date;
                 d.end_date = filters.end_date;
+                d.vendor = filters.vendor;
+                d.status = filters.status;
             },
         },
+        order: [5, "desc"],
         columns: HistoryOrderTableColumns,
         useHideColumn: true,
         columnDefs: [
@@ -202,28 +201,9 @@ function HistoryOrderTable() {
 // ---------- Datatable untuk master storage :end ----------
 
 // ---------- Filter dari tom-select untuk data di tabel :begin ----------
-function FilterBloodGroup() {
-    const filterBloodGroup = new TomSelect("#filter-order-blood-group", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-
-    filterBloodGroup.on("change", reloadTable);
-}
-
 function FilterVendor() {
-    const filterVendor = new TomSelect("#filter-order-vendor", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
+    const filterVendor = new GlobalAdvanceTomselect("#filter-order-vendor", {
+        valueField: "id",
         preload: true,
         load: function (query, callback) {
             fetch(`/utility/select/vendor?q=${encodeURIComponent(query)}`)
@@ -231,48 +211,31 @@ function FilterVendor() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: function () {
+            reloadTable();
+        },
     });
-
-    filterVendor.on("change", reloadTable);
 }
 
 function FilterOrderStatus() {
-    const filterOrderStatus = new TomSelect("#filter-order-status", {
-        valueField: "text",
-        labelField: "text",
-        searchField: "text",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/order-status?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-
-    filterOrderStatus.on("change", reloadTable);
-}
-
-function FilterBloodComponent() {
-    const filterBloodComponent = new TomSelect(
-        "#filter-order-blood-component",
+    const filterOrderStatus = new GlobalAdvanceTomselect(
+        "#filter-order-status",
         {
-            valueField: "text",
-            labelField: "text",
-            searchField: "text",
+            valueField: "id",
             preload: true,
             load: function (query, callback) {
                 fetch(
-                    `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+                    `/utility/select/order-status?q=${encodeURIComponent(query)}`,
                 )
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());
             },
+            onChange: function () {
+                reloadTable();
+            },
         },
     );
-
-    filterBloodComponent.on("change", reloadTable);
 }
 // ---------- Filter dari tom-select untuk data di tabel :end ----------
 
@@ -449,7 +412,7 @@ function SeeDataHistoryDataAction() {
         const id = btn.dataset[AttributeSee];
         if (!id) return;
 
-        window.location.href = `/inventory/history-order/detail-order/${id}`;
+        window.location.href = `/inventory/history-order/detail/${id}`;
     });
 }
 // ---------- Handle see data :end ----------
@@ -459,17 +422,13 @@ document.addEventListener("DOMContentLoaded", function () {
     HistoryOrderTable();
 
     // Select function
-    FilterBloodGroup();
     FilterVendor();
-    FilterBloodComponent();
     FilterOrderStatus();
-    // EditStorage();
 
     // Date range picker
     DateRangeFilter();
 
     // Action data
-    // EditDataStorageRackActionModal();
     DeleteDataHistoryDataActionModal();
     RestoreDataHistoryDataActionModal();
     SeeDataHistoryDataAction();

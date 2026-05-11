@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\BloodTranfusionController;
+use App\Http\Controllers\BloodTransfusionController;
 use App\Http\Controllers\Inventory\HistoryOrderController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LockSessionController;
@@ -19,13 +19,22 @@ Route::get('/', function () {
 
 Route::middleware('auth')->group(function () {
     // --------------------------------------------------------------------------
-    // Blood Tranfusion Group Routes -> blood-tranfusion.*
+    // Blood Transfusion Group Routes -> blood-transfusion.*
     // --------------------------------------------------------------------------
-    Route::prefix('blood-tranfusion')->name('blood-tranfusion.')->controller(BloodTranfusionController::class)->group(function () {
+    Route::prefix('blood-transfusion')->name('blood-transfusion.')->controller(BloodTransfusionController::class)->group(function () {
         // --------------------------------------------------------------------------
-        // Blood Tranfusion / Home Route -> blood-tranfusion.index
+        // Blood Transfusion / Home Route -> blood-transfusion.index
         // --------------------------------------------------------------------------
         Route::get('/', 'index')->name('index');
+        Route::get('/datatable-blood-pack', 'datatableBloodPack')->name('datatable-blood-pack');
+        Route::get('/datatable-blood-request', 'datatableBloodRequest')->name('datatable-blood-request');
+        Route::post('store', 'store')->name('store');
+        Route::get('/{id}', 'getDataById')->name('get-data');
+        Route::patch('/{id}', 'update')->name('update');
+        Route::post('/{id}/checkin', 'checkin')->name('checkin');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+        Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+        Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
     });
 
     // --------------------------------------------------------------------------
@@ -46,27 +55,13 @@ Route::middleware('auth')->group(function () {
     // --------------------------------------------------------------------------
     Route::prefix('utility')->name('utility.')->controller(UtilityController::class)->group(function () {
         Route::get('select/{select}', 'selectData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data');
+        Route::get('select-special/{select}/{id}', 'selectDataSpecial')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-special');
         Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // --------------------------------------------------------------------------
-    // Set Locale Route
-    // --------------------------------------------------------------------------
-    Route::post('/language/switch', function (Illuminate\Http\Request $request) {
-        $lang = $request->input('lang');
-
-        if (!in_array($lang, ['en', 'id'])) {
-            $lang = 'en';
-        }
-
-        session(['locale' => $lang]);
-
-        return response()->json(['success' => true, 'locale' => $lang]);
-    })->name('language.switch');
 });
 
 // ---------- Breeze Auth Routes ----------
@@ -75,5 +70,5 @@ require __DIR__ . '/auth.php';
 require __DIR__ . '/ui-theme.php';
 // ---------- Inventory Modules Routes ----------
 require __DIR__ . '/inventory.php';
-// ---------- Demo App Routes ----------
-require __DIR__ . '/demo.php';
+// ---------- System Modules Routes ----------
+require __DIR__ . '/system.php';

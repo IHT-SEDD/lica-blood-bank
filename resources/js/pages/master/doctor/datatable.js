@@ -78,6 +78,7 @@ function MasterDoctorTable() {
             },
         },
         { data: "name", title: "Name" },
+        { data: "general_code", title: "General Code" },
         {
             data: "created_at",
             title: "Created At",
@@ -176,8 +177,9 @@ function EditDataDoctorActionModal() {
         const { data } = e.detail;
 
         if (!data) return;
-
+        console.log(data)
         document.querySelector("#edit_data_doctor_name").value = data.name ?? "";
+        document.querySelector("#edit_data_doctor_general_code").value = data.general_code ?? "";
 
 
     });
@@ -357,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function() {
     RestoreDataDoctorActionModal();
 
     // Reload table
-    window.addEventListener(ReloadDatatableSelector, function() {
-        reloadTable();
-    });
+        window.addEventListener(ReloadDatatableSelector, function() {
+            reloadTable();
+        });
 });
