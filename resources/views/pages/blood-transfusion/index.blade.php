@@ -144,6 +144,7 @@
           {{-- Bag Request List Header :begin --}}
           <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="card-title text-capitalize mb-0">{{ __('Bag Request List') }}</h5>
+            <button class="btn btn-sm btn-secondary" id="btn-edit-blood-pack" data-id="" data-bs-toggle="modal" data-bs-target="#edit_blood_pack_modal">{{ __('Edit') }}</button>
             <div class="card-action">
               <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
             </div>
@@ -265,6 +266,7 @@
 {{-- Modal :begin --}}
 @include('pages.blood-transfusion.partials.edit-data-blood-request-modal')
 @include('pages.blood-transfusion.partials.delete-data-blood-request-modal')
+@include('pages.blood-transfusion.partials.edit-blood-pack-modal')
 {{-- Modal :end --}}
 @endsection
 

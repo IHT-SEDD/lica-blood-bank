@@ -481,11 +481,15 @@ class BloodTransfusionController extends Controller
             })->values()->toArray();
 
             return [
-                'public_id' => $detail->public_id,
-                'blood_pack_label' => $detail->bloodPack ? $detail->bloodPack->label : '-',
+                'public_id'           => $detail->public_id,
+                'blood_pack_label'    => $detail->bloodPack ? $detail->bloodPack->label : '-',
+                'blood_group'         => $detail->bloodPack ? $detail->bloodPack->blood_group->value : '-',
+                'blood_rhesus'        => $detail->bloodPack ? $detail->bloodPack->blood_rhesus : '-',
+                'blood_component'     => $detail->bloodPack ? $detail->bloodPack->blood_component->value : '-',
+                'blood_pack_public_id'=> $detail->bloodPack ? $detail->bloodPack->public_id : null,
                 'has_available_stock' => $hasAvailableStock,
-                'available_stocks' => $options,
-                'selected_stock_id' => $detail->blood_stock_id,
+                'available_stocks'    => $options,
+                'selected_stock_id'   => $detail->blood_stock_id,
             ];
         });
 
@@ -526,6 +530,49 @@ class BloodTransfusionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update bag number.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Update Blood Packs (Edit Bag Request List) ----------
+    public function updateBloodPacks(Request $request, $id)
+    {
+        $request->validate([
+            'blood_packs'   => 'required|array|min:1',
+            'blood_packs.*' => 'required|string|exists:blood_packs,public_id',
+        ]);
+
+        try {
+            $transfusion = BloodTransfusion::where('public_id', $id)->firstOrFail();
+
+            DB::transaction(function () use ($transfusion, $request) {
+                // Soft-delete all existing details for this transfusion
+                BloodTransfusionDetail::where('blood_transfusion_id', $transfusion->id)
+                    ->delete();
+
+                // Create new details based on the submitted selection
+                $bloodPackPublicIds = $request->input('blood_packs');
+
+                foreach ($bloodPackPublicIds as $publicId) {
+                    $bloodPack = BloodPack::where('public_id', $publicId)->first();
+                    if (!$bloodPack) continue;
+
+                    BloodTransfusionDetail::create([
+                        'blood_transfusion_id' => $transfusion->id,
+                        'blood_pack_id'        => $bloodPack->id,
+                        'blood_stock_id'       => null,
+                    ]);
+                }
+            });
+
+            return response()->json([
+                'message' => 'Blood packs updated successfully.',
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update blood packs.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

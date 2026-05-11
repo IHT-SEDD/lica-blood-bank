@@ -35,6 +35,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/{id}', 'destroy')->name('destroy');
         Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
         Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
+        Route::patch('/{id}/update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');
     });
 
     // --------------------------------------------------------------------------
