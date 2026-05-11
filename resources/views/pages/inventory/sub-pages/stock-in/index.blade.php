@@ -26,14 +26,14 @@
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Select Status --}}
           <div>
-            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-status" name="filter-stockin-status"
-              placeholder="{{ __('Filter By') }} {{ __('Status') }}..."></select>
+            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-status"
+              name="filter-stockin-status" placeholder="{{ __('Filter By') }} {{ __('Status') }}..."></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
-            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-vendor" name="filter-stockin-vendor"
-              placeholder="{{ __('Filter By') }} {{ __('Vendor') }}..."></select>
+            <select class="form-control form-control-sm tomselect-sm" id="filter-stockin-vendor"
+              name="filter-stockin-vendor" placeholder="{{ __('Filter By') }} {{ __('Vendor') }}..."></select>
           </div>
 
           {{-- Date Range Picker :begin --}}
@@ -42,9 +42,9 @@
               <span class="input-group-text" id="stockin-table-date-filter">
                 <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
               </span>
-              <input class="form-control form-control-sm stockin-table-date-filter" aria-describedby="stockin-table-date-filter"
-                data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-                placeholder="{{ __('Choose Date Range') }}" />
+              <input class="form-control form-control-sm stockin-table-date-filter"
+                aria-describedby="stockin-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+                data-range-date="true" type="text" placeholder="{{ __('Choose Date Range') }}" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -85,6 +85,5 @@
 @section('scripts')
 @vite([
 'resources/js/pages/inventory/stock-in/datatable.js',
-'resources/js/pages/inventory/stock-in/index.js',
 ])
 @endsection
