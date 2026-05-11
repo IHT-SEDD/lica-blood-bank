@@ -183,8 +183,20 @@ export function DatatableListBagRequest() {
                 },
             },
             {
-                data: "blood_pack_label",
-                name: "blood_pack_label",
+                data: "blood_group",
+                name: "blood_group",
+                orderable: false,
+                searchable: false,
+            },
+            {
+                data: "blood_rhesus",
+                name: "blood_rhesus",
+                orderable: false,
+                searchable: false,
+            },
+            {
+                data: "blood_component",
+                name: "blood_component",
                 orderable: false,
                 searchable: false,
             },
@@ -252,6 +264,57 @@ export function DatatableListBagRequest() {
                 }
             });
         },
+    });
+}
+
+// Initialize Blood Pack Datatable for Edit Modal
+export function DatatableBloodPackModal() {
+    const tableId = "#edit-blood-pack-available-table";
+    const tableEl = document.querySelector(tableId);
+
+    if (!tableEl) return;
+
+    if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
+    }
+
+    new GlobalAdvanceDatatable(tableId, {
+        serverSide: true,
+        processing: true,
+        autoWidth: false,
+        searchDelay: 800,
+        paging: false,
+        info: false,
+        dom: "frt",
+        scrollY: "250px",
+        scrollCollapse: true,
+        ajax: {
+            url: "/blood-transfusion/datatable-blood-pack",
+            type: "GET",
+            dataSrc: "data",
+        },
+        columns: [
+            { data: "blood_group",     title: "Blood Group", className: "all" },
+            { data: "blood_rhesus",    title: "Rhesus",      className: "all text-center" },
+            { data: "blood_component", title: "Component",   className: "all text-center" },
+            {
+                data: null,
+                title: "Action",
+                className: "all text-end",
+                orderable: false,
+                searchable: false,
+                render: (data) => {
+                    return `<button class="btn btn-sm btn-soft-primary select-edit-blood-pack" type="button"
+                        data-public-id="${data.public_id}"
+                        data-group="${data.blood_group}"
+                        data-rhesus="${data.blood_rhesus}"
+                        data-component="${data.blood_component}">
+                        <i class="ti ti-arrow-right"></i>
+                    </button>`;
+                },
+            },
+        ],
+        order: [[0, "asc"]],
     });
 }
 
