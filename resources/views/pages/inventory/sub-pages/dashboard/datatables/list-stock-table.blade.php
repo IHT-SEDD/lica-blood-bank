@@ -3,10 +3,12 @@
   <tr>
    <th>No</th>
    <th>Bag Number</th>
-   <th>Expired Date</th>
-   <th>Received Date</th>
-   <th>Expiry Countdown</th>
+   <th>Blood Pack</th>
    <th>Status</th>
+   <th>Received Date</th>
+   <th>Expired Date</th>
+   <th>Expiry Countdown</th>
+   <th>Updated At</th>
   </tr>
  </thead>
 </table>

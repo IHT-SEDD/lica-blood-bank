@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\AddNewBloodStockRequest;
+use App\Http\Requests\Inventory\EditBloodStockRequest;
 use App\Services\Inventory\BloodStock\BloodStockDataService;
 use App\Services\Inventory\BloodStock\BloodStockAddService;
+use App\Services\Inventory\BloodStock\BloodStockWriteService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
@@ -15,6 +17,7 @@ class BloodStockController extends Controller
     public function __construct(
         protected BloodStockAddService $serviceAdd,
         protected BloodStockDataService $dataService,
+        protected BloodStockWriteService $writeService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -42,6 +45,12 @@ class BloodStockController extends Controller
             return $this->serviceAdd->insertBloodStockByManual($request);
         }
         return $this->serviceAdd->insertBloodStockByScan($request);
+    }
+
+    // ---------- Fungsi untuk mengubah data blood stock di database ----------
+    public function editBloodStockData(EditBloodStockRequest $request, string $id)
+    {
+        return $this->writeService->editBloodStockData($request, $id);
     }
 
     // ---------- Halaman Detail Stock ----------

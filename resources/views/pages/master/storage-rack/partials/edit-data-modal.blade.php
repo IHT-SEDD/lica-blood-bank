@@ -19,6 +19,24 @@
         placeholder="Choose storage..."></select>
     </div>
 
+    {{-- Rack Type --}}
+    <div class="col-lg-6">
+      <label class="form-label" for="edit_data_storage_rack_rack_type">Rack Type
+        <span class="text-danger">*</span>
+      </label>
+      <select class="form-control" id="edit_data_storage_rack_rack_type" name="rack_type"
+        placeholder="Choose rack type..."></select>
+    </div>
+
+    {{-- Blood Group --}}
+    <div class="col-lg-6">
+      <label class="form-label" for="edit_data_storage_rack_blood_group">Blood Group
+        <span class="text-danger">*</span>
+      </label>
+      <select class="form-control" id="edit_data_storage_rack_blood_group" name="blood_group"
+        placeholder="Choose blood group..."></select>
+    </div>
+
     {{-- Is Active? --}}
     <div class="col-lg-3">
       <div>

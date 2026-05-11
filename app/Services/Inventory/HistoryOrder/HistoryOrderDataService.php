@@ -147,7 +147,7 @@ class HistoryOrderDataService
   // ---------- Fungsi untuk mengambil data order berdasarkan id :begin ----------
   public function getDataOrderById(string $id)
   {
-    $order = OrderBlood::where('public_id', $id)
+    $order = OrderBlood::withTrashed()->where('public_id', $id)
       ->with(['orderBloodDetails', 'vendors', 'users.roles'])
       ->firstOrFail();
 

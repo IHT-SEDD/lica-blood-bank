@@ -19,7 +19,7 @@ Route::middleware('auth')->group(function () {
          // ---------- Data Group Routes ----------
          Route::prefix('data')->name('data.')->controller(DashboardController::class)->group(function () {
             Route::get('blood-stat', 'bloodStatData')->name('blood-stat');
-            Route::get('blood-stock', 'bloodStockData')->name('blood-stock');
+            Route::get('blood-stock', 'bloodStockTabe')->name('blood-stock');
          });
       });
 
@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'historyOrderTable')->name('table'); // Datatable order
             Route::get('{id}', 'getDataOrderByID')->name('get');
             Route::delete('{id}', 'deleteOrder')->name('delete');
-            Route::patch('{id}/restore', 'restoreDataOrder')->name('restore');
+            Route::patch('{id}/restore', 'restoreOrder')->name('restore');
          });
 
          // ---------- Detail group routes ----------
@@ -117,6 +117,7 @@ Route::middleware('auth')->group(function () {
             Route::get('print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica');
             Route::get('download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica');
             Route::delete('data/{id}', 'deleteStockBloodData')->name('delete');
+            Route::patch('data/{id}', 'editBloodStockData')->name('edit');
             Route::patch('data/{id}/restore', 'restoreStockBloodData')->name('restore');
          });
       });

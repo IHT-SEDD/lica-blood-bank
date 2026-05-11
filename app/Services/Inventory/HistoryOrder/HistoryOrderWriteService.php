@@ -644,7 +644,7 @@ class HistoryOrderWriteService
         }
     }
 
-    // ---------- Fungsi untuk mengubah status order menjadi done ----------
+    // ---------- Fungsi untuk menghapus order ----------
     public function deleteOrder(string $id)
     {
         DB::beginTransaction();
@@ -724,6 +724,82 @@ class HistoryOrderWriteService
 
             return response()->json([
                 'message' => 'Order failed to delete!',
+            ], 500);
+        }
+    }
+
+    // ---------- Fungsi untuk memulihkan order ----------
+    public function restoreOrder(string $id)
+    {
+        DB::beginTransaction();
+        try {
+            $user = Auth::user();
+
+            // ---------- Ambil data order ----------
+            $order = OrderBlood::withTrashed()->where('public_id', $id)
+                ->where('status', OrderBloodStatus::ORDER_DELETED)
+                ->with('vendors')
+                ->first();
+
+            // ---------- Validasi order ----------
+            if (!$order) {
+                DB::rollBack();
+                return response()->json([
+                    'message' => 'Order cannot be restored because current status is not allowed.',
+                ], 422);
+            }
+
+            $order->update([
+                'status' => OrderBloodStatus::ORDER_CREATED,
+            ]);
+
+            // ---------- Soft delete order ----------
+            $order->restore();
+
+            // ---------- Clear cache ----------
+            $this->clearOrderCache($order->public_id, $order->po_number);
+
+            // ---------- Insert log ----------
+            OrderLogActivity::create([
+                'po_number' => $order->po_number,
+                'vendor_name' => $order->vendors?->name,
+                'payload' => [
+                    'restored_order' => [
+                        'po_number' => $order->po_number,
+                        'vendor' => $order->vendors?->name,
+                        'status' => $order->status->value,
+                        'total_quantity' => $order->total_quantity,
+                    ],
+                ],
+                'created_by_user_name' => $user->name,
+                'status' => OrderLogActivityStatus::ORDER_RESTORED,
+                'description' => generateOrderLogDescription(
+                    OrderLogActivityStatus::ORDER_RESTORED,
+                    $order->po_number,
+                    $user->id
+                ),
+                'timestamp' => now(),
+                'deleted_at' => now(),
+            ]);
+
+            DB::commit();
+
+            // ---------- Log sukses ----------
+            globalLogger('info', 'Order restored successfully!', [
+                'po_number' => $order->po_number,
+            ], 200, 'restoredorder');
+            return response()->json([
+                'message' => 'Order restored successfully!',
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            // ---------- Log error ----------
+            globalLogger('error', 'Order failed to restore!', [
+                'error' => $e->getMessage(),
+            ], 500, 'restoredorder');
+            return response()->json([
+                'message' => 'Order failed to restore!',
             ], 500);
         }
     }

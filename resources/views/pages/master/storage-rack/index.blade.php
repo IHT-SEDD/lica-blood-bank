@@ -30,6 +30,8 @@
       <th>No</th>
       <th>Name</th>
       <th>Storage</th>
+      <th>Rack Type</th>
+      <th>Blood Group</th>
       <th>Status</th>
       <th>Created At</th>
       <th>Updated At</th>
@@ -56,6 +58,23 @@
       <span class="text-danger">*</span>
     </label>
     <select class="form-control" id="select-storage" name="storage_id" placeholder="Choose storage..."></select>
+  </div>
+
+  {{-- Rack Type --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="select-rack-type">Rack Type
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-rack-type" name="rack_type" placeholder="Choose rack type..."></select>
+  </div>
+
+  {{-- Blood Group --}}
+  <div class="col-lg-6 d-none" id="blood-group-wrapper">
+    <label class="form-label" for="select-blood-group">Blood Group
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-blood-group" name="blood_group"
+      placeholder="Choose blood group..."></select>
   </div>
 
   {{-- Is Active? --}}

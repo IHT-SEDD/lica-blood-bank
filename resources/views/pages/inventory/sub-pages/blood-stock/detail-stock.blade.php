@@ -30,6 +30,12 @@
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
+          {{-- Select Status --}}
+          <div>
+            <select class="form-control form-control-sm tomselect-sm" id="filter-blood-status"
+              name="filter-blood-status" placeholder="Filter by status..."></select>
+          </div>
+
           {{-- Date Range Picker :begin --}}
           <div>
             <div class="input-group">
@@ -103,6 +109,7 @@
 </div>
 
 @include('pages.inventory.sub-pages.blood-stock.partials.delete-data-modal')
+@include('pages.inventory.sub-pages.blood-stock.partials.edit-data-modal')
 @include('pages.inventory.sub-pages.blood-stock.partials.restore-data-modal')
 @endsection
 

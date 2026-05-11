@@ -107,6 +107,7 @@ class BloodStockDataService
         'bag_number',
         'bag_number_lica',
         'blood_pack_id',
+        'storage_rack_id',
         'blood_volume',
         'aftap_date',
         'process_date',
@@ -117,10 +118,16 @@ class BloodStockDataService
         'deleted_at'
       ])
       ->with([
-        'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
+        'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+        'storageRacks:id,public_id,blood_group,rack_type,name',
       ])->where('blood_pack_id', $bloodPackId);
 
     $this->applyDateFilter($query, $request);
+
+    // ---------- Filter berdasarkan status ----------
+    if ($request->filled('status')) {
+      $query->where('blood_status', $request->status);
+    }
 
     if ($request->filled('sort_by')) {
       $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
@@ -132,7 +139,13 @@ class BloodStockDataService
   // ---------- Fungsi untuk mengambil data stock blood by id ----------
   public function getDataDetailStockBlood(string $id)
   {
-    $stockBloodData = BloodStock::withTrashed()->with(['incomingBloodDetails', 'bloodPacks'])->where('public_id', $id)->first();
+    $stockBloodData = BloodStock::withTrashed()->where('public_id', $id)
+      ->with([
+        'incomingBloodDetails',
+        'bloodPacks',
+        'storageRacks:id,public_id,blood_group,rack_type,name'
+      ])
+      ->first();
     return $stockBloodData;
   }
 
@@ -176,7 +189,10 @@ class BloodStockDataService
     return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
       $bloodPackId = BloodPack::where('public_id', $id)->value('id');
       $bloodStockPublicIds = BloodStock::withTrashed()->where('blood_pack_id', $bloodPackId)->pluck('public_id');
-      $bloodStockLog = BloodStockLogActivity::whereIn('blood_stock_public_id', $bloodStockPublicIds)->get();
+      $bloodStockLog = BloodStockLogActivity::whereIn('blood_stock_public_id', $bloodStockPublicIds)
+        ->orderBy('timestamp', 'desc')
+        ->limit(50)
+        ->get();
 
       return $bloodStockLog;
     });
