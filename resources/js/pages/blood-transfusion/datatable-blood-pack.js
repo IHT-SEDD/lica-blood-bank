@@ -8,7 +8,6 @@ let availableBloodPacksInstance;
 let listRequestTableInstance;
 window.__btSelectedBloodPacks = window.__btSelectedBloodPacks || [];
 let selectedBloodPacks = window.__btSelectedBloodPacks;
-let tableSelector = "#list-request-table";
 
 // Initialize Available Blood Packs Datatable
 function initAvailableBloodPacksTable() {
@@ -32,6 +31,10 @@ function initAvailableBloodPacksTable() {
         ajax: {
             url: "/blood-transfusion/datatable-blood-pack",
             type: "GET",
+            data: function (d) {
+                d.blood_group = $("#blood_group_filter").val();
+                d.blood_rhesus = $("#blood_rhesus_filter").val();
+            },
             dataSrc: "data",
         },
         columns: [
@@ -137,7 +140,7 @@ function updateSelectedBloodPacksTable() {
             '<tr><td colspan="3" class="text-center text-muted">Tidak ada blood pack yang dipilih</td></tr>';
         return;
     }
-    console.log(selectedBloodPacks);
+
     selectedBloodPacks.forEach((pack, index) => {
         const row = document.createElement("tr");
         row.innerHTML = `
@@ -160,81 +163,17 @@ function updateHiddenInput() {
     if (hiddenInput) {
         hiddenInput.value = JSON.stringify(selectedBloodPacks);
     }
-}
 
-// Initialize List Request Datatable
-function initListRequestTable() {
-    const tableEl = document.querySelector(tableSelector);
-
-    if ($.fn.DataTable.isDataTable(tableSelector)) {
-        return;
-    }
-
-    if (tableEl) {
-        listRequestTableInstance = new GlobalAdvanceDatatable(tableSelector, {
-            serverSide: true,
-            processing: true,
-            autoWidth: false,
-            searchDelay: 1000,
-            dom: '<"mt-3"f>rtip',
-            ajax: {
-                url: "/blood-transfusion/datatable-blood-request",
-                type: "GET",
-                data: function (d) {
-                    const dateFilter = document.querySelector(
-                        ".blood-transfusion-date-filter",
-                    );
-                    if (dateFilter) {
-                        d.date_range = dateFilter.value;
-                    }
-                },
-                dataSrc: "data",
-            },
-            columns: [
-                { data: "blood_request_at", name: "blood_request_at" },
-                { data: "patient.name", name: "patient.name" },
-                { data: "patient.medrec", name: "patient.medrec" },
-                { data: "lab_number", name: "lab_number" },
-                { data: "order_number", name: "order_number" },
-                { data: "room.name", name: "room.name" },
-                {
-                    data: "is_cito",
-                    name: "is_cito",
-                    orderable: false,
-                    searchable: false,
-                    render: function (data) {
-                        return data
-                            ? `<i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning" data-bs-title="CITO" data-bs-toggle="tooltip"></i>`
-                            : `-`;
-                    },
-                },
-                {
-                    data: null,
-                    name: "action",
-                    orderable: false,
-                    searchable: false,
-                    render: function (data) {
-                        return `<button class="btn btn-sm btn-soft-primary" type="button"><i class="ti ti-eye"></i></button>`;
-                    },
-                },
-            ],
-            order: [[0, "desc"]],
-            drawCallback: function () {
-                // Initialize lucide icons after draw
-                if (typeof lucide !== "undefined") {
-                    lucide.createIcons();
-                }
-                // Initialize tooltips
-                const tooltipTriggerList = document.querySelectorAll(
-                    '[data-bs-toggle="tooltip"]',
-                );
-                const tooltipList = [...tooltipTriggerList].map(
-                    (tooltipTriggerEl) =>
-                        new bootstrap.Tooltip(tooltipTriggerEl),
-                );
-            },
-        });
-    }
+    // Clear existing feedback
+    document
+        .querySelectorAll("#add_new_blood_request .is-invalid")
+        .forEach((el) => el.classList.remove("is-invalid"));
+    document
+        .querySelectorAll("#add_new_blood_request .invalid-feedback")
+        .forEach((el) => el.remove());
+    document
+        .querySelectorAll("#add_new_blood_request .is-valid")
+        .forEach((el) => el.classList.remove("is-valid"));
 }
 
 // Event delegation untuk button select yang di-render oleh datatable
@@ -273,9 +212,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Initial display of selected blood packs table
     updateSelectedBloodPacksTable();
 
-    // Initialize list request datatable
-    initListRequestTable();
-
     // Reload datatable on flatpickr change
     const dateFilter = document.querySelector(".blood-transfusion-date-filter");
     if (dateFilter) {
@@ -285,13 +221,6 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-
-    // Event listener for reloading datatable from other scripts
-    window.addEventListener(tableSelector, function () {
-        if ($.fn.DataTable.isDataTable(tableSelector)) {
-            $(tableSelector).DataTable().ajax.reload(null, false);
-        }
-    });
 });
 
 // ---------- Blood Pack Datatable :end ----------

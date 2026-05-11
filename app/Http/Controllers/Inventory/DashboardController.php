@@ -24,4 +24,12 @@ class DashboardController extends Controller
             return response()->json(['message' => 'Failed to fetch blood stat data!'], 500);
         }
     }
+    public function bloodStockData(Request $request)
+    {
+        try {
+            return response()->json($this->service->bloodStockData($request));
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to fetch blood stock data!' . $e->getMessage()], 500);
+        }
+    }
 }

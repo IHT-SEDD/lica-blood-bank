@@ -28,7 +28,6 @@ class StoreBloodTransfusionRequest extends FormRequest
         if($patientPublicId){
             $patient_id = Patient::where('public_id', $patientPublicId)->first()->id;
         }
-
         $insurancePublicId = $this->insurance_id !== null ?  $this->insurance_id : null;
         if($insurancePublicId){
             $insurance_id = Insurance::where('public_id', $insurancePublicId)->first()->id;

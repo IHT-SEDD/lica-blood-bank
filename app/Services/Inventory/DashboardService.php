@@ -3,6 +3,8 @@
 namespace App\Services\Inventory;
 
 use App\Models\BloodStock;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardService
 {
@@ -51,4 +53,12 @@ class DashboardService
         ];
     }
     // ---------- Fungsi mengambil data untuk blood stat :end ----------
+    //----------- Funsgi Untuk mengambil data blood stock :begin----------
+    public function bloodStockData(Request $request)
+    {
+        $raw = BloodStock::query()
+            ->with('bloodPacks', 'incomingBloodDetails');
+        // dd($raw);
+        return $raw->paginate($request->filled('per_page') ? $request->filled('per_page') : 10);
+    }
 }
