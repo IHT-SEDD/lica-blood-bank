@@ -21,66 +21,6 @@
   </div>
   {{-- Header :end --}}
 
-  {{-- Toolbar :begin --}}
-  <div class="container-fluid mb-2 d-none" id="toolbar_wrapper">
-    <div class="bg-light bg-opacity-50 rounded-2" style="padding: 7px;">
-      <div class="row g-2 align-items-center">
-        {{-- LEFT --}}
-        <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-start">
-          <button class="btn btn-sm btn-soft-dark fw-medium mb-0" id="print_po_btn"
-            data-bs-title="{{ __('Print') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-printer fs-4 me-2"></i>{{ __('Print') }} PO
-          </button>
-
-          <button class="btn btn-sm btn-info fw-medium mb-0" id="download_po_btn"
-            data-bs-title="{{ __('Download') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-download fs-4 me-2"></i>{{ __('Download') }} PO
-          </button>
-
-          <button class="btn btn-sm btn-primary fw-medium mb-0" id="generate_po_btn"
-            data-bs-title="{{ __('Generate') }} {{ __('PO File') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-file-spark fs-4 me-2"></i>{{ __('Generate') }} PO
-          </button>
-        </div>
-
-        {{-- CENTER --}}
-        <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-center">
-          <button class="btn btn-sm btn-secondary fw-medium mb-0" id="update_to_draft_btn"
-            data-bs-title="{{ __('Set Status to') }} {{ __('Draft') }}" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
-            <i class="ti ti-notes fs-4 me-2"></i>{{ __('Draft') }}
-          </button>
-
-          <button class="btn btn-sm btn-success fw-medium mb-0" id="update_to_done_btn"
-            data-bs-title="{{ __('Set Status to') }} {{ __('Done') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-check fs-4 me-2"></i>{{ __('Done') }}
-          </button>
-
-          <button class="btn btn-sm btn-danger fw-medium mb-0" id="delete_order_btn"
-            data-bs-title="{{ __('Delete') }} {{ __('Order Data') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-trash fs-4 me-2"></i>{{ __('Delete') }}
-          </button>
-        </div>
-
-        {{-- RIGHT --}}
-        <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-lg-end justify-content-start">
-          <button class="btn btn-sm btn-soft-dark fw-medium mb-0" id="edit_order_btn">
-            <i class="ti ti-file-pencil fs-4 me-2"></i>{{ __('Edit') }} {{ __('Order Data') }}
-          </button>
-
-          <button class="btn btn-sm btn-soft-danger fw-medium mb-0" id="cancel_edit_order_btn">
-            <i class="ti ti-x fs-4 me-2"></i>{{ __('Cancel') }} {{ __('Edit') }} {{ __('Order Data') }}
-          </button>
-
-          <button class="btn btn-sm btn-success fw-medium mb-0" id="submit_order_btn">
-            <i class="ti ti-check fs-4 me-2"></i>{{ __('Submit') }} {{ __('Changes') }}
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  {{-- Toolbar :end --}}
-
   {{-- Incoming Stock Detail :begin --}}
   <div class="col-lg-7 col-md-6 col-12">
     <div class="row">
@@ -99,7 +39,7 @@
           <div class="card-body">
             <div class="row" id="incoming_stock_detail_wrapper">
               {{-- Left Side :begin --}}
-              <div class="col-lg-6">
+              <div class="col-xxl-6 col-12">
                 {{-- PO Number --}}
                 <div class="row mb-2">
                   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PO Number') }}</div>
@@ -131,7 +71,7 @@
               {{-- Left Side :end --}}
 
               {{-- Right Side :begin --}}
-              <div class="col-lg-6">
+              <div class="col-xxl-6 col-12">
                 {{-- Received By --}}
                 <div class="row mb-2">
                   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Stock Received By') }}</div>
@@ -191,8 +131,8 @@
                   <th>{{ __('Aftap') }}</th>
                   <th>{{ __('Expiry') }}</th>
                   <th>{{ __('Process') }}</th>
-                  <th>{{ __('Created At') }}</th>
                   <th>{{ __('Ready At') }}</th>
+                  <th>{{ __('Created At') }}</th>
                 </tr>
               </thead>
             </table>
@@ -222,7 +162,7 @@
           <div class="card-body" id="order_detail_wrapper">
             <div class="row">
               {{-- Left Side :begin --}}
-              <div class="col-lg-6">
+              <div class="col-xxl-6 col-12">
                 {{-- PO Number --}}
                 <div class="row mb-2">
                   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PO Number') }}</div>
@@ -245,7 +185,7 @@
               {{-- Left Side :end --}}
 
               {{-- Right Side :begin --}}
-              <div class="col-lg-6">
+              <div class="col-xxl-6 col-12">
                 {{-- Ordered By --}}
                 <div class="row mb-2">
                   <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Ordered By') }}</div>
@@ -273,8 +213,8 @@
             <div class="row">
               {{-- Description --}}
               <div class="row mb-2">
-                <div class="col-2 text-capitalize fs-6 text-muted my-0">{{ __('Description') }}</div>
-                <div class="col-10 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="description">
+                <div class="col-xxl-2 col-4 text-capitalize fs-6 text-muted my-0">{{ __('Description') }}</div>
+                <div class="col-xxl-10 col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="description">
                 </div>
               </div>
             </div>
@@ -301,11 +241,11 @@
               id="order-blood-table">
               <thead class="thead-sm text-uppercase fs-xxs">
                 <tr>
-                  <th>{{ __('Blood Pack') }}</th>
+                  <th>{{ __('Blood') }}</th>
                   <th>{{ __('Qty') }}</th>
                   <th>{{ __('Note') }}</th>
-                  <th>{{ __('Ordered By') }}</th>
-                  <th>{{ __('Ordered At') }}</th>
+                  <th>{{ __('Order By') }}</th>
+                  <th>{{ __('Order At') }}</th>
                 </tr>
               </thead>
             </table>
@@ -321,6 +261,6 @@
 
 @section('scripts')
 @vite([
-'resources/js/pages/inventory/stock-in/detail-incoming-stock.js'
+'resources/js/pages/inventory/stock-in/detail/index.js'
 ])
 @endsection

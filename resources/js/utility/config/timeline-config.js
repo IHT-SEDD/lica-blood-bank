@@ -116,6 +116,12 @@ export const BloodStockLogConfigTL = {
         title: "Blood Stock Deleted",
         tooltipTitle: "Blood Stock Deleted",
     },
+    blood_stock_updated: {
+        icon: "pencil",
+        colorClass: "text-secondary fill-secondary",
+        title: "Blood Stock Updated",
+        tooltipTitle: "Blood Stock Updated",
+    },
     blood_stock_restored: {
         icon: "droplets",
         colorClass: "text-secondary fill-secondary",

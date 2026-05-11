@@ -20,6 +20,7 @@ class BloodStock extends Model
         'bag_number_lica',
         'incoming_blood_detail_id',
         'blood_pack_id',
+        'storage_rack_id',
         'blood_volume',
         'aftap_date',
         'process_date',
@@ -64,5 +65,11 @@ class BloodStock extends Model
     public function bloodPacks(): BelongsTo
     {
         return $this->belongsTo(BloodPack::class, 'blood_pack_id');
+    }
+
+    // Relation to storage_racks
+    public function storageRacks(): BelongsTo
+    {
+        return $this->belongsTo(StorageRack::class, 'storage_rack_id');
     }
 }

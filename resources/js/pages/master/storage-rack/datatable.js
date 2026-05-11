@@ -6,6 +6,7 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
     DateTimeFormatter,
+    GlobalAdvanceTomselect
 } from "../../../app";
 import TomSelect from "tom-select";
 
@@ -86,6 +87,8 @@ function MasterStorageRackTable() {
                 return `<span class="badge badge-label badge-soft-primary">${row.storages.name}</span>`;
             },
         },
+        { data: "rack_type", title: "Rack type" },
+        { data: "blood_group", title: "Blood Group" },
         {
             data: "is_active",
             title: "Status",
@@ -209,16 +212,49 @@ function DateRangeFilter() {
 
 // ---------- Select new role dari tom-select untuk data di modal edit :begin ----------
 function EditStorage() {
-    const editStorage = new TomSelect("#edit_data_storage_rack_storage", {
+    new GlobalAdvanceTomselect("#edit_data_storage_rack_storage", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         preload: true,
+        noResultsText: "Storage not found",
         load: function (query, callback) {
             fetch(`/utility/select/storage?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
+        },
+    });
+}
+function EditRackType() {
+    new GlobalAdvanceTomselect("#edit_data_storage_rack_rack_type", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Rack type not found",
+        load: function (query, callback) {
+            fetch(`/utility/select/rack-type?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+}
+function EditBloodGroup() {
+    new GlobalAdvanceTomselect("#edit_data_storage_rack_blood_group", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Blood group not found",
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
         },
     });
 }
@@ -245,14 +281,25 @@ function EditDataStorageRackActionModal() {
             data.is_active == 1;
 
         // Kondisi untuk tom select
-        const select = document.querySelector(
+        const selectStorage = document.querySelector(
             "#edit_data_storage_rack_storage",
         );
+        const selectRackType = document.querySelector(
+            "#edit_data_storage_rack_rack_type",
+        );
+        const selectBloodGroup = document.querySelector(
+            "#edit_data_storage_rack_blood_group",
+        );
 
-        if (select) {
+        if ((selectStorage, selectRackType, selectBloodGroup)) {
             const storage = data.storages;
-            select.tomselect.clear();
-            select.tomselect.setValue(storage.public_id);
+            selectStorage.tomselect.clear();
+            selectRackType.tomselect.clear();
+            selectBloodGroup.tomselect.clear();
+
+            selectStorage.tomselect.setValue(storage.public_id);
+            selectRackType.tomselect.setValue(data.rack_type);
+            selectBloodGroup.tomselect.setValue(data.blood_group);
         }
 
         document.querySelector(FormEditSelector).dataset.id = data.public_id;
@@ -423,6 +470,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Select function
     FilterStorage();
     EditStorage();
+    EditRackType();
+    EditBloodGroup();
 
     // Date range picker
     DateRangeFilter();

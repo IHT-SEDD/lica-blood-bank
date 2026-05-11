@@ -17,6 +17,8 @@ enum OrderLogActivityStatus: string
     case ORDER_EDITED = 'order_edited';
     case ORDER_CANCELLED = 'order_cancelled';
     case ORDER_DELETED = 'order_deleted';
+    case ORDER_RESTORED = 'order_restored';
+    
     case SOME_ORDER_STOCK_REGISTERED = 'some_order_stock_registered';
     case ALL_ORDER_STOCK_REGISTERED = 'all_order_stock_registered';
     case ORDER_DONE = 'done';
@@ -36,6 +38,8 @@ enum OrderLogActivityStatus: string
             self::ORDER_CANCELLED => '(ORDER CANCELLED)',
             self::ORDER_EDITED => '(ORDER EDITED)',
             self::ORDER_DELETED => '(ORDER DELETED)',
+            self::ORDER_RESTORED => '(ORDER RESTORED)',
+
             self::SOME_ORDER_STOCK_REGISTERED => '(SOME ORDER STOCK REGISTERED)',
             self::ALL_ORDER_STOCK_REGISTERED => '(ALL ORDER STOCK REGISTERED)',
             self::ORDER_DONE => '(ORDER DONE)',
@@ -58,6 +62,8 @@ enum OrderLogActivityStatus: string
             self::ORDER_CANCELLED => '%s: Order cancelled successfully by User ID %s.',
             self::ORDER_EDITED => '%s: Order edited successfully by User ID %s.',
             self::ORDER_DELETED => '%s: Order deleted successfully by User ID %s.',
+            self::ORDER_RESTORED => '%s: Order restored successfully by User ID %s.',
+
             self::SOME_ORDER_STOCK_REGISTERED => '%s: Some Order stock are registered successfully by User ID %s.',
             self::ALL_ORDER_STOCK_REGISTERED => '%s: All Order stock are registered successfully by User ID %s.',
             self::ORDER_DONE => '%s: Order set to done successfully by User ID %s.',
