@@ -2,7 +2,9 @@
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>{{ __('Bag Number') }}</th>
-      <th>{{ __('Blood Pack') }}</th>
+      <th>{{ __('Blood Group') }}</th>
+      <th>{{ __('Rhesus') }}</th>
+      <th>{{ __('Component') }}</th>
     </tr>
   </thead>
 </table>
