@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Inventory\BloodStockController;
 use App\Http\Controllers\Inventory\DashboardController;
+use App\Http\Controllers\Inventory\DestroyBloodController;
 use App\Http\Controllers\Inventory\HistoryOrderController;
 use App\Http\Controllers\Inventory\StockInController;
 use App\Http\Controllers\InventoryController;
@@ -120,6 +121,26 @@ Route::middleware('auth')->group(function () {
             Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete');
             Route::patch('data/{id}', 'editBloodStockData')->name('edit');
             Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore');
+         });
+      });
+
+      // --------------------------------------------------------------------------
+      // Routes Group Blood Destroy
+      // --------------------------------------------------------------------------
+      Route::prefix('destroy-blood')->name('destroy-blood.')->group(function () {
+         // ---------- Pages ----------
+         Route::get('/', [InventoryController::class, 'destroyBloodIndex'])->name('index');
+
+         // ---------- Data ----------
+         Route::prefix('data')->name('data.')->controller(DestroyBloodController::class)->group(function () {
+            Route::get('/', 'destroyBloodTable')->name('table'); // Datatable
+            Route::get('/select/bag-number', 'selectBagNumber')->name('select-bag-number');
+             Route::post('/new', 'insertNewBloodDestroy')->name('new');
+         });
+
+         // ---------- Detail group routes ----------
+         Route::prefix('detail')->name('detail.')->controller(DestroyBloodController::class)->group(function () {
+            // 
          });
       });
    });

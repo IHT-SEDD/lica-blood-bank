@@ -219,11 +219,23 @@ return [
             'path' => storage_path('logs/blood-stock/delete-blood-stock-data.log'),
             'level' => 'debug',
         ],
+        'destroybloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/destroy-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
         'restorebloodstock' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-stock/restore-blood-stock-data.log'),
             'level' => 'debug',
-        ]
+        ],
+
+        // Blood Destroy Loggings
+        'newblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/new-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
