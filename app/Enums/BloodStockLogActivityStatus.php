@@ -15,6 +15,7 @@ enum BloodStockLogActivityStatus: string
     case BLOOD_STOCK_TAKEN_OUT = 'blood_stock_taken_out';
     case BLOOD_STOCK_EXPIRED = 'blood_stock_expired';
     case BLOOD_STOCK_DESTROYED = 'blood_stock_destroyed';
+    case BLOOD_STOCK_UNDESTROYED = 'blood_stock_undestroyed';
 
     public function label(): string
     {
@@ -30,6 +31,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_TAKEN_OUT => '(TAKEN OUT)',
             self::BLOOD_STOCK_EXPIRED => '(EXPIRED)',
             self::BLOOD_STOCK_DESTROYED => '(DESTROYED)',
+            self::BLOOD_STOCK_UNDESTROYED => '(UNDESTROYED)',
         };
     }
 
@@ -47,6 +49,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_TAKEN_OUT => 'Blood Stock %s: Taken out, %s. Successfully logged by User ID %s.',
             self::BLOOD_STOCK_EXPIRED => 'Blood Stock %s: Has been expired. Successfully logged by User ID %s.',
             self::BLOOD_STOCK_DESTROYED => 'Blood Stock %s: Destroyed successfully by User ID %s.',
+            self::BLOOD_STOCK_UNDESTROYED => 'Blood Stock %s: Undestroyed successfully by User ID %s.',
         };
     }
 }
