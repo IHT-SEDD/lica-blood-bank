@@ -927,6 +927,7 @@ class LayoutCustomizer {
             window.location.pathname.startsWith(
                 "/inventory/blood-stock/detail/",
             ),
+            window.location.pathname.startsWith("/blood-transfusion/"),
         ];
         return sidenavCollapsePage;
     }

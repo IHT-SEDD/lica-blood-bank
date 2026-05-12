@@ -54,6 +54,7 @@
               <th>{{ __('Expiry Date') }}</th>
               <th>{{ __('Status') }}</th>
               <th>{{ __('Destroyed At') }}</th>
+              <th>{{ __('Action') }}</th>
             </tr>
           </thead>
         </table>
@@ -127,6 +128,10 @@
   {{-- Form Add :end --}}
 </div>
 
+@include('utils.delete-data-modal', ['id'=> 'destroy_blood', 'title' => 'Blood Destroy'])
+@include('pages.inventory.sub-pages.blood-stock.partials.edit-data-modal')
+@include('utils.restore-data-modal', ['id'=> 'destroy_blood', 'title' => 'Blood Destroy'])
+@include('utils.permanent-delete-data-modal', ['id'=> 'destroy_blood', 'title' => 'Blood Destroy'])
 @endsection
 
 @section('scripts')

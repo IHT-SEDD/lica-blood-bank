@@ -134,8 +134,13 @@ Route::middleware('auth')->group(function () {
          // ---------- Data ----------
          Route::prefix('data')->name('data.')->controller(DestroyBloodController::class)->group(function () {
             Route::get('/', 'destroyBloodTable')->name('table'); // Datatable
-            Route::get('/select/bag-number', 'selectBagNumber')->name('select-bag-number');
-             Route::post('/new', 'insertNewBloodDestroy')->name('new');
+            Route::get('get/{id}', 'getDataDestroyBloodById')->name('get');
+            Route::get('select/bag-number', 'selectBagNumber')->name('select-bag-number');
+            Route::post('new', 'insertNewBloodDestroy')->name('new');
+            Route::delete('{id}', 'deleteDestroyBloodData')->name('delete');
+            Route::delete('{id}/permanent', 'permanentDeleteDestroyBloodData')->name('permanent-delete');
+            Route::patch('{id}/restore', 'restoreDestroyBloodData')->name('restore');
+            Route::patch('{id}/undestroy', 'unDestroyBloodData')->name('undestroy');
          });
 
          // ---------- Detail group routes ----------

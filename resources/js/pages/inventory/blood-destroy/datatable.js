@@ -4,6 +4,7 @@ import {
     GlobalAdvanceFlatpickr,
     DateTimeFormatter,
 } from "../../../app";
+import { TableActionHandler } from "./table-action";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 // Filter datatable
@@ -110,6 +111,43 @@ function BloodDestroyTable() {
                 return DateTimeFormatter.human(data);
             },
         },
+        {
+            data: null,
+            title: "Action",
+            render: (data, type, row, meta) => {
+                const isDeleted = row.deleted_at !== null;
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
+                  <i class="ti ti-dots align-middle"></i>
+                 </button>
+                 <ul class="dropdown-menu">
+                    <li>
+                        <button id="undestroy-data-${row.public_id}" class="dropdown-item fw-medium btn-undestroy-destroy-blood ${isDeleted ? "enabled text-info" : "disabled"}" data-undestroy-id="${row.public_id}" type="button">
+                        <i class="ti ti-heart-plus align-middle me-2 fs-4"></i>
+                        Undestroy
+                        </button>
+                    </li>
+                    <li class="${isDeleted ? "" : "d-none"}">
+                        <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-destroy-blood ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
+                        <i class="ti ti-recycle align-middle me-2 fs-4"></i>
+                        Restore
+                        </button>
+                    </li>
+                    <li class="${isDeleted ? "" : "d-none"}">
+                        <button id="permanent-delete-data-${row.public_id}" class="dropdown-item fw-medium btn-permanent-delete-destroy-blood ${isDeleted ? "enabled text-danger" : "text-muted"}" data-permanent-delete-id="${row.public_id}" type="button">
+                        <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                        Permanent Delete
+                        </button>
+                    </li>
+                    <li class="${isDeleted ? "d-none" : ""}">
+                        <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-destroy-blood ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
+                        <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                        Delete
+                        </button>
+                    </li>
+                 </ul>
+                `;
+            },
+        },
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
@@ -143,6 +181,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Date range picker
     DateRangeFilter();
+
+    new TableActionHandler(reloadTable).init();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

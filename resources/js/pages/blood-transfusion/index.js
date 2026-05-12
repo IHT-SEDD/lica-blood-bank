@@ -24,8 +24,6 @@ function DateRangeFilter() {
     $(document)
         .off("change", DateFilterSelector)
         .on("change", DateFilterSelector, function () {
-            console.log(11111);
-
             if (
                 listRequestTableInstance &&
                 $.fn.DataTable.isDataTable("#list-request-table")
