@@ -910,6 +910,8 @@ class LayoutCustomizer {
 
         if (width <= 1199) {
             this.changeSidenavSize("offcanvas", false);
+        } else if (this._isSidenavCollapsePage()) {
+            this.changeSidenavSize("collapse", false);
         } else {
             this.changeSidenavSize(size);
         }
@@ -917,6 +919,16 @@ class LayoutCustomizer {
 
     initWindowSize() {
         window.addEventListener("resize", () => this._adjustLayout());
+    }
+
+    // Custom sidenav size
+    _isSidenavCollapsePage() {
+        const sidenavCollapsePage = [
+            window.location.pathname.startsWith(
+                "/inventory/blood-stock/detail/",
+            ),
+        ];
+        return sidenavCollapsePage;
     }
 }
 
@@ -966,9 +978,14 @@ class Plugins {
 }
 
 document.addEventListener("DOMContentLoaded", function (e) {
-    new App().init();
-    new LayoutCustomizer().init();
-    new Plugins().init();
+    window.app = new App();
+    window.app.init();
+
+    window.layoutCustomizer = new LayoutCustomizer();
+    window.layoutCustomizer.init();
+
+    window.plugins = new Plugins();
+    window.plugins.init();
 });
 
 //
@@ -991,8 +1008,6 @@ export function debounce(func, wait) {
         timeout = setTimeout(func, wait);
     };
 }
-
-// Updating charts on skin and theme change
 
 // For ChartJs
 export class CustomChartJs {

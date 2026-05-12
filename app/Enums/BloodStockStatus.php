@@ -12,6 +12,8 @@ enum BloodStockStatus: string
     case EXPIRED = 'expired';
     case RETURNED = 'returned';
     case DESTROYED = 'destroyed';
+    case DELETED = 'deleted';
+    case RESTORED = 'restored';
 
     public function label(): string
     {
@@ -24,6 +26,8 @@ enum BloodStockStatus: string
             self::EXPIRED => 'Expired',
             self::RETURNED => 'Blood Has Returned',
             self::DESTROYED => 'Blood has Destroyed',
+            self::DELETED => 'Blood has Deleted',
+            self::RESTORED => 'Blood has Restored',
         };
     }
 
