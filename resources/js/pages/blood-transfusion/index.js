@@ -1,5 +1,6 @@
 // ---------- Import Libraries ----------
 import { GlobalAdvanceFlatpickr } from "../../app";
+import { TextFormatter } from "../../utility/ui";
 import {
     DatatableRequestBlood,
     listRequestTableInstance,
@@ -19,6 +20,19 @@ function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
         maxDate: "today",
     });
+
+    $(document)
+        .off("change", DateFilterSelector)
+        .on("change", DateFilterSelector, function () {
+            console.log(11111);
+
+            if (
+                listRequestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-request-table")
+            ) {
+                listRequestTableInstance.instance.ajax.reload(null, false);
+            }
+        });
 }
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 

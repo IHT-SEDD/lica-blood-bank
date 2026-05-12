@@ -108,7 +108,10 @@ class BloodTransfusionDetailTestService
             ];
         }
 
-        $detailTest->update(['result' => $enumCase->value]);
+        $detailTest->update([
+            'result' => $enumCase->value,
+            'result_by_user_id' => Auth::id(),
+        ]);
 
         return [
             'success' => true,

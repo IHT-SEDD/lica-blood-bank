@@ -202,13 +202,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reload datatable on flatpickr change
     const dateFilter = document.querySelector(".blood-transfusion-date-filter");
-    if (dateFilter) {
-        dateFilter.addEventListener("change", function () {
-            if ($.fn.DataTable.isDataTable(tableSelector)) {
-                $(tableSelector).DataTable().ajax.reload();
-            }
-        });
-    }
+    // if (dateFilter) {
+    //     dateFilter.addEventListener("change", function () {
+    //         if ($.fn.DataTable.isDataTable(tableSelector)) {
+    //             $(tableSelector).DataTable().ajax.reload();
+    //         }
+    //     });
+    // }
 });
 
 // ---------- Blood Pack Datatable :end ----------
