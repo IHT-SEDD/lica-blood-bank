@@ -167,6 +167,7 @@
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title text-capitalize mb-0">{{ __('Test List') }}</h5>
+            <button class="btn btn-sm btn-success" id="btn-test-done" data-id="">{{ __('Test Done') }}</button>
         <div class="card-action">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>

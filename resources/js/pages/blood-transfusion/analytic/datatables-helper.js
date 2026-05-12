@@ -1,3 +1,4 @@
+import { data } from "jquery";
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import TomSelect from "tom-select";
 
@@ -399,7 +400,6 @@ export function DatatableListTest() {
 
             // Trigger Verified
             document.querySelectorAll(".checkbox-verified").forEach((cb) => {
-                console.log(cb);
                 cb.addEventListener("click", function () {
                     updateCheckbox(this.dataset.id, "verified", this.checked);
                 });
@@ -497,6 +497,16 @@ export function DatatableBloodPackModal() {
             url: "/blood-transfusion/datatable-blood-pack",
             type: "GET",
             dataSrc: "data",
+            data: {
+                blood_rhesus:
+                    document.querySelector(
+                        `[data-patient-detail="blood_rhesus"]`,
+                    ).innerText ?? null,
+                blood_group:
+                    document.querySelector(
+                        `[data-patient-detail="blood_group"]`,
+                    ).innerText ?? null,
+            },
         },
         columns: [
             { data: "blood_group", title: "Blood Group", className: "all" },

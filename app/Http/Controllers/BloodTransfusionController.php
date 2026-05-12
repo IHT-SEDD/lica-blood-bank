@@ -47,7 +47,7 @@ class BloodTransfusionController extends Controller
 // dd($request->all());
         $allItemsCacheKey = sprintf('blood-transfusion.blood-pack.all.%s', md5($searchValue ?: 'all'));
 
-        $filteredItems = Cache::remember($allItemsCacheKey, 60, function () use ($searchValue) {
+        $filteredItems = Cache::remember($allItemsCacheKey, 60, function () use ($searchValue, $request) {
             $query = BloodPack::select(
                 'blood_packs.id',
                 'blood_packs.public_id',
@@ -57,7 +57,7 @@ class BloodTransfusionController extends Controller
             )
                 ->where('blood_packs.is_active', 1)
                 ->whereNull('blood_packs.deleted_at');
-                
+            //     dd($request->all());
             // if ($request->blood_group !== '') {
             //     $query->where('blood_packs.blood_group', $request->blood_group);
             // }
@@ -128,6 +128,8 @@ class BloodTransfusionController extends Controller
             } catch (\Exception $e) {
                 // If parsing fails, do not apply date filter
             }
+        }else {
+            $query->whereDate('blood_request_at', \Carbon\Carbon::now()->format('Y-m-d'));
         }
 
         // Handle Search
