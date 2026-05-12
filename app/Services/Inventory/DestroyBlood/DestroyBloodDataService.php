@@ -71,6 +71,23 @@ class DestroyBloodDataService
         ];
     }
 
+    // ---------- Fungsi mengambil data by id ----------
+    public function getDataDestroyBloodById(string $id)
+    {
+        // ---------- Ambil data dari model ----------
+        $bloodDestroy = BloodDestroy::withTrashed()
+            ->with([
+                'bloodStocks:id,public_id,bag_number,blood_status',
+                'bloodStocks.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+            ])
+            ->where('public_id', $id)->first();
+        if (!$bloodDestroy) {
+            return response()->json(['message' => 'Blood not found!'], 422);
+        }
+
+        return $bloodDestroy;
+    }
+
     // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data ----------
     protected function applyDateFilter(Builder $query, Request $request)
     {

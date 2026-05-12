@@ -42,4 +42,44 @@ class DestroyBloodController extends Controller
             $this->dataService->selectBagNumber($request)
         );
     }
+
+    // ---------- Fungsi untuk ambil data ----------
+    public function getDataDestroyBloodById(string $id)
+    {
+        $data = $this->dataService->getDataDestroyBloodById($id);
+        if (!$data) {
+            return response()->json([
+                'message' => 'Data not found'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Data fetched succesfully!',
+            'data' => $data
+        ]);
+    }
+
+    // ---------- Fungsi untuk menghapus destroy blood ----------
+    public function deleteDestroyBloodData(string $id)
+    {
+        return $this->writeService->deleteData($id);
+    }
+
+    // ---------- Fungsi untuk menghapus permanen destroy blood ----------
+    public function permanentDeleteDestroyBloodData(string $id)
+    {
+        return $this->writeService->permanentDeleteData($id);
+    }
+
+    // ---------- Fungsi untuk memulihkan destroy blood ----------
+    public function restoreDestroyBloodData(string $id)
+    {
+        return $this->writeService->restoreData($id);
+    }
+
+    // ---------- Fungsi untuk undestroy blood ----------
+    public function unDestroyBloodData(string $id)
+    {
+        return $this->writeService->undestroyData($id);
+    }
 }

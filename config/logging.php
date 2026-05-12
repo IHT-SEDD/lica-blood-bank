@@ -236,6 +236,16 @@ return [
             'path' => storage_path('logs/blood-destroy/new-blood-destroy-data.log'),
             'level' => 'debug',
         ],
+        'deleteblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/delete-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
+        'restoreblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/restore-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
