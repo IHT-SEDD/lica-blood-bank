@@ -6,14 +6,13 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
     DateTimeFormatter,
+    GlobalAdvanceTomselect,
 } from "../../../app";
-import TomSelect from "tom-select";
 import { GlobalRenderTimelineItem } from "../../../utility/ui";
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
+import { TableActionHandler } from "./detail/table-action";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-let stockBloodDataTableInstance; // instance datatable untuk global
-
 // Filter datatable
 const DateFilterSelector = ".stock-blood-data-table-date-filter"; // class selector filter tanggal
 
@@ -22,42 +21,18 @@ const DatatableSelector = "#stock-blood-data-table"; // id selector datatable
 const ReloadDatatableSelector = "stock-blood-data-reload"; // index reload datatable
 
 // URL
-const StockBloodDataURL = "/inventory/blood-stock/detail/data"; // url fetch data untuk datatable
-const StockBloodDataGetDataURL = "/inventory/blood-stock/detail/get-data";
+const StockBloodDataURL = "/inventory/blood-stock/detail/data";
 const StockBloodLogDataURL = "/inventory/blood-stock/detail/log";
-const PrintBarcodeLicaBloodStockURL =
-    "/inventory/blood-stock/detail/print-barcode-lica";
-const DownloadBarcodeLicaBloodStockURL =
-    "/inventory/blood-stock/detail/download-barcode-lica";
-
-// Print Barcode Action
-const ActionPrintBarcodeLicaSelector = ".btn-print-barcode-lica-stock-blood";
-const AttributePrintBarcodeLica = "printBarcodeLicaId";
-
-// Download Barcode Action
-const ActionDownloadBarcodeLicaSelector =
-    ".btn-download-barcode-lica-stock-blood";
-const AttributeDownloadBarcodeLica = "downloadBarcodeLicaId";
-
-// Delete Action
-const ModalDeleteSelector = "delete_data_stock_blood_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-stock-blood"; // class selector button delete
-const AttributeDelete = "deleteId"; // attribute data id delete
-const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
-
-// Restore Action
-const ModalRestoreSelector = "restore_data_stock_blood_modal"; // id selector modal restore
-const ActionRestoreSelector = ".btn-restore-stock-blood"; // class selector button restore
-const AttributeRestore = "restoreId"; // attribute data id restore
-const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restore
 
 // TIMELINE
 const BloodStockLogContainerSelector = ".blood-stock-log-data-container";
 const TimelineContainerSelector = ".timeline-blood-stock-log";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
-const id = getIdFromUrl();
+// ---------- Global State ----------
+let stockBloodDataTableInstance;
 let bloodStockLogData = null;
+const id = getIdFromUrl();
 
 // ---------- Helper: ambil ID dari URL saat ini----------
 function getIdFromUrl() {
@@ -65,9 +40,10 @@ function getIdFromUrl() {
     return segments[segments.length - 1];
 }
 
-// ---------- Helper: Ambil semua filter :begin ----------
+// ---------- Helper: Ambil semua filter ----------
 function getFilters() {
     const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const status = document.querySelector("#filter-blood-status")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -80,27 +56,41 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { start_date, end_date };
+    return { status, start_date, end_date };
 }
-// ---------- Helper: Ambil semua filter :end ----------
 
-// ---------- Helper: Reload tabel :begin ----------
+// ---------- Helper: Reload tabel ----------
 function reloadTable() {
     if (stockBloodDataTableInstance?.instance) {
         stockBloodDataTableInstance.instance.ajax.reload();
     }
 }
-// ---------- Helper: Reload tabel :end ----------
 
-// ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
+// ---------- Filter ----------
+function FilterBloodStatus() {
+    new GlobalAdvanceTomselect("#filter-blood-status", {
+        valueField: "id",
+        preload: true,
+        load: function (query, callback) {
+            fetch(
+                `/utility/select/blood-stock-status?q=${encodeURIComponent(query)}`,
+            )
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+        onChange: function () {
+            reloadTable();
+        },
+    });
+}
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
         onClose: reloadTable,
     });
 }
-// ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
-// ---------- Datatable untuk master storage :begin ----------
+// ---------- Datatable ----------
 function BloodStockDataTable() {
     // ---------- Init kolom pada tabel ----------
     const BloodStockDataTableColumns = [
@@ -233,6 +223,12 @@ function BloodStockDataTable() {
                          </button>
                      </li>
                      <li>
+                         <button id="edit-data-${row.public_id}" class="dropdown-item fw-medium btn-edit-stock-blood ${isDeleted ? "disabled text-muted" : "text-info"}" data-edit-id="${row.public_id}" type="button">
+                         <i class="ti ti-pencil align-middle me-2 fs-4"></i>
+                         Edit
+                         </button>
+                     </li>
+                     <li>
                          <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-stock-blood ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                          <i class="ti ti-recycle align-middle me-2 fs-4"></i>
                          Restore
@@ -260,6 +256,7 @@ function BloodStockDataTable() {
                     const filters = getFilters();
                     d.start_date = filters.start_date;
                     d.end_date = filters.end_date;
+                    d.status = filters.status;
                 },
             },
             columns: BloodStockDataTableColumns,
@@ -277,266 +274,6 @@ function BloodStockDataTable() {
         },
     );
 }
-// ---------- Datatable untuk master storage :end ----------
-
-// ---------- Handle modal delete data :begin ----------
-function DeleteDataStockBloodActionModal() {
-    // Panggil dan setup delete data
-    new GlobalDeleteDataConfirmation({
-        ButtonSelector: ActionDeleteSelector,
-        DataAttributeID: AttributeDelete,
-        UrlFetchData: (id) => StockBloodDataGetDataURL + `/${id}`,
-        ModalConfirmID: ModalDeleteSelector,
-    });
-
-    // Custom isi modal
-    document.addEventListener("delete:open", function (e) {
-        const { data } = e.detail;
-        if (!data) return;
-
-        // Isi text ke modal
-        document.querySelector("#deleted_data").textContent =
-            `${data.bag_number} with ID ${data.public_id}`;
-
-        // Berikan attribute button delete dengan id data
-        document.querySelector(ConfirmDeleteSelector).dataset.id =
-            data.public_id;
-    });
-
-    const confirmBtn = document.querySelector(ConfirmDeleteSelector);
-
-    if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function () {
-            const id = this.dataset.id;
-
-            if (!id) return;
-
-            try {
-                const response = await fetch(StockBloodDataURL + `/${id}`, {
-                    method: "DELETE",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            .getAttribute("content"),
-                    },
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message: result.message || "Failed to delete data!",
-                    });
-                }
-
-                notyf.success({
-                    message: result.message || "Data deleted successfully!",
-                });
-
-                const modalEl = document.getElementById(ModalDeleteSelector);
-                const modal =
-                    bootstrap.Modal.getInstance(modalEl) ||
-                    new bootstrap.Modal(modalEl);
-
-                modal.hide();
-
-                this.dataset.id = "";
-
-                reloadTable();
-
-                console.log(result.message);
-            } catch (error) {
-                console.error(error);
-                notyf.error({
-                    message: error || "Failed to delete data!",
-                });
-            }
-        });
-    }
-}
-// ---------- Handle modal delete data :end ----------
-
-// ---------- Handle modal restore data :begin ----------
-function RestoreDataStockBloodActionModal() {
-    // Panggil dan setup delete data
-    new GlobalRestoreDataConfirmation({
-        ButtonSelector: ActionRestoreSelector,
-        DataAttributeID: AttributeRestore,
-        UrlFetchData: (id) => StockBloodDataGetDataURL + `/${id}`,
-        ModalConfirmID: ModalRestoreSelector,
-    });
-
-    // Custom isi modal
-    document.addEventListener("restore:open", function (e) {
-        const { data } = e.detail;
-        if (!data) return;
-
-        // Isi text ke modal
-        document.querySelector("#restored_data").textContent =
-            `${data.bag_number} with ID ${data.public_id}`;
-
-        // Berikan attribute button restore dengan id data
-        document.querySelector(ConfirmRestoreSelector).dataset.id =
-            data.public_id;
-    });
-
-    const confirmBtn = document.querySelector(ConfirmRestoreSelector);
-
-    if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function () {
-            const id = this.dataset.id;
-
-            if (!id) return;
-
-            try {
-                const response = await fetch(
-                    StockBloodDataURL + `/${id}/restore`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                    },
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message: result.message || "Failed to restore data!",
-                    });
-                }
-
-                notyf.success({
-                    message: result.message || "Data restored successfully!",
-                });
-
-                const modalEl = document.getElementById(ModalRestoreSelector);
-                const modal =
-                    bootstrap.Modal.getInstance(modalEl) ||
-                    new bootstrap.Modal(modalEl);
-
-                modal.hide();
-
-                this.dataset.id = "";
-
-                reloadTable();
-
-                console.log(result.message);
-            } catch (error) {
-                console.error(error);
-                notyf.error({
-                    message: error || "Failed to restore data!",
-                });
-            }
-        });
-    }
-}
-// ---------- Handle modal restore data :end ----------
-
-// ---------- Handle print barcode lica :begin ----------
-function PrintBarcodeLicaStockBloodAction() {
-    const printBarcodeLicaBtn = document.querySelector(
-        ActionPrintBarcodeLicaSelector,
-    );
-
-    if (printBarcodeLicaBtn) {
-        printBarcodeLicaBtn.addEventListener("click", async function () {
-            const id = this.dataset.id;
-            if (!id) return;
-
-            try {
-                const response = await fetch(
-                    PrintBarcodeLicaBloodStockURL + `/${id}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                    },
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message:
-                            result.message || "Failed to prepare print data!",
-                    });
-                }
-
-                notyf.success({
-                    message:
-                        result.message ||
-                        "Data prepared for print successfully!",
-                });
-            } catch (error) {
-                console.error(error);
-                notyf.error({
-                    message: error || "Failed to prepare print data!",
-                });
-            }
-        });
-    }
-}
-// ---------- Handle print barcode lica :end ----------
-
-// ---------- Handle download barcode lica :begin ----------
-function DownloadBarcodeLicaStockBloodAction() {
-    const downloadBarcodeLicaBtn = document.querySelector(
-        ActionDownloadBarcodeLicaSelector,
-    );
-
-    if (downloadBarcodeLicaBtn) {
-        downloadBarcodeLicaBtn.addEventListener("click", async function () {
-            const id = this.dataset.id;
-            if (!id) return;
-
-            try {
-                const response = await fetch(
-                    DownloadBarcodeLicaBloodStockURL + `/${id}`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                    },
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message:
-                            result.message || "Failed to prepare print data!",
-                    });
-                }
-
-                notyf.success({
-                    message:
-                        result.message ||
-                        "Data prepared for print successfully!",
-                });
-            } catch (error) {
-                console.error(error);
-                notyf.error({
-                    message: error || "Failed to prepare print data!",
-                });
-            }
-        });
-    }
-}
-// ---------- Handle download barcode lica :end ----------
 
 // ---------- Fetch data blood stock log ----------
 async function fetchDataBloodStockLog() {
@@ -576,6 +313,21 @@ function GenerateTimeline(logs = []) {
     bloodStockTimeline.render(logs);
 }
 
+// ---------- Select tom-select untuk data di modal edit ----------
+function EditStorageRack() {
+    new GlobalAdvanceTomselect("#edit_data_blood_stock_storage_rack", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Storage rack not found",
+        load: function (query, callback) {
+            fetch(`/utility/select/storage-rack?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const logData = await fetchDataBloodStockLog();
 
@@ -583,15 +335,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     BloodStockDataTable();
 
     // Select function
+    FilterBloodStatus();
+    EditStorageRack();
 
     // Date range picker
     DateRangeFilter();
 
-    // Action data
-    DeleteDataStockBloodActionModal();
-    RestoreDataStockBloodActionModal();
-    PrintBarcodeLicaStockBloodAction();
-    DownloadBarcodeLicaStockBloodAction();
+    new TableActionHandler(reloadTable).init();
 
     GenerateTimeline(logData);
 

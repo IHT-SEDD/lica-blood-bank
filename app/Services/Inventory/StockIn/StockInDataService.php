@@ -29,7 +29,8 @@ class StockInDataService
         'deleted_at'
       ])
       ->with([
-        'users',
+        'receivedBy',
+        'registeredBy',
         'orderBloods:id,public_id,vendor_id,po_number',
         'orderBloods.vendors:id,public_id,name',
         'incomingBloodDetails' => function ($q) {

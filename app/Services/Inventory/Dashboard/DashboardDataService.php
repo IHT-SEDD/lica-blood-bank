@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\Inventory;
+namespace App\Services\Inventory\Dashboard;
 
 use App\Models\BloodStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class DashboardService
+class DashboardDataService
 {
     // ---------- Fungsi mengambil data untuk blood stat :begin ----------
     public function bloodStatData(): array
@@ -53,12 +53,54 @@ class DashboardService
         ];
     }
     // ---------- Fungsi mengambil data untuk blood stat :end ----------
+
     //----------- Funsgi Untuk mengambil data blood stock :begin----------
-    public function bloodStockData(Request $request)
+    public function bloodStockTable(Request $request)
     {
-        $raw = BloodStock::query()
-            ->with('bloodPacks', 'incomingBloodDetails');
-        // dd($raw);
-        return $raw->paginate($request->filled('per_page') ? $request->filled('per_page') : 10);
+        $bloodRhesus = $request->input('blood_rhesus');
+        $bloodGroup = $request->input('blood_group');
+
+        $query = BloodStock::withoutTrashed()
+            ->select([
+                'id',
+                'public_id',
+                'bag_number',
+                'bag_number_lica',
+                'blood_pack_id',
+                'blood_volume',
+                'expiry_date',
+                'blood_status',
+                'created_at',
+                'updated_at',
+            ])->with([
+                'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
+            ]);
+
+        $query->whereHas('bloodPacks', function ($q) use ($bloodRhesus) {
+            $q->where('blood_rhesus', $bloodRhesus);
+        });
+        $query->whereHas('bloodPacks', function ($q) use ($bloodGroup) {
+            $q->where('blood_group', $bloodGroup);
+        });
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('bag_number', 'like', "%{$search}%");
+                $q->orWhere('bag_number_lica', 'like', "%{$search}%");
+                $q->orWhere('expiry_date', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('sort_by')) {
+            $query->orderBy(
+                $request->sort_by,
+                $request->sort_dir ?? 'asc'
+            );
+        } else {
+            $query->orderBy('expiry_date', 'asc');
+        }
+
+        return $query->paginate($request->filled('per_page', 50));
     }
 }

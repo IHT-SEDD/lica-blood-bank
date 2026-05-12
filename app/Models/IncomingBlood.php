@@ -79,10 +79,16 @@ class IncomingBlood extends Model
         return $this->belongsTo(OrderBlood::class, 'order_blood_id');
     }
 
-    // Relasi ke users
-    public function users(): BelongsTo
+    // User penerima
+    public function receivedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by_user_id');
+    }
+
+    // User pendaftar
+    public function registeredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'registered_by_user_id');
     }
 
     // Relasi dari incoming_blood_details

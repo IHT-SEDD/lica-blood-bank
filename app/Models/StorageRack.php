@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Enums\BloodGroup;
+use App\Enums\StorageRackType;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -14,13 +17,20 @@ class StorageRack extends Model
 
     protected $fillable = [
         'public_id',
-        'name',
         'storage_id',
+        'name',
+        'rack_type',
+        'blood_group',
         'is_active',
     ];
 
     protected $hidden = [
         'id',
+    ];
+
+    protected $casts = [
+        'rack_type' => StorageRackType::class,
+        'blood_group' => BloodGroup::class,
     ];
 
     // Generate a public_id if not provided
@@ -49,7 +59,7 @@ class StorageRack extends Model
     }
 
     // Ambil ID dari tabel storages berdasarkan public_id
-    public static function resolveStorageId($publicId)
+    public static function resolveStorageId(string $publicId)
     {
         return Storage::where('public_id', $publicId)->value('id');
     }
@@ -95,7 +105,7 @@ class StorageRack extends Model
     }
 
     // Pengecekan jumlah kapasitas storage un
-    public static function checkCapacity($storageId)
+    public static function checkCapacity(string $storageId)
     {
         $storage = Storage::where('id', $storageId)
             ->lockForUpdate()
@@ -114,5 +124,10 @@ class StorageRack extends Model
     public function storages(): BelongsTo
     {
         return $this->belongsTo(Storage::class, 'storage_id');
+    }
+
+    public function storageRackBloods(): HasMany
+    {
+        return $this->hasMany(StorageRackBlood::class);
     }
 }

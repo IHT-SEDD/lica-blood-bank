@@ -12,6 +12,8 @@ use App\Models\BloodStockLogActivity;
 use App\Models\IncomingBlood;
 use App\Models\IncomingBloodDetail;
 use App\Models\IncomingBloodLogActivity;
+use App\Models\StorageRack;
+use App\Models\StorageRackBlood;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -230,6 +232,34 @@ class BloodStockAddService
   return [$validDetails, $notFoundBags, $alreadyInStockBags];
  }
 
+ // ---------- Helper: assign BloodStock ke StorageRack berdasarkan blood_group (least filled) ----------
+ private function storageRackPlacement(BloodStock $bloodStock, BloodPack $bloodPack): ?int
+ {
+  // ---------- Ambil blood_group dari BloodPack ----------
+  $bloodGroup = $bloodPack->blood_group->value;
+
+  // ---------- Cari semua StorageRack yang blood_group-nya cocok ----------
+  // Pilih yang paling sedikit isinya (least filled) via subquery count StorageRackBlood
+  $rack = StorageRack::where('blood_group', $bloodGroup)
+   ->withCount('storageRackBloods')
+   ->orderBy('storage_rack_bloods_count', 'asc')
+   ->lockForUpdate()
+   ->first();
+
+  // ---------- Jika tidak ada rack yang cocok, kembalikan null ----------
+  if (!$rack) {
+   return null;
+  }
+
+  // ---------- Insert ke StorageRackBlood ----------
+  StorageRackBlood::create([
+   'storage_rack_id' => $rack->id,
+   'blood_stock_id' => $bloodStock->id,
+  ]);
+
+  return $rack->id;
+ }
+
  // ---------- Helper: insert BloodStock & update is_ready di IncomingBloodDetail ----------
  private function insertBloodStocks(array $validDetails, Request $request, ?User $user): array
  {
@@ -259,6 +289,12 @@ class BloodStockAddService
     'add_new_note' => $request->note,
    ]);
 
+   // ---------- Assign ke StorageRack (least filled), lalu update storage_rack_id ----------
+   $storageRackId = $this->storageRackPlacement($bloodStock, $detail->bloodPacks);
+   if ($storageRackId) {
+    $bloodStock->update(['storage_rack_id' => $storageRackId]);
+   }
+
    // ---------- Update is_ready & ready_at di IncomingBloodDetail ----------
    $detail->update([
     'is_ready' => true,
@@ -278,6 +314,10 @@ class BloodStockAddService
   $now = now();
 
   foreach ($insertedStocks as $item) {
+   $method = $request->method_add === 'scan'
+    ? BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_SCAN
+    : BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL;
+
    $logs[] = [
     'public_id' => (string) \Illuminate\Support\Str::uuid(),
     'blood_stock_public_id' => $item['stock']->public_id,
@@ -286,11 +326,12 @@ class BloodStockAddService
      'po_number' => $request->po_number,
      'bag_number' => $item['detail']->bag_number,
      'bag_number_lica' => $item['stock']->bag_number_lica,
+     'storage_rack_id' => $item['stock']->storage_rack_id,
      'add_new_note' => $request->note,
      'method_add' => $request->method_add,
     ]),
-    'status' => $request->method_add === 'scan' ? BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_SCAN : BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL,
-    'description' => generateBloodStockLogDescription($request->method_add === 'scan' ? BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_SCAN : BloodStockLogActivityStatus::BLOOD_STOCK_CREATED_BY_MANUAL, $item['detail']->bag_number, $user->id),
+    'status' => $method,
+    'description' => generateBloodStockLogDescription($method, $item['detail']->bag_number, $user->id),
     'created_by_user_name' => $user->name,
     'timestamp' => $now,
     'created_at' => $now,

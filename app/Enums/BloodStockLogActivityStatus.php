@@ -7,6 +7,7 @@ enum BloodStockLogActivityStatus: string
     case BLOOD_STOCK_CREATED_BY_MANUAL = 'blood_stock_created_by_manual';
     case BLOOD_STOCK_CREATED_BY_SCAN = 'blood_stock_created_by_scan';
     case BLOOD_STOCK_DELETED = 'blood_stock_deleted';
+    case BLOOD_STOCK_UPDATED = 'blood_stock_updated';
     case BLOOD_STOCK_RESTORED = 'blood_stock_restored';
 
     case BLOOD_STOCK_IN_USE = 'blood_stock_in_use';
@@ -20,6 +21,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_CREATED_BY_MANUAL => '(CREATE MANUAL)',
             self::BLOOD_STOCK_CREATED_BY_SCAN => '(CREATE SCAN)',
             self::BLOOD_STOCK_DELETED => '(DELETED)',
+            self::BLOOD_STOCK_UPDATED => '(UPDATED)',
             self::BLOOD_STOCK_RESTORED => '(RESTORED)',
 
             self::BLOOD_STOCK_IN_USE => '(IN USE)',
@@ -35,6 +37,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_CREATED_BY_MANUAL => 'Blood Stock %s: Manually created successfully by User ID %s.',
             self::BLOOD_STOCK_CREATED_BY_SCAN => 'Blood Stock %s: Created successfully via scan by User ID %s.',
             self::BLOOD_STOCK_DELETED => 'Blood Stock %s: Deleted successfully by User ID %s.',
+            self::BLOOD_STOCK_UPDATED => 'Blood Stock %s: Updated successfully by User ID %s.',
             self::BLOOD_STOCK_RESTORED => 'Blood Stock %s: Restored successfully by User ID %s.',
 
             self::BLOOD_STOCK_IN_USE => 'Blood Stock %s: Currently in use. Successfully logged by User ID %s.',

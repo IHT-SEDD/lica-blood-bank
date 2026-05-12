@@ -7,6 +7,7 @@ import {
     GlobalDeleteDataConfirmation,
 } from "../../app";
 import TomSelect from "tom-select";
+import { DatatableBloodPackModal } from "./analytic/datatables-helper";
 
 // ---------- Global variables ----------
 let FormEditSelector = "edit_data_blood_transfusion";
@@ -20,11 +21,15 @@ let EditRoomSelectInstance;
 let EditDoctorSelectInstance;
 
 // Delete Action
-const ModalDeleteSelector = "delete_data_blood_request_modal"; // id selector modal delete
-const ActionDeleteSelector = ".btn-delete-blood-transfusion"; // class selector button delete
-const AttributeDelete = "publicId"; // attribute data id delete
-const ConfirmDeleteSelector = "#confirm_delete"; // id selector confirm delete
-const DeleteURLBloodTransfusion = "/blood-transfusion"; // URL Delete data blood transfusion
+const ModalDeleteSelector = "delete_data_blood_request_modal";
+const ActionDeleteSelector = ".btn-delete-blood-transfusion";
+const AttributeDelete = "publicId";
+const ConfirmDeleteSelector = "#confirm_delete";
+const DeleteURLBloodTransfusion = "/blood-transfusion";
+
+// Edit Blood Pack modal state
+let selectedEditBloodPacks = [];
+let currentEditTransfusionId = null;
 
 // Helper function to initialize tom select
 function initTomSelect(selector, url, loadData = true) {
@@ -303,4 +308,140 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // ---------- Edit Blood Pack Modal ----------
+
+    // Render selected blood pack table inside the edit modal
+    function renderEditSelectedTable() {
+        const tbody = document.querySelector("#edit-blood-pack-selected-table tbody");
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        if (selectedEditBloodPacks.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">No blood pack selected</td></tr>`;
+            return;
+        }
+
+        selectedEditBloodPacks.forEach((pack, index) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${pack.group || "-"}</td>
+                <td class="text-center">${pack.rhesus || "-"}</td>
+                <td class="text-center">${pack.component || "-"}</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-danger remove-edit-blood-pack" type="button" data-index="${index}">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Open modal: initialize datatable and load existing selected packs
+    document.getElementById("btn-edit-blood-pack")?.addEventListener("click", async function () {
+        if (!window.currentTransfusionPublicId) {
+            notyf.error({ message: "Please select a patient row first!" });
+            return;
+        }
+
+        currentEditTransfusionId = window.currentTransfusionPublicId;
+        selectedEditBloodPacks = [];
+
+        // Load existing blood packs from the current transfusion's bag requests
+        try {
+            const response = await fetch(`/blood-transfusion/${currentEditTransfusionId}/bag-requests`);
+            const result = await response.json();
+            if (result.data && result.data.length > 0) {
+                selectedEditBloodPacks = result.data.map((row) => ({
+                    publicId: row.blood_pack_public_id,
+                    group: row.blood_group,
+                    rhesus: row.blood_rhesus,
+                    component: row.blood_component,
+                })).filter((p) => p.publicId);
+            }
+        } catch (e) {
+            console.warn("Could not load existing blood packs:", e);
+        }
+
+        renderEditSelectedTable();
+
+        // Initialize (or re-init) blood pack datatable in modal
+        DatatableBloodPackModal();
+    });
+
+    // Delegate click: select blood pack from left table
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(".select-edit-blood-pack");
+        if (btn) {
+            const pack = {
+                publicId: btn.dataset.publicId,
+                group: btn.dataset.group,
+                rhesus: btn.dataset.rhesus,
+                component: btn.dataset.component,
+            };
+            selectedEditBloodPacks.push(pack);
+            renderEditSelectedTable();
+            notyf.success({ message: "Blood pack added!" });
+        }
+
+        const removeBtn = e.target.closest(".remove-edit-blood-pack");
+        if (removeBtn) {
+            const index = parseInt(removeBtn.dataset.index, 10);
+            selectedEditBloodPacks.splice(index, 1);
+            renderEditSelectedTable();
+        }
+    });
+
+    // Save button: send PATCH to backend
+    document.getElementById("btn-save-edit-blood-pack")?.addEventListener("click", async function () {
+        if (selectedEditBloodPacks.length === 0) {
+            notyf.error({ message: "Please select at least one blood pack!" });
+            return;
+        }
+
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
+        this.disabled = true;
+
+        try {
+            const response = await fetch(`/blood-transfusion/${currentEditTransfusionId}/update-blood-packs`, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+                },
+                body: JSON.stringify({
+                    blood_packs: selectedEditBloodPacks.map((p) => p.publicId),
+                }),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({ message: result.message || "Failed to save!" });
+            } else {
+                notyf.success({ message: result.message || "Blood packs saved successfully!" });
+
+                // Close modal
+                const modalEl = document.getElementById("edit_blood_pack_modal");
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+
+                // Reload bag request datatable
+                if ($.fn.DataTable.isDataTable("#list-bag-request-table")) {
+                    $("#list-bag-request-table").DataTable().ajax.reload(null, false);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({ message: "An error occurred while saving." });
+        } finally {
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }
+    });
 });

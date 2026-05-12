@@ -19,14 +19,11 @@ function initAvailableBloodPacksTable() {
 
     availableBloodPacksInstance = new GlobalAdvanceDatatable(tableSelector, {
         serverSide: true,
-        processing: true,
-        autoWidth: false,
-        searchDelay: 1000,
-        paging: false,
-        info: false,
-        responsive: true,
-        dom: "frt",
-        scrollY: "200px", // Mengatur tinggi area scroll
+        removePagination: true,
+        removePageInfo: true,
+        removeSearch: true,
+        useHideColumn: false,
+        scrollY: "350px",
         scrollCollapse: true,
         ajax: {
             url: "/blood-transfusion/datatable-blood-pack",
@@ -40,7 +37,7 @@ function initAvailableBloodPacksTable() {
         columns: [
             {
                 data: "blood_group",
-                title: "Blood Group",
+                title: "Blood",
                 className: "all text-start",
                 width: "100%",
             },
@@ -89,14 +86,6 @@ function selectBloodPack(id, publicId, label, component, rhesus) {
         blood_rhesus: rhesus,
         requested_quantity: 1,
     };
-    // Check if already selected
-    // const exists = selectedBloodPacks.find((p) => p.id === id);
-    // if (exists) {
-    //     notyf.warning({
-    //         message: "Blood pack sudah dipilih!",
-    //     });
-    //     return;
-    // }
 
     selectedBloodPacks.push(newPack);
     updateSelectedBloodPacksTable();
@@ -134,10 +123,9 @@ function updateSelectedBloodPacksTable() {
     if (!tableBody) return;
 
     tableBody.innerHTML = "";
-
     if (selectedBloodPacks.length === 0) {
         tableBody.innerHTML =
-            '<tr><td colspan="3" class="text-center text-muted">Tidak ada blood pack yang dipilih</td></tr>';
+            '<tr><td colspan="4" class="text-center text-muted">Tidak ada blood pack yang dipilih</td></tr>';
         return;
     }
 

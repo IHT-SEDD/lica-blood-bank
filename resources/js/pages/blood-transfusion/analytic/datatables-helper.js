@@ -1,4 +1,4 @@
-import { GlobalAdvanceDatatable } from "../../../app";
+import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import TomSelect from "tom-select";
 
 // ---------- Global Variable ----------
@@ -19,9 +19,7 @@ export function DatatableRequestBlood() {
             listRequestTable,
             {
                 serverSide: true,
-                processing: true,
                 searchDelay: 1000,
-                dom: '<"mt-3"f>rtip',
                 ajax: {
                     url: "/blood-transfusion/datatable-blood-request",
                     type: "GET",
@@ -93,20 +91,6 @@ export function DatatableRequestBlood() {
                         responsivePriority: 2,
                     },
                 ],
-                drawCallback: function () {
-                    // Initialize lucide icons after draw
-                    if (typeof lucide !== "undefined") {
-                        lucide.createIcons();
-                    }
-                    // Initialize tooltips
-                    const tooltipTriggerList = document.querySelectorAll(
-                        '[data-bs-toggle="tooltip"]',
-                    );
-                    const tooltipList = [...tooltipTriggerList].map(
-                        (tooltipTriggerEl) =>
-                            new bootstrap.Tooltip(tooltipTriggerEl),
-                    );
-                },
             },
         );
     }
@@ -125,8 +109,9 @@ export function DatatableListBagRequest() {
 
     listBagRequestTableInstance = new GlobalAdvanceDatatable(tableId, {
         serverSide: true,
-        processing: true,
-        dom: '<"mt-3"f>rtip',
+        removeSearch: true,
+        removePageInfo: true,
+        removePagination: true,
         ajax: function (data, callback, settings) {
             if (!window.currentTransfusionPublicId) {
                 callback({
@@ -173,7 +158,7 @@ export function DatatableListBagRequest() {
                             optionsHtml += `<option value="${stock.id}" ${selected}>${stock.text}</option>`;
                         });
                         return `
-                            <select class="form-select select-bag-number" data-id="${row.public_id}" placeholder="Choose Bag Number">
+                            <select class="form-control form-control-sm tomselect-sm select-bag-number" data-id="${row.public_id}" placeholder="Choose Bag Number">
                                 ${optionsHtml}
                             </select>
                         `;
@@ -183,8 +168,20 @@ export function DatatableListBagRequest() {
                 },
             },
             {
-                data: "blood_pack_label",
-                name: "blood_pack_label",
+                data: "blood_group",
+                name: "blood_group",
+                orderable: false,
+                searchable: false,
+            },
+            {
+                data: "blood_rhesus",
+                name: "blood_rhesus",
+                orderable: false,
+                searchable: false,
+            },
+            {
+                data: "blood_component",
+                name: "blood_component",
                 orderable: false,
                 searchable: false,
             },
@@ -193,8 +190,8 @@ export function DatatableListBagRequest() {
             const selects = document.querySelectorAll(".select-bag-number");
             selects.forEach((select) => {
                 if (!select.tomselect) {
-                    new TomSelect(select, {
-                        create: false,
+                    new GlobalAdvanceTomselect(select, {
+                        valueField: "id",
                         sortField: {
                             field: "text",
                             direction: "asc",
@@ -252,6 +249,63 @@ export function DatatableListBagRequest() {
                 }
             });
         },
+    });
+}
+
+// Initialize Blood Pack Datatable for Edit Modal
+export function DatatableBloodPackModal() {
+    const tableId = "#edit-blood-pack-available-table";
+    const tableEl = document.querySelector(tableId);
+
+    if (!tableEl) return;
+
+    if ($.fn.DataTable.isDataTable(tableId)) {
+        $(tableId).DataTable().destroy();
+    }
+
+    new GlobalAdvanceDatatable(tableId, {
+        serverSide: true,
+        removePageInfo: true,
+        removePagination: true,
+        removeSearch: true,
+        searchDelay: 800,
+        scrollY: "250px",
+        scrollCollapse: true,
+        ajax: {
+            url: "/blood-transfusion/datatable-blood-pack",
+            type: "GET",
+            dataSrc: "data",
+        },
+        columns: [
+            { data: "blood_group", title: "Blood Group", className: "all" },
+            {
+                data: "blood_rhesus",
+                title: "Rhesus",
+                className: "all text-center",
+            },
+            {
+                data: "blood_component",
+                title: "Component",
+                className: "all text-center",
+            },
+            {
+                data: null,
+                title: "Action",
+                className: "all text-end",
+                orderable: false,
+                searchable: false,
+                render: (data) => {
+                    return `<button class="btn btn-sm btn-soft-primary select-edit-blood-pack" type="button"
+                        data-public-id="${data.public_id}"
+                        data-group="${data.blood_group}"
+                        data-rhesus="${data.blood_rhesus}"
+                        data-component="${data.blood_component}">
+                        <i class="ti ti-arrow-right"></i>
+                    </button>`;
+                },
+            },
+        ],
+        order: [[0, "asc"]],
     });
 }
 

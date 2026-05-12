@@ -11,11 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('blood_transfusion_details', function (Blueprint $table) {
-            $table->foreignId('blood_pack_id')
-                ->after('blood_transfusion_id')
+        Schema::table('blood_stocks', function (Blueprint $table) {
+            $table->foreignId('storage_rack_id')
+                ->after('blood_pack_id')
                 ->nullable()
-                ->constrained('blood_packs')
+                ->constrained('storage_racks')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
         });
@@ -26,9 +26,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('blood_transfusion_details', function (Blueprint $table) {
-            $table->dropForeign(['blood_pack_id']);
-            $table->dropColumn('blood_pack_id');
+        Schema::table('blood_stocks', function (Blueprint $table) {
+            if (Schema::hasColumn('blood_stocks', 'storage_rack_id')) {
+                $table->dropForeign(['storage_rack_id']);
+                $table->dropColumn('storage_rack_id');
+            }
         });
     }
 };

@@ -1,4 +1,4 @@
-@extends('layouts.base', ['title' => '404 Error'])
+@extends('layouts.base', ['title' => '503 Error'])
 
 @section('styles')
 @endsection
@@ -11,10 +11,10 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="p-2 text-center">
-                            <div class="text-error fw-bold fs-60">404</div>
-                            <h3 class="fw-semibold" data-lang="page_not_found">Page Not Found</h3>
-                            <p class="text-muted" data-lang="page_not_found_description">The page you’re looking for
-                                doesn’t exist or has been moved.</p>
+                            <div class="text-error fw-bold fs-60">503</div>
+                            <h3 class="fw-semibold" data-lang="page_not_found">Temporarily Service Unavailable</h3>
+                            <p class="text-muted" data-lang="page_not_found_description">Service currently unavailable,
+                                please contact administrator or wait until service available</p>
                             <button class="btn btn-primary mt-3 rounded-pill" onclick="window.location.href='/'"
                                 data-lang="go_home_link">
                                 Go Home
