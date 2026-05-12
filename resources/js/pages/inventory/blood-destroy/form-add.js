@@ -5,70 +5,39 @@ import {
 } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-const FormAddSelector = "add_new_blood_stock";
-const FormAddURL = "/inventory/blood-stock/data/new";
+// Wrapper
 const SelectBagNumberWrapper = "wrap-select-bag-number";
 const BagNumberListWrapper = "wrap-textarea-bag-numbers";
-const ReloadDatatableSelector = "blood-stock-reload";
+
+// Selector
+const FormAddSelector = "add_new_destroy_blood";
+const ReloadDatatableSelector = "blood-destroy-reload";
+const SelectBagNumberSelector = "#select-bag-number";
 
 // URLS
-const URLSelectPO = "/inventory/blood-stock/data/select/po";
-const URLSelectBagNumber = "/utility/select-special/bag-number-by-po";
+const FormAddURL = "/inventory/destroy-blood/data/new";
+const URLSelectBagNumber = "/inventory/destroy-blood/data/select/bag-number";
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
-// ---------- State gobal :begin ----------
+// ---------- State gobal ----------
 let tomSelectBagNumber = null;
-let tomSelectPONumber = null;
-let AddNewBloodStockValidation = null;
-let selectedPoNumber = null;
+let AddNewBloodDestroyValidation = null;
 let hasDuplicates = false;
-// ---------- State gobal :end ----------
 
-// ---------- Tom Select :begin ----------
-function SelectPONumber() {
-    new GlobalAdvanceTomselect("#select-purchase-order", {
-        valueField: "text",
-        sortField: { field: "id", direction: "asc" },
-        preload: true,
-        load: function (query, callback) {
-            fetch(`${URLSelectPO}?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-        onChange: function (value) {
-            selectedPoNumber = value;
-
-            if (tomSelectBagNumber) {
-                tomSelectBagNumber.clear();
-                tomSelectBagNumber.clearOptions();
-                tomSelectBagNumber.load("");
-            }
-        },
-        noResultsText: "PO Number not found",
-    });
-}
-
+// ---------- Tom Select ----------
 function SelectBagNumber() {
     const wrapperSelectBagNumber = new GlobalAdvanceTomselect(
-        "#select-bag-number",
+        SelectBagNumberSelector,
         {
             valueField: "text",
-            preload: false,
+            preload: true,
             maxItems: 9999,
             plugins: ["clear_button"],
             noResultsText: "Bag Number not found",
             blurOnItemAdd: false,
             closeAfterSelect: false,
             load: function (query, callback) {
-                if (!selectedPoNumber) {
-                    callback([]);
-                    return;
-                }
-
-                fetch(
-                    `${URLSelectBagNumber}/${selectedPoNumber}?q=${encodeURIComponent(query)}`,
-                )
+                fetch(`${URLSelectBagNumber}/?q=${encodeURIComponent(query)}`)
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());
@@ -78,14 +47,12 @@ function SelectBagNumber() {
 
     tomSelectBagNumber = wrapperSelectBagNumber.getInstances()[0];
 }
-// ---------- Tom Select :begin ----------
 
 // ---------- Toggle visibility berdasarkan method_add :begin ----------
 function getSelectedMethod() {
     const selected = document.querySelector('input[name="method_add"]:checked');
     return selected ? selected.value : "manual";
 }
-
 function toggleFieldsByMethod(method) {
     const wrapSelectBag = document.getElementById(SelectBagNumberWrapper);
     const wrapTextareaBag = document.getElementById(BagNumberListWrapper);
@@ -106,8 +73,8 @@ function toggleFieldsByMethod(method) {
         }
 
         // ---------- Aktifkan kembali validasi bag_numbers ----------
-        if (AddNewBloodStockValidation) {
-            AddNewBloodStockValidation.addField("bag_numbers", {
+        if (AddNewBloodDestroyValidation) {
+            AddNewBloodDestroyValidation.addField("bag_numbers", {
                 validators: {
                     notEmpty: { message: "Bag Number is required" },
                 },
@@ -132,16 +99,14 @@ function toggleFieldsByMethod(method) {
             .setAttribute("name", "bag_numbers");
 
         // ---------- Hapus validasi bag_numbers saat mode scan ----------
-        // Validasi kosong & duplikat ditangani sendiri di beforeSubmit
-        if (AddNewBloodStockValidation) {
-            AddNewBloodStockValidation.removeField("bag_numbers");
+        if (AddNewBloodDestroyValidation) {
+            AddNewBloodDestroyValidation.removeField("bag_numbers");
         }
 
         // ---------- Reset state duplikat ----------
         hasDuplicates = false;
     }
 }
-
 function initMethodToggle() {
     const radios = document.querySelectorAll('input[name="method_add"]');
     radios.forEach((radio) => {
@@ -153,13 +118,8 @@ function initMethodToggle() {
     // Jalankan saat load sesuai default checked
     toggleFieldsByMethod(getSelectedMethod());
 }
-// ---------- Toggle visibility berdasarkan method_add :end ----------
 
-// ---------- Deteksi duplikat di textarea bag numbers (mode scan) :begin ----------
-// Hardware barcode reader menginput ke textarea seperti keyboard biasa.
-// Tiap scan menghasilkan satu baris (diakhiri Enter oleh reader).
-// Deteksi duplikat dijalankan setiap kali isi textarea berubah (event: change)
-// dan sekali lagi saat submit sebagai safety net.
+// ---------- Deteksi duplikat di textarea bag numbers (mode scan) ----------
 function parseBagNumbersFromTextarea() {
     const textarea = document.getElementById("bag_numbers");
     if (!textarea) return [];
@@ -169,7 +129,6 @@ function parseBagNumbersFromTextarea() {
         .map((line) => line.trim())
         .filter((line) => line.length > 0);
 }
-
 function findDuplicates(items) {
     const seen = {};
     const duplicates = [];
@@ -186,7 +145,6 @@ function findDuplicates(items) {
 
     return duplicates;
 }
-
 function initScanTextareaListener() {
     const textarea = document.getElementById("bag_numbers");
     if (!textarea) return;
@@ -240,11 +198,10 @@ function initScanGuard() {
         true, // capture: true → listener ini berjalan sebelum listener GlobalSubmitForm
     );
 }
-// ---------- Deteksi duplikat di textarea bag numbers (mode scan) :end ----------
 
-// ---------- Handle form penambahan storage baru :begin ----------
-function AddNewBloodStock() {
-    AddNewBloodStockValidation = GlobalFormValidation.init(
+// ---------- Handle form ----------
+function AddNewBloodDestroy() {
+    AddNewBloodDestroyValidation = GlobalFormValidation.init(
         "#" + FormAddSelector,
         {
             method_add: {
@@ -252,14 +209,14 @@ function AddNewBloodStock() {
                     notEmpty: { message: "Method add is required" },
                 },
             },
-            po_number: {
-                validators: {
-                    notEmpty: { message: "PO Number is required" },
-                },
-            },
             bag_numbers: {
                 validators: {
                     notEmpty: { message: "Bag Number is required" },
+                },
+            },
+            reason: {
+                validators: {
+                    notEmpty: { message: "Reason is required" },
                 },
             },
         },
@@ -268,25 +225,23 @@ function AddNewBloodStock() {
     new GlobalSubmitForm({
         formId: FormAddSelector,
         url: FormAddURL,
-        validator: AddNewBloodStockValidation,
+        validator: AddNewBloodDestroyValidation,
         onSuccess: (data) => {
-            notyf.success({ message: "New blood stock added successfully!" });
+            notyf.success({ message: "Blood Destroy Successfully!" });
             window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
         onError: (err) => {
-            notyf.error({ message: "New blood stock failed to insert!" });
+            notyf.error({ message: "Blood Failed to Destroy!" });
             console.error(err);
         },
         resetOnSuccess: true,
     });
 }
-// ---------- Handle form penambahan storage baru :end ----------
 
 document.addEventListener("DOMContentLoaded", function () {
     initScanGuard();
-    AddNewBloodStock();
+    AddNewBloodDestroy();
     SelectBagNumber();
-    SelectPONumber();
     initMethodToggle();
     initScanTextareaListener();
 });

@@ -35,4 +35,10 @@ class InventoryController extends Controller
     {
         return view('pages.inventory.sub-pages.history-order.index');
     }
+
+    // ---------- Halaman destroy blood inventory ----------
+    public function destroyBloodIndex()
+    {
+        return view('pages.inventory.sub-pages.destroy-blood.index');
+    }
 }

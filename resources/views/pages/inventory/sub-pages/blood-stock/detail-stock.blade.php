@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="row py-4">
+<div class="row mt-3">
   {{-- Header :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Button Back to Blood Stock List --}}
@@ -108,9 +108,10 @@
   {{-- Log Activity :end --}}
 </div>
 
-@include('pages.inventory.sub-pages.blood-stock.partials.delete-data-modal')
+@include('utils.delete-data-modal', ['id'=> 'stock_blood', 'title' => 'Blood Stock'])
 @include('pages.inventory.sub-pages.blood-stock.partials.edit-data-modal')
-@include('pages.inventory.sub-pages.blood-stock.partials.restore-data-modal')
+@include('utils.restore-data-modal', ['id'=> 'stock_blood', 'title' => 'Blood Stock'])
+@include('utils.permanent-delete-data-modal', ['id'=> 'blood_stock', 'title' => 'Blood Stock'])
 @endsection
 
 @section('scripts')

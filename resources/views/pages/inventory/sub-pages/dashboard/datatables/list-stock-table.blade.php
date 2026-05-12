@@ -9,6 +9,7 @@
    <th>Expired Date</th>
    <th>Expiry Countdown</th>
    <th>Updated At</th>
+   <th>Action</th>
   </tr>
  </thead>
 </table>

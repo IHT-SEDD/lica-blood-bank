@@ -21,6 +21,12 @@ class BloodStockController extends Controller
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
+    // ---------- Halaman Detail Stock ----------
+    public function detailBloodStockIndex(string $id)
+    {
+        return view('pages.inventory.sub-pages.blood-stock.detail-stock', compact('id'));
+    }
+
     // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable ----------
     public function bloodStockTable(Request $request)
     {
@@ -53,10 +59,22 @@ class BloodStockController extends Controller
         return $this->writeService->editBloodStockData($request, $id);
     }
 
-    // ---------- Halaman Detail Stock ----------
-    public function detailBloodStockIndex(string $id)
+    // ---------- Fungsi untuk menghapus blood stock ----------
+    public function deleteBloodStockData(string $id)
     {
-        return view('pages.inventory.sub-pages.blood-stock.detail-stock', compact('id'));
+        return $this->writeService->deleteBloodStockData($id);
+    }
+
+    // ---------- Fungsi untuk menghapus permanen blood stock ----------
+    public function permanentDeleteBloodStockData(string $id)
+    {
+        return $this->writeService->permanentDeleteBloodStockData($id);
+    }
+
+    // ---------- Fungsi untuk memulihkan blood stock ----------
+    public function restoreBloodStockData(string $id)
+    {
+        return $this->writeService->restoreBloodStockData($id);
     }
 
     // ---------- Stock blood data detail table ----------
@@ -103,6 +121,30 @@ class BloodStockController extends Controller
             return response()->json($data)
                 ->setEtag(md5(json_encode($data)))
                 ->header('Cache-Control', 'public, max-age=600');
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
+        }
+    }
+
+    // ---------- Fungsi untuk print barcode lica ----------
+    public function printBarcodeLicaBloodStock(string $id)
+    {
+        try {
+            return $this->writeService->printBarcodeLicaBloodStock($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
+        }
+    }
+
+    // ---------- Fungsi untuk download barcode lica ----------
+    public function downloadBarcodeLicaBloodStock(string $id)
+    {
+        try {
+            return $this->writeService->downloadBarcodeLicaBloodStock($id);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Data not found!'

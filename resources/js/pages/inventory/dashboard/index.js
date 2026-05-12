@@ -1,5 +1,9 @@
 import { CustomChartJs } from "../../../app";
-import { setBloodFilter, ListStockTable } from "./datatables";
+import {
+    setBloodFilter,
+    ListStockTable,
+    SeeDetailBloodStockAction,
+} from "./datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const UrlBloodStat = "/inventory/dashboard/data/blood-stat";
@@ -203,6 +207,7 @@ function BloodStatChart(data) {
 // ---------- Entry point ----------
 document.addEventListener("DOMContentLoaded", function () {
     ListStockTable();
+    SeeDetailBloodStockAction();
     InitCardSelection();
     PopulateBloodStat();
 });

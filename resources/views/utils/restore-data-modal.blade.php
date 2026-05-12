@@ -1,4 +1,5 @@
-<x-static-modal-layout id="restore_data_stock_blood_modal" size="" title="Restore Data Blood Stock">
+<x-static-modal-layout id="restore_data_{{ $id ?? 'unknown' }}_modal" size=""
+ title="Restore Data {{ $title ?? 'Unknown' }}">
  <h4 class="fw-semibold">Are your sure want to restore this data?</h4>
  <p>Data you want to restore: <span id="restored_data" class="text-capitalize fw-semibold text-muted"></span></p>
  <p class="m-0">Click <span class="badge badge-label badge-soft-success">Confirm Restore</span> if you want to restore
