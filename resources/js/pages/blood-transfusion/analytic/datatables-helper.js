@@ -5,6 +5,7 @@ import TomSelect from "tom-select";
 let listRequestTable = "#list-request-table";
 export let listRequestTableInstance;
 export let listBagRequestTableInstance;
+export let listTestTableInstance;
 
 // Initialize List Request Datatable
 export function DatatableRequestBlood() {
@@ -243,6 +244,227 @@ export function DatatableListBagRequest() {
                             notyf.error({
                                 message:
                                     "An error occurred while updating bag number.",
+                            });
+                        }
+                    });
+                }
+            });
+        },
+    });
+}
+
+// Initialize List Test Datatable
+export function DatatableListTest() {
+    const tableId = "#list-test-table";
+    const tableEl = document.querySelector(tableId);
+
+    if (!tableEl) return;
+
+    if ($.fn.DataTable.isDataTable(tableId)) {
+        return;
+    }
+
+    // Simpan opsi result enum di scope fungsi agar tersedia di drawCallback
+    let resultOptions = [];
+
+    listTestTableInstance = new GlobalAdvanceDatatable(tableId, {
+        serverSide: true,
+        removeSearch: true,
+        removePageInfo: true,
+        removePagination: true,
+        ajax: function (data, callback, settings) {
+            if (!window.currentTransfusionPublicId) {
+                callback({
+                    data: [],
+                    recordsTotal: 0,
+                    recordsFiltered: 0,
+                    draw: data.draw,
+                });
+                return;
+            }
+
+            $.ajax({
+                url: `/blood-transfusion/${window.currentTransfusionPublicId}/tests`,
+                type: "GET",
+                data: data,
+                success: function (res) {
+                    // Simpan opsi enum yang dikirim backend sekali saja
+                    if (res.result_options && res.result_options.length) {
+                        resultOptions = res.result_options;
+                    }
+                    callback(res);
+                },
+                error: function () {
+                    callback({
+                        data: [],
+                        recordsTotal: 0,
+                        recordsFiltered: 0,
+                        draw: data.draw,
+                    });
+                },
+            });
+        },
+        columns: [
+            {
+                data: "test_name",
+                name: "test_name",
+                orderable: false,
+                searchable: false,
+            },
+            {
+                data: null,
+                name: "result",
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    // Jika tidak ada public_id (baris kosong/placeholder) tampilkan teks biasa
+                    if (!row.detail_test_public_id) {
+                        return `<span class="text-muted">-</span>`;
+                    }
+
+                    // Bangun option HTML — opsi sudah tersedia dari resultOptions
+                    let optionsHtml = `<option value="">-- Choose Result --</option>`;
+                    resultOptions.forEach((opt) => {
+                        const selected =
+                            row.result_value === opt.id ? "selected" : "";
+                        optionsHtml += `<option value="${opt.id}" ${selected}>${opt.text}</option>`;
+                    });
+
+                    return `<select class="form-control form-control-sm tomselect-sm select-test-result"
+                        data-id="${row.detail_test_public_id}"
+                        placeholder="-- Choose Result --">
+                        ${optionsHtml}
+                    </select>`;
+                },
+            },
+            {
+                data: "verified",
+                name: "verified",
+                orderable: false,
+                searchable: false,
+                className: "text-center",
+                render: function (data, type, row) {
+                    return `<input type="checkbox" class="form-check-input checkbox-verified" data-id="${row.detail_test_public_id}" ${data ? "checked" : ""} >`;
+                },
+            },
+            {
+                data: "validated",
+                name: "validated",
+                orderable: false,
+                searchable: false,
+                className: "text-center",
+                render: function (data, type, row) {
+                    return `<input type="checkbox" class="form-check-input checkbox-validated" data-id="${row.detail_test_public_id}" ${data ? "checked" : ""} >`;
+                },
+            },
+        ],
+        drawCallback: function () {
+            // --- Logika untuk Checkbox ---
+            const updateCheckbox = async (id, field, value) => {
+                console.log(id, field, value);
+
+                try {
+                    const response = await fetch(
+                        `/blood-transfusion/test/${id}/update-verified-validated`,
+                        {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": document
+                                    .querySelector('meta[name="csrf-token"]')
+                                    .getAttribute("content"),
+                            },
+                            body: JSON.stringify({
+                                field: field, // 'is_verified' atau 'is_validated'
+                                value: value, // true atau false
+                            }),
+                        },
+                    );
+
+                    const res = await response.json();
+                    if (!response.ok) throw new Error(res.message);
+
+                    notyf.success({
+                        message: res.message || "Status updated!",
+                    });
+                } catch (error) {
+                    console.error(error);
+                    notyf.error({
+                        message: error.message || "Failed to update status",
+                    });
+                    // Opsional: kembalikan centang jika gagal
+                    // event.target.checked = !value;
+                }
+            };
+
+            // Trigger Verified
+            document.querySelectorAll(".checkbox-verified").forEach((cb) => {
+                console.log(cb);
+                cb.addEventListener("click", function () {
+                    updateCheckbox(this.dataset.id, "verified", this.checked);
+                });
+            });
+
+            // Trigger Validated
+            document.querySelectorAll(".checkbox-validated").forEach((cb) => {
+                cb.addEventListener("click", function () {
+                    updateCheckbox(this.dataset.id, "validated", this.checked);
+                });
+            });
+
+            const selects = document.querySelectorAll(".select-test-result");
+            selects.forEach((select) => {
+                if (!select.tomselect) {
+                    new GlobalAdvanceTomselect(select, {
+                        valueField: "id",
+                        sortField: { field: "text", direction: "asc" },
+                    });
+
+                    select.addEventListener("change", async function () {
+                        const detailTestId = this.dataset.id;
+                        const resultValue = this.value;
+
+                        if (!resultValue) return;
+
+                        try {
+                            const response = await fetch(
+                                `/blood-transfusion/test/${detailTestId}/update-result`,
+                                {
+                                    method: "PATCH",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRF-TOKEN": document
+                                            .querySelector(
+                                                'meta[name="csrf-token"]',
+                                            )
+                                            .getAttribute("content"),
+                                    },
+                                    body: JSON.stringify({
+                                        result: resultValue,
+                                    }),
+                                },
+                            );
+
+                            const res = await response.json();
+
+                            if (!response.ok) {
+                                notyf.error({
+                                    message:
+                                        res.message ||
+                                        "Failed to update result!",
+                                });
+                            } else {
+                                notyf.success({
+                                    message:
+                                        res.message ||
+                                        "Result successfully updated!",
+                                });
+                            }
+                        } catch (error) {
+                            console.error(error);
+                            notyf.error({
+                                message:
+                                    "An error occurred while updating result.",
                             });
                         }
                     });

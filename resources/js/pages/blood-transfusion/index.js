@@ -5,6 +5,8 @@ import {
     listRequestTableInstance,
     DatatableListBagRequest,
     listBagRequestTableInstance,
+    DatatableListTest,
+    listTestTableInstance,
 } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
 
@@ -21,58 +23,69 @@ function DateRangeFilter() {
 // ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
 // ---------- Menampilkan detail pasien dari row yang diklik :begin ----------
-function ShowPatientDetail() {
-    $(document).on("click", "#list-request-table tbody tr", function (e) {
-        // Abaikan jika yang diklik adalah action dropdown
-        if ($(e.target).closest(".dropdown").length > 0) return;
+export function updatePatientDetailUI(data) {
+    if (!data) return;
 
-        if (!listRequestTableInstance) return;
+    // Update DOM dengan data dari baris yang dipilih
+    const setElementText = (selector, text) => {
+        const el = document.querySelector(
+            `[data-patient-detail="${selector}"]`,
+        );
+        if (el) el.textContent = text || "-";
+    };
 
-        const data = listRequestTableInstance.getRowData(this);
-        if (!data) return;
+    setElementText("name", data.patient?.name);
+    setElementText("gender", data.patient?.gender);
+    setElementText("email", data.patient?.email);
+    setElementText("age", data.patient?.age);
+    setElementText("insurance", data.insurance?.name);
+    setElementText("room", data.room?.name);
+    setElementText("doctor", data.doctor?.name);
+    setElementText("type_patient", data.room?.type);
+    setElementText("diagnosis", data.diagnosis);
+    setElementText("blood_group", data.patient?.blood_group);
+    setElementText("blood_rhesus", data.patient?.blood_rhesus);
 
-        // Update DOM dengan data dari baris yang dipilih
-        const setElementText = (selector, text) => {
-            const el = document.querySelector(
-                `[data-patient-detail="${selector}"]`,
-            );
-            if (el) el.textContent = text || "-";
-        };
-
-        setElementText("name", data.patient?.name);
-        setElementText("gender", data.patient?.gender);
-        setElementText("email", data.patient?.email);
-        setElementText("age", data.patient?.age);
-        setElementText("insurance", data.insurance?.name);
-        setElementText("room", data.room?.name);
-        setElementText("doctor", data.doctor?.name);
-        setElementText("type_patient", data.room?.type);
-        setElementText("diagnosis", data.diagnosis);
-        setElementText("blood_group", data.patient?.blood_group);
-        setElementText("blood_rhesus", data.patient?.blood_rhesus);
-
-        // Toggle Check In button based on lab_number
-        const btnCheckin = document.getElementById("btn-checkin-lab");
-        if (btnCheckin) {
-            if (data.lab_number && data.lab_number !== "-") {
-                btnCheckin.classList.add("d-none");
-            } else {
-                btnCheckin.classList.remove("d-none");
-                btnCheckin.dataset.id = data.public_id;
-            }
+    // Toggle Check In button based on lab_number
+    const btnCheckin = document.getElementById("btn-checkin-lab");
+    if (btnCheckin) {
+        if (data.lab_number && data.lab_number !== "-") {
+            btnCheckin.classList.add("d-none");
+        } else {
+            btnCheckin.classList.remove("d-none");
+            btnCheckin.dataset.id = data.public_id;
         }
+    }
 
-        // Update list bag request table
-        window.currentTransfusionPublicId = data.public_id;
-        if (
-            listBagRequestTableInstance &&
-            $.fn.DataTable.isDataTable("#list-bag-request-table")
-        ) {
-            $("#list-bag-request-table").DataTable().ajax.reload(null, false);
-        }
-    });
+    // Update list bag request table
+    window.currentTransfusionPublicId = data.public_id;
+    if (
+        listBagRequestTableInstance &&
+        $.fn.DataTable.isDataTable("#list-bag-request-table")
+    ) {
+        $("#list-bag-request-table").DataTable().ajax.reload(null, false);
+    }
+
+    // Update list test table
+    if (
+        listTestTableInstance &&
+        $.fn.DataTable.isDataTable("#list-test-table")
+    ) {
+        $("#list-test-table").DataTable().ajax.reload(null, false);
+    }
 }
 // ---------- Menampilkan detail pasien dari row yang diklik :end ----------
+
+function initPatientDetail() {
+    $(document)
+        .off("click", "#list-request-table tbody tr")
+        .on("click", "#list-request-table tbody tr", function (e) {
+            if ($(e.target).closest(".dropdown").length > 0) return;
+            if (!listRequestTableInstance) return;
+            const data = listRequestTableInstance.getRowData(this);
+            updatePatientDetailUI(data); // Panggil fungsi update
+        });
+}
 
 // ---------- Handle Check In Lab Number :begin ----------
 function CheckInLabNumber() {
@@ -135,6 +148,7 @@ document.addEventListener("DOMContentLoaded", function () {
     DateRangeFilter();
     DatatableRequestBlood();
     DatatableListBagRequest();
-    ShowPatientDetail();
+    DatatableListTest();
+    initPatientDetail();
     CheckInLabNumber();
 });

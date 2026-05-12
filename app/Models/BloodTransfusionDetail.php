@@ -54,4 +54,9 @@ class BloodTransfusionDetail extends Model
     {
         return $this->hasOne(BloodTransfusionDetailTest::class, 'bt_detail_id');
     }
+
+    public function bloodTransfusionDetailTests()
+    {
+        return $this->hasMany(BloodTransfusionDetailTest::class, 'bt_detail_id');
+    }
 }

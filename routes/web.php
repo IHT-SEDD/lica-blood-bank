@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/{id}/checkin', 'checkin')->name('checkin');
         Route::delete('/{id}', 'destroy')->name('destroy');
         Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+        Route::get('/{id}/tests', 'datatableListTest')->name('datatable-list-test');
+        Route::patch('/test/{id}/update-result', 'updateTestResult')->name('update-test-result');
+        Route::patch('/test/{id}/update-verified-validated', 'updateTestVerifiedValidated')->name('update-test-verified-validated');
         Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
         Route::patch('/{id}/update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');
     });

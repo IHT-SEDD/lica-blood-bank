@@ -3,8 +3,8 @@
   <tr>
    <th>{{ __('Test') }}</th>
    <th>{{ __('Result') }}</th>
-   <th>{{ __('Normal') }}</th>
-   <th>{{ __('Action') }}</th>
+   <th class="text-center">{{ __('Verified') }}</th>
+   <th class="text-center">{{ __('Validated') }}</th>
   </tr>
  </thead>
 </table>
