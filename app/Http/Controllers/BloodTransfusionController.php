@@ -24,12 +24,11 @@ use Illuminate\Support\Str;
 class BloodTransfusionController extends Controller
 {
 
-    protected $bloodTransfusionDetailTestService;
-
-    public function __construct(BloodTransfusionDetailTestService $bloodTransfusionDetailTestService)
-    {
-        $this->bloodTransfusionDetailTestService = $bloodTransfusionDetailTestService;
-    }
+    // ---------- Panggil semua service yang dibutuhkan :begin ----------
+    public function __construct(
+        protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
+    ) {}
+    // ---------- Panggil semua service yang dibutuhkan :end ----------
 
     // ---------- Halaman index ----------
     public function index()
@@ -44,7 +43,7 @@ class BloodTransfusionController extends Controller
         $start = max((int) $request->input('start', 0), 0);
         $length = (int) $request->input('length', 10);
         $draw = (int) $request->input('draw', 1);
-// dd($request->all());
+        // dd($request->all());
         $allItemsCacheKey = sprintf('blood-transfusion.blood-pack.all.%s', md5($searchValue ?: 'all'));
 
         $filteredItems = Cache::remember($allItemsCacheKey, 60, function () use ($searchValue, $request) {
@@ -128,7 +127,7 @@ class BloodTransfusionController extends Controller
             } catch (\Exception $e) {
                 // If parsing fails, do not apply date filter
             }
-        }else {
+        } else {
             $query->whereDate('blood_request_at', \Carbon\Carbon::now()->format('Y-m-d'));
         }
 
@@ -139,7 +138,7 @@ class BloodTransfusionController extends Controller
                     ->orWhere('lab_number', 'like', "{$searchValue}%")
                     ->orWhereHas('patient', function ($q) use ($searchValue) {
                         $q->where('name', 'like', "{$searchValue}%")
-                          ->orWhere('medrec', 'like', "{$searchValue}%");
+                            ->orWhere('medrec', 'like', "{$searchValue}%");
                     })
                     ->orWhereHas('room', function ($q) use ($searchValue) {
                         $q->where('name', 'like', "{$searchValue}%");
@@ -173,11 +172,11 @@ class BloodTransfusionController extends Controller
                     'address' => $item->patient->address ?? '-',
                     'age' => $item->patient->birthdate ? \Carbon\Carbon::parse($item->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
                     'blood_group' => $item->patient->blood_group ?? '-',
-                    'blood_rhesus' => $item->patient->blood_rhesus ?? '-', 
+                    'blood_rhesus' => $item->patient->blood_rhesus ?? '-',
                 ],
                 'room' => [
                     'name' => $item->room->name ?? '-',
-                    'type' => $item->room->type ? str_replace('_', ' ', str::kebab($item->room->type)) : '-' 
+                    'type' => $item->room->type ? str_replace('_', ' ', str::kebab($item->room->type)) : '-'
                 ],
                 'insurance' => [
                     'name' => $item->insurance->name ?? '-',
@@ -266,7 +265,7 @@ class BloodTransfusionController extends Controller
                     ->where('is_active', 1)
                     ->whereNull('deleted_at')
                     ->first();
-   
+
                 // public_id di-generate otomatis oleh model booted()
                 $transfusionDetail = BloodTransfusionDetail::create([
                     'blood_transfusion_id' => $transfusion->id,
@@ -289,7 +288,6 @@ class BloodTransfusionController extends Controller
                 'public_id'    => $transfusion->public_id,
                 'patient_name' => $patient->name,
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -301,10 +299,10 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Get Data By Id ----------
-    public function getDataById($public_id)
+    public function getDataById(string $public_id)
     {
         $data = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor'])->where('public_id', $public_id)->first();
-
+        dd($public_id);
         return response()->json([
             'status' => 'success',
             'data'   => [
@@ -331,7 +329,7 @@ class BloodTransfusionController extends Controller
         DB::beginTransaction();
         try {
             $transfusion = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor'])->findOrFail($request->id);
-            
+
             // Update transaksi
             $transfusion->update([
                 'insurance_id'     => $request->insurance_id,
@@ -367,11 +365,11 @@ class BloodTransfusionController extends Controller
                     'address' => $transfusion->patient->address ?? '-',
                     'age' => $transfusion->patient->birthdate ? \Carbon\Carbon::parse($transfusion->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
                     'blood_group' => $transfusion->patient->blood_group ?? '-',
-                    'blood_rhesus' => $transfusion->patient->blood_rhesus ?? '-', 
+                    'blood_rhesus' => $transfusion->patient->blood_rhesus ?? '-',
                 ],
                 'room' => [
                     'name' => $transfusion->room->name ?? '-',
-                    'type' => $transfusion->room->type ? str_replace('_', ' ', str::kebab($transfusion->room->type)) : '-' 
+                    'type' => $transfusion->room->type ? str_replace('_', ' ', str::kebab($transfusion->room->type)) : '-'
                 ],
                 'insurance' => [
                     'name' => $transfusion->insurance->name ?? '-',
@@ -386,7 +384,6 @@ class BloodTransfusionController extends Controller
                 'message' => 'Blood request successfully updated.',
                 'data'    => $data
             ], 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -403,13 +400,12 @@ class BloodTransfusionController extends Controller
         try {
             $transfusion = BloodTransfusion::where('public_id', $id)->first();
             // Anda bisa tambahkan validasi status di sini (misal hanya status REGISTERED yang boleh dihapus)
-            
+
             $transfusion->delete(); // Soft delete
 
             return response()->json([
                 'message' => 'Blood request successfully deleted.',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to delete blood request.',
@@ -468,7 +464,6 @@ class BloodTransfusionController extends Controller
                 'message' => 'Successfully checked in with Lab Number: ' . $labNumber,
                 'lab_number' => $labNumber,
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to check in blood request.',
@@ -528,7 +523,7 @@ class BloodTransfusionController extends Controller
                 'blood_group'         => $detail->bloodPack ? $detail->bloodPack->blood_group->value : '-',
                 'blood_rhesus'        => $detail->bloodPack ? $detail->bloodPack->blood_rhesus : '-',
                 'blood_component'     => $detail->bloodPack ? $detail->bloodPack->blood_component->value : '-',
-                'blood_pack_public_id'=> $detail->bloodPack ? $detail->bloodPack->public_id : null,
+                'blood_pack_public_id' => $detail->bloodPack ? $detail->bloodPack->public_id : null,
                 'has_available_stock' => $hasAvailableStock,
                 'available_stocks'    => $options,
                 'selected_stock_id'   => $detail->blood_stock_id,
@@ -552,7 +547,7 @@ class BloodTransfusionController extends Controller
 
         try {
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            
+
             // Optional: You could update the previous and new BloodStock statuses here if needed.
             // Currently only updating the detail record.
             $detail->update([
@@ -569,7 +564,6 @@ class BloodTransfusionController extends Controller
             return response()->json([
                 'message' => 'Bag number successfully updated.'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update bag number.',
@@ -608,7 +602,6 @@ class BloodTransfusionController extends Controller
             return response()->json([
                 'message' => 'Blood packs updated successfully.',
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update blood packs.',
@@ -658,7 +651,6 @@ class BloodTransfusionController extends Controller
             return response()->json([
                 'message' => $result['message'],
             ], $status);
-
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to update ' . $request->field . '.',
