@@ -116,9 +116,10 @@ Route::middleware('auth')->group(function () {
             Route::get('get-data/{id}', 'getDataDetailStockBlood')->name('get-data');
             Route::get('print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica');
             Route::get('download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica');
-            Route::delete('data/{id}', 'deleteStockBloodData')->name('delete');
+            Route::delete('data/{id}', 'deleteBloodStockData')->name('delete');
+            Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete');
             Route::patch('data/{id}', 'editBloodStockData')->name('edit');
-            Route::patch('data/{id}/restore', 'restoreStockBloodData')->name('restore');
+            Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore');
          });
       });
    });

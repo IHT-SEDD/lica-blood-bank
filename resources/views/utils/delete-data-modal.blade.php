@@ -1,4 +1,5 @@
-<x-static-modal-layout id="delete_data_stock_blood_modal" size="" title="Delete Data Blood Stock">
+<x-static-modal-layout id="delete_data_{{ $id ?? 'unknown' }}_modal" size=""
+ title="Delete Data {{ $title ?? 'Unknown' }}">
  <h4 class="fw-semibold">Are your sure want to delete this data?</h4>
  <p>Data you want to delete: <span id="deleted_data" class="text-capitalize fw-semibold text-muted"></span></p>
  <p class="m-0">Click <span class="badge badge-label badge-soft-danger">Confirm Delete</span> if you want to delete it

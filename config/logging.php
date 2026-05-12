@@ -213,6 +213,16 @@ return [
             'driver' => 'single',
             'path' => storage_path('logs/blood-stock/edit-blood-stock-data.log'),
             'level' => 'debug',
+        ],
+        'deletebloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/delete-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'restorebloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/restore-blood-stock-data.log'),
+            'level' => 'debug',
         ]
     ],
 
