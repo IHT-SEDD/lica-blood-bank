@@ -22,20 +22,50 @@ Route::middleware('auth')->group(function () {
     // Blood Transfusion Group Routes -> blood-transfusion.*
     // --------------------------------------------------------------------------
     Route::prefix('blood-transfusion')->name('blood-transfusion.')->controller(BloodTransfusionController::class)->group(function () {
-        // --------------------------------------------------------------------------
-        // Blood Transfusion / Home Route -> blood-transfusion.index
-        // --------------------------------------------------------------------------
+        // ---------- Main Page ----------
         Route::get('/', 'index')->name('index');
-        Route::get('/datatable-blood-pack', 'datatableBloodPack')->name('datatable-blood-pack');
-        Route::get('/datatable-blood-request', 'datatableBloodRequest')->name('datatable-blood-request');
+
+        // ---------- Archive group routes ----------
+        Route::prefix('archive')->name('archive.')->group(function () {
+            Route::get('/', 'arhiveIndex')->name('index');
+        });
+
+        // ---------- Datatable group routes ----------
+        Route::prefix('datatable')->name('datatable.')->group(function () {
+            Route::get('blood-pack', 'datatableBloodPack')->name('blood-pack');
+            Route::get('blood-request', 'datatableBloodRequest')->name('blood-request');
+            Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+        });
+
+        // ---------- Test group routes ----------
+        Route::prefix('test')->name('test.')->group(function () {
+            Route::patch('{id}/update-result', 'updateTestResult')->name('update-result');
+            Route::patch('{id}/update-verified-validated', 'updateTestVerifiedValidated')->name('update-verified-validated');
+        });
+
+        // ---------- CRUD ----------
         Route::post('store', 'store')->name('store');
-        Route::get('/{id}', 'getDataById')->name('get-data');
-        Route::patch('/{id}', 'update')->name('update');
-        Route::post('/{id}/checkin', 'checkin')->name('checkin');
-        Route::delete('/{id}', 'destroy')->name('destroy');
-        Route::get('/{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
-        Route::patch('/detail/{id}/update-stock', 'updateBagNumber')->name('update-bag-number');
-        Route::patch('/{id}/update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');
+        Route::get('{id}', 'getDataById')->name('get-data');
+        Route::patch('{id}', 'update')->name('update');
+        Route::delete('{id}', 'destroy')->name('destroy');
+
+        // ---------- Checkin ----------
+        Route::post('{id}/checkin', 'checkin')->name('checkin');
+
+        // ---------- Bag Request ----------
+        Route::get('{id}/bag-requests', 'datatableListBagRequest')
+            ->name('datatable-bag-request');
+
+        // ---------- Tests ----------
+        Route::get('{id}/tests', 'datatableListTest')
+            ->name('datatable-list-test');
+
+        // ---------- Blood Packs ----------
+        Route::patch('detail/{id}/update-stock', 'updateBagNumber')
+            ->name('update-bag-number');
+
+        Route::patch('{id}/update-blood-packs', 'updateBloodPacks')
+            ->name('update-blood-packs');
     });
 
     // --------------------------------------------------------------------------

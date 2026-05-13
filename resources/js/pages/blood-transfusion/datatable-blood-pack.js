@@ -8,6 +8,7 @@ let availableBloodPacksInstance;
 let listRequestTableInstance;
 window.__btSelectedBloodPacks = window.__btSelectedBloodPacks || [];
 let selectedBloodPacks = window.__btSelectedBloodPacks;
+const DatatableUrl = "/blood-transfusion/datatable";
 
 // Initialize Available Blood Packs Datatable
 function initAvailableBloodPacksTable() {
@@ -26,7 +27,7 @@ function initAvailableBloodPacksTable() {
         scrollY: "350px",
         scrollCollapse: true,
         ajax: {
-            url: "/blood-transfusion/datatable-blood-pack",
+            url: DatatableUrl + "/blood-pack",
             type: "GET",
             data: function (d) {
                 d.blood_group = $("#blood_group_filter").val();
@@ -202,13 +203,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reload datatable on flatpickr change
     const dateFilter = document.querySelector(".blood-transfusion-date-filter");
-    if (dateFilter) {
-        dateFilter.addEventListener("change", function () {
-            if ($.fn.DataTable.isDataTable(tableSelector)) {
-                $(tableSelector).DataTable().ajax.reload();
-            }
-        });
-    }
+    // if (dateFilter) {
+    //     dateFilter.addEventListener("change", function () {
+    //         if ($.fn.DataTable.isDataTable(tableSelector)) {
+    //             $(tableSelector).DataTable().ajax.reload();
+    //         }
+    //     });
+    // }
 });
 
 // ---------- Blood Pack Datatable :end ----------

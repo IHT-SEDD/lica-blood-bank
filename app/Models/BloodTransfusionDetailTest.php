@@ -43,4 +43,19 @@ class BloodTransfusionDetailTest extends Model
     {
         return $this->belongsTo(BloodTransfusionDetail::class, 'bt_detail_id');
     }
+
+    public function test()
+    {
+        return $this->belongsTo(\App\Models\Test::class, 'test_id');
+    }
+
+    public function verifiedByUser()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'verified_by_user_id');
+    }
+
+    public function validatedByUser()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'validated_by_user_id');
+    }
 }

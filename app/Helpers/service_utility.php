@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
 if (!function_exists('globalLogger')) {
  function globalLogger(
   string $statusLog,
-  $message,
+  ?string $message,
   array $context = [],
   ?int $statusCode = null,
   ?string $channel = null,

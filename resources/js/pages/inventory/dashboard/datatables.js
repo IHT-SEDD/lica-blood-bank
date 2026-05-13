@@ -8,6 +8,10 @@ const ListStockTableSelector = "#list-stock-table";
 const ListStockTableDataURL = "/inventory/dashboard/data/blood-stock";
 const ReloadListStockTableSelector = "list-stock-reload";
 
+// See Detail Action
+const ActionDetailSelector = ".btn-see-detail-blood-stock";
+const AttributeSeeDetail = "seeDetailId";
+
 // ---------- Global State ----------
 let activeBloodGroup = "a";
 let activeBloodRhesus = "+";
@@ -162,6 +166,25 @@ function ListStockTable() {
                 return DateTimeFormatter.human(data);
             },
         },
+        {
+            data: null,
+            title: "Action",
+            render: (data, type, row, meta) => {
+                const isDeleted = row.deleted_at !== null;
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
+                  <i class="ti ti-dots align-middle"></i>
+                 </button>
+                 <ul class="dropdown-menu">
+                     <li>
+                        <button id="see-detail-${row.blood_packs.public_id}" class="dropdown-item fw-medium btn-see-detail-blood-stock text-primary" data-see-detail-id="${row.blood_packs.public_id}" type="button">
+                        <i class="ti ti-heart-search align-middle me-2 fs-4"></i>
+                        Detail
+                        </button>
+                    </li>
+                 </ul>
+                `;
+            },
+        },
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
@@ -186,4 +209,17 @@ function ListStockTable() {
     );
 }
 
-export { ListStockTable };
+// ---------- Handle see detail ----------
+function SeeDetailBloodStockAction() {
+    document.addEventListener("click", function (e) {
+        const btn = e.target.closest(ActionDetailSelector);
+        if (!btn) return;
+
+        const id = btn.dataset[AttributeSeeDetail];
+        if (!id) return;
+
+        window.location.href = `/inventory/blood-stock/detail/${id}`;
+    });
+}
+
+export { ListStockTable, SeeDetailBloodStockAction };

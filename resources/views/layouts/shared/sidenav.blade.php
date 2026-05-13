@@ -21,7 +21,7 @@
 
         {{-- Menu :begin --}}
         <ul class="side-nav">
-            @if (request()->is('tranfusion*'))
+            @if (request()->is('blood-transfusion*'))
             @include('layouts.shared.sidenav.sidenav-item-tranfusion')
             @endif
 
