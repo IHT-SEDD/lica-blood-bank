@@ -55,6 +55,7 @@
           id="blood-stock-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
+              <th class="fs-sm" style="width: 1%;"></th>
               <th>{{ __('Blood Pack') }}</th>
               <th>{{ __('Quantity') }}</th>
               <th>{{ __('Status') }}</th>

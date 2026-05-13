@@ -5,8 +5,8 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
 } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let bloodStockTableInstance; // instance datatable untuk global
@@ -56,6 +56,12 @@ function reloadTable() {
 function BloodStockTable() {
     // ---------- Init kolom pada tabel ----------
     const BloodStockTableColumns = [
+        {
+            data: null,
+            defaultContent: "",
+            title: "",
+            orderable: false,
+        },
         {
             data: null,
             title: "No",
@@ -146,13 +152,14 @@ function BloodStockTable() {
         },
         columns: BloodStockTableColumns,
         useHideColumn: true,
+        checkBoxSelect: { selector: "td:first-child" },
         columnDefs: [
             {
                 targets: -1,
                 responsivePriority: 1,
             },
             {
-                targets: 0,
+                targets: 1,
                 responsivePriority: 2,
             },
         ],

@@ -5,9 +5,9 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
     GlobalAdvanceTomselect,
 } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let stockInTableInstance; // instance datatable untuk global
