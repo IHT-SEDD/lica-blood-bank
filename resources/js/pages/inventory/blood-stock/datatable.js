@@ -56,12 +56,12 @@ function reloadTable() {
 function BloodStockTable() {
     // ---------- Init kolom pada tabel ----------
     const BloodStockTableColumns = [
-        {
-            data: null,
-            defaultContent: "",
-            title: "",
-            orderable: false,
-        },
+        // {
+        //     data: null,
+        //     defaultContent: "",
+        //     title: "",
+        //     orderable: false,
+        // },
         {
             data: null,
             title: "No",
@@ -152,7 +152,7 @@ function BloodStockTable() {
         },
         columns: BloodStockTableColumns,
         useHideColumn: true,
-        checkBoxSelect: { selector: "td:first-child" },
+        // checkBoxSelect: { selector: "td:first-child" },
         columnDefs: [
             {
                 targets: -1,
