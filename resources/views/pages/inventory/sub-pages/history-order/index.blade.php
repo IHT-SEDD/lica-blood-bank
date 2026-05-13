@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="row py-4">
+<div class="row mt-2">
   {{-- Title & Add New Order :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Title --}}

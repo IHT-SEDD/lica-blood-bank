@@ -1,7 +1,7 @@
 @extends('layouts.vertical', ['title' => 'Stock In'])
 
 @section('content')
-<div class="row py-4">
+<div class="row mt-2">
   {{-- Title :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
