@@ -5,8 +5,8 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
 } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let bloodStockTableInstance; // instance datatable untuk global
@@ -18,6 +18,7 @@ const DateFilterSelector = ".blood-stock-table-date-filter"; // class selector f
 const DatatableSelector = "#blood-stock-table"; // id selector datatable
 const DataURL = "/inventory/blood-stock/data"; // url fetch data untuk datatable
 const ReloadDatatableSelector = "blood-stock-reload"; // index reload datatable
+const ExportExcelURL = "/inventory/blood-stock/export/excel";
 
 // See Detail Action
 const ActionDetailSelector = ".btn-see-detail-blood-stock";
@@ -55,6 +56,12 @@ function reloadTable() {
 function BloodStockTable() {
     // ---------- Init kolom pada tabel ----------
     const BloodStockTableColumns = [
+        // {
+        //     data: null,
+        //     defaultContent: "",
+        //     title: "",
+        //     orderable: false,
+        // },
         {
             data: null,
             title: "No",
@@ -145,13 +152,14 @@ function BloodStockTable() {
         },
         columns: BloodStockTableColumns,
         useHideColumn: true,
+        // checkBoxSelect: { selector: "td:first-child" },
         columnDefs: [
             {
                 targets: -1,
                 responsivePriority: 1,
             },
             {
-                targets: 0,
+                targets: 1,
                 responsivePriority: 2,
             },
         ],
@@ -181,6 +189,72 @@ function SeeDetailBloodStockAction() {
 }
 // ---------- Handle see detail :end ----------
 
+// ---------- Handle tombol export excel :begin ----------
+function ExportToExcel() {
+    const btn = document.getElementById("excel_blood_stock_btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async function () {
+        const filters = getFilters();
+
+        const params = new URLSearchParams();
+        if (filters.start_date) params.append("start_date", filters.start_date);
+        if (filters.end_date) params.append("end_date", filters.end_date);
+        if (filters.vendor) params.append("vendor", filters.vendor);
+        if (filters.status) params.append("status", filters.status);
+
+        const url = ExportExcelURL + `?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+
+            // ---------- Cek content-type response ----------
+            const contentType = response.headers.get("Content-Type") || "";
+            const isJson = contentType.includes("application/json");
+
+            // ---------- Jika response error atau balik JSON (bukan file) ----------
+            if (!response.ok || isJson) {
+                const result = await response.json();
+                notyf.error({
+                    message: result.message || "Failed to export data!",
+                });
+                return;
+            }
+
+            // ---------- Jika sukses, trigger download dari blob ----------
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            const today = new Date();
+            const formattedDate =
+                today.getFullYear() +
+                String(today.getMonth() + 1).padStart(2, "0") +
+                String(today.getDate()).padStart(2, "0");
+
+            link.setAttribute(
+                "download",
+                `Blood Stock - ${formattedDate}.xlsx`,
+            );
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            URL.revokeObjectURL(blobUrl);
+
+            notyf.success({
+                message: "Data exported successfully!",
+            });
+        } catch (error) {
+            console.error(error);
+            notyf.error({
+                message: "Failed to export data!",
+            });
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     BloodStockTable();
@@ -192,6 +266,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Action data
     SeeDetailBloodStockAction();
+    ExportToExcel();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

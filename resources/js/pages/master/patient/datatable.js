@@ -6,9 +6,8 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
 } from "../../../app";
-import { log } from "handlebars/runtime";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterPatientTableInstance; // instance datatable untuk global
@@ -64,7 +63,7 @@ function getFilters() {
 // ---------- Helper: Ambil semua filter :end ----------
 
 function SelectBloodGroup() {
-   BloodGroupSelectInstance = new TomSelect("#edit-select-blood-group", {
+    BloodGroupSelectInstance = new TomSelect("#edit-select-blood-group", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -88,7 +87,7 @@ function SelectBloodGroup() {
 }
 
 function SelectBloodRhesus() {
-   BloodRhesusSelectInstance = new TomSelect("#edit-select-blood-rhesus", {
+    BloodRhesusSelectInstance = new TomSelect("#edit-select-blood-rhesus", {
         valueField: "id",
         labelField: "text",
         searchField: "text",
@@ -144,8 +143,8 @@ function MasterPatientTable() {
             title: "Birthdate",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
-            }
-         },
+            },
+        },
         { data: "blood_group", title: "Blood Group" },
         { data: "blood_rhesus", title: "Blood Rhesus" },
         { data: "phone", title: "Phone" },
@@ -234,23 +233,28 @@ function EditDataPatientActionModal() {
         const { data } = e.detail;
         if (!data) return;
 
-            // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
-         new GlobalAdvanceFlatpickr('.edit_data_patient_birthdate', {
+        // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :begin ----------
+        new GlobalAdvanceFlatpickr(".edit_data_patient_birthdate", {
             dateFormat: "Y-m-d",
             maxDate: "today",
             defaultDate: data.birthdate ?? "",
-            static : true
+            static: true,
         });
-    // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
+        // ---------- Inisialisasi GlobalAdvanceFlatpickr untuk birthdate :end ----------
 
         document.querySelector("#edit_data_patient_name").value =
             data.name ?? "";
         // document.querySelector("#edit_data_patient_medrec").value = data.medrec ?? "";
-        document.querySelector("#edit_data_patient_gender").value = data.gender ?? "";
-        document.querySelector("#edit_data_patient_phone").value = data.phone ?? "";
-        document.querySelector("#edit_data_patient_email").value = data.email ?? "";
-        document.querySelector("#edit_data_patient_address").value = data.address ?? "";
-        document.querySelector("#edit_data_patient_is_active").checked = data.is_active == 1;
+        document.querySelector("#edit_data_patient_gender").value =
+            data.gender ?? "";
+        document.querySelector("#edit_data_patient_phone").value =
+            data.phone ?? "";
+        document.querySelector("#edit_data_patient_email").value =
+            data.email ?? "";
+        document.querySelector("#edit_data_patient_address").value =
+            data.address ?? "";
+        document.querySelector("#edit_data_patient_is_active").checked =
+            data.is_active == 1;
         BloodGroupSelectInstance.setValue(data.blood_group ?? "");
         BloodRhesusSelectInstance.setValue(data.blood_rhesus ?? "");
         document.querySelector(FormEditSelector).dataset.id = data.public_id;

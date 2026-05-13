@@ -5,10 +5,12 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
     GlobalAdvanceTomselect,
 } from "../../../app";
-import { GlobalRenderTimelineItem } from "../../../utility/ui";
+import {
+    GlobalRenderTimelineItem,
+    DateTimeFormatter,
+} from "../../../utility/ui";
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 import { TableActionHandler } from "./detail/table-action";
 

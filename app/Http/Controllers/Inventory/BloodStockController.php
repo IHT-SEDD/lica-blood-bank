@@ -151,4 +151,10 @@ class BloodStockController extends Controller
             ], 404);
         }
     }
+
+    // ---------- Fungsi untuk export data order ke Excel ----------
+    public function exportExcel(Request $request)
+    {
+        return $this->dataService->exportToExcel($request);
+    }
 }

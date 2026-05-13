@@ -5,8 +5,8 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
 } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterRoleTableInstance; // instance datatable untuk global

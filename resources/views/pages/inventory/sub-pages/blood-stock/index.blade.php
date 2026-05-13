@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="row py-4">
+<div class="row mt-2">
   {{-- Title :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
@@ -26,6 +26,12 @@
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
+          {{-- Export to excel --}}
+          <button class="btn btn-sm btn-soft-secondary" id="excel_blood_stock_btn">
+            <i class="ti ti-file-type-xls fs-lg align-middle flex-shrink-0 me-2"></i>
+            {{ __('Excel') }}
+          </button>
+
           {{-- Date Range Picker :begin --}}
           <div>
             <div class="input-group">
@@ -49,6 +55,7 @@
           id="blood-stock-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
+              {{-- <th class="fs-sm" style="width: 1%;"></th> --}}
               <th>{{ __('Blood Pack') }}</th>
               <th>{{ __('Quantity') }}</th>
               <th>{{ __('Status') }}</th>
