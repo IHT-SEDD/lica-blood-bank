@@ -50,6 +50,11 @@ Route::middleware('auth')->group(function () {
             Route::patch('{id}/restore', 'restoreOrder')->name('restore');
          });
 
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(HistoryOrderController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel');
+         });
+
          // ---------- Detail group routes ----------
          Route::prefix('detail')->name('detail.')->controller(HistoryOrderController::class)->group(function () {
             Route::get('{id}', 'detailOrderIndex')->name('index'); // Halaman detail order
@@ -90,6 +95,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('{id}', 'deleteDataStockIn')->name('delete-incoming-stock');
             Route::patch('{id}/restore', 'restoreDataStockIn')->name('restore-incoming-stock');
          });
+
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(StockInController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel');
+         });
       });
 
       // --------------------------------------------------------------------------
@@ -121,6 +131,11 @@ Route::middleware('auth')->group(function () {
             Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete');
             Route::patch('data/{id}', 'editBloodStockData')->name('edit');
             Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore');
+         });
+
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(BloodStockController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel');
          });
       });
 

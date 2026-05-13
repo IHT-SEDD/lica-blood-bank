@@ -20,6 +20,7 @@ const DatatableSelector = "#stockin-table"; // id selector datatable
 const DataURL = "/inventory/stock-in/data"; // url fetch data untuk datatable
 const GetDataURL = "/inventory/stock-in/data/get"; // url fetch data
 const ReloadDatatableSelector = "stock-in-reload"; // index reload datatable
+const ExportExcelURL = "/inventory/stock-in/export/excel";
 
 // See More Action
 const ActionSeeSelector = ".btn-see-stock-in"; // class selector button see
@@ -397,6 +398,72 @@ function SeeMoreDataAction() {
 }
 // ---------- Handle see more :end ----------
 
+// ---------- Handle tombol export excel :begin ----------
+function ExportToExcel() {
+    const btn = document.getElementById("excel_incoming_btn");
+    if (!btn) return;
+
+    btn.addEventListener("click", async function () {
+        const filters = getFilters();
+
+        const params = new URLSearchParams();
+        if (filters.start_date) params.append("start_date", filters.start_date);
+        if (filters.end_date) params.append("end_date", filters.end_date);
+        if (filters.vendor) params.append("vendor", filters.vendor);
+        if (filters.status) params.append("status", filters.status);
+
+        const url = ExportExcelURL + `?${params.toString()}`;
+
+        try {
+            const response = await fetch(url);
+
+            // ---------- Cek content-type response ----------
+            const contentType = response.headers.get("Content-Type") || "";
+            const isJson = contentType.includes("application/json");
+
+            // ---------- Jika response error atau balik JSON (bukan file) ----------
+            if (!response.ok || isJson) {
+                const result = await response.json();
+                notyf.error({
+                    message: result.message || "Failed to export data!",
+                });
+                return;
+            }
+
+            // ---------- Jika sukses, trigger download dari blob ----------
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = blobUrl;
+            const today = new Date();
+            const formattedDate =
+                today.getFullYear() +
+                String(today.getMonth() + 1).padStart(2, "0") +
+                String(today.getDate()).padStart(2, "0");
+
+            link.setAttribute(
+                "download",
+                `Incoming Stock - ${formattedDate}.xlsx`,
+            );
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            URL.revokeObjectURL(blobUrl);
+
+            notyf.success({
+                message: "Data exported successfully!",
+            });
+        } catch (error) {
+            console.error(error);
+            notyf.error({
+                message: "Failed to export data!",
+            });
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     StockInTable();
@@ -412,6 +479,7 @@ document.addEventListener("DOMContentLoaded", function () {
     DeleteDataStockInActionModal();
     RestoreDataStockInActionModal();
     SeeMoreDataAction();
+    ExportToExcel();
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {

@@ -26,6 +26,12 @@
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
+          {{-- Export to excel --}}
+          <button class="btn btn-sm btn-soft-secondary" id="excel_blood_stock_btn">
+            <i class="ti ti-file-type-xls fs-lg align-middle flex-shrink-0 me-2"></i>
+            {{ __('Excel') }}
+          </button>
+
           {{-- Date Range Picker :begin --}}
           <div>
             <div class="input-group">

@@ -127,4 +127,10 @@ class StockInController extends Controller
             $this->dataService->selectPO($request)
         );
     }
+
+    // ---------- Fungsi untuk export data order ke Excel ----------
+    public function exportExcel(Request $request)
+    {
+        return $this->dataService->exportToExcel($request);
+    }
 }
