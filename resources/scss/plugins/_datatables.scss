@@ -8,20 +8,20 @@ div.dt-container {
     div.dt-length select {
         width: auto;
         display: inline-block;
-        margin-right: .5em;
+        margin-right: 0.5em;
     }
 
     div.dt-search {
         text-align: right;
 
         input {
-            margin-left: .5em;
+            margin-left: 0.5em;
             display: inline-block;
             width: auto;
         }
     }
 
-    div.dt-layout-table>div {
+    div.dt-layout-table > div {
         display: block !important;
     }
 
@@ -33,17 +33,17 @@ div.dt-container {
 .dt-paging {
     .pagination {
         margin-bottom: 0;
-        padding-top: calc(var(--#{$prefix}card-spacer-y) - .625rem);
+        padding-top: calc(var(--#{$prefix}card-spacer-y) - 0.625rem);
     }
 }
 
 .dt-info {
-    padding-top: calc(var(--#{$prefix}card-spacer-y) - .625rem);
+    padding-top: calc(var(--#{$prefix}card-spacer-y) - 0.625rem);
 }
 
 table.dataTable {
-    >tbody {
-        >tr {
+    > tbody {
+        > tr {
             .child span.dtr-title {
                 font-weight: $font-weight-semibold;
             }
@@ -97,10 +97,17 @@ table.dataTable {
     }
 
     tbody {
+        > tr {
+            transition: background-color 0.2s ease-in-out;
 
-        >tr.selected,
-        >tr>.selected {
-            background-color: rgba(var(--#{$prefix}warning-rgb), 0.075);
+            &:hover > * {
+                background-color: var(--#{$prefix}info-bg-subtle) !important;
+            }
+        }
+
+        > tr.selected,
+        > tr > .selected {
+            background-color: var(--#{$prefix}info-bg-subtle);
             color: inherit;
         }
     }
@@ -108,7 +115,7 @@ table.dataTable {
 
 // Select Info
 .select-info {
-    background-color: var(--#{$prefix}warning-bg-subtle);
+    background-color: var(--#{$prefix}info-bg-subtle);
     padding: 3px 6px;
     border-radius: 3px;
     font-weight: $font-weight-semibold;
@@ -203,7 +210,6 @@ table.dataTable.fixedHeader-locked {
 }
 
 @media screen and (max-width: 767px) {
-
     div.dt-container div.dt-length,
     div.dt-container div.dt-search,
     div.dt-container div.dt-info,
