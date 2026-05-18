@@ -5,7 +5,6 @@ window.showPageLoading = function () {
     const overlay = document.getElementById("fullscreen_loading_overlay");
     if (overlay) overlay.classList.remove("d-none");
 };
-
 window.hidePageLoading = function () {
     const overlay = document.getElementById("fullscreen_loading_overlay");
     if (overlay) overlay.classList.add("d-none");
@@ -38,7 +37,6 @@ window.notyf = new Notyf({
 export class TextFormatter {
     static format(text, format = "underscoreReplace") {
         if (!text) return "-";
-
         switch (format) {
             case "underscoreReplace":
                 return this.underscoreReplace(text);
@@ -65,27 +63,22 @@ export class TextFormatter {
                 return text;
         }
     }
-
     static underscoreReplace(text) {
         return text
             .replaceAll("_", " ")
             .replace(/\b\w/g, (c) => c.toUpperCase());
     }
-
     static capitalize(text) {
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
-
     static titleCase(text) {
         return text.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
     }
-
     static slugToTitle(text) {
         return text
             .replaceAll("-", " ")
             .replace(/\b\w/g, (c) => c.toUpperCase());
     }
-
     static camelToTitle(text) {
         return text
             .replace(/([A-Z])/g, " $1")
@@ -103,7 +96,6 @@ export function setHidden(id, hidden) {
 // ---------- Helper: Timestamp Formatter ----------
 export function TimestampFormatter(isoString, locale) {
     if (!isoString) return "-";
-
     const date = new Date(isoString);
     const options = {
         day: "2-digit",
@@ -113,7 +105,6 @@ export function TimestampFormatter(isoString, locale) {
         minute: "2-digit",
         hour12: true,
     };
-
     return date.toLocaleString(locale, options);
 }
 
@@ -248,5 +239,134 @@ export class GlobalRenderTimelineItem {
     _disposeTooltips() {
         this._tooltipInstances.forEach((t) => t.dispose?.());
         this._tooltipInstances = [];
+    }
+}
+
+// ------------------------------ Dynamic Datetime Formatter Config ------------------------------
+export class DateTimeFormatter {
+    static format(date, format = "d M Y H:i") {
+        if (!date) return "-";
+        const d = new Date(date);
+        const hours24 = d.getHours();
+        const hours12 = hours24 % 12 || 12;
+        const ampm = hours24 >= 12 ? "PM" : "AM";
+        const map = {
+            // Date
+            d: String(d.getDate()).padStart(2, "0"),
+            D: DateTimeFormatter.getWeekdayShort(d.getDay()),
+            l: DateTimeFormatter.getWeekdayLong(d.getDay()),
+
+            // Month
+            m: String(d.getMonth() + 1).padStart(2, "0"),
+            M: DateTimeFormatter.getMonthShort(d.getMonth()),
+            F: DateTimeFormatter.getMonthLong(d.getMonth()),
+
+            // Year
+            Y: d.getFullYear(),
+            y: String(d.getFullYear()).slice(-2),
+
+            // 24h time
+            H: String(hours24).padStart(2, "0"),
+            G: String(hours24), // no leading zero
+
+            // 12h time
+            h: String(hours12).padStart(2, "0"),
+            g: String(hours12), // no leading zero
+
+            // Minutes & seconds
+            i: String(d.getMinutes()).padStart(2, "0"),
+            s: String(d.getSeconds()).padStart(2, "0"),
+
+            // AM/PM
+            A: ampm,
+            a: ampm.toLowerCase(),
+        };
+        return format.replace(
+            /d|D|l|m|M|F|Y|y|H|G|h|g|i|s|A|a/g,
+            (match) => map[match],
+        );
+    }
+
+    // ========================
+    // PRESET HELPERS
+    // ========================
+    static human(date) {
+        return this.format(date, "d M Y H:i");
+    }
+    static fullDate(date) {
+        return this.format(date, "l, d F Y H:i");
+    }
+    static dateOnly(date) {
+        return this.format(date, "d M Y");
+    }
+    static time24(date) {
+        return this.format(date, "H:i");
+    }
+    static time12(date) {
+        return this.format(date, "h:i A");
+    }
+    static datetime12(date) {
+        return this.format(date, "d M Y h:i A");
+    }
+    static datetime24(date) {
+        return this.format(date, "d M Y H:i");
+    }
+
+    // ========================
+    // MONTHS
+    // ========================
+    static getMonthShort(index) {
+        const months = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec",
+        ];
+        return months[index];
+    }
+    static getMonthLong(index) {
+        const months = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ];
+        return months[index];
+    }
+
+    // ========================
+    // WEEKDAYS
+    // ========================
+    static getWeekdayShort(index) {
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        return days[index];
+    }
+    static getWeekdayLong(index) {
+        const days = [
+            "Sunday",
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+        ];
+        return days[index];
     }
 }

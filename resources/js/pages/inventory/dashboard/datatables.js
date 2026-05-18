@@ -1,4 +1,5 @@
-import { GlobalAdvanceDatatable, DateTimeFormatter } from "../../../app";
+import { GlobalAdvanceDatatable } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let listStockTableInstance;

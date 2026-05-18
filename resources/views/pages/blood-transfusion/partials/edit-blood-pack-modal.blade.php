@@ -7,8 +7,6 @@
                 <table class="table table-sm table-hover mt-2" id="edit-blood-pack-available-table">
                     <thead>
                         <tr>
-                            <th>{{ __('Blood Group') }}</th>
-                            <th>{{ __('Rhesus') }}</th>
                             <th>{{ __('Component') }}</th>
                             <th class="text-end">{{ __('Action') }}</th>
                         </tr>
@@ -25,8 +23,6 @@
                 <table class="table table-hover" id="edit-blood-pack-selected-table">
                     <thead>
                         <tr>
-                            <th>{{ __('Blood Group') }}</th>
-                            <th>{{ __('Rhesus') }}</th>
                             <th>{{ __('Component') }}</th>
                             <th class="text-end">{{ __('Action') }}</th>
                         </tr>

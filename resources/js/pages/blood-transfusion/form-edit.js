@@ -330,11 +330,9 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedEditBloodPacks.forEach((pack, index) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td>${pack.group || "-"}</td>
-                <td class="text-center">${pack.rhesus || "-"}</td>
-                <td class="text-center">${pack.component || "-"}</td>
+                <td class="text-start">${pack.component_text || "-"} (${pack.component_id || "-"})</td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-danger remove-edit-blood-pack" type="button" data-index="${index}">
+                    <button class="btn btn-sm btn-danger remove-edit-blood-component" type="button" data-index="${index}">
                         <i class="ti ti-trash"></i>
                     </button>
                 </td>
@@ -361,15 +359,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     `/blood-transfusion/${currentEditTransfusionId}/bag-requests`,
                 );
                 const result = await response.json();
+
                 if (result.data && result.data.length > 0) {
                     selectedEditBloodPacks = result.data
                         .map((row) => ({
-                            publicId: row.blood_pack_public_id,
-                            group: row.blood_group,
-                            rhesus: row.blood_rhesus,
-                            component: row.blood_component,
+                            component_id: row.component_id,
+                            component_text: row.component_text,
                         }))
-                        .filter((p) => p.publicId);
+                        .filter((p) => p.component_id);
                 }
             } catch (e) {
                 console.warn("Could not load existing blood packs:", e);
@@ -383,20 +380,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Delegate click: select blood pack from left table
     document.addEventListener("click", function (e) {
-        const btn = e.target.closest(".select-edit-blood-pack");
+        const btn = e.target.closest(".select-edit-blood-component");
         if (btn) {
             const pack = {
-                publicId: btn.dataset.publicId,
-                group: btn.dataset.group,
-                rhesus: btn.dataset.rhesus,
-                component: btn.dataset.component,
+                component_id: btn.dataset.id,
+                component_text: btn.dataset.text,
             };
             selectedEditBloodPacks.push(pack);
             renderEditSelectedTable();
             notyf.success({ message: "Blood pack added!" });
         }
 
-        const removeBtn = e.target.closest(".remove-edit-blood-pack");
+        const removeBtn = e.target.closest(".remove-edit-blood-component");
         if (removeBtn) {
             const index = parseInt(removeBtn.dataset.index, 10);
             selectedEditBloodPacks.splice(index, 1);
@@ -433,7 +428,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         },
                         body: JSON.stringify({
                             blood_packs: selectedEditBloodPacks.map(
-                                (p) => p.publicId,
+                                (p) => p.component_id,
                             ),
                         }),
                     },

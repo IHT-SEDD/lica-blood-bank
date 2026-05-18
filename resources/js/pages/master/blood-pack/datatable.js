@@ -5,9 +5,10 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
+    GlobalAdvanceTomselect,
 } from "../../../app";
 import TomSelect from "tom-select";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterBloodPackTableInstance; // instance datatable untuk global
@@ -138,23 +139,28 @@ function MasterBloodPackTable() {
             title: "Action",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
-
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
                 data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button id="edit-data-${row.public_id}" class="dropdown-item btn-edit-blood-pack" data-edit-id="${row.public_id}" type="button">
-                            Edit</button>
+                            <button id="edit-data-${row.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-pack" data-edit-id="${row.public_id}" type="button">
+                            <i class="ti ti-pencil align-middle me-1 fs-4"></i>
+                            Edit
+                            </button>
                         </li>
                         <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-blood-pack ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
-                            Restore</button>
+                            <i class="ti ti-recycle align-middle me-1 fs-4"></i>
+                            Restore
+                            </button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-blood-pack ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
-                            Delete</button>
+                            <i class="ti ti-trash align-middle me-1 fs-4"></i>
+                            Delete
+                            </button>
                         </li>
                     </ul>
                 `;
@@ -195,10 +201,8 @@ function MasterBloodPackTable() {
 
 // ---------- Filter dari tom-select untuk data di tabel :begin ----------
 function FilterGroup() {
-    const filterGroup = new TomSelect("#filter-blood-group", {
+    new GlobalAdvanceTomselect("#filter-blood-group", {
         valueField: "text",
-        labelField: "text",
-        searchField: "text",
         preload: true,
         load: function (query, callback) {
             fetch(`/utility/select/blood-group?q=${encodeURIComponent(query)}`)
@@ -206,16 +210,14 @@ function FilterGroup() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: reloadTable,
+        noResultsText: "Blood group not found",
     });
-
-    filterGroup.on("change", reloadTable);
 }
 
 function FilterComponent() {
-    const filterComponent = new TomSelect("#filter-component", {
+    new GlobalAdvanceTomselect("#filter-component", {
         valueField: "id",
-        labelField: "text",
-        searchField: "text",
         preload: true,
         load: function (query, callback) {
             fetch(
@@ -225,9 +227,9 @@ function FilterComponent() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+        onChange: reloadTable,
+        noResultsText: "Component not found",
     });
-
-    filterComponent.on("change", reloadTable);
 }
 // ---------- Filter dari tom-select untuk data di tabel :end ----------
 

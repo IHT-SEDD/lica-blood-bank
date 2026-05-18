@@ -194,7 +194,6 @@
 @vite([
 'resources/js/pages/blood-transfusion/index.js',
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',
-'resources/js/pages/blood-transfusion/analytic/datatables-helper.js',
 'resources/js/pages/blood-transfusion/form-add.js',
 'resources/js/pages/blood-transfusion/form-edit.js',
 'resources/js/pages/form-wizard.js'
