@@ -8,6 +8,8 @@ import {
     listBagRequestTableInstance,
     DatatableListTest,
     listTestTableInstance,
+    completeTest,
+    updateDoneButtonState,
 } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
 
@@ -24,6 +26,8 @@ function DateRangeFilter() {
     $(document)
         .off("change", DateFilterSelector)
         .on("change", DateFilterSelector, function () {
+            console.log(123);
+
             if (
                 listRequestTableInstance &&
                 $.fn.DataTable.isDataTable("#list-request-table")
@@ -71,6 +75,8 @@ export function updatePatientDetailUI(data) {
 
     // Update list bag request table
     window.currentTransfusionPublicId = data.public_id;
+    window.currentBagDetailPublicId = null; // Reset bag filter when switching transfusion
+    window.currentBagTransfusionResult = null;
     if (
         listBagRequestTableInstance &&
         $.fn.DataTable.isDataTable("#list-bag-request-table")
@@ -78,7 +84,7 @@ export function updatePatientDetailUI(data) {
         $("#list-bag-request-table").DataTable().ajax.reload(null, false);
     }
 
-    // Update list test table
+    // Reset test table (requires bag row click to load)
     if (
         listTestTableInstance &&
         $.fn.DataTable.isDataTable("#list-test-table")
@@ -99,14 +105,62 @@ function initPatientDetail() {
         });
 }
 
+// ---------- Menampilkan test list dari row bag request yang diklik :begin ----------
+function initBagRequestRowClick() {
+    $(document)
+        .off("click", "#list-bag-request-table tbody tr")
+        .on("click", "#list-bag-request-table tbody tr", function (e) {
+            // Ignore clicks on interactive elements (dropdowns, selects, buttons)
+            if (
+                $(e.target).closest(".dropdown, select, button, .ts-wrapper")
+                    .length > 0
+            )
+                return;
+            if (!listBagRequestTableInstance) return;
+
+            const data = listBagRequestTableInstance.getRowData(this);
+            if (!data || !data.public_id) return;
+
+            // Block test list for rows with "Not Available Stock"
+            if (!data.has_available_stock) {
+                notyf.error({
+                    message:
+                        "Cannot show test list: stock is not available for this bag.",
+                });
+                return;
+            }
+
+            // Highlight selected row
+            $("#list-bag-request-table tbody tr").removeClass("table-active");
+            $(this).addClass("table-active");
+
+            // Set the detail filter and reload test table
+            window.currentBagDetailPublicId = data.public_id;
+            window.currentBagTransfusionResult =
+                data.transfusion_result || null;
+
+            if (
+                listTestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-test-table")
+            ) {
+                $("#list-test-table").DataTable().ajax.reload(null, false);
+            }
+        });
+}
+// ---------- Menampilkan test list dari row bag request yang diklik :end ----------
+
 // ---------- Handle Check In Lab Number :begin ----------
 function CheckInLabNumber() {
     const btnCheckin = document.getElementById("btn-checkin-lab");
     if (!btnCheckin) return;
 
-    btnCheckin.addEventListener("click", async function () {
+    const newBtn = btnCheckin.cloneNode(true);
+    btnCheckin.parentNode.replaceChild(newBtn, btnCheckin);
+
+    newBtn.addEventListener("click", async function () {
         const id = this.dataset.id;
         if (!id) return;
+        console.log("clicked");
 
         // Prevent multiple clicks
         const originalText = this.innerHTML;
@@ -140,7 +194,12 @@ function CheckInLabNumber() {
                 this.classList.add("d-none");
 
                 // Reload datatable to reflect new lab number
-                window.dispatchEvent(new Event("#list-request-table"));
+                if (
+                    listRequestTableInstance &&
+                    $.fn.DataTable.isDataTable("#list-request-table")
+                ) {
+                    listRequestTableInstance.instance.ajax.reload(null, false);
+                }
             }
         } catch (error) {
             console.error(error);
@@ -162,5 +221,24 @@ document.addEventListener("DOMContentLoaded", function () {
     DatatableListBagRequest();
     DatatableListTest();
     initPatientDetail();
+    initBagRequestRowClick();
     CheckInLabNumber();
+    initDoneButton();
 });
+
+// ---------- Handle Done Button :begin ----------
+function initDoneButton() {
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+
+    // Initially disabled
+    newBtn.disabled = true;
+
+    newBtn.addEventListener("click", function () {
+        completeTest();
+    });
+}
+// ---------- Handle Done Button :end ----------

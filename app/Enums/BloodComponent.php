@@ -30,4 +30,17 @@ enum BloodComponent: string
             'text' => $item->label(),
         ], self::cases());
     }
+
+    public static function getById(string $value): ?string
+    {
+        return match ($value) {
+            self::WB->value => 'Whole Blood',
+            self::PRC->value => 'Packed Red Cells',
+            self::TC->value => 'Trombocyte Concentrate',
+            self::FFP->value => 'Fresh Frozen Plasma',
+            self::CRYO->value => 'Cryoprecipitate',
+            self::WRC->value => 'Washed Red Cells',
+            default => null,
+        };
+    }
 }

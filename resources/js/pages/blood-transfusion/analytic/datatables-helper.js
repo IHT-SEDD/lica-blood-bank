@@ -14,6 +14,7 @@ const TABLE = {
 export let listRequestTableInstance;
 export let listBagRequestTableInstance;
 export let listTestTableInstance;
+export let availableBloodComponentsInstance;
 
 // ------------------------------------------------------------------
 // HELPERS
@@ -135,6 +136,17 @@ export function DatatableRequestBlood() {
                 `,
             },
         ],
+        useHideColumn: true,
+        columnDefs: [
+            {
+                targets: -1,
+                responsivePriority: 1,
+            },
+            {
+                targets: 0,
+                responsivePriority: 2,
+            },
+        ],
     });
 }
 
@@ -179,20 +191,43 @@ export function DatatableListBagRequest() {
                         )
                         .join("");
                     return `
-                            <select class="select-bag-number"
+                            <select class="select-bag-number" placeholder="Choose Bag Number"
                                 data-id="${row.public_id}">
-                                <option value="">Choose Bag Number</option>
                                 ${options}
                             </select>
                         `;
                 },
             },
-            { data: "blood_group" },
-            { data: "blood_rhesus" },
-            { data: "blood_component" },
+            {
+                data: "blood_group",
+                render: function (_, __, row) {
+                    return `
+                        <span class="text-danger fw-semibold">${row.blood_group}</span>
+                        <span class="text-danger fw-semibold">${row.blood_rhesus}</span>
+                        <span class="text-danger fw-semibold">${row.blood_component}</span>
+                    `;
+                },
+            },
+            {
+                data: "transfusion_result",
+                render: function (_, __, row) {
+                    return renderTransfusionResult(row.transfusion_result);
+                },
+            },
         ],
         drawCallback: () => initTomSelect(".select-bag-number"),
     });
+}
+
+function renderTransfusionResult(result) {
+    switch (result) {
+        case "Compatible":
+            return `<span class="badge badge-pill bg-success">Compatible</span>`;
+        case "Incompatible":
+            return `<span class="badge badge-pill bg-danger">Incompatible</span>`;
+        default:
+            return `<span class="badge badge-pill bg-secondary">Not Result Yet</span>`;
+    }
 }
 
 // ------------------------------------------------------------------
@@ -208,9 +243,15 @@ export function DatatableListTest() {
         removePageInfo: true,
         removePagination: true,
         ajax: (data, callback) => {
-            if (!window.currentTransfusionPublicId) {
+            if (
+                !window.currentTransfusionPublicId ||
+                !window.currentBagDetailPublicId
+            ) {
                 return callback(emptyCallback(data.draw));
             }
+
+            data.detail_id = window.currentBagDetailPublicId;
+
             $.get(
                 `${BASE_URL}/${window.currentTransfusionPublicId}/tests`,
                 data,
@@ -222,59 +263,92 @@ export function DatatableListTest() {
                 .fail(() => callback(emptyCallback(data.draw)));
         },
         columns: [
+            { data: "bag_number" },
             { data: "test_name" },
             {
-                data: null,
+                data: "result_value",
                 render: (_, __, row) => {
                     if (!row.detail_test_public_id) return "-";
+
+                    // Tambahkan opsi kosong/default di awal agar tidak langsung terpilih otomatis oleh browser
+                    let optionsHtml = `<option value="" disabled ${row.result_value === null ? "selected" : ""}>Choose Result</option>`;
+
                     const options = resultOptions
-                        .map(
-                            (opt) => `
-                                <option value="${opt.id}"
-                                    ${row.result_value === opt.id ? "selected" : ""}>
-                                    ${opt.text}
-                                </option>
-                            `,
-                        )
+                        .map((opt) => {
+                            // CEK: Apakah ID opsi ini sama dengan nilai yang ada di database?
+                            const isSelected =
+                                String(opt.id) === String(row.result_value)
+                                    ? "selected"
+                                    : "";
+
+                            return `
+                <option value="${opt.id}" ${isSelected}>
+                    ${opt.text}
+                </option>
+            `;
+                        })
                         .join("");
+
                     return `
-                        <select class="select-test-result"
-                            data-id="${row.detail_test_public_id}">
-                            <option value="">Choose Result</option>
-                            ${options}
-                        </select>
-                    `;
+            <select class="select-test-result" data-id="${row.detail_test_public_id}">
+                ${optionsHtml}
+                ${options}
+            </select>
+        `;
                 },
             },
             {
                 data: "verified",
                 className: "text-center",
-                render: (data, _, row) => `
-                    <input type="checkbox"
-                        class="checkbox-update"
-                        data-field="verified"
-                        data-id="${row.detail_test_public_id}"
-                        ${data ? "checked" : ""}>
-                `,
+                render: (data, _, row) => {
+                    // 1. Tentukan apakah checkbox harus dicentang
+                    const isChecked = data ? "checked" : "";
+                    console.log(data);
+
+                    // 2. Tentukan apakah checkbox harus dikunci (disabled)
+                    // Gunakan row.result_value atau field lain yang menentukan "sudah ada hasil"
+                    const isDisabled =
+                        row.result_value === null ? "disabled" : "";
+
+                    return `
+            <input type="checkbox"
+                class="checkbox-update"
+                data-field="verified"
+                data-id="${row.detail_test_public_id}"
+                ${isChecked}
+                ${isDisabled} 
+                style="${isDisabled ? "cursor: not-allowed;" : ""}">
+        `;
+                },
             },
             {
                 data: "validated",
                 className: "text-center",
-                render: (data, _, row) => `
+                render: (data, _, row) => {
+                    const isChecked = data ? "checked" : "";
+                    const isDisabled = row.verified === false ? "disabled" : "";
+                    return `
                     <input type="checkbox"
                         class="checkbox-update"
                         data-field="validated"
                         data-id="${row.detail_test_public_id}"
-                        ${data ? "checked" : ""}>
-                `,
+                         ${isChecked}
+                        ${isDisabled}
+                        style="${isDisabled ? "cursor: not-allowed;" : ""}">
+                `;
+                },
             },
         ],
-        drawCallback: () => initTomSelect(".select-test-result"),
+        drawCallback: () => {
+            initTomSelect(".select-test-result");
+            // Defer so the DOM is fully rendered before checking button state
+            setTimeout(() => updateDoneButtonState(), 0);
+        },
     });
 }
 
 // ------------------------------------------------------------------
-// BLOOD PACK MODAL DATATABLE
+// BLOOD COMPONENTS MODAL DATATABLE
 // ------------------------------------------------------------------
 export function DatatableBloodPackModal() {
     if (!document.querySelector(TABLE.bloodPack)) return;
@@ -309,19 +383,13 @@ export function DatatableBloodPackModal() {
         },
         columns: [
             {
-                data: "blood_group",
-                title: "Blood Group",
-                className: "all",
-            },
-            {
-                data: "blood_rhesus",
-                title: "Rhesus",
-                className: "all text-center",
-            },
-            {
-                data: "blood_component",
+                data: "text",
                 title: "Component",
-                className: "all text-center",
+                className: "all text-start",
+                width: "100%",
+                render: (data, type, row) => {
+                    return `${row.text} (${row.id})`;
+                },
             },
             {
                 data: null,
@@ -331,20 +399,77 @@ export function DatatableBloodPackModal() {
                 searchable: false,
                 render: (data) => `
                     <button
-                        class="btn btn-sm btn-soft-primary select-edit-blood-pack"
+                        class="btn btn-sm btn-soft-success select-edit-blood-component"
                         type="button"
-                        data-public-id="${data.public_id}"
-                        data-group="${data.blood_group}"
-                        data-rhesus="${data.blood_rhesus}"
-                        data-component="${data.blood_component}"
-                    >
-                        <i class="ti ti-arrow-right"></i>
+                        data-id="${data.id}"
+                        data-text="${data.text}">
+                        <i class="ti ti-plus"></i>
                     </button>
                 `,
             },
         ],
         order: [[0, "asc"]],
     });
+}
+
+// ------------------------------------------------------------------
+// BLOOD COMPONENTS DATATABLE
+// ------------------------------------------------------------------
+export function initAvailableBloodComponentsTable() {
+    const tableSelector = "#available-blood-components-table";
+
+    if ($.fn.DataTable.isDataTable(tableSelector)) {
+        return;
+    }
+
+    availableBloodComponentsInstance = new GlobalAdvanceDatatable(
+        tableSelector,
+        {
+            serverSide: true,
+            removePagination: true,
+            removePageInfo: true,
+            removeSearch: true,
+            useHideColumn: false,
+            scrollY: "350px",
+            scrollCollapse: true,
+            ajax: {
+                url: `${DATATABLE_URL}/blood-pack`,
+                type: "GET",
+                data: function (d) {
+                    d.blood_group = $("#blood_group_filter").val();
+                    d.blood_rhesus = $("#blood_rhesus_filter").val();
+                },
+                dataSrc: "data",
+            },
+            columns: [
+                {
+                    data: "text",
+                    title: "Component",
+                    className: "all text-start",
+                    width: "100%",
+                    render: (data, type, row) => {
+                        return `${row.text} (${row.id})`;
+                    },
+                },
+                {
+                    data: null,
+                    title: "Action",
+                    width: "100%",
+                    orderable: false,
+                    searchable: false,
+                    className: "all text-start",
+                    render: (data) => {
+                        return `<button class="btn btn-sm btn-soft-success select-blood-component" type="button"
+                        data-id="${data.id}"
+                        data-text="${data.text}">
+                        <i class="ti ti-plus"></i>
+                    </button>`;
+                    },
+                },
+            ],
+            order: [[0, "asc"]],
+        },
+    );
 }
 
 // ------------------------------------------------------------------
@@ -370,6 +495,24 @@ document.addEventListener("change", async function (e) {
             },
             "Result updated!",
         );
+
+        // Cari checkbox yang berada di baris yang sama berdasarkan data-id
+        const targetCheckbox = $(
+            `.checkbox-update[data-id="${e.target.dataset.id}"]`,
+        );
+
+        if (e.target.value === "" || e.target.value === null) {
+            targetCheckbox.prop("checked", false);
+            targetCheckbox.prop("disabled", true);
+            targetCheckbox.css("cursor", "not-allowed");
+        } else {
+            targetCheckbox.prop("checked", false);
+            targetCheckbox.prop("disabled", false);
+            targetCheckbox.css("cursor", "pointer");
+        }
+
+        // Update Done button state after result change
+        updateDoneButtonState();
     }
     // Update Verified / Validated
     if (e.target.matches(".checkbox-update")) {
@@ -381,5 +524,147 @@ document.addEventListener("change", async function (e) {
             },
             "Status updated!",
         );
+
+        if (e.target.dataset.field === "verified") {
+            const targetCheckbox = $(
+                `.checkbox-update[data-id="${e.target.dataset.id}"][data-field="validated"]`,
+            );
+
+            targetCheckbox.prop("disabled", !e.target.checked);
+            targetCheckbox.css("cursor", "pointer");
+        }
+
+        // Update Done button state after checkbox change
+        updateDoneButtonState();
     }
 });
+
+// ------------------------------------------------------------------
+// DONE BUTTON (Complete Test)
+// ------------------------------------------------------------------
+export function updateDoneButtonState() {
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    // If no bag selected or already completed, disable
+    if (!window.currentBagDetailPublicId) {
+        btn.disabled = true;
+        return;
+    }
+
+    // If this bag already has a transfusion result, keep Done disabled
+    if (window.currentBagTransfusionResult) {
+        btn.disabled = true;
+        return;
+    }
+
+    // Check all visible test rows in the table
+    const table = document.querySelector(TABLE.test);
+    if (!table) {
+        btn.disabled = true;
+        return;
+    }
+
+    const rows = table.querySelectorAll("tbody tr");
+    if (rows.length === 0) {
+        btn.disabled = true;
+        return;
+    }
+
+    let allComplete = true;
+
+    rows.forEach((row) => {
+        // Check result select — must have a non-empty value
+        const resultSelect = row.querySelector(".select-test-result");
+        if (!resultSelect || !resultSelect.value) {
+            allComplete = false;
+            return;
+        }
+
+        // Check verified checkbox
+        const verifiedCb = row.querySelector(
+            '.checkbox-update[data-field="verified"]',
+        );
+        if (!verifiedCb || !verifiedCb.checked) {
+            allComplete = false;
+            return;
+        }
+
+        // Check validated checkbox
+        const validatedCb = row.querySelector(
+            '.checkbox-update[data-field="validated"]',
+        );
+        if (!validatedCb || !validatedCb.checked) {
+            allComplete = false;
+            return;
+        }
+    });
+
+    btn.disabled = !allComplete;
+}
+
+export async function completeTest() {
+    const detailPublicId = window.currentBagDetailPublicId;
+    if (!detailPublicId) {
+        notyf.error({ message: "Please select a bag first." });
+        return;
+    }
+
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    // Prevent multiple clicks
+    const originalText = btn.innerHTML;
+    btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(
+            `${BASE_URL}/test/${detailPublicId}/complete`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken(),
+                },
+            },
+        );
+
+        const res = await response.json();
+
+        if (!response.ok) {
+            throw new Error(res.message);
+        }
+
+        notyf.success({ message: res.message });
+
+        // Mark bag as completed so Done button stays disabled
+        window.currentBagTransfusionResult = res.transfusion_result;
+
+        // Disable Done button after success
+        btn.disabled = true;
+        btn.innerHTML = originalText;
+
+        // Reload test table
+        if (
+            listTestTableInstance &&
+            $.fn.DataTable.isDataTable(TABLE.test)
+        ) {
+            $(TABLE.test).DataTable().ajax.reload(null, false);
+        }
+
+        // Reload bag request table to reflect updated transfusion_result badge
+        if (
+            listBagRequestTableInstance &&
+            $.fn.DataTable.isDataTable(TABLE.bagRequest)
+        ) {
+            $(TABLE.bagRequest).DataTable().ajax.reload(null, false);
+        }
+    } catch (error) {
+        console.error(error);
+        notyf.error({ message: error.message || "Failed to complete test." });
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}

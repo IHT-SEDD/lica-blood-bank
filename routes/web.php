@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('test')->name('test.')->group(function () {
             Route::patch('{id}/update-result', 'updateTestResult')->name('update-result');
             Route::patch('{id}/update-verified-validated', 'updateTestVerifiedValidated')->name('update-verified-validated');
+            Route::post('{id}/complete', 'completeTest')->name('complete');
         });
 
         // ---------- CRUD ----------
