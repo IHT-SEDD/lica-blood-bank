@@ -97,6 +97,14 @@ table.dataTable {
     }
 
     tbody {
+        > tr {
+            transition: background-color 0.2s ease-in-out;
+
+            &:hover > * {
+                background-color: var(--#{$prefix}info-bg-subtle) !important;
+            }
+        }
+
         > tr.selected,
         > tr > .selected {
             background-color: var(--#{$prefix}info-bg-subtle);
