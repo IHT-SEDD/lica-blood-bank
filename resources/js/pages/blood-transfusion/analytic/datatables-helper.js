@@ -79,6 +79,7 @@ export function DatatableRequestBlood() {
     listRequestTableInstance = new GlobalAdvanceDatatable(TABLE.request, {
         serverSide: true,
         searchDelay: 1000,
+        rowSelect: true,
         ajax: {
             url: `${DATATABLE_URL}/blood-request`,
             type: "GET",
@@ -160,6 +161,7 @@ export function DatatableListBagRequest() {
         removeSearch: true,
         removePageInfo: true,
         removePagination: true,
+        rowSelect: true,
         ajax: (data, callback) => {
             if (!window.currentTransfusionPublicId) {
                 return callback(emptyCallback(data.draw));
@@ -647,10 +649,7 @@ export async function completeTest() {
         btn.innerHTML = originalText;
 
         // Reload test table
-        if (
-            listTestTableInstance &&
-            $.fn.DataTable.isDataTable(TABLE.test)
-        ) {
+        if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
             $(TABLE.test).DataTable().ajax.reload(null, false);
         }
 
