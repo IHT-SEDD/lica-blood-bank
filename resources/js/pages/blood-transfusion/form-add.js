@@ -4,7 +4,7 @@ import {
     GlobalSubmitForm,
     GlobalFormValidation,
 } from "../../app";
-import { clearSelectedBloodPacks } from "./datatable-blood-pack";
+import { clearSelectedBloodComponents } from "./datatable-blood-pack";
 import {
     initSelectPatient,
     initSelectBloodGroup,
@@ -15,6 +15,7 @@ import {
     initSelectDoctor,
     initSelectBloodPack,
 } from "./form-add/select";
+import { listRequestTableInstance } from "./analytic/datatables-helper";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Form
@@ -298,7 +299,7 @@ function AddNewBloodRequest() {
                 });
             }
 
-            clearSelectedBloodPacks();
+            clearSelectedBloodComponents();
 
             const modalEl = document.getElementById("add_blood_request_modal");
             if (modalEl) {
@@ -306,7 +307,12 @@ function AddNewBloodRequest() {
                 if (modal) modal.hide();
             }
 
-            window.dispatchEvent(new Event("#list-request-table"));
+            if (
+                listRequestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-request-table")
+            ) {
+                listRequestTableInstance.instance.ajax.reload(null, false);
+            }
         },
         onError: (err) => {
             notyf.error({ message: err.message });

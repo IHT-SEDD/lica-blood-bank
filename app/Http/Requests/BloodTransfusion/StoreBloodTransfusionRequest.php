@@ -83,7 +83,7 @@ class StoreBloodTransfusionRequest extends FormRequest
 
             // ---------- Blood Request ----------
             'blood_required_at'    => ['required', 'date'],
-            'selected_blood_packs' => ['required', 'json'],
+            'selected_blood_components' => ['required', 'json'],
         ];
     }
 
@@ -112,16 +112,16 @@ class StoreBloodTransfusionRequest extends FormRequest
             // Blood Request
             'blood_required_at.required' => 'Tanggal kebutuhan darah wajib diisi.',
             'blood_required_at.date'     => 'Format tanggal kebutuhan darah tidak valid.',
-            'selected_blood_packs.required' => 'Minimal satu blood pack harus dipilih.',
-            'selected_blood_packs.json'  => 'Format data blood pack tidak valid.',
+            'selected_blood_components.required' => 'Minimal satu blood component harus dipilih.',
+            'selected_blood_components.json'  => 'Format data blood component tidak valid.',
         ];
     }
 
     /**
-     * Decode selected_blood_packs JSON into an array after validation passes.
+     * Decode selected_blood_components JSON into an array after validation passes.
      */
-    public function selectedPacks(): array
+    public function selectedComponents(): array
     {
-        return json_decode($this->input('selected_blood_packs', '[]'), true) ?? [];
+        return json_decode($this->input('selected_blood_components', '[]'), true) ?? [];
     }
 }

@@ -29,7 +29,7 @@ class UpdateBloodPacksRequest extends FormRequest
     {
         return [
             'blood_packs'   => 'required|array|min:1',
-            'blood_packs.*' => 'required|string|exists:blood_packs,public_id',
+            'blood_packs.*' => 'required|string',
         ];
     }
 
@@ -44,7 +44,6 @@ class UpdateBloodPacksRequest extends FormRequest
             'blood_packs.min'      => ' harus ada minimal 1 kantong darah',
             'blood_packs.*.required' => 'kantong darah harus diisi',
             'blood_packs.*.string' => 'kantong darah harus berupa string',
-            'blood_packs.*.exists' => 'kantong darah tidak ditemukan',
         ];
     }
 }
