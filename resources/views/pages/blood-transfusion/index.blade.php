@@ -104,7 +104,23 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center justify-content-start gap-2">
           <h5 class="card-title text-capitalize m-0">{{ __('Test List') }}</h5>
-          <button class="btn btn-sm btn-soft-success m-0" id="btn-test-done" data-id="">{{ __('Done') }}</button>
+
+          {{-- Finish blood request button --}}
+          <button class="btn btn-sm btn-soft-success m-0" id="btn-test-done" data-id=""
+            data-bs-title="Finish blood request" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-circle-check fs-4"></i>
+          </button>
+
+          {{-- Release blood pack button --}}
+          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-blood-pack" data-id=""
+            data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-heart-up fs-4"></i>
+          </button>
+          {{-- Don't Release blood pack button --}}
+          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-blood-pack" data-id=""
+            data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-heart-x fs-4"></i>
+          </button>
         </div>
 
         <div class="card-action">
@@ -127,9 +143,18 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center justify-content-start gap-2">
           <h5 class="card-title text-capitalize m-0">{{ __('Bag Request List') }}</h5>
+
+          {{-- Edit blood pack button --}}
           <button class="btn btn-sm btn-soft-primary m-0" id="btn-edit-blood-pack" data-id="" data-bs-toggle="modal"
-            data-bs-target="#edit_blood_pack_modal">
-            <i class="ti ti-pencil"></i>
+            data-bs-target="#edit_blood_pack_modal" data-bs-title="Edit blood pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-pencil fs-4"></i>
+          </button>
+
+          {{-- Release all blood button --}}
+          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-all-blood-pack" data-id=""
+            data-bs-title="Release All Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-heart-share fs-4"></i>
           </button>
         </div>
 
