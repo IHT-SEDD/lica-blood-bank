@@ -4,6 +4,7 @@ namespace App\Services\Inventory\HistoryOrder;
 
 use App\Enums\OrderBloodStatus;
 use App\Enums\OrderLogActivityStatus;
+use App\Exports\Inventory\HistoryOrder\OrderExport;
 use App\Models\BloodPack;
 use App\Models\OrderBlood;
 use App\Models\OrderBloodDetail;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Spatie\Permission\Models\Role;
 
 class HistoryOrderDataService
@@ -193,4 +195,40 @@ class HistoryOrderDataService
     ]);
   }
   // ---------- Fungsi untuk preview PO File (tanpa simpan ke DB & storage) :end ----------
+
+  // ---------- Fungsi untuk export data order ke Excel :begin ----------
+  public function exportToExcel(Request $request)
+  {
+    $fileName = 'History Order - ' . now()->format('Ymd') . '.xlsx';
+    $storagePath = 'history_order/excel_file/' . $fileName;
+
+    // ---------- Ambil semua data (tanpa pagination) ----------
+    $query = OrderBlood::withTrashed()
+      ->with([
+        'vendors:id,public_id,name',
+        'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity',
+        'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+      ]);
+
+    $this->applyDateFilter($query, $request);
+
+    if ($request->filled('vendor')) {
+      $query->whereHas('vendors', function ($q) use ($request) {
+        $q->where('public_id', $request->vendor);
+      });
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    $orders = $query->orderBy('po_number')->get();
+
+    // ---------- Simpan ke storage (timpa jika sudah ada) ----------
+    Excel::store(new OrderExport($orders), $storagePath, 'public');
+
+    // ---------- Download langsung ----------
+    return Excel::download(new OrderExport($orders), $fileName);
+  }
+  // ---------- Fungsi untuk export data order ke Excel :end ----------
 }

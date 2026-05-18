@@ -1,9 +1,6 @@
 // ---------- Import Libraries ----------
-import {
-    GlobalAdvanceDatatable,
-    GlobalAdvanceFlatpickr,
-    DateTimeFormatter,
-} from "../../../app";
+import { GlobalAdvanceDatatable, GlobalAdvanceFlatpickr } from "../../../app";
+import { DateTimeFormatter } from "../../../utility/ui";
 import { TableActionHandler } from "./table-action";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------

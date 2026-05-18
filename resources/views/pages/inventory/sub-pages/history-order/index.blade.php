@@ -8,7 +8,7 @@
 @endsection
 
 @section('content')
-<div class="row py-4">
+<div class="row mt-2">
   {{-- Title & Add New Order :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Title --}}
@@ -31,6 +31,12 @@
 
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
+          {{-- Export to excel --}}
+          <button class="btn btn-sm btn-soft-secondary" id="excel_order_btn">
+            <i class="ti ti-file-type-xls fs-lg align-middle flex-shrink-0 me-2"></i>
+            {{ __('Excel') }}
+          </button>
+
           {{-- Select Status --}}
           <div>
             <select class="form-control form-control-sm tomselect-sm" id="filter-order-status"

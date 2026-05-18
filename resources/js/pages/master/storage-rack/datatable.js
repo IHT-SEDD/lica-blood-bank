@@ -5,10 +5,10 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
     GlobalAdvanceTomselect
 } from "../../../app";
 import TomSelect from "tom-select";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterStorageRackTableInstance; // instance datatable untuk global

@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
 
          // ---------- PO File Group Routes ----------
          Route::prefix('po-file')->name('po-file.')->controller(HistoryOrderController::class)->group(function () {
-            Route::post('generate/{poNumber}', 'generatePoFile')->name('generate'); // Generate PO File
+            Route::post('generate/{poNumber}', 'generatePoFile')->name('generate')->middleware('prevent.bruteforce:50');
             Route::get('preview/{poNumber}', 'previewPoFile')->middleware(['role:superadmin'])->name('preview');
             Route::get('download/{poNumber}', 'downloadPoFile')->name('download');
             Route::get('print/{poNumber}', 'printPoFile')->name('print');
@@ -46,20 +46,25 @@ Route::middleware('auth')->group(function () {
          Route::prefix('data')->name('data.')->controller(HistoryOrderController::class)->group(function () {
             Route::get('/', 'historyOrderTable')->name('table'); // Datatable order
             Route::get('{id}', 'getDataOrderByID')->name('get');
-            Route::delete('{id}', 'deleteOrder')->name('delete');
-            Route::patch('{id}/restore', 'restoreOrder')->name('restore');
+            Route::delete('{id}', 'deleteOrder')->name('delete')->middleware('prevent.bruteforce:100');
+            Route::patch('{id}/restore', 'restoreOrder')->name('restore')->middleware('prevent.bruteforce:100');
+         });
+
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(HistoryOrderController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel');
          });
 
          // ---------- Detail group routes ----------
          Route::prefix('detail')->name('detail.')->controller(HistoryOrderController::class)->group(function () {
             Route::get('{id}', 'detailOrderIndex')->name('index'); // Halaman detail order
             Route::get('data/{id}', 'detailOrderData')->name('data');
-            Route::patch('{id}', 'updateDataOrder')->name('update');
-            Route::post('set-done/{poNumber}', 'setOrderDone')->name('set-done');
+            Route::patch('{id}', 'updateDataOrder')->name('update')->middleware('prevent.bruteforce:100');
+            Route::post('set-done/{poNumber}', 'setOrderDone')->name('set-done')->middleware('prevent.bruteforce:100');
          });
 
          // ---------- CRUD ----------
-         Route::post('new-order', [HistoryOrderController::class, 'insertNewOrder'])->name('insert-new-order'); // Insert data order
+         Route::post('new-order', [HistoryOrderController::class, 'insertNewOrder'])->name('insert-new-order')->middleware('prevent.bruteforce:150');
       });
 
       // --------------------------------------------------------------------------
@@ -86,9 +91,14 @@ Route::middleware('auth')->group(function () {
             Route::get('/get/{id}', 'getData')->name('get-incoming-stock');
             Route::get('/select/po', 'selectPO')->name('select-po');
             Route::get('/select/blood-pack/{poNumber}', 'selectBloodPack')->name('select-blood-pack');
-            Route::post('/new', 'insertNewStockIn')->name('new-incoming-stock');
-            Route::delete('{id}', 'deleteDataStockIn')->name('delete-incoming-stock');
-            Route::patch('{id}/restore', 'restoreDataStockIn')->name('restore-incoming-stock');
+            Route::post('/new', 'insertNewStockIn')->name('new-incoming-stock')->middleware('prevent.bruteforce:50');
+            Route::delete('{id}', 'deleteDataStockIn')->name('delete-incoming-stock')->middleware('prevent.bruteforce:100');
+            Route::patch('{id}/restore', 'restoreDataStockIn')->name('restore-incoming-stock')->middleware('prevent.bruteforce:100');
+         });
+
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(StockInController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel')->middleware('prevent.bruteforce:50');
          });
       });
 
@@ -106,7 +116,7 @@ Route::middleware('auth')->group(function () {
          Route::prefix('data')->name('data.')->controller(BloodStockController::class)->group(function () {
             Route::get('/', 'bloodStockTable')->name('table'); // Datatable
             Route::get('/select/po', 'selectPO')->name('select-po');
-            Route::post('/new', 'insertNewBloodStock')->name('new');
+            Route::post('/new', 'insertNewBloodStock')->name('new')->middleware('prevent.bruteforce:50');
          });
 
          // ---------- Detail group routes ----------
@@ -117,10 +127,15 @@ Route::middleware('auth')->group(function () {
             Route::get('get-data/{id}', 'getDataDetailStockBlood')->name('get-data');
             Route::get('print-barcode-lica/{id}', 'printBarcodeLicaBloodStock')->name('print-barcode-lica');
             Route::get('download-barcode-lica/{id}', 'downloadBarcodeLicaBloodStock')->name('download-barcode-lica');
-            Route::delete('data/{id}', 'deleteBloodStockData')->name('delete');
-            Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete');
-            Route::patch('data/{id}', 'editBloodStockData')->name('edit');
-            Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore');
+            Route::delete('data/{id}', 'deleteBloodStockData')->name('delete')->middleware('prevent.bruteforce:100');
+            Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete')->middleware('prevent.bruteforce:100');
+            Route::patch('data/{id}', 'editBloodStockData')->name('edit')->middleware('prevent.bruteforce:100');
+            Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore')->middleware('prevent.bruteforce:100');
+         });
+
+         // ---------- Export ----------
+         Route::prefix('export')->name('export.')->controller(BloodStockController::class)->group(function () {
+            Route::get('excel', 'exportExcel')->name('excel')->middleware('prevent.bruteforce:100');
          });
       });
 
@@ -136,11 +151,11 @@ Route::middleware('auth')->group(function () {
             Route::get('/', 'destroyBloodTable')->name('table'); // Datatable
             Route::get('get/{id}', 'getDataDestroyBloodById')->name('get');
             Route::get('select/bag-number', 'selectBagNumber')->name('select-bag-number');
-            Route::post('new', 'insertNewBloodDestroy')->name('new');
-            Route::delete('{id}', 'deleteDestroyBloodData')->name('delete');
-            Route::delete('{id}/permanent', 'permanentDeleteDestroyBloodData')->name('permanent-delete');
-            Route::patch('{id}/restore', 'restoreDestroyBloodData')->name('restore');
-            Route::patch('{id}/undestroy', 'unDestroyBloodData')->name('undestroy');
+            Route::post('new', 'insertNewBloodDestroy')->name('new')->middleware('prevent.bruteforce:50');
+            Route::delete('{id}', 'deleteDestroyBloodData')->name('delete')->middleware('prevent.bruteforce:100');
+            Route::delete('{id}/permanent', 'permanentDeleteDestroyBloodData')->name('permanent-delete')->middleware('prevent.bruteforce:100');
+            Route::patch('{id}/restore', 'restoreDestroyBloodData')->name('restore')->middleware('prevent.bruteforce:100');
+            Route::patch('{id}/undestroy', 'unDestroyBloodData')->name('undestroy')->middleware('prevent.bruteforce:100');
          });
 
          // ---------- Detail group routes ----------

@@ -76,10 +76,10 @@ Route::middleware('auth')->group(function () {
         Route::get('{master}', 'index')->where('master', implode('|', array_keys(config('master'))))->name('index');
         Route::get('{master}/data', 'datatable')->where('master', implode('|', array_keys(config('master'))))->name('datatable');
         Route::get('{master}/data/{id}', 'getDataById')->where('master', implode('|', array_keys(config('master'))))->name('get-data');
-        Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data');
-        Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
-        Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
-        Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data');
+        Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data')->middleware('throttle:master');
+        Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data')->middleware('throttle:master');
+        Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data')->middleware('throttle:master');
+        Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data')->middleware('throttle:master');
     });
 
     // --------------------------------------------------------------------------

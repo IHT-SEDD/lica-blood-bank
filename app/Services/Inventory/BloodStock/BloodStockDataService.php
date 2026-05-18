@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory\BloodStock;
 
+use App\Exports\Inventory\BloodStock\BloodStockExport;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BloodStockDataService
 {
@@ -197,6 +199,42 @@ class BloodStockDataService
       return $bloodStockLog;
     });
   }
+
+  // ---------- Fungsi untuk export data ke Excel :begin ----------
+  public function exportToExcel(Request $request)
+  {
+    $fileName = 'Blood Stock - ' . now()->format('Ymd') . '.xlsx';
+    $storagePath = 'blood_stock/excel_file/' . $fileName;
+
+    $query = BloodStock::withTrashed()
+      ->select([
+        'id',
+        'public_id',
+        'bag_number',
+        'blood_pack_id',
+        'blood_volume',
+        'aftap_date',
+        'process_date',
+        'expiry_date',
+        'blood_status',
+        'is_hiv',
+        'is_hcv',
+        'is_hbsag',
+        'is_syphilis',
+        'used_at',
+        'created_at',
+      ])
+      ->with(['bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component']);
+
+    $bloodStocks = $query->orderBy('created_at')->get();
+
+    // ---------- Simpan ke storage (timpa jika sudah ada) ----------
+    Excel::store(new BloodStockExport($bloodStocks), $storagePath, 'public');
+
+    // ---------- Download langsung ----------
+    return Excel::download(new BloodStockExport($bloodStocks), $fileName);
+  }
+  // ---------- Fungsi untuk export data ke Excel :end ----------
 
   // ---------- Clear Cache ----------
   public function clearBloodStockCache(string $id)
