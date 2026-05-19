@@ -15,8 +15,8 @@
         "laravel/framework": "^12.0",
         "laravel/telescope": "^5.20",
         "laravel/tinker": "^2.10.1",
-        "maatwebsite/excel": "^1.1",
-        "phpoffice/phpspreadsheet": "^5.7",
+        "maatwebsite/excel": "3.1.67",
+        "picqer/php-barcode-generator": "^3.2",
         "spatie/laravel-permission": "^7.3",
         "yajra/laravel-datatables-oracle": "^12.7"
     },

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BloodComponent;
 use App\Enums\BloodGroup;
+use App\Enums\BloodStockStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -52,6 +53,42 @@ class BloodStock extends Model
             if (empty($bloodStock->public_id)) {
                 $bloodStock->public_id = (string) Str::uuid();
             }
+        });
+
+        // ---------- Auto check expired setiap kali data diambil :begin ----------
+        static::retrieved(function ($bloodStock) {
+            // Skip jika sudah expired
+            if ($bloodStock->is_expired) return;
+
+            // Cek apakah expiry_date sudah lewat atau hari ini
+            if (!$bloodStock->expiry_date) return;
+
+            $isExpired = now()->startOfDay()->gte(
+                \Illuminate\Support\Carbon::parse($bloodStock->expiry_date)->startOfDay()
+            );
+
+            if (!$isExpired) return;
+
+            // ---------- Update is_expired & blood_status ----------
+            $bloodStock->withoutEvents(function () use ($bloodStock) {
+                $bloodStock->update([
+                    'is_expired' => true,
+                    'blood_status' => BloodStockStatus::EXPIRED,
+                ]);
+            });
+
+            // ---------- Insert ke log ----------
+            BloodStockLogActivity::create([
+                'blood_stock_public_id' => $bloodStock->public_id,
+                'payload' => [
+                    'is_expired' => true,
+                    'blood_status' => BloodStockStatus::EXPIRED,
+                ],
+                'status' => BloodStockStatus::EXPIRED,
+                'description' => 'Blood stock marked as expired automatically.',
+                'created_by_user_name' => 'System',
+                'timestamp' => now(),
+            ]);
         });
     }
 

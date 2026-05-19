@@ -207,4 +207,10 @@ class HistoryOrderController extends Controller
             return response()->json(['message' => 'Failed to restore order!'], 500);
         }
     }
+
+    // ---------- Fungsi untuk export data order ke Excel ----------
+    public function exportExcel(Request $request)
+    {
+        return $this->dataService->exportToExcel($request);
+    }
 }

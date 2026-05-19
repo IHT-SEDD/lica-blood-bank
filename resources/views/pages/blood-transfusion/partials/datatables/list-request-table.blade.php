@@ -1,4 +1,4 @@
-<table class="table table-sm table-hover table-striped dt-responsive align-middle mb-0 list-request-table" id="list-request-table">
+<table class="table table-sm table-hover dt-responsive align-middle mb-0 list-request-table" id="list-request-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>{{ __('Date') }}</th>

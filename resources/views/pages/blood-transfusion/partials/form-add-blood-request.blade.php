@@ -243,16 +243,14 @@
 
                 {{-- Blood Pack Selection --}}
                 <div class="row g-3">
-                    {{-- Available Blood Packs (Left) --}}
+                    {{-- Available Blood Components (Left) --}}
                     <div class="col-lg-6 col-12">
-                        <h5 class="mb-2">{{ __('Available Blood Packs') }}</h5>
+                        <h5 class="mb-2">{{ __('Available Blood Components') }}</h5>
                         <div>
                             <table class="table table-sm table-striped dt-responsive align-middle mb-0"
-                                id="available-blood-pack-table">
+                                id="available-blood-components-table">
                                 <thead class="thead-sm text-uppercase fs-xxs">
                                     <tr>
-                                        <th>{{ __('Blood') }}</th>
-                                        <th>{{ __('Rhesus') }}</th>
                                         <th>{{ __('Component') }}</th>
                                         <th>{{ __('Action') }}</th>
                                     </tr>
@@ -264,14 +262,12 @@
 
                     {{-- Selected Blood Packs (Right) --}}
                     <div class="col-lg-6 col-12">
-                        <h5 class="mb-3">{{ __('Selected Blood Packs') }}</h5>
+                        <h5 class="mb-3">{{ __('Selected Blood Components') }}</h5>
                         <div>
                             <table class="table table-sm table-hover table-striped dt-responsive align-middle mb-0"
                                 id="selected-blood-pack-table">
                                 <thead class="thead-sm text-uppercase fs-xxs">
                                     <tr>
-                                        <th>{{ __('Blood') }}</th>
-                                        <th>{{ __('Rhesus') }}</th>
                                         <th>{{ __('Component') }}</th>
                                         <th>{{ __('Action') }}</th>
                                     </tr>
@@ -282,11 +278,11 @@
                     </div>
                 </div>
 
-                {{-- Hidden Input for Selected Blood Packs --}}
-                <input type="hidden" id="selected-blood-packs" name="selected_blood_packs" value="[]" />
+                {{-- Hidden Input for Selected Blood Components --}}
+                <input type="hidden" id="selected-blood-components" name="selected_blood_components" value="[]" />
                 <div class="d-flex justify-content-between mt-3">
                     <button class="btn btn-secondary" data-wizard-prev="#stepPatient" type="button">← Back</button>
-                    <button class="btn btn-success" type="submit">{{ __('Submit Application') }}</button>
+                    <button class="btn btn-success" type="submit">{{ __('Submit Request') }}</button>
                 </div>
             </div>
         </div>

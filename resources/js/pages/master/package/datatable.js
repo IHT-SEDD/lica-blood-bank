@@ -5,9 +5,9 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
 } from "../../../app";
 import TomSelect from "tom-select";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterPackageTableInstance; // instance datatable untuk global
@@ -80,12 +80,20 @@ function MasterPackageTable() {
         },
         { data: "name", title: "Name" },
         { data: "blood_component", title: "Blood Component" },
-        {data : "package_tests", title:"Test List", render: (data)=>{
-            if(Array.isArray(data) && data.length > 0){
-                return data.map(test => test.test?.name || `Test ${test.test_id}`).join(", ");
-            }
-            return "-";
-        }},
+        {
+            data: "package_tests",
+            title: "Test List",
+            render: (data) => {
+                if (Array.isArray(data) && data.length > 0) {
+                    return data
+                        .map(
+                            (test) => test.test?.name || `Test ${test.test_id}`,
+                        )
+                        .join(", ");
+                }
+                return "-";
+            },
+        },
         { data: "general_code", title: "General Code" },
         {
             data: "created_at",
@@ -184,7 +192,9 @@ function EditBloodComponent() {
             searchField: "text",
             preload: true,
             load: function (query, callback) {
-                fetch(`/utility/select/blood-component?q=${encodeURIComponent(query)}`)
+                fetch(
+                    `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+                )
                     .then((res) => res.json())
                     .then((json) => callback(json.results))
                     .catch(() => callback());
@@ -193,22 +203,19 @@ function EditBloodComponent() {
     );
 }
 function EditTests() {
-    const editTests = new TomSelect(
-        "#edit_data_package_select-tests",
-        {
-            maxItems:null,
-            valueField: "id",
-            labelField: "text",
-            searchField: "text",
-            preload: true,
-            load: function (query, callback) {
-                fetch(`/utility/select/test?q=${encodeURIComponent(query)}`)
-                    .then((res) => res.json())
-                    .then((json) => callback(json.results))
-                    .catch(() => callback());
-            },
+    const editTests = new TomSelect("#edit_data_package_select-tests", {
+        maxItems: null,
+        valueField: "id",
+        labelField: "text",
+        searchField: "text",
+        preload: true,
+        load: function (query, callback) {
+            fetch(`/utility/select/test?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
         },
-    );
+    });
 }
 // ---------- Function ini tomselect blood component :end ----------
 // ---------- Handle modal edit data :begin ----------
@@ -229,32 +236,32 @@ function EditDataPackageActionModal() {
         document.querySelector("#edit_data_package_name").value =
             data.name ?? "";
         // Kondisi untuk tom select
-      
+
         const selectBloodComponent = document.querySelector(
             "#edit_data_package_select-blood-component",
         );
         const selectTests = document.querySelector(
-            "#edit_data_package_select-tests"
+            "#edit_data_package_select-tests",
         );
 
-        if((selectTests)){
+        if (selectTests) {
             selectTests.tomselect.clear();
             selectTests.tomselect.clearOptions();
-                    // load option dulu
-            data.package_tests.forEach(test => {
+            // load option dulu
+            data.package_tests.forEach((test) => {
                 console.log(test.test);
                 selectTests.tomselect.addOption({
                     id: test.test.public_id,
-                    text: test.test?.name || `Test ${test.test.public_id}`
+                    text: test.test?.name || `Test ${test.test.public_id}`,
                 });
             });
             selectTests.tomselect.setValue(
-                    data.package_tests.map(test => test.test.public_id)
-                );
+                data.package_tests.map((test) => test.test.public_id),
+            );
         }
-        if ((selectBloodComponent)) {
+        if (selectBloodComponent) {
             selectBloodComponent.tomselect.clear();
-            
+
             selectBloodComponent.tomselect.setValue(data.blood_component);
         }
 
@@ -440,7 +447,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {
-        
         reloadTable();
     });
 });

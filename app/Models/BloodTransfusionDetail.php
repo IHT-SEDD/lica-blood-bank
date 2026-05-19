@@ -16,7 +16,9 @@ class BloodTransfusionDetail extends Model
         'public_id',
         'blood_transfusion_id',
         'blood_stock_id',
+        'component',
         'blood_pack_id',
+        'transfusion_result',
         'transfusion_text',
         'transfusion_at',
         'deleted_at'
@@ -53,5 +55,10 @@ class BloodTransfusionDetail extends Model
     public function bloodTransfusionDetailTest()
     {
         return $this->hasOne(BloodTransfusionDetailTest::class, 'bt_detail_id');
+    }
+
+    public function bloodTransfusionDetailTests()
+    {
+        return $this->hasMany(BloodTransfusionDetailTest::class, 'bt_detail_id');
     }
 }

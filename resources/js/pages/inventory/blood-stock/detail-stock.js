@@ -5,10 +5,12 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
-    DateTimeFormatter,
     GlobalAdvanceTomselect,
 } from "../../../app";
-import { GlobalRenderTimelineItem } from "../../../utility/ui";
+import {
+    GlobalRenderTimelineItem,
+    DateTimeFormatter,
+} from "../../../utility/ui";
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 import { TableActionHandler } from "./detail/table-action";
 
@@ -234,7 +236,13 @@ function BloodStockDataTable() {
                          Restore
                          </button>
                      </li>
-                     <li>
+                     <li class="${isDeleted ? "" : "d-none"}">
+                         <button id="permanent-delete-data-${row.public_id}" class="dropdown-item fw-medium btn-permanent-delete-stock-blood ${isDeleted ? "enabled text-danger" : "text-muted"}" data-permanent-delete-id="${row.public_id}" type="button">
+                         <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                         Permanent Delete
+                         </button>
+                     </li>
+                     <li class="${isDeleted ? "d-none" : ""}">
                          <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-stock-blood ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
                          <i class="ti ti-trash align-middle me-2 fs-4"></i>
                          Delete

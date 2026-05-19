@@ -3,7 +3,6 @@ import {
     GlobalFormValidation,
     GlobalAdvanceTomselect,
 } from "../../../app";
-import TomSelect from "tom-select";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_blood_stock";

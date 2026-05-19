@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory\StockIn;
 
+use App\Exports\Inventory\StockIn\IncomingExport;
 use App\Models\BloodPack;
 use App\Models\IncomingBlood;
 use App\Models\OrderBlood;
@@ -10,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StockInDataService
 {
@@ -183,6 +185,63 @@ class StockInDataService
       })->values(),
     ];
   }
+
+  // ---------- Fungsi untuk export data ke Excel :begin ----------
+  public function exportToExcel(Request $request)
+  {
+    $fileName = 'Incoming Stock - ' . now()->format('Ymd') . '.xlsx';
+    $storagePath = 'stock_in/excel_file/' . $fileName;
+
+    $query = IncomingBlood::withTrashed()
+      ->select([
+        'id',
+        'public_id',
+        'order_blood_id',
+        'po_number',
+        'batch_number',
+        'status',
+        'created_at',
+        'stock_ready_at',
+        'updated_at',
+        'deleted_at'
+      ])
+      ->with([
+        'receivedBy',
+        'registeredBy',
+        'orderBloods:id,public_id,vendor_id,po_number',
+        'orderBloods.vendors:id,public_id,name',
+        'incomingBloodDetails' => function ($q) {
+          $q->withTrashed()->select('public_id', 'incoming_blood_id', 'blood_pack_id');
+        },
+        'incomingBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
+      ])
+      ->withCount([
+        'incomingBloodDetails as total_blood_data' => function ($q) {
+          $q->withTrashed();
+        }
+      ]);
+
+    $this->applyDateFilter($query, $request);
+
+    if ($request->filled('vendor')) {
+      $query->whereHas('orderBloods.vendors', function ($q) use ($request) {
+        $q->where('public_id', $request->vendor);
+      });
+    }
+
+    if ($request->filled('status')) {
+      $query->where('status', $request->status);
+    }
+
+    $incomings = $query->orderBy('po_number')->get();
+
+    // ---------- Simpan ke storage (timpa jika sudah ada) ----------
+    Excel::store(new IncomingExport($incomings), $storagePath, 'public');
+
+    // ---------- Download langsung ----------
+    return Excel::download(new IncomingExport($incomings), $fileName);
+  }
+  // ---------- Fungsi untuk export data ke Excel :end ----------
 
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data :begin ----------
   protected function applyDateFilter(Builder $query, Request $request)
