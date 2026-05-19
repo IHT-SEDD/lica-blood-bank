@@ -34,6 +34,21 @@ class Storage extends Model
         });
     }
 
+    // Buat peraturan validasi untuk add data model user
+    public static function rules($context = 'store', $id = null)
+    {
+        return match ($context) {
+            'store' => [
+                'name' => 'string|required',
+                'rack_capacity' => 'required',
+            ],
+            'update' => [
+                'name' => 'sometimes|string|required',
+                'rack_capacity' => 'sometimes|required',
+            ]
+        };
+    }
+
     // Relation from storage_racks
     public function storageRacks()
     {

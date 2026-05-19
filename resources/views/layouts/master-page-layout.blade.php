@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'Master User'])
+@extends('layouts.vertical', ['title' => "Master $master"])
 
 @section('styles')
 @vite([
@@ -15,12 +15,12 @@
  </div>
 
  {{-- Datatable :begin --}}
- <div class="col-xxl-8 col-md-6 col-12">
+ <div class="col-12 {{ View::hasSection('form-content') ? 'col-xxl-8 col-md-6' : '' }}">
   {{-- Card Datatable :begin --}}
-  <div class="card">
+  <div class=" card">
    {{-- Card Header :begin --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title text-capitalize mb-0">List Data of {{ $master }}</h5>
+    <h5 class="card-title text-capitalize mb-0">{{ __('List Data of :master', ['master' => $master]) }}</h5>
     @yield('datatable-header')
    </div>
    {{-- Card Header :end --}}
@@ -36,12 +36,13 @@
  {{-- Datatable :end --}}
 
  {{-- Form :begin --}}
+ @if(View::hasSection('form-content'))
  <div class="col-xxl-4 col-md-6 col-12">
   {{-- Card Form :begin --}}
   <div class="card ">
    {{-- Card Header :begin --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title text-capitalize mb-0">Add New Data for {{ $master }}</h5>
+    <h5 class="card-title text-capitalize mb-0">{{ __('Add New Data for :master', ['master' => $master]) }}</h5>
     @yield('form-header')
    </div>
    {{-- Card Header :end --}}
@@ -54,14 +55,17 @@
   </div>
   {{-- Card Form :end --}}
  </div>
+ @endif
  {{-- Form :end --}}
 </div>
+
+@yield('modal-content')
 @endsection
 
 @section('scripts')
 @vite([
-'resources/js/pages/master/' . $master . '/index.js',
-'resources/js/pages/master/' . $master . '/datatable.js'
+'resources/js/pages/master/' . $masterJS . '/index.js',
+'resources/js/pages/master/' . $masterJS . '/datatable.js'
 ])
 @yield('custom-scripts')
 @endsection

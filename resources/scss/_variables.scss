@@ -579,7 +579,7 @@ $container-max-widths: (
 // Set the number of columns and specify the width of the gutters.
 
 $grid-columns: 12;
-$grid-gutter-width: 1.25rem;
+$grid-gutter-width: 1rem;
 $grid-row-columns: 6;
 
 // Container padding
@@ -1736,8 +1736,8 @@ $modal-footer-border-width: $modal-header-border-width;
 
 $modal-sm: 300px;
 $modal-md: 500px;
-$modal-lg: 800px;
-$modal-xl: 1140px;
+$modal-lg: 1000px;
+$modal-xl: 1480px;
 
 $modal-fade-transform: translate(0, -50px);
 $modal-show-transform: none;

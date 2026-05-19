@@ -18,10 +18,10 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-storage-table" id="master-storage-table">
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-storage-table" id="master-storage-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th>No</th>
+      <th>{{ __('No') }}</th>
       <th>Name</th>
       <th>Model</th>
       <th>Serial Number</th>
@@ -29,7 +29,6 @@
       <th>Rack Capacity</th>
       <th>Status</th>
       <th>Created At</th>
-      <th>Updated At</th>
       <th>Deleted At</th>
       <th>Action</th>
     </tr>
@@ -80,7 +79,7 @@
   <div class="col-lg-12">
     <div>
       <div class="form-check form-check-success my-1">
-        <input checked="" class="form-check-input" id="is_active" type="checkbox" />
+        <input checked="" class="form-check-input" id="is_active" type="checkbox" name="is_active" />
         <label class="form-check-label" for="is_active">Active?</label>
       </div>
     </div>
@@ -91,6 +90,12 @@
     <button class="btn btn-primary" type="submit">Submit form</button>
   </div>
 </form>
+@endsection
+
+@section('modal-content')
+@include('pages.master.storage.partials.edit-data-modal')
+@include('pages.master.storage.partials.delete-data-modal')
+@include('pages.master.storage.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

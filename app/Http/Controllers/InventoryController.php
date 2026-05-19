@@ -6,81 +6,39 @@ use Illuminate\Http\Request;
 
 class InventoryController extends Controller
 {
-    // Halaman dashboard inventory
+    // ---------- Halaman dashboard inventory ----------
     public function index()
     {
         return view('pages.inventory.index');
     }
 
-    // Halaman blood stock
+    // ---------- Halaman blood stock inventory ----------
     public function bloodStockIndex()
     {
-        return view('pages.inventory.blood-stock.index');
+        return view('pages.inventory.sub-pages.blood-stock.index');
     }
 
-    // Halaman stock in
+    // ---------- Halaman stock in inventory ----------
     public function stockInIndex()
     {
-        return view('pages.inventory.stock-in.index');
+        return view('pages.inventory.sub-pages.stock-in.index');
     }
 
-    // Halaman stock out
+    // ---------- Halaman stock out inventory ----------
     public function stockOutIndex()
     {
-        return view('pages.inventory.stock-out.index');
+        return view('pages.inventory.sub-pages.stock-out.index');
     }
 
-    // Halaman history order
+    // ---------- Halaman history order inventory ----------
     public function historyOrderIndex()
     {
-        return view('pages.inventory.history-order.index');
+        return view('pages.inventory.sub-pages.history-order.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // ---------- Halaman destroy blood inventory ----------
+    public function destroyBloodIndex()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return view('pages.inventory.sub-pages.destroy-blood.index');
     }
 }

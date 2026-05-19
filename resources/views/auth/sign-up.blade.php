@@ -28,7 +28,8 @@
                             </a>
 
                             {{-- Register Subtitle --}}
-                            <p class="text-muted w-lg-75 mt-3">Create your account by entering your details below.</p>
+                            <p class="text-muted w-lg-75 mt-3">{{ __('Create your account by entering your details
+                                below.') }}</p>
                         </div>
                         {{-- Header Register :end --}}
 
@@ -38,38 +39,40 @@
 
                             {{-- Name Input --}}
                             <div class="mb-3">
-                                <label class="form-label" for="name">Name
+                                <label class="form-label" for="name">{{ __('Name') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
-                                    <input class="form-control" id="name" name="name" placeholder="Your full name"
-                                        required="" type="text" />
+                                    <input class="form-control" id="name" name="name"
+                                        placeholder="Your Full {{ __('Name') }}" required="" type="text" />
                                 </div>
                             </div>
 
                             {{-- Username Input --}}
                             <div class="mb-3">
-                                <label class="form-label" for="username">Username
+                                <label class="form-label" for="username">{{ __('Username') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
                                     <input class="form-control" id="username" name="username"
-                                        placeholder="Your username" required="" type="text" />
+                                        placeholder="Your {{ __('Username') }}" required="" type="text" />
                                 </div>
                             </div>
 
                             {{-- Email Input --}}
                             <div class="mb-3">
-                                <label class="form-label" for="email">Email Address</label>
+                                <label class="form-label" for="email">
+                                    {{ __('Email Address') }}
+                                </label>
                                 <div class="input-group">
-                                    <input class="form-control" id="email" name="email" placeholder="your@mail.com"
-                                        type="email" />
+                                    <input class="form-control" id="email" name="email"
+                                        placeholder="{{ __('your@mail.com') }}" type="email" />
                                 </div>
                             </div>
 
                             {{-- Password Input --}}
                             <div class="mb-3" data-password="bar">
-                                <label class="form-label" for="password">Password
+                                <label class="form-label" for="password">{{ __('Password') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -77,14 +80,15 @@
                                         required="" type="password" />
                                 </div>
                                 <div class="password-bar my-2"></div>
-                                <p class="text-muted fs-xs mb-0">
-                                    Use 8+ characters with letters, numbers &amp; symbols.
+                                <p class="text-muted fs-xs mb-0" data-lang="password_hint_input_label">
+                                    {{ __('Use 8+ characters with letters, numbers &amp; symbols.') }}
                                 </p>
                             </div>
 
                             {{-- Password Confirmation Input --}}
                             <div class="mb-3">
-                                <label class="form-label" for="password_confirmation">Password Confirmation
+                                <label class="form-label" for="password_confirmation">
+                                    {{ __('Password') }}{{__('Confirmation') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="input-group">
@@ -92,22 +96,22 @@
                                         placeholder="••••••••" required="" type="password" />
                                 </div>
                                 <p class="text-muted fs-xs my-2">
-                                    Re-input your password for confirmation.
+                                    {{ __('Re-input your password for confirmation.') }}
                                 </p>
                             </div>
 
                             {{-- Submit Button --}}
                             <div class="d-grid">
-                                <button class="btn btn-primary fw-semibold py-2" type="submit">Create Account</button>
+                                <button class="btn btn-primary fw-semibold py-2" type="submit">{{ __('Create Account') }}</button>
                             </div>
                         </form>
                         {{-- Register Form :end --}}
 
                         {{-- Already have and account? --}}
                         <p class="text-muted text-center mt-4 mb-0">
-                            Already have an account?
+                            {{ __('Already have an account') }}?
                             <a class="text-decoration-underline link-offset-3 fw-semibold" href="{{ route('login') }}">
-                                Login
+                                {{ __('Login') }}
                             </a>
                         </p>
                     </div>

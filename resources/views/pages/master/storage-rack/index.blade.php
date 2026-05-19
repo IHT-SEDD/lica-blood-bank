@@ -10,12 +10,12 @@
   {{-- Date filter :begin --}}
   <div>
     <div class="input-group">
-      <span class="input-group-text" id="master-user-table-date-filter">
+      <span class="input-group-text" id="master-storage-rack-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-user-table-date-filter" aria-describedby="master-user-table-date-filter"
-        data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" data-enable-time="true" type="text"
-        placeholder="Choose date range" />
+      <input class="form-control master-storage-rack-table-date-filter"
+        aria-describedby="master-storage-rack-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+        data-range-date="true" type="text" placeholder="Choose date range" />
     </div>
   </div>
   {{-- Date filter :begin --}}
@@ -23,14 +23,15 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-storage-rack-table"
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-storage-rack-table"
   id="master-storage-rack-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th></th>
       <th>No</th>
       <th>Name</th>
       <th>Storage</th>
+      <th>Rack Type</th>
+      <th>Blood Group</th>
       <th>Status</th>
       <th>Created At</th>
       <th>Updated At</th>
@@ -42,28 +43,45 @@
 @endsection
 
 @section('form-content')
-<form class="row g-2">
+<form class="row g-2" id="add_new_storage_rack" autocomplete="off">
   {{-- Name --}}
-  <div class="col-lg-12">
+  <div class="col-lg-6">
     <label class="form-label" for="name">Name
       <span class="text-danger">*</span>
     </label>
-    <input class="form-control" id="name" name="name" required="" type="text" placeholder="storage rack name" />
+    <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="storage rack name" />
   </div>
 
   {{-- Storage --}}
-  <div class="col-lg-12">
-    <label class="form-label" for="storage">Storage
+  <div class="col-lg-6">
+    <label class="form-label" for="select-storage">Storage
       <span class="text-danger">*</span>
     </label>
-    <select class="form-control" id="select-storage" name="storage" placeholder="Choose storage..."></select>
+    <select class="form-control" id="select-storage" name="storage_id" placeholder="Choose storage..."></select>
+  </div>
+
+  {{-- Rack Type --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="select-rack-type">Rack Type
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-rack-type" name="rack_type" placeholder="Choose rack type..."></select>
+  </div>
+
+  {{-- Blood Group --}}
+  <div class="col-lg-6 d-none" id="blood-group-wrapper">
+    <label class="form-label" for="select-blood-group">Blood Group
+      <span class="text-danger">*</span>
+    </label>
+    <select class="form-control" id="select-blood-group" name="blood_group"
+      placeholder="Choose blood group..."></select>
   </div>
 
   {{-- Is Active? --}}
   <div class="col-lg-3">
     <div>
-      <div class="form-check form-check-success my-1">
-        <input checked="" class="form-check-input" id="is_active" type="checkbox" />
+      <div class="form-check form-check-info my-1">
+        <input checked="" class="form-check-input" id="is_active" name="is_active" type="checkbox" />
         <label class="form-check-label" for="is_active">Active?</label>
       </div>
     </div>
@@ -71,9 +89,15 @@
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Submit form</button>
+    <button class="btn btn-primary" type="submit">Add New Storage Rack</button>
   </div>
 </form>
+@endsection
+
+@section('modal-content')
+@include('pages.master.storage-rack.partials.edit-data-modal')
+@include('pages.master.storage-rack.partials.delete-data-modal')
+@include('pages.master.storage-rack.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

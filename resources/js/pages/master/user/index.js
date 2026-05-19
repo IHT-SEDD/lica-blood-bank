@@ -1,5 +1,13 @@
 import TomSelect from "tom-select";
-import { GlobalPostForm, GlobalFormValidation } from "../../../app";
+import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
+
+// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+const FormAddSelector = "add_new_user"; // id selector untuk form add new
+const FormAddURL = "/master/user"; // url submit form add
+const FormEditSelector = "edit_data_user"; // id selector untuk form edit
+const ReloadDatatableSelector = "master-user-reload"; // reload datatable index
+const ModalEditSelector = "edit_data_master_user_modal"; // id selector untuk modal edit
+// ---------- Global variable untuk memudahkan penyesuaian :end ----------
 
 // ---------- Select role dari tom-select untuk form add new data :begin ----------
 function SelectRole() {
@@ -30,53 +38,56 @@ function SelectRole() {
 // ---------- Handle form penambahan user baru :begin ----------
 function AddNewUser() {
     // ---------- Validasi inputan form :begin ----------
-    const AddNewUserValidation = GlobalFormValidation.init("#add_new_user", {
-        name: {
-            validators: {
-                notEmpty: {
-                    message: "Name is required",
+    const AddNewUserValidation = GlobalFormValidation.init(
+        "#" + FormAddSelector,
+        {
+            name: {
+                validators: {
+                    notEmpty: {
+                        message: "Name is required",
+                    },
+                },
+            },
+            username: {
+                validators: {
+                    notEmpty: {
+                        message: "Username is required",
+                    },
+                },
+            },
+            password: {
+                validators: {
+                    notEmpty: {
+                        message: "Password is required",
+                    },
+                    stringLength: {
+                        min: 5,
+                        message: "Password minimum is 5 characters",
+                    },
+                },
+            },
+            role: {
+                validators: {
+                    notEmpty: {
+                        message: "Role is required",
+                    },
                 },
             },
         },
-        username: {
-            validators: {
-                notEmpty: {
-                    message: "Username is required",
-                },
-            },
-        },
-        password: {
-            validators: {
-                notEmpty: {
-                    message: "Password is required",
-                },
-                stringLength: {
-                    min: 5,
-                    message: "Password minimum is 5 characters",
-                },
-            },
-        },
-        role: {
-            validators: {
-                notEmpty: {
-                    message: "Role is required",
-                },
-            },
-        },
-    });
+    );
     // ---------- Validasi inputan form :end ----------
 
     // ---------- Submit form ke url :begin ----------
-    new GlobalPostForm({
-        formId: "add_new_user",
-        url: "/master/user",
+    new GlobalSubmitForm({
+        formId: FormAddSelector,
+        url: FormAddURL,
         validator: AddNewUserValidation,
         onSuccess: (data) => {
             notyf.success({
                 message: "New user added succesfully!",
             });
             console.log(data);
-            window.dispatchEvent(new Event("master-user-reload"));
+            window.dispatchEvent(new Event(ReloadDatatableSelector));
         },
         onError: (err) => {
             notyf.error({
@@ -92,7 +103,80 @@ function AddNewUser() {
 }
 // ---------- Handle form penambahan user baru :begin ----------
 
+// ---------- Handle form pembaharuan data user :begin ----------
+function EditDataUser() {
+    // ---------- Validasi inputan form :begin ----------
+    const EditDataUserValidation = GlobalFormValidation.init(
+        "#" + FormAddSelector,
+        {
+            name: {
+                validators: {
+                    notEmpty: {
+                        message: "Name is required",
+                    },
+                },
+            },
+            username: {
+                validators: {
+                    notEmpty: {
+                        message: "Username is required",
+                    },
+                },
+            },
+            password: {
+                validators: {
+                    notEmpty: {
+                        message: "Password is required",
+                    },
+                    stringLength: {
+                        min: 5,
+                        message: "Password minimum is 5 characters",
+                    },
+                },
+            },
+            role: {
+                validators: {
+                    notEmpty: {
+                        message: "Role is required",
+                    },
+                },
+            },
+        },
+    );
+    // ---------- Validasi inputan form :end ----------
+
+    // ---------- Submit form ke url :begin ----------
+    new GlobalSubmitForm({
+        formId: FormEditSelector,
+        url: () => {
+            const form = document.getElementById(FormEditSelector);
+            return FormAddURL + `/${form.dataset.id}`;
+        },
+        method: "PATCH",
+        validator: EditDataUserValidation,
+        onSuccess: (data) => {
+            notyf.success({
+                message: "Data user updated succesfully!",
+            });
+            window.dispatchEvent(new Event(ReloadDatatableSelector));
+            const modalEl = document.getElementById(ModalEditSelector);
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+        },
+        onError: (err) => {
+            notyf.error({
+                message: "Data user failed to update!",
+            });
+        },
+
+        resetOnSuccess: true,
+    });
+    // ---------- Submit form ke url :end ----------
+}
+// ---------- Handle form pembaharuan data user :begin ----------
+
 document.addEventListener("DOMContentLoaded", function () {
     SelectRole();
     AddNewUser();
+    EditDataUser();
 });

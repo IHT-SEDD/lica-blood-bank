@@ -8,4 +8,13 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    server: {
+        // Bind host ke 0.0.0.0 agar bisa diakses dari jaringan lokal, bukan hanya localhost
+        host: "0.0.0.0",
+        port: 5173,
+        hmr: {
+            host: "localhost",
+            port: 5173,
+        },
+    },
 });

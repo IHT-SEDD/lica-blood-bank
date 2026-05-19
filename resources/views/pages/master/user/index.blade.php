@@ -23,7 +23,7 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-user-table" id="master-user-table">
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-user-table" id="master-user-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
       <th>No</th>
@@ -96,9 +96,15 @@
 
   {{-- Submit Button --}}
   <div class="col-lg-12">
-    <button class="btn btn-primary" type="submit">Submit form</button>
+    <button class="btn btn-primary" type="submit">Add New User</button>
   </div>
 </form>
+@endsection
+
+@section('modal-content')
+@include('pages.master.user.partials.edit-data-modal')
+@include('pages.master.user.partials.delete-data-modal')
+@include('pages.master.user.partials.restore-data-modal')
 @endsection
 
 @section('custom-scripts')

@@ -30,7 +30,7 @@
                             </a>
 
                             <p class="text-muted w-lg-75 mt-3">
-                                This screen is locked. Enter your password to continue
+                                {{ __('This screen is locked. Enter your password to continue') }}
                             </p>
                         </div>
                         {{-- Logo & Subtitle :end --}}
@@ -51,8 +51,9 @@
                         <form method="POST" action="{{ route('unlock') }}">
                             @csrf
                             <div class="mb-3">
-                                <label class="form-label" for="password">Password <span
-                                        class="text-danger">*</span></label>
+                                <label class="form-label" for="password">{{ __('Password') }}
+                                    <span class="text-danger">*</span>
+                                </label>
                                 <div class="input-group">
                                     <input class="form-control" id="password" name="password" placeholder="••••••••"
                                         required="" type="password" />
@@ -63,16 +64,18 @@
                             </div>
 
                             <div class="d-grid">
-                                <button class="btn btn-primary fw-semibold py-2" type="submit">Unlock</button>
+                                <button class="btn btn-primary fw-semibold py-2" type="submit">
+                                    {{ __('Unlock') }}
+                                </button>
                             </div>
                         </form>
                         {{-- Form :end --}}
 
                         {{-- Login Button --}}
-                        <p class="text-muted text-center mt-4 mb-0">
-                            Not you? Return to
+                        <p class="text-muted text-center mt-4 mb-0" data-lang="lock_screen_login_link_label">
+                            {{ __('Not You') }}? {{ __('Return To') }}
                             <a class="text-decoration-underline link-offset-3 fw-semibold" href="{{ route('login') }}">
-                                Sign In
+                                {{ __('Login') }}
                             </a>
                         </p>
                     </div>

@@ -127,12 +127,125 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        // Master Data Loggings
         'masteradd' => [
             'driver' => 'single',
-            'path' => storage_path('logs/master-add-data.log'),
+            'path' => storage_path('logs/master/master-add-data.log'),
             'level' => 'debug',
-        ]
+        ],
+        'masterupdate' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/master-update-data.log'),
+            'level' => 'debug',
+        ],
+        'masterdelete' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/master/master-delete-data.log'),
+            'level' => 'debug',
+        ],
 
+        // History Order Loggings
+        'neworderadd' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-new-data.log'),
+            'level' => 'debug',
+        ],
+        'deleteorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-delete-data.log'),
+            'level' => 'debug',
+        ],
+        'restoredorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-restore-data.log'),
+            'level' => 'debug',
+        ],
+        'updateorder' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-updated-data.log'),
+            'level' => 'debug',
+        ],
+        'setorderdone' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/order-set-done.log'),
+            'level' => 'debug',
+        ],
+        'generatepofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/generate-po-file.log'),
+            'level' => 'debug',
+        ],
+        'downloadpofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/download-po-file.log'),
+            'level' => 'debug',
+        ],
+        'printpofile' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/history-order/print-po-file.log'),
+            'level' => 'debug',
+        ],
+
+        // Stock In Loggings
+        'newincomingbloodadd' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/stock-in/incoming-blood-new-data.log'),
+            'level' => 'debug',
+        ],
+        'newincomingblooddelete' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/stock-in/incoming-blood-delete-data.log'),
+            'level' => 'debug',
+        ],
+        'newincomingbloodrestore' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/stock-in/incoming-blood-restore-data.log'),
+            'level' => 'debug',
+        ],
+
+        // Blood Stock Loggings
+        'newbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/new-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'editbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/edit-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'deletebloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/delete-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'destroybloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/destroy-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+        'restorebloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/restore-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
+
+        // Blood Destroy Loggings
+        'newblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/new-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
+        'deleteblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/delete-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
+        'restoreblooddestroy' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-destroy/restore-blood-destroy-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

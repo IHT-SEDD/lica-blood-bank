@@ -8,7 +8,7 @@
                 <button href="{{ route('logout') }}" class="topbar-item px-2 ms-2 btn btn-dark"
                     onclick="event.preventDefault(); this.closest('form').submit();">
                     <i class="ti ti-logout-2 me-2 fs-19 align-middle"></i>
-                    <span class="align-middle">Logout</span>
+                    <span class="align-middle">{{ __('Logout') }}</span>
                 </button>
             </form>
             @endauth
@@ -17,12 +17,38 @@
             @guest
             <a href="{{ route('login') }}" class="topbar-item d-lg-flex">
                 <i class="ti ti-login me-2 fs-19 align-middle"></i>
-                <span class="align-middle">Login</span>
+                <span class="align-middle">{{ __('Login') }}</span>
             </a>
             @endguest
         </div>
 
         <div class="d-flex align-items-center gap-2">
+            <!-- Language Button -->
+            <div class="topbar-welcome-item">
+                <div class="dropdown">
+                    <button class="topbar-welcome-link fw-semibold" data-bs-toggle="dropdown" data-bs-offset="0,19"
+                        type="button" aria-haspopup="false" aria-expanded="false">
+                        <img src="{{ asset('assets/images/flags/' . (app()->getLocale() === 'id' ? 'id' : 'us') . '.svg') }}"
+                            alt="flag" class="w-100 rounded me-2" height="18" id="selected-language-image">
+                        <span id="selected-language-code">{{ strtoupper(app()->getLocale()) }}</span>
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-end">
+                        <a href="javascript:void(0);" class="dropdown-item language-switcher" data-lang="en"
+                            data-flag="{{ asset('assets/images/flags/us.svg') }}" title="English">
+                            <img src="{{ asset('assets/images/flags/us.svg') }}" alt="English" class="me-1 rounded"
+                                height="18">
+                            <span class="align-middle">English</span>
+                        </a>
+                        <a href="javascript:void(0);" class="dropdown-item language-switcher" data-lang="id"
+                            data-flag="{{ asset('assets/images/flags/id.svg') }}" title="Indonesia">
+                            <img src="{{ asset('assets/images/flags/id.svg') }}" alt="Indonesia" class="me-1 rounded"
+                                height="18">
+                            <span class="align-middle">Indonesia</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             {{-- Dark / Light Mode --}}
             <div class="topbar-welcome-item d-none d-sm-flex">
                 <button class="topbar-welcome-link" id="light-dark-mode" type="button">
@@ -34,9 +60,10 @@
             {{-- User Dropdown --}}
             <div class="topbar-welcome-item nav-user">
                 <div class="dropdown">
-                    <a class="topbar-welcome-link dropdown-toggle drop-arrow-none px-2" data-bs-toggle="dropdown"
+                    <a class="topbar-link dropdown-toggle drop-arrow-none px-2 text-center" data-bs-toggle="dropdown"
                         data-bs-offset="0,13" href="#!" aria-haspopup="false" aria-expanded="false">
-                        <img src="/images/users/user-2.jpg" width="32" class="rounded-circle d-flex" alt="user-image">
+                        <img src="{{ asset('assets/images/profile.png') }}" width="30"
+                            class="rounded-circle d-flex align-items-center justify-content-center" alt="user-image">
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end">
@@ -65,7 +92,7 @@
                             <button href="{{ route('lock') }}" class="dropdown-item"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                 <i class="ti ti-lock me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">Lock Screen</span>
+                                <span class="align-middle">{{ __('Lock Screen') }}</span>
                             </button>
                         </form>
                         @endauth
