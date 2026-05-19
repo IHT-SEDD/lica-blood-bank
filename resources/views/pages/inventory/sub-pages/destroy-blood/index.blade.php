@@ -132,6 +132,8 @@
 @include('pages.inventory.sub-pages.blood-stock.partials.edit-data-modal')
 @include('utils.restore-data-modal', ['id'=> 'destroy_blood', 'title' => 'Blood Destroy'])
 @include('utils.permanent-delete-data-modal', ['id'=> 'destroy_blood', 'title' => 'Blood Destroy'])
+@include('utils.confirmation-data-modal', ['id'=> 'destroy_blood', 'title' => 'Undestroy Blood', 'action' =>
+'Undestroy'])
 @endsection
 
 @section('scripts')

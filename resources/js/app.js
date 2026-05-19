@@ -7,11 +7,6 @@ window.jQuery = $;
 import bootstrap from "bootstrap/dist/js/bootstrap";
 window.bootstrap = bootstrap;
 
-// CHART JS
-import { Chart } from "chart.js/auto";
-import ChartDataLabels from "chartjs-plugin-datalabels";
-Chart.register(ChartDataLabels);
-
 // DATATABLES
 import DataTable from "datatables.net-bs5";
 import "datatables.net-bs5";
@@ -36,7 +31,6 @@ import {
 } from "./utility/datatable/datatable-options";
 import { LayoutCustomizer } from "./utility/layout/customizer";
 import { Plugins } from "./utility/plugin/plugin";
-export { ins, debounce, CustomChartJs } from "./utility/chart/chart";
 import { GlobalDataAction } from "./utility/data/action";
 
 // UTILITY -> APP INIT
@@ -729,6 +723,16 @@ export class GlobalRestoreDataConfirmation extends GlobalDataAction {
         super(options, {
             buttonSelector: ".btn-restore",
             eventName: "restore:open",
+        });
+    }
+}
+
+// ------------------------------ Global Config for Data Confirmation ------------------------------
+export class GlobalDataConfirmation extends GlobalDataAction {
+    constructor(options = {}) {
+        super(options, {
+            buttonSelector: ".btn-confirmation",
+            eventName: "confirmation:open",
         });
     }
 }
