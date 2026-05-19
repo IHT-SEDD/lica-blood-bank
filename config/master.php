@@ -53,6 +53,10 @@ return [
         'model' => App\Models\Package::class,
         'with' => ['package_tests.test']
     ],
+    'transfusion-reaction' => [
+        'view' => 'pages.master.transfusion-reaction.index',
+        'model' => App\Models\TransfusionReaction::class,
+    ],
     // 'package-test' => [
     //     'view' => 'pages.master.package-test.index',
     //     'model' => App\Models\PackageTest::class,
