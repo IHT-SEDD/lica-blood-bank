@@ -26,8 +26,6 @@ function DateRangeFilter() {
     $(document)
         .off("change", DateFilterSelector)
         .on("change", DateFilterSelector, function () {
-            console.log(123);
-
             if (
                 listRequestTableInstance &&
                 $.fn.DataTable.isDataTable("#list-request-table")
@@ -64,17 +62,28 @@ export function updatePatientDetailUI(data) {
 
     // Toggle Check In button based on lab_number
     const btnCheckin = document.getElementById("btn-checkin-lab");
-    if (btnCheckin) {
-        if (data.lab_number && data.lab_number !== "-") {
+    const btnEditBloodPack = document.getElementById("btn-edit-blood-pack");
+
+    if (data.lab_number && data.lab_number !== "-") {
+        if (btnCheckin) {
             btnCheckin.classList.add("d-none");
-        } else {
+        }
+        if (btnEditBloodPack) {
+            btnEditBloodPack.disabled = false;
+        }
+    } else {
+        if (btnCheckin) {
             btnCheckin.classList.remove("d-none");
             btnCheckin.dataset.id = data.public_id;
+        }
+        if (btnEditBloodPack) {
+            btnEditBloodPack.disabled = true;
         }
     }
 
     // Update list bag request table
     window.currentTransfusionPublicId = data.public_id;
+    window.currentTransfusionLabNumber = data.lab_number; // Save lab number state
     window.currentBagDetailPublicId = null; // Reset bag filter when switching transfusion
     window.currentBagTransfusionResult = null;
     if (
@@ -101,6 +110,7 @@ function initPatientDetail() {
             if ($(e.target).closest(".dropdown").length > 0) return;
             if (!listRequestTableInstance) return;
             const data = listRequestTableInstance.getRowData(this);
+            const lab_number = data.lab_number;
             updatePatientDetailUI(data); // Panggil fungsi update
         });
 }
@@ -160,7 +170,6 @@ function CheckInLabNumber() {
     newBtn.addEventListener("click", async function () {
         const id = this.dataset.id;
         if (!id) return;
-        console.log("clicked");
 
         // Prevent multiple clicks
         const originalText = this.innerHTML;
