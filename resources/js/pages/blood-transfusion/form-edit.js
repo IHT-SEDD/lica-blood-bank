@@ -330,7 +330,7 @@ document.addEventListener("DOMContentLoaded", function () {
         selectedEditBloodPacks.forEach((pack, index) => {
             const tr = document.createElement("tr");
             tr.innerHTML = `
-                <td class="text-start">${pack.component_text || "-"} (${pack.component_id || "-"})</td>
+                <td class="text-start">${pack.component_text || "-"} (${pack.component_id || "-"}) ${pack.public_id != "undefined" ? '<i class="ti ti-square-rounded-check text-success"></i>' : ""}</td>
                 <td class="text-end">
                     <button class="btn btn-sm btn-danger remove-edit-blood-component" type="button" data-index="${index}">
                         <i class="ti ti-trash"></i>
@@ -363,6 +363,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 if (result.data && result.data.length > 0) {
                     selectedEditBloodPacks = result.data
                         .map((row) => ({
+                            public_id: row.public_id,
                             component_id: row.component_id,
                             component_text: row.component_text,
                         }))
@@ -383,6 +384,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const btn = e.target.closest(".select-edit-blood-component");
         if (btn) {
             const pack = {
+                public_id: btn.dataset.publicId,
                 component_id: btn.dataset.id,
                 component_text: btn.dataset.text,
             };
@@ -427,9 +429,7 @@ document.addEventListener("DOMContentLoaded", function () {
                                 .getAttribute("content"),
                         },
                         body: JSON.stringify({
-                            blood_packs: selectedEditBloodPacks.map(
-                                (p) => p.component_id,
-                            ),
+                            blood_packs: selectedEditBloodPacks,
                         }),
                     },
                 );

@@ -28,8 +28,10 @@ class UpdateBloodPacksRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'blood_packs'   => 'required|array|min:1',
-            'blood_packs.*' => 'required|string',
+            'blood_packs.*' => 'required|array|min:1',
+            'blood_packs.*.public_id' => 'nullable|string',
+            'blood_packs.*.component_id' => 'required|string',
+            'blood_packs.*.component_text' => 'required|string',
         ];
     }
 
@@ -39,11 +41,14 @@ class UpdateBloodPacksRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'blood_packs.required' => ' kantong darah wajib diisi',
-            'blood_packs.array'    => ' kantong darah harus berupa array',
+            'blood_packs.required' => 'kantong darah harus diisi',
+            'blood_packs.array'    => 'kantong darah harus berupa array',
             'blood_packs.min'      => ' harus ada minimal 1 kantong darah',
-            'blood_packs.*.required' => 'kantong darah harus diisi',
-            'blood_packs.*.string' => 'kantong darah harus berupa string',
+            'blood_packs.*.public_id.string' => 'public_id harus berupa string',
+            'blood_packs.*.component_id.required' => 'component_id harus diisi',
+            'blood_packs.*.component_id.string' => 'component_id harus berupa string',
+            'blood_packs.*.component_text.required' => 'component_text harus diisi',
+            'blood_packs.*.component_text.string' => 'component_text harus berupa string',
         ];
     }
 }
