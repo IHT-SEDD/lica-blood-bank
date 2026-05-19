@@ -119,7 +119,7 @@ export function DatatableRequestBlood() {
 
                         <ul class="dropdown-menu">
                             <li>
-                                <a class="dropdown-item btn-edit-blood-transfusion"
+                                <a class="dropdown-item btn-edit-blood-transfusion ${!data.lab_number || data.lab_number === "-" ? "disabled" : ""}"
                                     data-public-id="${data.public_id}"
                                     data-bs-toggle="modal"
                                     data-bs-target="#edit_data_blood_transfusion_modal">
@@ -182,6 +182,11 @@ export function DatatableListBagRequest() {
                     if (!row.has_available_stock) {
                         return `<span class="text-danger fw-semibold">Not Available Stock</span>`;
                     }
+                    const isDisabled =
+                        !window.currentTransfusionLabNumber ||
+                        window.currentTransfusionLabNumber === "-"
+                            ? "disabled"
+                            : "";
                     const options = row.available_stocks
                         .map(
                             (stock) => `
@@ -194,7 +199,7 @@ export function DatatableListBagRequest() {
                         .join("");
                     return `
                             <select class="select-bag-number" placeholder="Choose Bag Number"
-                                data-id="${row.public_id}">
+                                data-id="${row.public_id}" ${isDisabled}>
                                 ${options}
                             </select>
                         `;
@@ -272,24 +277,36 @@ export function DatatableListTest() {
                 render: (_, __, row) => {
                     if (!row.detail_test_public_id) return "-";
 
-                    // Tambahkan opsi kosong/default di awal agar tidak langsung terpilih otomatis oleh browser
-                    let optionsHtml = `<option value="" disabled ${row.result_value === null ? "selected" : ""}>Choose Result</option>`;
+                    const isDisabled =
+                        !window.currentTransfusionLabNumber ||
+                        window.currentTransfusionLabNumber === "-"
+                            ? "disabled"
+                            : "";
+                    // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
+                    const isPlaceholderSelected =
+                        row.result_value === null || row.result_value === ""
+                            ? "selected"
+                            : "";
+                    let optionsHtml = `<option value="" ${isPlaceholderSelected}>Choose Result</option>`;
 
                     const options = resultOptions
                         .map((opt) => {
-                            // CEK: Apakah ID opsi ini sama dengan nilai yang ada di database?
                             const isSelected =
                                 String(opt.id) === String(row.result_value)
                                     ? "selected"
                                     : "";
-                            return `<option value="${opt.id}" ${isSelected}>
-                            ${opt.text}
-                        </option>`;
+                            return `
+                <option value="${opt.id}" ${isSelected}>
+                    ${opt.text}
+                </option>
+            `;
                         })
                         .join("");
 
+                    // 2. MASUKKAN optionsHtml DI ATAS options
                     return `
-            <select class="select-test-result" data-id="${row.detail_test_public_id}">
+            <select class="select-test-result" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
+                ${optionsHtml}
                 ${options}
             </select>
         `;
@@ -358,6 +375,7 @@ export function DatatableBloodPackModal() {
                     <button
                         class="btn btn-sm btn-soft-success select-edit-blood-component"
                         type="button"
+                        data-public-id="${data.public_id}"
                         data-id="${data.id}"
                         data-text="${data.text}">
                         <i class="ti ti-plus"></i>
@@ -538,23 +556,23 @@ export function updateDoneButtonState() {
             return;
         }
 
-        // Check verified checkbox
-        const verifiedCb = row.querySelector(
-            '.checkbox-update[data-field="verified"]',
-        );
-        if (!verifiedCb || !verifiedCb.checked) {
-            allComplete = false;
-            return;
-        }
+        // // Check verified checkbox
+        // const verifiedCb = row.querySelector(
+        //     '.checkbox-update[data-field="verified"]',
+        // );
+        // if (!verifiedCb || !verifiedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
 
-        // Check validated checkbox
-        const validatedCb = row.querySelector(
-            '.checkbox-update[data-field="validated"]',
-        );
-        if (!validatedCb || !validatedCb.checked) {
-            allComplete = false;
-            return;
-        }
+        // // Check validated checkbox
+        // const validatedCb = row.querySelector(
+        //     '.checkbox-update[data-field="validated"]',
+        // );
+        // if (!validatedCb || !validatedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
     });
 
     btn.disabled = !allComplete;
