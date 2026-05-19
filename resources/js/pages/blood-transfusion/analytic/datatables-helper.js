@@ -79,6 +79,7 @@ export function DatatableRequestBlood() {
     listRequestTableInstance = new GlobalAdvanceDatatable(TABLE.request, {
         serverSide: true,
         searchDelay: 1000,
+        rowSelect: true,
         ajax: {
             url: `${DATATABLE_URL}/blood-request`,
             type: "GET",
@@ -160,6 +161,7 @@ export function DatatableListBagRequest() {
         removeSearch: true,
         removePageInfo: true,
         removePagination: true,
+        rowSelect: true,
         ajax: (data, callback) => {
             if (!window.currentTransfusionPublicId) {
                 return callback(emptyCallback(data.draw));
@@ -280,62 +282,17 @@ export function DatatableListTest() {
                                 String(opt.id) === String(row.result_value)
                                     ? "selected"
                                     : "";
-
-                            return `
-                <option value="${opt.id}" ${isSelected}>
-                    ${opt.text}
-                </option>
-            `;
+                            return `<option value="${opt.id}" ${isSelected}>
+                            ${opt.text}
+                        </option>`;
                         })
                         .join("");
 
                     return `
             <select class="select-test-result" data-id="${row.detail_test_public_id}">
-                ${optionsHtml}
                 ${options}
             </select>
         `;
-                },
-            },
-            {
-                data: "verified",
-                className: "text-center",
-                render: (data, _, row) => {
-                    // 1. Tentukan apakah checkbox harus dicentang
-                    const isChecked = data ? "checked" : "";
-                    console.log(data);
-
-                    // 2. Tentukan apakah checkbox harus dikunci (disabled)
-                    // Gunakan row.result_value atau field lain yang menentukan "sudah ada hasil"
-                    const isDisabled =
-                        row.result_value === null ? "disabled" : "";
-
-                    return `
-            <input type="checkbox"
-                class="checkbox-update"
-                data-field="verified"
-                data-id="${row.detail_test_public_id}"
-                ${isChecked}
-                ${isDisabled} 
-                style="${isDisabled ? "cursor: not-allowed;" : ""}">
-        `;
-                },
-            },
-            {
-                data: "validated",
-                className: "text-center",
-                render: (data, _, row) => {
-                    const isChecked = data ? "checked" : "";
-                    const isDisabled = row.verified === false ? "disabled" : "";
-                    return `
-                    <input type="checkbox"
-                        class="checkbox-update"
-                        data-field="validated"
-                        data-id="${row.detail_test_public_id}"
-                         ${isChecked}
-                        ${isDisabled}
-                        style="${isDisabled ? "cursor: not-allowed;" : ""}">
-                `;
                 },
             },
         ],
@@ -647,10 +604,7 @@ export async function completeTest() {
         btn.innerHTML = originalText;
 
         // Reload test table
-        if (
-            listTestTableInstance &&
-            $.fn.DataTable.isDataTable(TABLE.test)
-        ) {
+        if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
             $(TABLE.test).DataTable().ajax.reload(null, false);
         }
 
