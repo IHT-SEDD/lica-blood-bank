@@ -105,3 +105,5 @@ require __DIR__ . '/ui-theme.php';
 require __DIR__ . '/inventory.php';
 // ---------- System Modules Routes ----------
 require __DIR__ . '/system.php';
+// ---------- Print Routes ----------
+require __DIR__ . '/print.php';
