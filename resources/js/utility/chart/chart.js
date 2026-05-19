@@ -1,3 +1,7 @@
+import { Chart } from "chart.js/auto";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+Chart.register(ChartDataLabels);
+
 export const ins = (v, a = 1) => {
     const val = getComputedStyle(document.documentElement)
         .getPropertyValue(`--ins-${v}`)

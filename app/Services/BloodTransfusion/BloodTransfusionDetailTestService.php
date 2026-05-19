@@ -163,13 +163,13 @@ class BloodTransfusionDetailTestService
             ];
         }
 
-        if(!$detailTest->result){
+        if (!$detailTest->result) {
             return [
                 'success' => false,
                 'message' => 'Result must be filled first.',
             ];
         }
- 
+
         $detailTest->update([
             $field . '_at' => $value ? now() : null,
             $field . '_by_user_id' => $value ? Auth::id() : null,
@@ -221,23 +221,23 @@ class BloodTransfusionDetailTestService
             ];
         }
 
-        // Validasi: semua test harus sudah verified
-        $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
-        if ($missingVerified->isNotEmpty()) {
-            return [
-                'success' => false,
-                'message' => 'All tests must be verified before completing.',
-            ];
-        }
+        // // Validasi: semua test harus sudah verified
+        // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
+        // if ($missingVerified->isNotEmpty()) {
+        //     return [
+        //         'success' => false,
+        //         'message' => 'All tests must be verified before completing.',
+        //     ];
+        // }
 
-        // Validasi: semua test harus sudah validated
-        $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
-        if ($missingValidated->isNotEmpty()) {
-            return [
-                'success' => false,
-                'message' => 'All tests must be validated before completing.',
-            ];
-        }
+        // // Validasi: semua test harus sudah validated
+        // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
+        // if ($missingValidated->isNotEmpty()) {
+        //     return [
+        //         'success' => false,
+        //         'message' => 'All tests must be validated before completing.',
+        //     ];
+        // }
 
         // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
         $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
