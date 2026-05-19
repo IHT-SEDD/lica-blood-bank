@@ -2,13 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrintDataService;
 use Illuminate\Http\Request;
 
 class PrintController extends Controller
 {
     //
-    public function bloodTransfusionPrint()
+    public function __construct(
+        protected PrintDataService $service
+    ) {}
+
+    public function bloodTransfusionPrint(Request $request)
     {
-        return view('pdf.blood_transfusion.result_test');
+        $data = $this->service->bloodTransfusionPrint($request);
+        // dd($data);
+        return view('pdf.blood_transfusion.result_test', compact('data'));
     }
 }
