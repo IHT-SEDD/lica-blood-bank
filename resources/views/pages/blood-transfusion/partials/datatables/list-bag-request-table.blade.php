@@ -3,7 +3,7 @@
     <tr>
       <th>{{ __('Bag Number') }}</th>
       <th>{{ __('Blood Pack') }}</th>
-      <th>{{ __('Transfusion Result') }}</th>
+      <th>{{ __('Crossmatch Result') }}</th>
     </tr>
   </thead>
 </table>

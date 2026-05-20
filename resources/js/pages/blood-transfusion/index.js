@@ -148,6 +148,12 @@ function initBagRequestRowClick() {
             window.currentBagDetailPublicId = data.public_id;
             window.currentBagTransfusionResult =
                 data.transfusion_result || null;
+            window.currentBagData = data;
+            
+            // Update workflow buttons
+            if (typeof window.updateWorkflowButtonsState === "function") {
+                window.updateWorkflowButtonsState();
+            }
 
             if (
                 listTestTableInstance &&
@@ -233,6 +239,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initBagRequestRowClick();
     CheckInLabNumber();
     initDoneButton();
+    initBagRequestActionButtons();
 });
 
 // ---------- Handle Done Button :begin ----------
@@ -251,3 +258,171 @@ function initDoneButton() {
     });
 }
 // ---------- Handle Done Button :end ----------
+
+window.updateWorkflowButtonsState = function() {
+    const btnHold = document.getElementById("btn-hold-blood-pack");
+    const btnRelease = document.getElementById("btn-release-blood-pack");
+    const btnUnrelease = document.getElementById("btn-unrelease-blood-pack");
+    const btnPrint = document.getElementById("btn-print-crossmatch-incompatible");
+    const btnAccept = document.getElementById("btn-accept-blood-pack");
+    
+    // Hide all initially
+    if (btnHold) btnHold.classList.add("d-none");
+    if (btnRelease) btnRelease.classList.add("d-none");
+    if (btnUnrelease) btnUnrelease.classList.add("d-none");
+    if (btnPrint) btnPrint.classList.add("d-none");
+    if (btnAccept) btnAccept.classList.add("d-none");
+
+    const data = window.currentBagData;
+    if (!data || !data.crossmatch_result) return;
+
+    if (data.crossmatch_result === "Incompatible") {
+        if (data.blood_stock_status !== 'already_taken' && data.blood_stock_status !== 'taken_out' && data.blood_stock_status !== 'used') {
+            if (btnHold) btnHold.classList.remove("d-none");
+        } else if (data.blood_stock_status === 'already_taken') {
+            if (!data.is_approval_incompatible) {
+                if (btnPrint) btnPrint.classList.remove("d-none");
+                if (btnAccept) btnAccept.classList.remove("d-none");
+                if (btnUnrelease) btnUnrelease.classList.remove("d-none");
+            } else {
+                if (btnRelease) btnRelease.classList.remove("d-none");
+                if (btnUnrelease) btnUnrelease.classList.remove("d-none");
+            }
+        }
+    } else if (data.crossmatch_result === "Compatible") {
+        if (data.blood_stock_status !== 'taken_out' && data.blood_stock_status !== 'used') {
+            if (btnRelease) btnRelease.classList.remove("d-none");
+            if (btnUnrelease) btnUnrelease.classList.remove("d-none");
+        }
+    }
+}
+
+function initBagRequestActionButtons() {
+    // Helper for fetch actions
+    const doAction = async (url, method = "POST") => {
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                notyf.error({ message: result.message || "Action failed!" });
+            } else {
+                notyf.success({ message: result.message || "Action successful!" });
+                if (listBagRequestTableInstance && $.fn.DataTable.isDataTable("#list-bag-request-table")) {
+                    $("#list-bag-request-table").DataTable().ajax.reload(function(json) {
+                        // Find the updated bag data and refresh buttons
+                        if (window.currentBagDetailPublicId && json.data) {
+                            const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
+                            if (updatedBag) {
+                                window.currentBagData = updatedBag;
+                                if (typeof window.updateWorkflowButtonsState === "function") {
+                                    window.updateWorkflowButtonsState();
+                                }
+                            }
+                        }
+                    }, false);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({ message: "An error occurred." });
+        }
+    };
+
+    $(document).off("click", "#btn-hold-blood-pack").on("click", "#btn-hold-blood-pack", function (e) {
+        e.preventDefault();
+        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/hold`);
+    });
+
+    $(document).off("click", "#btn-release-blood-pack").on("click", "#btn-release-blood-pack", function (e) {
+        e.preventDefault();
+        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/release`);
+    });
+
+    $(document).off("click", "#btn-unrelease-blood-pack").on("click", "#btn-unrelease-blood-pack", function (e) {
+        e.preventDefault();
+        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/unrelease`);
+    });
+
+    $(document).off("click", "#btn-print-crossmatch-incompatible").on("click", "#btn-print-crossmatch-incompatible", function (e) {
+        e.preventDefault();
+        notyf.success({ message: "Printing crossmatch incompatible result..." });
+    });
+
+    $(document).off("click", "#btn-accept-blood-pack").on("click", "#btn-accept-blood-pack", function (e) {
+        e.preventDefault();
+        const confirmBtn = document.getElementById("confirm_accept_incompatible");
+        if (confirmBtn) {
+            confirmBtn.dataset.detailId = window.currentBagDetailPublicId;
+        }
+        const modalEl = document.getElementById("accept_incompatible_blood_modal");
+        if (modalEl) {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    });
+
+    $(document).off("click", "#confirm_accept_incompatible").on("click", "#confirm_accept_incompatible", async function (e) {
+        e.preventDefault();
+        const detailId = this.dataset.detailId;
+        if (!detailId) return;
+
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+        this.disabled = true;
+
+        try {
+            const response = await fetch(`/blood-transfusion/detail/${detailId}/accept-incompatible`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+            });
+            const result = await response.json();
+            
+            if (!response.ok) {
+                notyf.error({ message: result.message || "Failed to accept incompatible blood!" });
+            } else {
+                notyf.success({ message: result.message || "Incompatible blood accepted successfully!" });
+                
+                const modalEl = document.getElementById("accept_incompatible_blood_modal");
+                if (modalEl) {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    if (modal) modal.hide();
+                }
+                
+                if (listBagRequestTableInstance && $.fn.DataTable.isDataTable("#list-bag-request-table")) {
+                    $("#list-bag-request-table").DataTable().ajax.reload(function(json) {
+                        if (window.currentBagDetailPublicId && json.data) {
+                            const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
+                            if (updatedBag) {
+                                window.currentBagData = updatedBag;
+                                if (typeof window.updateWorkflowButtonsState === "function") {
+                                    window.updateWorkflowButtonsState();
+                                }
+                            }
+                        }
+                    }, false);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({ message: "An error occurred." });
+        } finally {
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }
+    });
+}
+// ---------- Handle Bag Request Action Buttons :end ----------
+

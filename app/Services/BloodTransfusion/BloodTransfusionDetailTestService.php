@@ -6,7 +6,9 @@ use App\Enums\ResultTest;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
+use App\Models\CrossMatchHistory;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class BloodTransfusionDetailTestService
 {
@@ -189,69 +191,106 @@ class BloodTransfusionDetailTestService
      */
     public function completeTest(string $detailPublicId): array
     {
-        $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
-            ->whereNull('deleted_at')
-            ->first();
+        try {
+                    $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
+                    ->whereNull('deleted_at')
+                    ->first();
 
-        if (!$detail) {
+                if (!$detail) {
+                    return [
+                        'success' => false,
+                        'message' => 'Detail record not found.',
+                    ];
+                }
+
+                // Ambil semua test untuk detail ini
+                $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
+                    ->whereNull('deleted_at')
+                    ->get();
+
+                if ($tests->isEmpty()) {
+                    return [
+                        'success' => false,
+                        'message' => 'No tests found for this bag.',
+                    ];
+                }
+
+                // Validasi: semua test harus sudah ada result
+                $missingResult = $tests->filter(fn($t) => empty($t->result));
+                if ($missingResult->isNotEmpty()) {
+                    return [
+                        'success' => false,
+                        'message' => 'All tests must have a result before completing.',
+                    ];
+                }
+
+                // // Validasi: semua test harus sudah verified
+                // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
+                // if ($missingVerified->isNotEmpty()) {
+                //     return [
+                //         'success' => false,
+                //         'message' => 'All tests must be verified before completing.',
+                //     ];
+                // }
+
+                // // Validasi: semua test harus sudah validated
+                // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
+                // if ($missingValidated->isNotEmpty()) {
+                //     return [
+                //         'success' => false,
+                //         'message' => 'All tests must be validated before completing.',
+                //     ];
+                // }
+
+                // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
+                $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
+
+                $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
+
+                DB::beginTransaction();
+
+                $detail->update([
+                    'crossmatch_result' => $transfusionResult,
+                ]);
+
+                $this->insertCrossMatchHistory($detail, $transfusionResult);
+
+                DB::commit();
+
+                return [
+                    'success' => true,
+                    'message' => "Test completed. Result: {$transfusionResult}.",
+                    'crossmatch_result' => $transfusionResult,
+                ];
+        } catch (\Throwable $th) {
+            DB::rollBack();
             return [
                 'success' => false,
-                'message' => 'Detail record not found.',
+                'message' => 'Failed to complete test.' . $th->getMessage(),
             ];
         }
+    }
 
-        // Ambil semua test untuk detail ini
-        $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
-            ->whereNull('deleted_at')
-            ->get();
 
-        if ($tests->isEmpty()) {
-            return [
-                'success' => false,
-                'message' => 'No tests found for this bag.',
-            ];
+    private function insertCrossMatchHistory($detail, $transfusionResult){
+         // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
+
+        if(is_null($detail)) return false;
+
+        $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
+        if($history){
+            $history->update([
+                'result' => $transfusionResult,
+                'blood_stock_id' => $detail->blood_stock_id,
+                'updated_at' => now()
+            ]);
+        }else{
+            $history = CrossMatchHistory::create([
+                'blood_transfusion_detail_id' => $detail->id,
+                'blood_stock_id' => $detail->blood_stock_id,
+                'result' => $transfusionResult,
+            ]);
         }
 
-        // Validasi: semua test harus sudah ada result
-        $missingResult = $tests->filter(fn($t) => empty($t->result));
-        if ($missingResult->isNotEmpty()) {
-            return [
-                'success' => false,
-                'message' => 'All tests must have a result before completing.',
-            ];
-        }
-
-        // // Validasi: semua test harus sudah verified
-        // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
-        // if ($missingVerified->isNotEmpty()) {
-        //     return [
-        //         'success' => false,
-        //         'message' => 'All tests must be verified before completing.',
-        //     ];
-        // }
-
-        // // Validasi: semua test harus sudah validated
-        // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
-        // if ($missingValidated->isNotEmpty()) {
-        //     return [
-        //         'success' => false,
-        //         'message' => 'All tests must be validated before completing.',
-        //     ];
-        // }
-
-        // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-        $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
-
-        $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
-
-        $detail->update([
-            'transfusion_result' => $transfusionResult,
-        ]);
-
-        return [
-            'success' => true,
-            'message' => "Test completed. Result: {$transfusionResult}.",
-            'transfusion_result' => $transfusionResult,
-        ];
     }
 }
