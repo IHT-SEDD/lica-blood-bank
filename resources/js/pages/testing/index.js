@@ -2,6 +2,10 @@
 // Print Preview Handler
 // -----------------------------------------------------------------------
 function initPrintPreview() {
+    const PRINT_ORIENTATIONS = {
+        "blood-patient-card": "landscape",
+    };
+
     function setLoading(btn, isLoading) {
         if (isLoading) {
             btn.dataset.originalText = btn.innerHTML;
@@ -33,7 +37,6 @@ function initPrintPreview() {
 
     async function validateAndOpen(btn) {
         const url = buildPreviewUrl(btn);
-
         if (!url) {
             notyf.error({ message: "Missing URL print preview!" });
             return;
@@ -45,7 +48,6 @@ function initPrintPreview() {
             const res = await fetch(url, {
                 method: "GET",
             });
-
             if (!res.ok) {
                 const err = await res.json().catch(() => ({}));
                 notyf.error({
@@ -55,7 +57,18 @@ function initPrintPreview() {
                 return;
             }
 
-            const blob = await res.blob();
+            const printSlug = btn.dataset.print;
+            const orientation = PRINT_ORIENTATIONS[printSlug];
+
+            let htmlText = await res.text();
+            if (orientation) {
+                const pageStyle = `<style>@page { size: ${orientation} !important; }</style>`;
+                htmlText = htmlText.includes("</head>")
+                    ? htmlText.replace("</head>", `${pageStyle}</head>`)
+                    : pageStyle + htmlText;
+            }
+
+            const blob = await new Blob([htmlText], { type: "text/html" });
             const blobUrl = window.URL.createObjectURL(blob);
 
             let iframe = document.getElementById("__print_preview_iframe__");

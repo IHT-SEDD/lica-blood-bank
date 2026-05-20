@@ -9,7 +9,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 class TestingDataService
 {
     protected array $printMap = [
-        'incompatible-letter' => 'prints.blood_transfusion.incompatible-letter',
+        'incompatible-letter' => 'pdf.blood_transfusion.incompatible-letter',
+        'crossmatch-result' => 'pdf.blood_transfusion.crossmatch-result',
+        'blood-patient-card' => 'pdf.blood_transfusion.blood_card_patient',
     ];
 
     public function resolveprint(string $print): \Symfony\Component\HttpFoundation\BinaryFileResponse
@@ -18,8 +20,8 @@ class TestingDataService
             abort(404, "Print template [{$print}] not found.");
         }
 
-        $view     = $this->printMap[$print];
-        $data     = $this->getPrintData($print);
+        $view = $this->printMap[$print];
+        $data = $this->getPrintData($print);
         $fileName = strtoupper($print) . '.pdf';
         $storagePath = 'testing/preview/' . $fileName;
 
@@ -39,6 +41,14 @@ class TestingDataService
         return match ($print) {
             'incompatible-letter' => [
                 'title' => 'Incompatible Letter',
+                'companyName' => config('app.name'),
+            ],
+            'crossmatch-result' => [
+                'title' => 'Crossmatch Result',
+                'companyName' => config('app.name'),
+            ],
+            'blood-patient-card' => [
+                'title' => 'Blood Patient Card',
                 'companyName' => config('app.name'),
             ],
             default => [],

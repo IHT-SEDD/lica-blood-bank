@@ -406,6 +406,55 @@
       </tr>
     </table>
 
+    {{-- Pernyataan dan Persetujuan --}}
+    <table>
+      <tr>
+        <td width="100%" align="left">
+          <div class="paragraph">{{ __('Sehubungan dengan hasil pemeriksaan tersebut :') }}</div>
+        </td>
+      </tr>
+      <tr>
+        <td width="100%" align="left">
+          <div class="paragraph" style="margin-top: 10px;">
+            {{ __('Permintaan darah atas nama ') }}
+            @if (!empty($data->patients->name))
+            <strong>{{ $data->patients->name ?? '' }}</strong>
+            @else
+            <strong>RHINO SUWARNO</strong>
+            @endif
+            tidak dapat kami berikan darahnya, kecuali dengan persetujuan Dokter Penanggung Jawab Pasien (DPJP)
+            bertanggung jawab bilamana ada reaksi transfusi darah.
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    {{-- Signature --}}
+    <table style="margin-top: 18px;">
+      <tr>
+        <td width="65%" align="center">
+        </td>
+        <td width="35%" align="center">
+          <div class="paragraph"><strong>{{ __('Indramayu') }}, {{ now()->format('d F Y') }}</strong></div>
+          <div class="paragraph"><strong>{{ __('Pemeriksa') }}</strong></div>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <br>
+          <div class="heading-3">
+            @if (!empty($data->users->name))
+            <strong>{{ $data->users->name ?? '' }}</strong>
+            @else
+            <strong>_______________</strong>
+            @endif
+          </div>
+        </td>
+      </tr>
+    </table>
+
     {{-- Footer --}}
     <div class="footer">
       {{ __('Generated On') }} {{ now()->format('d F Y, H:i') }} &mdash; Incompatible Letter &mdash;
