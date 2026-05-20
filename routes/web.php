@@ -65,9 +65,15 @@ Route::middleware('auth')->group(function () {
             Route::patch('detail/{id}/update-stock', 'updateBagNumber')
                 ->name('update-bag-number');
 
-            Route::patch('{id}/update-blood-packs', 'updateBloodPacks')
-                ->name('update-blood-packs');
-        });
+        Route::patch('{id}/update-blood-packs', 'updateBloodPacks')
+            ->name('update-blood-packs');
+
+        // ---------- Workflow Actions ----------
+        Route::post('detail/{id}/hold', 'holdBloodPack')->name('hold-blood-pack');
+        Route::post('detail/{id}/accept-incompatible', 'acceptIncompatible')->name('accept-incompatible');
+        Route::post('detail/{id}/release', 'releaseBloodPack')->name('release-blood-pack');
+        Route::post('detail/{id}/unrelease', 'unreleaseBloodPack')->name('unrelease-blood-pack');
+    });
 
     // --------------------------------------------------------------------------
     // Master Group Routes -> master.*

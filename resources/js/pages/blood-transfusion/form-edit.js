@@ -188,6 +188,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     EditDoctorSelectInstance.clear();
                     EditDoctorSelectInstance.setValue(trans.doctor_public_id);
                 }
+
+                // Handle DCT Status
+                const dctCheckbox = document.getElementById("edit_data_is_dct");
+                if (dctCheckbox) {
+                    dctCheckbox.checked = !!trans.is_dct;
+                }
             })
             .catch((err) => {
                 notyf.error({ message: "Failed to fetch data!" });
@@ -225,7 +231,9 @@ document.addEventListener("DOMContentLoaded", function () {
                     }
                 }
                 updatePatientDetailUI(response.data);
-                window.dispatchEvent(new Event("#list-request-table"));
+                if ($.fn.DataTable.isDataTable("#list-request-table")) {
+                    $("#list-request-table").DataTable().ajax.reload(null, false);
+                }
             },
             onError: (err) => {
                 notyf.error({
@@ -301,7 +309,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 this.dataset.id = "";
 
-                window.dispatchEvent(new Event("#list-request-table"));
+                if ($.fn.DataTable.isDataTable("#list-request-table")) {
+                    $("#list-request-table").DataTable().ajax.reload(null, false);
+                }
             } catch (error) {
                 console.error(error);
                 notyf.error({

@@ -111,19 +111,36 @@
             <i class="ti ti-circle-check fs-4"></i>
           </button>
 
+          {{-- Hold blood pack button --}}
+          <button class="btn btn-sm btn-soft-warning m-0" id="btn-hold-blood-pack" data-id=""
+            data-bs-title="Hold This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-heart-pause fs-4"></i>
+          </button>
+
           {{-- Release blood pack button --}}
           <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-blood-pack" data-id=""
             data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-up fs-4"></i>
           </button>
           {{-- Don't Release blood pack button --}}
-          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-blood-pack" data-id=""
+          <button class="btn btn-sm btn-soft-danger m-0" id="btn-unrelease-blood-pack" data-id=""
             data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-x fs-4"></i>
+          </button>
+
+          {{-- Print crossmatch result incompotible blood pack button --}}
+          <button class="btn btn-sm btn-soft-primary m-0" id="btn-print-crossmatch-incompatible" data-id=""
+            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-printer fs-4"></i>
           </button>
         </div>
 
         <div class="card-action">
+          {{-- Accept blood pack button --}}
+          <button class="btn btn-sm btn-soft-success m-0" id="btn-accept-blood-pack" data-id=""
+            data-bs-title="Accept This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-heart-check fs-4"></i>
+          </button>
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>
@@ -212,6 +229,7 @@
 
 @include('pages.blood-transfusion.partials.edit-data-blood-request-modal')
 @include('pages.blood-transfusion.partials.delete-data-blood-request-modal')
+@include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
 @include('pages.blood-transfusion.partials.edit-blood-pack-modal')
 @endsection
 

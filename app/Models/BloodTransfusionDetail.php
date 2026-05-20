@@ -18,9 +18,12 @@ class BloodTransfusionDetail extends Model
         'blood_stock_id',
         'component',
         'blood_pack_id',
+        'crossmatch_result',
         'transfusion_result',
         'transfusion_text',
         'transfusion_at',
+        'is_approval_incompatible',
+        'blood_release_status',
         'deleted_at'
     ];
 

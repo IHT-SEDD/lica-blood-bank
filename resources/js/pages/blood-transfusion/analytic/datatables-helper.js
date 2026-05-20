@@ -197,10 +197,14 @@ export function DatatableListBagRequest() {
                                 `,
                         )
                         .join("");
+
+                    let optionsHtml =
+                        '<option value="" selected disabled>Choose Bag Number</option>' +
+                        options;
                     return `
                             <select class="select-bag-number" placeholder="Choose Bag Number"
                                 data-id="${row.public_id}" ${isDisabled}>
-                                ${options}
+                                ${optionsHtml}
                             </select>
                         `;
                 },
@@ -216,11 +220,11 @@ export function DatatableListBagRequest() {
                 },
             },
             {
-                data: "transfusion_result",
+                data: "crossmatch_result",
                 render: function (_, __, row) {
-                    return renderTransfusionResult(row.transfusion_result);
+                    return renderTransfusionResult(row.crossmatch_result);
                 },
-            },
+            }
         ],
         drawCallback: () => initTomSelect(".select-bag-number"),
     });
@@ -287,7 +291,7 @@ export function DatatableListTest() {
                         row.result_value === null || row.result_value === ""
                             ? "selected"
                             : "";
-                    let optionsHtml = `<option value="" ${isPlaceholderSelected}>Choose Result</option>`;
+                    let optionsHtml = `<option value="" disabled ${isPlaceholderSelected}>Choose Result</option>`;
 
                     const options = resultOptions
                         .map((opt) => {
@@ -631,7 +635,17 @@ export async function completeTest() {
             listBagRequestTableInstance &&
             $.fn.DataTable.isDataTable(TABLE.bagRequest)
         ) {
-            $(TABLE.bagRequest).DataTable().ajax.reload(null, false);
+            $(TABLE.bagRequest).DataTable().ajax.reload(function(json) {
+                if (window.currentBagDetailPublicId && json.data) {
+                    const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
+                    if (updatedBag) {
+                        window.currentBagData = updatedBag;
+                        if (typeof window.updateWorkflowButtonsState === "function") {
+                            window.updateWorkflowButtonsState();
+                        }
+                    }
+                }
+            }, false);
         }
     } catch (error) {
         console.error(error);
