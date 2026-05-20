@@ -118,15 +118,15 @@
     'name' => 'LICA BLOOD BANK',
     'env' => 'local',
     'debug' => true,
-    'url' => 'http://localhost',
+    'url' => 'localhost',
     'frontend_url' => 'http://localhost:3000',
     'asset_url' => NULL,
     'timezone' => 'Asia/Jakarta',
-    'locale' => 'id',
-    'fallback_locale' => 'id',
-    'faker_locale' => 'id_ID',
+    'locale' => 'en',
+    'fallback_locale' => 'en',
+    'faker_locale' => 'en_US',
     'cipher' => 'AES-256-CBC',
-    'key' => 'base64:4SwKIqGH4gEWuE7VzCXN/nLUL85QaHnqn97on8vMado=',
+    'key' => 'base64:XZg5LFG7XdCScYwMSEj2gX23GyoyHnAAyIdxIAUKgD8=',
     'previous_keys' => 
     array (
     ),
@@ -516,7 +516,7 @@
     array (
       'font_dir' => 'C:\\laragon\\www\\lica-blood-bank\\storage\\fonts',
       'font_cache' => 'C:\\laragon\\www\\lica-blood-bank\\storage\\fonts',
-      'temp_dir' => 'C:\\Users\\USER\\AppData\\Local\\Temp',
+      'temp_dir' => 'C:\\Users\\mgibr\\AppData\\Local\\Temp',
       'chroot' => 'C:\\laragon\\www\\lica-blood-bank',
       'allowed_protocols' => 
       array (
@@ -701,7 +701,7 @@
       array (
         'driver' => 'local',
         'root' => 'C:\\laragon\\www\\lica-blood-bank\\storage\\app/public',
-        'url' => 'http://localhost/storage',
+        'url' => 'localhost/storage',
         'visibility' => 'public',
         'throw' => false,
         'report' => false,
@@ -1000,7 +1000,7 @@
         'username' => NULL,
         'password' => NULL,
         'timeout' => NULL,
-        'local_domain' => 'localhost',
+        'local_domain' => NULL,
       ),
       'ses' => 
       array (
@@ -1142,6 +1142,11 @@
       array (
         0 => 'package_tests.test',
       ),
+    ),
+    'transfusion-reaction' => 
+    array (
+      'view' => 'pages.master.transfusion-reaction.index',
+      'model' => 'App\\Models\\TransfusionReaction',
     ),
   ),
   'permission' => 

@@ -85,6 +85,17 @@
                 <textarea class="form-control" id="edit_data_diagnosis" name="diagnosis" placeholder="{{ __('Diagnosis') }}"
                     rows="3"></textarea>
             </div>
+
+            {{-- DCT Status --}}
+            <div class="col-xxl-2 col-md-2 col-2 mt-2">
+                <label class="form-label" for="edit_data_is_dct">{{ __('DCT') }}</label>
+                <div class="form-check">
+                    <input class="form-check-input" id="edit_data_is_dct" name="is_dct" type="checkbox">
+                    <label class="form-check-label" for="edit_data_is_dct">
+                        {{ __('Yes') }}
+                    </label>
+                </div>
+            </div>
         </div>
 
         <hr />

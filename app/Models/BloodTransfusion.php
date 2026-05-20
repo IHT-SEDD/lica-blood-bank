@@ -25,6 +25,8 @@ class BloodTransfusion extends Model
         'diagnosis',
         'finish_at',
         'status',
+        'is_dct',
+        'is_approval_incompatible',
         'blood_quantity',
         'checkin_by_user_id',
         'finish_by_user_id',

@@ -674,7 +674,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const batchNumberEl = document.querySelector("#batch_number");
     if (batchNumberEl) {
+        selectedBatchNumber = batchNumberEl.value.trim() || null;
         batchNumberEl.addEventListener("input", () => {
+            selectedBatchNumber = batchNumberEl.value.trim() || null;
+        });
+        batchNumberEl.addEventListener("change", () => {
             selectedBatchNumber = batchNumberEl.value.trim() || null;
         });
     }

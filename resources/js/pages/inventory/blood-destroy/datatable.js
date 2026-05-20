@@ -118,7 +118,7 @@ function BloodDestroyTable() {
                  </button>
                  <ul class="dropdown-menu">
                     <li>
-                        <button id="undestroy-data-${row.public_id}" class="dropdown-item fw-medium btn-undestroy-destroy-blood ${isDeleted ? "enabled text-info" : "disabled"}" data-undestroy-id="${row.public_id}" type="button">
+                        <button id="undestroy-data-${row.public_id}" class="dropdown-item fw-medium btn-undestroy-destroy-blood ${isDeleted ? "disabled" : "enabled text-info"}" data-undestroy-id="${row.public_id}" type="button">
                         <i class="ti ti-heart-plus align-middle me-2 fs-4"></i>
                         Undestroy
                         </button>

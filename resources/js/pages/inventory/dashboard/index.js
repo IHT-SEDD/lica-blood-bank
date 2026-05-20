@@ -1,4 +1,4 @@
-import { CustomChartJs } from "../../../app";
+import { CustomChartJs } from "../../../utility/chart/chart";
 import {
     setBloodFilter,
     ListStockTable,

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TestingController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -17,4 +18,12 @@ Route::middleware('auth')->group(function () {
 
   return response()->json(['success' => true, 'locale' => $lang]);
  })->name('language.switch');
+
+ // --------------------------------------------------------------------------
+ // Testing Route Group
+ // --------------------------------------------------------------------------
+ Route::prefix('testing')->name('testing.')->controller(TestingController::class)->group(function () {
+  Route::get('/', 'index')->name('index');
+  Route::get('preview/{print}', 'printPreview')->name('preview');
+ });
 });
