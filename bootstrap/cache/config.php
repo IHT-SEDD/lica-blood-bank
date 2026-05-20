@@ -1143,6 +1143,11 @@
         0 => 'package_tests.test',
       ),
     ),
+    'transfusion-reaction' => 
+    array (
+      'view' => 'pages.master.transfusion-reaction.index',
+      'model' => 'App\\Models\\TransfusionReaction',
+    ),
   ),
   'permission' => 
   array (
