@@ -16,6 +16,8 @@ enum BloodStockStatus: string
     case IN_USE = 'in_use'; // Untuk kantong darah yang sedang digunakan di blood transfusion
     case USED = 'used'; // Untuk kantong darah yang sudah pernah dipakai dan bisa dipakai pasien lain
 
+    case HOLD = 'hold'; // Untuk kantong darah yang sudah diambil pasien
+
     case ALREADY_TAKEN = 'already_taken'; // Untuk kantong darah yang sudah diambil pasien
     case TAKEN_OUT = 'taken_out'; // Untuk kantong darah yang sudah dikeluarkan dari gudang
     case EXPIRED = 'expired'; // Untuk kantong darah yang sudah expired
@@ -26,6 +28,7 @@ enum BloodStockStatus: string
             self::REGISTERED => 'Blood Registered',
             self::AVAILABLE => 'Available',
             self::IN_USE => 'Blood Currently in Use',
+            self::HOLD => 'Blood in Hold',
             self::ALREADY_TAKEN => 'Blood Already Taken',
             self::TAKEN_OUT => 'Blood Has Taken Out from Storage',
             self::EXPIRED => 'Expired',

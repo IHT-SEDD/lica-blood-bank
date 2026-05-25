@@ -1,10 +1,6 @@
 @extends('layouts.blood-transfusion-layout', ['title' => __('Blood Transfusion')])
 
 @section('styles')
-@vite([
-'node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css',
-'node_modules/datatables.net-select-bs5/css/select.bootstrap5.min.css',
-])
 <style>
   @media (min-width: 992px) {
     .patient-data-border {
@@ -80,8 +76,16 @@
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title text-capitalize mb-0">{{ __('Patient Details') }}</h5>
         <div class="card-action d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-soft-secondary d-none" id="btn-checkin-lab" data-id="">
-            {{ __('Check In') }}
+          {{-- Check In button --}}
+          <button class="btn btn-sm btn-soft-secondary d-none fs-6 fw-semibold" id="btn-checkin-lab" data-id=""
+            data-bs-title="Check In Patient" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-file-check fs-4 me-2"></i> Check In
+          </button>
+
+          {{-- Print barcode button --}}
+          <button class="btn btn-sm btn-soft-info d-none fs-6 fw-semibold" id="btn-print-barcode" data-id=""
+            data-bs-title="Print Barcode" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-printer fs-4 me-2"></i> Barcode
           </button>
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
@@ -98,48 +102,48 @@
   {{-- Patient Details :end --}}
 
   {{-- Test List :begin --}}
-  <div class="col-xxl-8 col-12">
+  <div class="col-xxl-6 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center justify-content-start gap-2">
           <h5 class="card-title text-capitalize m-0">{{ __('Test List') }}</h5>
-
           {{-- Finish blood request button --}}
           <button class="btn btn-sm btn-soft-success m-0" id="btn-test-done" data-id=""
-            data-bs-title="Finish blood request" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            data-bs-title="Finish Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-circle-check fs-4"></i>
           </button>
 
           {{-- Hold blood pack button --}}
-          <button class="btn btn-sm btn-soft-warning m-0" id="btn-hold-blood-pack" data-id=""
+          <button class="btn btn-sm btn-soft-warning d-none m-0" id="btn-hold-blood-pack" data-id=""
             data-bs-title="Hold This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-pause fs-4"></i>
           </button>
 
           {{-- Release blood pack button --}}
-          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-blood-pack" data-id=""
+          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-release-blood-pack" data-id=""
             data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-up fs-4"></i>
           </button>
           {{-- Don't Release blood pack button --}}
-          <button class="btn btn-sm btn-soft-danger m-0" id="btn-unrelease-blood-pack" data-id=""
+          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-unrelease-blood-pack" data-id=""
             data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-x fs-4"></i>
           </button>
 
           {{-- Print crossmatch result incompotible blood pack button --}}
-          <button class="btn btn-sm btn-soft-primary m-0" id="btn-print-crossmatch-incompatible" data-id=""
-            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+          <button class="btn btn-sm btn-soft-primary d-none m-0" id="btn-print-incompletter" data-id=""
+            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
             <i class="ti ti-printer fs-4"></i>
           </button>
         </div>
 
         <div class="card-action">
           {{-- Accept blood pack button --}}
-          <button class="btn btn-sm btn-soft-success m-0" id="btn-accept-blood-pack" data-id=""
-            data-bs-title="Accept This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-heart-check fs-4"></i>
+          <button class="btn btn-sm btn-soft-success me-2 d-none" id="btn-accept-blood-pack" data-id=""
+            data-bs-title="Approve Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-droplet-check fs-4"></i>
           </button>
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
@@ -154,7 +158,7 @@
   {{-- Test List :end --}}
 
   {{-- Bag Request List :begin --}}
-  <div class="col-xxl-4 col-12">
+  <div class="col-xxl-6 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -162,14 +166,14 @@
           <h5 class="card-title text-capitalize m-0">{{ __('Bag Request List') }}</h5>
 
           {{-- Edit blood pack button --}}
-          <button class="btn btn-sm btn-soft-primary m-0" id="btn-edit-blood-pack" data-id="" data-bs-toggle="modal"
-            data-bs-target="#edit_blood_pack_modal" data-bs-title="Edit blood pack" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
+          <button class="btn btn-sm btn-soft-primary d-none m-0" id="btn-edit-blood-pack" data-id=""
+            data-bs-toggle="modal" data-bs-target="#edit_blood_pack_modal" data-bs-title="Edit blood pack"
+            data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-pencil fs-4"></i>
           </button>
 
           {{-- Release all blood button --}}
-          <button class="btn btn-sm btn-soft-danger m-0" id="btn-release-all-blood-pack" data-id=""
+          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-release-all-blood-pack" data-id=""
             data-bs-title="Release All Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-share fs-4"></i>
           </button>

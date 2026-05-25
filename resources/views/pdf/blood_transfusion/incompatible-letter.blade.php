@@ -207,8 +207,8 @@
           <div class="paragraph">:</div>
         </td>
         <td width="80%">
-          @if (!empty($data->doctors->name))
-          <div class="paragraph">{{ $data->doctors->name ?? '-' }}</div>
+          @if (!empty($data->doctor?->name))
+          <div class="paragraph">{{ $data->doctor?->name ?? '-' }}</div>
           @else
           <div class="paragraph">dr. Sofyan, Sp.PD</div>
           @endif
@@ -249,10 +249,10 @@
           <div class="paragraph">:</div>
         </td>
         <td width="67%">
-          @if (!empty($data->patients->name))
-          <div class="paragraph">{{ $data->patients->name ?? '-' }}</div>
+          @if (!empty($data->patient?->name))
+          <div class="paragraph">{{ $data->patient?->name ?? '-' }}</div>
           @else
-          <div class="paragraph">RHINO SUWARNO</div>
+          <div class="paragraph">Unknown Patient Name</div>
           @endif
         </td>
       </tr>
@@ -265,10 +265,10 @@
           <div class="paragraph">:</div>
         </td>
         <td width="67%">
-          @if (!empty($data->patients->medrec))
-          <div class="paragraph">{{ $data->patients->medrec ?? '-' }}</div>
+          @if (!empty($data->patient?->medrec))
+          <div class="paragraph">{{ $data->patient?->medrec ?? '-' }}</div>
           @else
-          <div class="paragraph">2308010</div>
+          <div class="paragraph">Unknown Patient Medrec</div>
           @endif
         </td>
       </tr>
@@ -281,10 +281,10 @@
           <div class="paragraph">:</div>
         </td>
         <td width="67%">
-          @if (!empty($data->patients->address))
-          <div class="paragraph">{{ $data->patients->address ?? '-' }}</div>
+          @if (!empty($data->patient?->address))
+          <div class="paragraph">{{ $data->patient?->address ?? '-' }}</div>
           @else
-          <div class="paragraph">LEGOK JAWA BARAT</div>
+          <div class="paragraph">Jawa Barat, Indonesia</div>
           @endif
         </td>
       </tr>
@@ -297,9 +297,9 @@
           <div class="paragraph">:</div>
         </td>
         <td width="67%">
-          @if (!empty($dataDetail->blood_pack_id))
+          @if (!empty($data->patient?->blood_group))
           <div class="paragraph">
-            {{ $dataDetail->blood_packs->blood_group . $dataDetail->blood_packs->blood_rhesus ?? '-'}}
+            {{ $data->patient?->blood_group . $data->patient?->blood_rhesus ?? '-'}}
           </div>
           @else
           <div class="paragraph">B+</div>
@@ -317,7 +317,7 @@
         <td width="67%">
           @if (!empty($data->created_at))
           <div class="paragraph">
-            {{ $data->created_at ?? '-'}}
+            {{ $data->created_at ? \Carbon\Carbon::parse($data->created_at)->format('d F Y') : '-' }}
           </div>
           @else
           <div class="paragraph">19 Mei 2026</div>
@@ -350,43 +350,43 @@
         </tr>
       </thead>
 
+      @php
+      function formatResult(?string $result): string {
+      if (!$result) return '-';
+      return strtoupper(str_replace('_', ' ', $result));
+      }
+      @endphp
+
       <tbody>
+        @forelse ($data->details as $detail)
+        @php
+        $tests = $detail->bloodTransfusionDetailTests->keyBy(fn($t) => $t->test?->name);
+        $mayor = $tests->get('Mayor');
+        $minor = $tests->get('Minor');
+        $autoControl = $tests->get('Auto Control');
+        @endphp
         <tr>
-          <td class="text-center" align="center">H6982136A</td>
-          <td class="text-center" align="center">
-            <strong>PRC</strong>
+          <td class="text-center">
+            {{ $detail->bloodStock?->bag_number ?? '-' }}
           </td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
+          <td class="text-center">
+            <strong>{{ $detail->component ?? '-' }}</strong>
+          </td>
+          <td class="text-center">
+            {{ formatResult($mayor?->result) }}
+          </td>
+          <td class="text-center">
+            {{ formatResult($minor?->result) }}
+          </td>
+          <td class="text-center">
+            {{ formatResult($autoControl?->result) }}
+          </td>
         </tr>
+        @empty
         <tr>
-          <td class="text-center" align="center">H6982136A</td>
-          <td class="text-center" align="center">
-            <strong>PRC</strong>
-          </td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
+          <td class="text-center" colspan="5">No Data Available</td>
         </tr>
-        <tr>
-          <td class="text-center" align="center">H6982136A</td>
-          <td class="text-center" align="center">
-            <strong>PRC</strong>
-          </td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-        </tr>
-        <tr>
-          <td class="text-center" align="center">H6982136A</td>
-          <td class="text-center" align="center">
-            <strong>PRC</strong>
-          </td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-          <td class="text-center" align="center">INCOMPATIBLE (1+)</td>
-        </tr>
+        @endforelse
       </tbody>
     </table>
 
@@ -396,11 +396,7 @@
         <td width="100%" align="left">
           <div class="paragraph">
             {{ __('Hasil pemeriksaan Direct Coomb Test (DCT) :') }}
-            @if (!empty($data->is_dct) && $data->is_dct == 'true')
-            <strong>DILAKUKAN</strong>
-            @else
-            <strong>TIDAK DILAKUKAN</strong>
-            @endif
+            <strong>{{ $data->is_dct ? 'DILAKUKAN' : 'TIDAK DILAKUKAN' }}</strong>
           </div>
         </td>
       </tr>
@@ -416,14 +412,10 @@
       <tr>
         <td width="100%" align="left">
           <div class="paragraph" style="margin-top: 10px;">
-            {{ __('Permintaan darah atas nama ') }}
-            @if (!empty($data->patients->name))
-            <strong>{{ $data->patients->name ?? '' }}</strong>
-            @else
-            <strong>RHINO SUWARNO</strong>
-            @endif
-            tidak dapat kami berikan darahnya, kecuali dengan persetujuan Dokter Penanggung Jawab Pasien (DPJP)
-            bertanggung jawab bilamana ada reaksi transfusi darah.
+            {{ __('Permintaan darah atas nama') }}
+            <strong>{{ $data->patient?->name ?? '-' }}</strong>
+            {{ __('tidak dapat kami berikan darahnya, kecuali dengan persetujuan Dokter Penanggung Jawab Pasien (DPJP)
+            bertanggung jawab bilamana ada reaksi transfusi darah.') }}
           </div>
         </td>
       </tr>
@@ -445,11 +437,7 @@
           <br>
           <br>
           <div class="heading-3">
-            @if (!empty($data->users->name))
-            <strong>{{ $data->users->name ?? '' }}</strong>
-            @else
-            <strong>_______________</strong>
-            @endif
+            <strong>{{ $printBy ?? '_______________' }}</strong>
           </div>
         </td>
       </tr>

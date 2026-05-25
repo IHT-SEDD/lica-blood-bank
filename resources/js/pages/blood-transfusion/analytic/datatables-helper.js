@@ -1,9 +1,9 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
+import { TextFormatter } from "../../../utility/ui";
 
-// ---------- Global Variable ----------
+// ---------- GLOBAL VARIABLES ----------
 const BASE_URL = "/blood-transfusion";
 const DATATABLE_URL = `${BASE_URL}/datatable`;
-
 const TABLE = {
     request: "#list-request-table",
     bagRequest: "#list-bag-request-table",
@@ -11,14 +11,13 @@ const TABLE = {
     bloodPack: "#edit-blood-pack-available-table",
 };
 
+// ---------- INSTANCES ----------
 export let listRequestTableInstance;
 export let listBagRequestTableInstance;
 export let listTestTableInstance;
 export let availableBloodComponentsInstance;
 
-// ------------------------------------------------------------------
-// HELPERS
-// ------------------------------------------------------------------
+// ---------- HELPERS ----------
 const csrfToken = () =>
     document.querySelector('meta[name="csrf-token"]').content;
 
@@ -28,7 +27,6 @@ const emptyCallback = (draw) => ({
     recordsFiltered: 0,
     draw,
 });
-
 const patchRequest = async (url, body, successMessage) => {
     try {
         const response = await fetch(url, {
@@ -53,7 +51,6 @@ const patchRequest = async (url, body, successMessage) => {
         });
     }
 };
-
 const initTomSelect = (selector, options = {}) => {
     document.querySelectorAll(selector).forEach((el) => {
         if (!el.tomselect) {
@@ -68,49 +65,32 @@ const initTomSelect = (selector, options = {}) => {
         }
     });
 };
-
 const isTableInitialized = (selector) => $.fn.DataTable.isDataTable(selector);
 
-// ------------------------------------------------------------------
-// REQUEST DATATABLE
-// ------------------------------------------------------------------
+// ---------- BLOOD REQUEST TABLE ----------
 export function DatatableRequestBlood() {
     if (isTableInitialized(TABLE.request)) return;
-    listRequestTableInstance = new GlobalAdvanceDatatable(TABLE.request, {
-        serverSide: true,
-        searchDelay: 1000,
-        rowSelect: true,
-        ajax: {
-            url: `${DATATABLE_URL}/blood-request`,
-            type: "GET",
-            dataSrc: "data",
-            data: (d) => {
-                d.date_range = document.querySelector(
-                    ".blood-transfusion-date-filter",
-                )?.value;
-            },
+    const REQUESTCOLUMNS = [
+        { data: "blood_request_at" },
+        { data: "patient.name" },
+        { data: "patient.medrec" },
+        { data: "lab_number" },
+        { data: "order_number" },
+        { data: "room.name" },
+        {
+            data: "is_cito",
+            orderable: false,
+            searchable: false,
+            render: (data) =>
+                data
+                    ? `<i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning"></i>`
+                    : "-",
         },
-        columns: [
-            { data: "blood_request_at" },
-            { data: "patient.name" },
-            { data: "patient.medrec" },
-            { data: "lab_number" },
-            { data: "order_number" },
-            { data: "room.name" },
-            {
-                data: "is_cito",
-                orderable: false,
-                searchable: false,
-                render: (data) =>
-                    data
-                        ? `<i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning"></i>`
-                        : "-",
-            },
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: (data) => `
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: (data) => `
                     <div class="dropdown">
                         <button class="btn btn-sm btn-soft-primary"
                             data-bs-toggle="dropdown">
@@ -135,8 +115,24 @@ export function DatatableRequestBlood() {
                         </ul>
                     </div>
                 `,
+        },
+    ];
+
+    listRequestTableInstance = new GlobalAdvanceDatatable(TABLE.request, {
+        serverSide: true,
+        searchDelay: 1000,
+        rowSelect: true,
+        ajax: {
+            url: `${DATATABLE_URL}/blood-request`,
+            type: "GET",
+            dataSrc: "data",
+            data: (d) => {
+                d.date_range = document.querySelector(
+                    ".blood-transfusion-date-filter",
+                )?.value;
             },
-        ],
+        },
+        columns: REQUESTCOLUMNS,
         useHideColumn: true,
         columnDefs: [
             {
@@ -151,11 +147,131 @@ export function DatatableRequestBlood() {
     });
 }
 
-// ------------------------------------------------------------------
-// BAG REQUEST DATATABLE
-// ------------------------------------------------------------------
+// ---------- BAG REQUEST TABLE ----------
 export function DatatableListBagRequest() {
     if (isTableInitialized(TABLE.bagRequest)) return;
+    const BAGREQUESTCOLUMNS = [
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: (_, __, row) => {
+                const bloodRhesusEmpty = row.blood_rhesus === "-";
+                const bloodGroupEmpty = row.blood_group === "-";
+                const stockNotAvailable = row.has_available_stock === null;
+
+                let message = null;
+
+                if (bloodRhesusEmpty && bloodGroupEmpty) {
+                    message = "Please Set Blood Group & Rhesus First!";
+                } else if (bloodRhesusEmpty) {
+                    message = "Please Set Blood Rhesus First!";
+                } else if (bloodGroupEmpty) {
+                    message = "Please Set Blood Group First!";
+                } else if (stockNotAvailable) {
+                    message = "Blood Stock Not Available!";
+                }
+
+                if (message) {
+                    return `<span class="text-danger fw-semibold">${message}</span>`;
+                }
+                const isDisabled =
+                    !window.currentTransfusionLabNumber ||
+                    window.currentTransfusionLabNumber === "-"
+                        ? "disabled"
+                        : "";
+                const options = row.available_stocks
+                    .map(
+                        (stock) => `
+                                    <option value="${stock.id}"
+                                        ${row.selected_stock_id == stock.id ? "selected" : ""}>
+                                        ${stock.text}
+                                    </option>
+                                `,
+                    )
+                    .join("");
+
+                let optionsHtml =
+                    '<option value="" selected disabled>Choose Bag Number</option>' +
+                    options;
+                return `
+                            <select class="select-bag-number fs-6 fw-semibold" placeholder="Choose Bag Number"
+                                data-id="${row.public_id}" ${isDisabled}>
+                                ${optionsHtml}
+                            </select>
+                        `;
+            },
+        },
+        {
+            data: "blood_stock_status",
+            render: function (_, data, row) {
+                const status = TextFormatter.format(row.blood_stock_status);
+                return `<span class="fs-6 fw-semibold uppercase">${status}</span>`;
+            },
+        },
+        {
+            data: "blood_group",
+            render: function (_, __, row) {
+                return `
+                        <span class="text-danger fs-6 fw-semibold">${row.blood_group}</span>
+                        <span class="text-danger fs-6 fw-semibold">${row.blood_rhesus}</span>
+                        <span class="text-danger fs-6 fw-semibold">${row.blood_component}</span>
+                    `;
+            },
+        },
+        {
+            data: null,
+            title: "Expiry Date",
+            orderable: false,
+            searchable: false,
+            render: (_, __, row) => {
+                if (!row.selected_stock_id || !row.available_stocks?.length) {
+                    return '<span class="text-muted">-</span>';
+                }
+
+                const selectedStock = row.available_stocks.find(
+                    (stock) => stock.id === row.selected_stock_id,
+                );
+
+                if (!selectedStock?.expiry) {
+                    return '<span class="text-muted">-</span>';
+                }
+
+                const expiry = new Date(selectedStock.expiry);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const diffDays = Math.ceil(
+                    (expiry - today) / (1000 * 60 * 60 * 24),
+                );
+
+                const formatted = expiry.toLocaleDateString("id-ID", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                });
+
+                // Warna berdasarkan jarak expiry
+                const badgeClass =
+                    diffDays <= 0
+                        ? "text-danger"
+                        : diffDays <= 7
+                          ? "text-warning"
+                          : diffDays <= 30
+                            ? "text-info"
+                            : "text-success";
+
+                return `<span class="${badgeClass} fw-semibold fs-6">${formatted}</span>`;
+            },
+        },
+        {
+            data: "crossmatch_result",
+            render: function (_, __, row) {
+                return renderCrossmatchResult(row.crossmatch_result);
+            },
+        },
+    ];
+
     listBagRequestTableInstance = new GlobalAdvanceDatatable(TABLE.bagRequest, {
         serverSide: true,
         removeSearch: true,
@@ -173,64 +289,12 @@ export function DatatableListBagRequest() {
                 .done(callback)
                 .fail(() => callback(emptyCallback(data.draw)));
         },
-        columns: [
-            {
-                data: null,
-                orderable: false,
-                searchable: false,
-                render: (_, __, row) => {
-                    if (!row.has_available_stock) {
-                        return `<span class="text-danger fw-semibold">Not Available Stock</span>`;
-                    }
-                    const isDisabled =
-                        !window.currentTransfusionLabNumber ||
-                        window.currentTransfusionLabNumber === "-"
-                            ? "disabled"
-                            : "";
-                    const options = row.available_stocks
-                        .map(
-                            (stock) => `
-                                    <option value="${stock.id}"
-                                        ${row.selected_stock_id == stock.id ? "selected" : ""}>
-                                        ${stock.text}
-                                    </option>
-                                `,
-                        )
-                        .join("");
-
-                    let optionsHtml =
-                        '<option value="" selected disabled>Choose Bag Number</option>' +
-                        options;
-                    return `
-                            <select class="select-bag-number" placeholder="Choose Bag Number"
-                                data-id="${row.public_id}" ${isDisabled}>
-                                ${optionsHtml}
-                            </select>
-                        `;
-                },
-            },
-            {
-                data: "blood_group",
-                render: function (_, __, row) {
-                    return `
-                        <span class="text-danger fw-semibold">${row.blood_group}</span>
-                        <span class="text-danger fw-semibold">${row.blood_rhesus}</span>
-                        <span class="text-danger fw-semibold">${row.blood_component}</span>
-                    `;
-                },
-            },
-            {
-                data: "crossmatch_result",
-                render: function (_, __, row) {
-                    return renderTransfusionResult(row.crossmatch_result);
-                },
-            }
-        ],
+        columns: BAGREQUESTCOLUMNS,
         drawCallback: () => initTomSelect(".select-bag-number"),
     });
 }
-
-function renderTransfusionResult(result) {
+// ---------- RENDER RESULT CROSSMATCH ----------
+function renderCrossmatchResult(result) {
     switch (result) {
         case "Compatible":
             return `<span class="badge badge-pill bg-success">Compatible</span>`;
@@ -241,13 +305,57 @@ function renderTransfusionResult(result) {
     }
 }
 
-// ------------------------------------------------------------------
-// TEST DATATABLE
-// ------------------------------------------------------------------
+// ---------- TEST TABLE ----------
 export function DatatableListTest() {
     if (isTableInitialized(TABLE.test)) return;
 
     let resultOptions = [];
+
+    const TESTCOLUMNS = [
+        { data: "bag_number" },
+        { data: "test_name" },
+        {
+            data: "result_value",
+            render: (_, __, row) => {
+                if (!row.detail_test_public_id) return "-";
+
+                const isDisabled =
+                    !window.currentTransfusionLabNumber ||
+                    window.currentTransfusionLabNumber === "-"
+                        ? "disabled"
+                        : "";
+                // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
+                const isPlaceholderSelected =
+                    row.result_value === null || row.result_value === ""
+                        ? "selected"
+                        : "";
+                let optionsHtml = `<option value="" disabled ${isPlaceholderSelected}>Choose Result</option>`;
+
+                const options = resultOptions
+                    .map((opt) => {
+                        const isSelected =
+                            String(opt.id) === String(row.result_value)
+                                ? "selected"
+                                : "";
+                        return `
+                <option value="${opt.id}" ${isSelected}>
+                    ${opt.text}
+                </option>
+            `;
+                    })
+                    .join("");
+
+                // 2. MASUKKAN optionsHtml DI ATAS options
+                return `
+            <select class="select-test-result" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
+                ${optionsHtml}
+                ${options}
+            </select>
+        `;
+            },
+        },
+    ];
+
     listTestTableInstance = new GlobalAdvanceDatatable(TABLE.test, {
         serverSide: true,
         removeSearch: true,
@@ -273,50 +381,7 @@ export function DatatableListTest() {
                 })
                 .fail(() => callback(emptyCallback(data.draw)));
         },
-        columns: [
-            { data: "bag_number" },
-            { data: "test_name" },
-            {
-                data: "result_value",
-                render: (_, __, row) => {
-                    if (!row.detail_test_public_id) return "-";
-
-                    const isDisabled =
-                        !window.currentTransfusionLabNumber ||
-                        window.currentTransfusionLabNumber === "-"
-                            ? "disabled"
-                            : "";
-                    // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
-                    const isPlaceholderSelected =
-                        row.result_value === null || row.result_value === ""
-                            ? "selected"
-                            : "";
-                    let optionsHtml = `<option value="" disabled ${isPlaceholderSelected}>Choose Result</option>`;
-
-                    const options = resultOptions
-                        .map((opt) => {
-                            const isSelected =
-                                String(opt.id) === String(row.result_value)
-                                    ? "selected"
-                                    : "";
-                            return `
-                <option value="${opt.id}" ${isSelected}>
-                    ${opt.text}
-                </option>
-            `;
-                        })
-                        .join("");
-
-                    // 2. MASUKKAN optionsHtml DI ATAS options
-                    return `
-            <select class="select-test-result" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
-                ${optionsHtml}
-                ${options}
-            </select>
-        `;
-                },
-            },
-        ],
+        columns: TESTCOLUMNS,
         drawCallback: () => {
             initTomSelect(".select-test-result");
             // Defer so the DOM is fully rendered before checking button state
@@ -325,9 +390,7 @@ export function DatatableListTest() {
     });
 }
 
-// ------------------------------------------------------------------
-// BLOOD COMPONENTS MODAL DATATABLE
-// ------------------------------------------------------------------
+// ---------- BLOOD PACK TABLE IN MODAL ----------
 export function DatatableBloodPackModal() {
     if (!document.querySelector(TABLE.bloodPack)) return;
 
@@ -391,9 +454,7 @@ export function DatatableBloodPackModal() {
     });
 }
 
-// ------------------------------------------------------------------
-// BLOOD COMPONENTS DATATABLE
-// ------------------------------------------------------------------
+// ---------- BLOOD COMPONENT ----------
 export function initAvailableBloodComponentsTable() {
     const tableSelector = "#available-blood-components-table";
 
@@ -451,9 +512,149 @@ export function initAvailableBloodComponentsTable() {
     );
 }
 
-// ------------------------------------------------------------------
-// EVENTS
-// ------------------------------------------------------------------
+// ---------- COMPLETE TEST BUTTON ----------
+export function updateDoneButtonState() {
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    // If no bag selected or already completed, disable
+    if (!window.currentBagDetailPublicId) {
+        btn.disabled = true;
+        return;
+    }
+
+    // If this bag already has a transfusion result, keep Done disabled
+    if (window.currentBagCrossmatchResult) {
+        btn.disabled = true;
+        return;
+    }
+
+    // Check all visible test rows in the table
+    const table = document.querySelector(TABLE.test);
+    if (!table) {
+        btn.disabled = true;
+        return;
+    }
+
+    const rows = table.querySelectorAll("tbody tr");
+    if (rows.length === 0) {
+        btn.disabled = true;
+        return;
+    }
+
+    let allComplete = true;
+
+    rows.forEach((row) => {
+        // Check result select — must have a non-empty value
+        const resultSelect = row.querySelector(".select-test-result");
+        if (!resultSelect || !resultSelect.value) {
+            allComplete = false;
+            return;
+        }
+
+        // // Check verified checkbox
+        // const verifiedCb = row.querySelector(
+        //     '.checkbox-update[data-field="verified"]',
+        // );
+        // if (!verifiedCb || !verifiedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
+
+        // // Check validated checkbox
+        // const validatedCb = row.querySelector(
+        //     '.checkbox-update[data-field="validated"]',
+        // );
+        // if (!validatedCb || !validatedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
+    });
+
+    btn.disabled = !allComplete;
+}
+export async function completeTest() {
+    const detailPublicId = window.currentBagDetailPublicId;
+    if (!detailPublicId) {
+        notyf.error({ message: "Please select a bag first." });
+        return;
+    }
+
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    // Prevent multiple clicks
+    const originalText = btn.innerHTML;
+    btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(
+            `${BASE_URL}/test/${detailPublicId}/complete`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken(),
+                },
+            },
+        );
+
+        const res = await response.json();
+
+        if (!response.ok) {
+            throw new Error(res.message);
+        }
+
+        notyf.success({ message: res.message });
+
+        // Mark bag as completed so Done button stays disabled
+        window.currentBagCrossmatchResult = res.crossmatch_result;
+
+        // Disable Done button after success
+        btn.disabled = true;
+        btn.innerHTML = originalText;
+
+        // Reload test table
+        if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
+            $(TABLE.test).DataTable().ajax.reload(null, false);
+        }
+
+        // Reload bag request table to reflect updated transfusion_result badge
+        if (
+            listBagRequestTableInstance &&
+            $.fn.DataTable.isDataTable(TABLE.bagRequest)
+        ) {
+            $(TABLE.bagRequest)
+                .DataTable()
+                .ajax.reload(function (json) {
+                    if (window.currentBagDetailPublicId && json.data) {
+                        const updatedBag = json.data.find(
+                            (b) =>
+                                b.public_id === window.currentBagDetailPublicId,
+                        );
+                        if (updatedBag) {
+                            window.currentBagData = updatedBag;
+                            if (
+                                typeof window.updateWorkflowButtonsState ===
+                                "function"
+                            ) {
+                                window.updateWorkflowButtonsState();
+                            }
+                        }
+                    }
+                }, false);
+        }
+    } catch (error) {
+        console.error(error);
+        notyf.error({ message: error.message || "Failed to complete test." });
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+// ---------- EVENTS ----------
 document.addEventListener("change", async function (e) {
     // Update Bag Number
     if (e.target.matches(".select-bag-number")) {
@@ -517,140 +718,3 @@ document.addEventListener("change", async function (e) {
         updateDoneButtonState();
     }
 });
-
-// ------------------------------------------------------------------
-// DONE BUTTON (Complete Test)
-// ------------------------------------------------------------------
-export function updateDoneButtonState() {
-    const btn = document.getElementById("btn-test-done");
-    if (!btn) return;
-
-    // If no bag selected or already completed, disable
-    if (!window.currentBagDetailPublicId) {
-        btn.disabled = true;
-        return;
-    }
-
-    // If this bag already has a transfusion result, keep Done disabled
-    if (window.currentBagTransfusionResult) {
-        btn.disabled = true;
-        return;
-    }
-
-    // Check all visible test rows in the table
-    const table = document.querySelector(TABLE.test);
-    if (!table) {
-        btn.disabled = true;
-        return;
-    }
-
-    const rows = table.querySelectorAll("tbody tr");
-    if (rows.length === 0) {
-        btn.disabled = true;
-        return;
-    }
-
-    let allComplete = true;
-
-    rows.forEach((row) => {
-        // Check result select — must have a non-empty value
-        const resultSelect = row.querySelector(".select-test-result");
-        if (!resultSelect || !resultSelect.value) {
-            allComplete = false;
-            return;
-        }
-
-        // // Check verified checkbox
-        // const verifiedCb = row.querySelector(
-        //     '.checkbox-update[data-field="verified"]',
-        // );
-        // if (!verifiedCb || !verifiedCb.checked) {
-        //     allComplete = false;
-        //     return;
-        // }
-
-        // // Check validated checkbox
-        // const validatedCb = row.querySelector(
-        //     '.checkbox-update[data-field="validated"]',
-        // );
-        // if (!validatedCb || !validatedCb.checked) {
-        //     allComplete = false;
-        //     return;
-        // }
-    });
-
-    btn.disabled = !allComplete;
-}
-
-export async function completeTest() {
-    const detailPublicId = window.currentBagDetailPublicId;
-    if (!detailPublicId) {
-        notyf.error({ message: "Please select a bag first." });
-        return;
-    }
-
-    const btn = document.getElementById("btn-test-done");
-    if (!btn) return;
-
-    // Prevent multiple clicks
-    const originalText = btn.innerHTML;
-    btn.innerHTML =
-        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-    btn.disabled = true;
-
-    try {
-        const response = await fetch(
-            `${BASE_URL}/test/${detailPublicId}/complete`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken(),
-                },
-            },
-        );
-
-        const res = await response.json();
-
-        if (!response.ok) {
-            throw new Error(res.message);
-        }
-
-        notyf.success({ message: res.message });
-
-        // Mark bag as completed so Done button stays disabled
-        window.currentBagTransfusionResult = res.transfusion_result;
-
-        // Disable Done button after success
-        btn.disabled = true;
-        btn.innerHTML = originalText;
-
-        // Reload test table
-        if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
-            $(TABLE.test).DataTable().ajax.reload(null, false);
-        }
-
-        // Reload bag request table to reflect updated transfusion_result badge
-        if (
-            listBagRequestTableInstance &&
-            $.fn.DataTable.isDataTable(TABLE.bagRequest)
-        ) {
-            $(TABLE.bagRequest).DataTable().ajax.reload(function(json) {
-                if (window.currentBagDetailPublicId && json.data) {
-                    const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
-                    if (updatedBag) {
-                        window.currentBagData = updatedBag;
-                        if (typeof window.updateWorkflowButtonsState === "function") {
-                            window.updateWorkflowButtonsState();
-                        }
-                    }
-                }
-            }, false);
-        }
-    } catch (error) {
-        console.error(error);
-        notyf.error({ message: error.message || "Failed to complete test." });
-        btn.innerHTML = originalText;
-        btn.disabled = false;
-    }
-}

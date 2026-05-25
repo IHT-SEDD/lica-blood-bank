@@ -16,7 +16,11 @@ use App\Enums\BloodTransfusionStatus;
 use App\Http\Requests\BloodTransfusion\StoreBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodPacksRequest;
+use App\Services\BloodTransfusion\BloodTransfusionDataService;
 use App\Services\BloodTransfusion\BloodTransfusionDetailTestService;
+use App\Services\BloodTransfusion\BloodTransfusionPrintService;
+use App\Services\BloodTransfusion\BloodTransfusionWriteService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -28,7 +32,10 @@ class BloodTransfusionController extends Controller
 
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
+        protected BloodTransfusionDataService $dataService,
         protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
+        protected BloodTransfusionPrintService $printService,
+        protected BloodTransfusionWriteService $writeService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -41,118 +48,29 @@ class BloodTransfusionController extends Controller
     // ---------- Datatable Blood Pack ----------
     public function datatableBloodPack(Request $request)
     {
-        $searchValue = trim($request->input('search.value', ''));
-        $start = max((int) $request->input('start', 0), 0);
-        $length = (int) $request->input('length', 10);
-        $draw = (int) $request->input('draw', 1);
-
-        $data = BloodComponent::toSelect();
-        $recordsTotal = count(BloodComponent::toSelect());
-        $recordsFiltered = count(BloodComponent::toSelect());
-
-        // dd($data);
-        return response()->json([
-            'draw' => $draw,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $data,
-        ]);
+        return response()->json($this->dataService->bloodPackTable($request));
     }
 
     // ---------- Datatable Blood Request ----------
     public function datatableBloodRequest(Request $request)
     {
-        $searchValue = trim($request->input('search.value', ''));
-        $start = max((int) $request->input('start', 0), 0);
-        $length = (int) $request->input('length', 10);
-        $draw = (int) $request->input('draw', 1);
-        $dateRange = $request->input('date_range');
+        return response()->json($this->dataService->bloodRequestTable($request));
+    }
 
-        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
-            ->whereNull('deleted_at');
+    // ---------- List Bag Request Datatable ----------
+    public function datatableListBagRequest(Request $request, string $id)
+    {
+        return response()->json(
+            $this->dataService->listBagRequestTable($request, $id)
+        );
+    }
 
-        // Handle Date Range
-        if (!empty($dateRange)) {
-            $dates = explode(' to ', $dateRange);
-            try {
-                if (count($dates) === 2) {
-                    $startDate = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
-                    $endDate = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[1]))->endOfDay();
-                    $query->whereBetween('blood_request_at', [$startDate, $endDate]);
-                } elseif (count($dates) === 1) {
-                    $date = \Carbon\Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
-                    $query->whereDate('blood_request_at', $date);
-                }
-            } catch (\Exception $e) {
-                // If parsing fails, do not apply date filter
-            }
-        } else {
-            $query->whereDate('blood_request_at', \Carbon\Carbon::now()->format('Y-m-d'));
-        }
-
-        // Handle Search
-        if ($searchValue !== '') {
-            $query->where(function ($sub) use ($searchValue) {
-                $sub->where('order_number', 'like', "{$searchValue}%")
-                    ->orWhere('lab_number', 'like', "{$searchValue}%")
-                    ->orWhereHas('patient', function ($q) use ($searchValue) {
-                        $q->where('name', 'like', "{$searchValue}%")
-                            ->orWhere('medrec', 'like', "{$searchValue}%");
-                    })
-                    ->orWhereHas('room', function ($q) use ($searchValue) {
-                        $q->where('name', 'like', "{$searchValue}%");
-                    });
-            });
-        }
-
-        $recordsTotal = BloodTransfusion::whereNull('deleted_at')->count();
-        $recordsFiltered = $query->count();
-
-        // Handle Pagination
-        if ($length !== -1) {
-            $query->offset($start)->limit($length);
-        }
-
-        $data = $query->orderBy('blood_request_at', 'desc')->get();
-
-        // Transform data
-        $pageData = $data->map(function ($item) {
-            return [
-                'public_id' => $item->public_id,
-                'blood_request_at' => $item->blood_request_at ? \Carbon\Carbon::parse($item->blood_request_at)->format('Y/m/d') : '-',
-                'order_number' => $item->order_number ?? '-',
-                'lab_number' => $item->lab_number ?? '-',
-                'diagnosis' => $item->diagnosis ?? '-',
-                'patient' => [
-                    'medrec' => $item->patient->medrec ?? '-',
-                    'name' => $item->patient->name ?? '-',
-                    'gender' => $item->patient->gender === 'M' ? 'Male' : ($item->patient->gender === 'F' ? 'Female' : '-'),
-                    'email' => $item->patient->email ?? '-',
-                    'address' => $item->patient->address ?? '-',
-                    'age' => $item->patient->birthdate ? \Carbon\Carbon::parse($item->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
-                    'blood_group' => $item->patient->blood_group ?? '-',
-                    'blood_rhesus' => $item->patient->blood_rhesus ?? '-',
-                ],
-                'room' => [
-                    'name' => $item->room->name ?? '-',
-                    'type' => $item->room->type ? str_replace('_', ' ', str::kebab($item->room->type)) : '-'
-                ],
-                'insurance' => [
-                    'name' => $item->insurance->name ?? '-',
-                ],
-                'doctor' => [
-                    'name' => $item->doctor->name ?? '-',
-                ],
-                'is_cito' => false, // Placeholder since we don't have is_cito column yet
-            ];
-        });
-
-        return response()->json([
-            'draw' => $draw,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $pageData,
-        ]);
+    // ---------- Datatable List Test ----------
+    public function datatableListTest(Request $request, string $id)
+    {
+        return response()->json(
+            $this->dataService->listTestTable($request, $id)
+        );
     }
 
     // ---------- Store Blood Request ----------
@@ -227,11 +145,11 @@ class BloodTransfusionController extends Controller
                 ]);
 
                 // Check Blood Stock bedasarkan Blood Group dan Rhesus Pasien
-                if(!is_null($patient->blood_group) && !is_null($patient->blood_rhesus)){
+                if (!is_null($patient->blood_group) && !is_null($patient->blood_rhesus)) {
                     $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
-                                ->where('blood_rhesus', $patient->blood_rhesus)
-                                ->where('blood_component', $component->id)
-                                ->first();
+                        ->where('blood_rhesus', $patient->blood_rhesus)
+                        ->where('blood_component', $component->id)
+                        ->first();
 
                     $transfusionDetail->update([
                         'blood_pack_id' => $bloodPack?->id,
@@ -316,20 +234,20 @@ class BloodTransfusionController extends Controller
                     'blood_rhesus' => $request->blood_rhesus,
                 ]);
 
-                if(!is_null($transfusion->patient->blood_group) && !is_null($transfusion->patient->blood_rhesus)){
+                if (!is_null($transfusion->patient->blood_group) && !is_null($transfusion->patient->blood_rhesus)) {
 
                     foreach ($transfusion->details as $bloodTransfusionDetail) {
                         // dd($transfusion->patient->blood_group, $transfusion->patient->blood_rhesus, $bloodTransfusionDetail->component);
                         $bloodPack = BloodPack::where('blood_group', $transfusion->patient->blood_group)
-                                ->where('blood_rhesus', $transfusion->patient->blood_rhesus)
-                                ->where('blood_component', $bloodTransfusionDetail->component)
-                                ->first();
+                            ->where('blood_rhesus', $transfusion->patient->blood_rhesus)
+                            ->where('blood_component', $bloodTransfusionDetail->component)
+                            ->first();
 
                         $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)
-                                            ->where('blood_status', BloodStockStatus::AVAILABLE)
-                                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
-                                            ->orderBy('expiry_date', 'asc')
-                                            ->first();
+                            ->where('blood_status', BloodStockStatus::AVAILABLE)
+                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
+                            ->orderBy('expiry_date', 'asc')
+                            ->first();
 
                         $bloodTransfusionDetail->update([
                             'blood_stock_id' => $availableStock?->id,
@@ -389,7 +307,7 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Delete Blood Request ----------
-    public function destroy($id)
+    public function destroy(string $id)
     {
         try {
             $transfusion = BloodTransfusion::where('public_id', $id)->first();
@@ -409,7 +327,7 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Check In Blood Request ----------
-    public function checkin($id)
+    public function checkin(string $id)
     {
         try {
             $transfusion = BloodTransfusion::where('public_id', $id)->firstOrFail();
@@ -466,81 +384,8 @@ class BloodTransfusionController extends Controller
         }
     }
 
-    // ---------- List Bag Request Datatable ----------
-    public function datatableListBagRequest(Request $request, $id)
-    {
-        $draw = (int) $request->input('draw', 1);
-        // dd(1111);
-        $transfusion = BloodTransfusion::where('public_id', $id)->first();
-
-        if (!$transfusion) {
-            return response()->json([
-                'draw' => $draw,
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => []
-            ]);
-        }
-
-        $details = BloodTransfusionDetail::with('bloodPack')
-            ->where('blood_transfusion_id', $transfusion->id)
-            ->get();
-
-        $pageData = $details->map(function ($detail) use ($transfusion) {
-            // Find available blood stocks
-            $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)
-                ->where('blood_status', BloodStockStatus::AVAILABLE->value)
-                ->where('expiry_date', '>', $transfusion->blood_request_at)
-                ->get();
-
-            // If a stock is already selected, make sure it's included in the list even if it's no longer AVAILABLE (e.g., IN_USE)
-            $selectedStock = null;
-            if ($detail->blood_stock_id) {
-                $selectedStock = BloodStock::find($detail->blood_stock_id);
-                if ($selectedStock && !$availableStocks->contains('id', $selectedStock->id)) {
-                    $availableStocks->push($selectedStock);
-                }
-            }
-
-            $hasAvailableStock = $availableStocks->isNotEmpty();
-
-            $options = $availableStocks->map(function ($stock) {
-                return [
-                    'id' => $stock->id,
-                    'text' => $stock->bag_number
-                ];
-            })->values()->toArray();
-
-            return [
-                'public_id'           => $detail->public_id,
-                'blood_pack_label'    => $detail->bloodPack ? $detail->bloodPack->label : '-',
-                'blood_group'         => $detail->bloodPack ? $detail->bloodPack->blood_group->value : '-',
-                'blood_rhesus'        => $detail->bloodPack ? $detail->bloodPack->blood_rhesus : '-',
-                'blood_component'     => $detail->bloodPack ? $detail->bloodPack->blood_component->value : '-',
-                'blood_pack_public_id' => $detail->bloodPack ? $detail->bloodPack->public_id : null,
-                'has_available_stock' => $hasAvailableStock,
-                'available_stocks'    => $options,
-                'selected_stock_id'   => $detail->blood_stock_id,
-                'component_id'        => $detail->component,
-                'component_text'      => BloodComponent::getById($detail->component),
-                'crossmatch_result'  => $detail->crossmatch_result,
-                'transfusion_result'  => $detail->transfusion_result,
-                'blood_stock_status'  => $detail->bloodStock ? $detail->bloodStock->blood_status : null,
-                'is_approval_incompatible' => (bool)$detail->is_approval_incompatible,
-                'blood_release_status' => (bool)$detail->blood_release_status,
-            ];
-        });
-
-        return response()->json([
-            'draw' => $draw,
-            'recordsTotal' => $details->count(),
-            'recordsFiltered' => $details->count(),
-            'data' => $pageData
-        ]);
-    }
-
     // ---------- Update Bag Number (Blood Stock ID) ----------
-    public function updateBagNumber(Request $request, $detailPublicId)
+    public function updateBagNumber(Request $request, string $detailPublicId)
     {
         // $request->validate([
         //     'blood_stock_id' => 'required|exists:blood_stocks,id'
@@ -553,7 +398,7 @@ class BloodTransfusionController extends Controller
 
             $bloodStockOld = BloodStock::find($detail->blood_stock_id);
             // dd($bloodStockOld);
-            if($bloodStockOld){
+            if ($bloodStockOld) {
                 $bloodStockOld->update([
                     'blood_status' => BloodStockStatus::AVAILABLE,
                     'used_at'     => null,
@@ -565,14 +410,13 @@ class BloodTransfusionController extends Controller
                 'blood_stock_id' => $request->blood_stock_id
             ]);
 
-            if($request->blood_stock_id){
+            if ($request->blood_stock_id) {
                 // Update status Blood Stock to IN_USE
                 $bloodStock = BloodStock::find($request->blood_stock_id);
                 $bloodStock->update([
                     'blood_status' => BloodStockStatus::IN_USE,
                     'used_at'     => now(),
                 ]);
-
             }
 
             return response()->json([
@@ -587,7 +431,7 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Update Blood Packs (Edit Bag Request List) ----------
-    public function updateBloodPacks(UpdateBloodPacksRequest $request, $id)
+    public function updateBloodPacks(UpdateBloodPacksRequest $request, string $id)
     {
         // dd($request->all());
         try {
@@ -595,55 +439,55 @@ class BloodTransfusionController extends Controller
             DB::transaction(function () use ($transfusion, $request) {
 
                 $oldDetails = BloodTransfusionDetail::with('bloodTransfusionDetailTests') // Sesuaikan nama relasi di model Anda
-                ->where('blood_transfusion_id', $transfusion->id)
-                ->get();
+                    ->where('blood_transfusion_id', $transfusion->id)
+                    ->get();
 
-            $oldBloodTransfusionDetail = [];
-            $oldResults = [];
-            foreach ($oldDetails as $oldDetail) {
-                $keyDetail = $oldDetail->component .'-'. $oldDetail->public_id;
-                $oldBloodTransfusionDetail[$keyDetail] = [
-                    'blood_transfusion_id' => $oldDetail->blood_transfusion_id,
-                    'component'            => $oldDetail->component,
-                    'blood_stock_id'       => $oldDetail->blood_stock_id,
-                    'blood_pack_id'       => $oldDetail->blood_pack_id,
-                    'crossmatch_result'       => $oldDetail->crossmatch_result,
-                ];
-                foreach ($oldDetail->bloodTransfusionDetailTests as $oldTest) {
-                    // Simpan dengan key unik: "nama_komponen-id_test"
-                    $key = $oldDetail->public_id . '-' . $oldTest->test_id;
-                    $oldResults[$key] = [
-                        'result' => $oldTest->result,
-                        'result_by_user_id' => $oldTest->result_by_user_id,
+                $oldBloodTransfusionDetail = [];
+                $oldResults = [];
+                foreach ($oldDetails as $oldDetail) {
+                    $keyDetail = $oldDetail->component . '-' . $oldDetail->public_id;
+                    $oldBloodTransfusionDetail[$keyDetail] = [
+                        'blood_transfusion_id' => $oldDetail->blood_transfusion_id,
+                        'component'            => $oldDetail->component,
+                        'blood_stock_id'       => $oldDetail->blood_stock_id,
+                        'blood_pack_id'       => $oldDetail->blood_pack_id,
+                        'crossmatch_result'       => $oldDetail->crossmatch_result,
                     ];
+                    foreach ($oldDetail->bloodTransfusionDetailTests as $oldTest) {
+                        // Simpan dengan key unik: "nama_komponen-id_test"
+                        $key = $oldDetail->public_id . '-' . $oldTest->test_id;
+                        $oldResults[$key] = [
+                            'result' => $oldTest->result,
+                            'result_by_user_id' => $oldTest->result_by_user_id,
+                        ];
+                    }
                 }
-            }
 
                 // Soft-delete all existing details for this transfusion
                 BloodTransfusionDetail::where('blood_transfusion_id', $transfusion->id)
-                   ->forceDelete();
+                    ->forceDelete();
 
-            // Create new details based on the submitted selection
-            $selected_blood_components = $request->input('blood_packs');
-            // dd($selected_blood_components);
+                // Create new details based on the submitted selection
+                $selected_blood_components = $request->input('blood_packs');
+                // dd($selected_blood_components);
 
-             $package = Package::with(['package_tests'])->where('is_active', 1)->first();
+                $package = Package::with(['package_tests'])->where('is_active', 1)->first();
 
                 foreach ($selected_blood_components as $component) {
 
                     $componentExists = BloodComponent::getById($component['component_id']);
 
-                    if(!$componentExists) continue;
+                    if (!$componentExists) continue;
 
                     // Merge old data component if exists, otherwise create new
-                    $keyComponent = $component['component_id'] .'-'. $component['public_id'];
+                    $keyComponent = $component['component_id'] . '-' . $component['public_id'];
 
                     $existingBloodTransfusionDetail = isset($oldBloodTransfusionDetail[$keyComponent]) ? $oldBloodTransfusionDetail[$keyComponent] : null;
 
                     // public_id di-generate otomatis oleh model booted()
                     $transfusionDetail = BloodTransfusionDetail::create([
                         'blood_transfusion_id' => $transfusion->id,
-                        'component'            => $existingBloodTransfusionDetail ? $existingBloodTransfusionDetail['component'] : $component['component_id'] ,
+                        'component'            => $existingBloodTransfusionDetail ? $existingBloodTransfusionDetail['component'] : $component['component_id'],
                         'blood_stock_id'       => $existingBloodTransfusionDetail ? $existingBloodTransfusionDetail['blood_stock_id'] : null,
                         'blood_pack_id'       => $existingBloodTransfusionDetail ? $existingBloodTransfusionDetail['blood_pack_id'] : null,
                         'crossmatch_result'   => $existingBloodTransfusionDetail ? $existingBloodTransfusionDetail['crossmatch_result'] : null,
@@ -651,25 +495,25 @@ class BloodTransfusionController extends Controller
 
                     $patient = $transfusion->patient;
                     // Check Blood Stock bedasarkan Blood Group dan Rhesus Pasien
-                    if(!is_null($patient->blood_group) && !is_null($patient->blood_rhesus) && is_null($transfusionDetail->blood_pack_id)){
+                    if (!is_null($patient->blood_group) && !is_null($patient->blood_rhesus) && is_null($transfusionDetail->blood_pack_id)) {
 
                         $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
-                                    ->where('blood_rhesus', $patient->blood_rhesus)
-                                    ->where('blood_component', $component['component_id'])
-                                    ->first();
+                            ->where('blood_rhesus', $patient->blood_rhesus)
+                            ->where('blood_component', $component['component_id'])
+                            ->first();
 
                         $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)
-                                            ->where('blood_status', BloodStockStatus::AVAILABLE)
-                                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
-                                            ->orderBy('expiry_date', 'asc')
-                                            ->first();
+                            ->where('blood_status', BloodStockStatus::AVAILABLE)
+                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
+                            ->orderBy('expiry_date', 'asc')
+                            ->first();
 
                         $transfusionDetail->update([
                             'blood_pack_id' => $bloodPack?->id,
                             'blood_stock_id' => $availableStock?->id
                         ]);
 
-                        if($availableStock){
+                        if ($availableStock) {
                             $availableStock->update([
                                 'blood_status' => BloodStockStatus::IN_USE,
                                 'used_at'     => now(),
@@ -705,19 +549,9 @@ class BloodTransfusionController extends Controller
             ], 500);
         }
     }
-    // ---------- Datatable List Test ----------
-    public function datatableListTest(Request $request, $id)
-    {
-        $draw = (int) $request->input('draw', 1);
-        $detailPublicId = $request->input('detail_id');
-
-        return response()->json(
-            $this->bloodTransfusionDetailTestService->getDatatableData($id, $draw, $detailPublicId)
-        );
-    }
 
     // ---------- Update Result Test ----------
-    public function updateTestResult(Request $request, $id)
+    public function updateTestResult(Request $request, string $id)
     {
         // $request->validate([
         //     'result' => 'required|string',
@@ -733,7 +567,7 @@ class BloodTransfusionController extends Controller
         ], $status);
     }
 
-    public function updateTestVerifiedValidated(Request $request, $id)
+    public function updateTestVerifiedValidated(Request $request, string $id)
     {
         $request->validate([
             'field' => 'required|in:verified,validated',
@@ -758,7 +592,7 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Complete Test (Done) ----------
-    public function completeTest($detailPublicId)
+    public function completeTest(string $detailPublicId)
     {
         try {
             $result = $this->bloodTransfusionDetailTestService->completeTest($detailPublicId);
@@ -772,36 +606,29 @@ class BloodTransfusionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to complete test.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
     // ---------- Workflow Actions ----------
-
-    public function holdBloodPack($detailPublicId)
+    public function holdBloodPack(string $detailPublicId)
     {
         try {
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            if ($detail->blood_stock_id) {
-                $stock = BloodStock::find($detail->blood_stock_id);
-                if ($stock) {
-                    $stock->update(['blood_status' => BloodStockStatus::ALREADY_TAKEN]);
-                }
-            }
+            $this->writeService->holdBloodPack($detailPublicId);
 
-            return response()->json([
-                'message' => 'Blood pack has been held.'
-            ], 200);
+            return response()->json(['message' => 'Blood pack has been held.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to hold blood pack.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
-    public function acceptIncompatible($detailPublicId)
+    public function acceptIncompatible(string $detailPublicId)
     {
         try {
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
@@ -820,7 +647,7 @@ class BloodTransfusionController extends Controller
         }
     }
 
-    public function releaseBloodPack($detailPublicId)
+    public function releaseBloodPack(string $detailPublicId)
     {
         try {
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
@@ -844,7 +671,7 @@ class BloodTransfusionController extends Controller
         }
     }
 
-    public function unreleaseBloodPack($detailPublicId)
+    public function unreleaseBloodPack(string $detailPublicId)
     {
         try {
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
@@ -865,6 +692,19 @@ class BloodTransfusionController extends Controller
                 'message' => 'Failed to unrelease blood pack.',
                 'error'   => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    // ---------- Print Incompatible Letter ----------
+    public function printIncompatibleLetter(string $transfusionPublicID)
+    {
+        try {
+            $print = 'incompatible-letter';
+            return $this->printService->incompatibleLetter($transfusionPublicID, $print);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to print preview File!'], 500);
         }
     }
 }
