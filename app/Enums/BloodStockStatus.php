@@ -4,6 +4,14 @@ namespace App\Enums;
 
 enum BloodStockStatus: string
 {
+    // ------ Alur Status Blood Stock
+    // -- in_use ketika kantong darah sudah terpilih oleh pasien untuk crossmatch
+    // -- taken_out ketika kantong darah sudah di release atau dikeluarkan
+    // -- used ketika kantong darah sudah digunakan atau tidak dikeluarkan/tidak di release
+    // -- hold ketika kantong darah sudah sedang menunggu approval untuk di release atau tidak. Berlaku untuk hasil crossmatch incompatible
+
+
+
     // --- Inventory
     case REGISTERED = 'registered'; // Untuk kantong darah yang sudah didaftarkan tapi belum ada digudang
     case AVAILABLE = 'available'; // Untuk kantong darah yang belum digunakan sama sekali

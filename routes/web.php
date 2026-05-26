@@ -43,7 +43,7 @@ Route::middleware('auth')->group(function () {
 
                 Route::prefix('print')->name('print.')->group(function () {
                     Route::get('incompatible-letter/{id}', 'printIncompatibleLetter')->name('incompatible-letter');
-                    Route::get('result-test/{id}', 'printResultTest')->name('result-test');
+                    Route::get('crossmatch-result/{id}/{btDetailID?}', 'printCrossmatchResult')->name('crossmatch-result');
                 });
 
                 Route::prefix('{id}')->group(function () {
@@ -70,6 +70,7 @@ Route::middleware('auth')->group(function () {
                 Route::delete('/', 'destroy')->name('destroy');
 
                 Route::post('checkin', 'checkin')->name('checkin');
+                Route::post('complete', 'completeTransaction')->name('complete');
                 Route::get('bag-requests', 'datatableListBagRequest')->name('bag-requests');
                 Route::get('tests', 'datatableListTest')->name('tests');
                 Route::patch('update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');

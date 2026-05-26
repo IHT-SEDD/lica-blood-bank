@@ -15,53 +15,53 @@ return new class extends Migration
             $table->id();
             $table->uuid('public_id')->unique();
 
-                $table->foreignId('patient_id')
+            $table->foreignId('patient_id')
                 ->nullable()
                 ->constrained('patients')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->foreignId('insurance_id')
+            $table->foreignId('insurance_id')
                 ->nullable()
                 ->constrained('insurances')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->foreignId('room_id')
+            $table->foreignId('room_id')
                 ->nullable()
                 ->constrained('rooms')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
-                
-                $table->foreignId('doctor_id')
+
+            $table->foreignId('doctor_id')
                 ->nullable()
                 ->constrained('doctors')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->string('lab_number')->nullable();
-                $table->string('order_number')->nullable();
-                $table->string('relation_name')->nullable();
-                $table->string('relation_type')->nullable();
-                $table->timestamp('blood_request_at');
-                $table->text('diagnosis')->nullable();
-                $table->timestamp('finish_at')->nullable();
-                $table->string('status');
-                $table->unsignedBigInteger('blood_quantity');
+            $table->string('lab_number')->nullable();
+            $table->string('order_number')->nullable();
+            $table->string('relation_name')->nullable();
+            $table->string('relation_type')->nullable();
+            $table->timestamp('blood_request_at');
+            $table->text('diagnosis')->nullable();
+            $table->timestamp('finish_at')->nullable();
+            $table->string('status');
+            $table->unsignedBigInteger('blood_quantity');
 
-                $table->foreignId('checkin_by_user_id')
+            $table->foreignId('checkin_by_user_id')
                 ->nullable()
                 ->constrained('users')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->foreignId('finish_by_user_id')
+            $table->foreignId('finish_by_user_id')
                 ->nullable()
                 ->constrained('users')
                 ->cascadeOnUpdate()
                 ->nullOnDelete();
 
-                $table->foreignId('deleted_by_user_id')
+            $table->foreignId('deleted_by_user_id')
                 ->nullable()
                 ->constrained('users')
                 ->cascadeOnUpdate()

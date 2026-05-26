@@ -272,6 +272,22 @@
           @endif
         </td>
       </tr>
+      <!--- No Lab --->
+      <tr>
+        <td width="30%">
+          <div class="paragraph">{{ __('No. Lab') }}</div>
+        </td>
+        <td width="3%">
+          <div class="paragraph">:</div>
+        </td>
+        <td width="67%">
+          @if (!empty($data->lab_number))
+          <div class="paragraph">{{ $data->lab_number ?? '-' }}</div>
+          @else
+          <div class="paragraph">260519001</div>
+          @endif
+        </td>
+      </tr>
       <!--- Alamat --->
       <tr>
         <td width="30%">

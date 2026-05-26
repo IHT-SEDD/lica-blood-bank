@@ -330,56 +330,19 @@ class BloodTransfusionController extends Controller
     public function checkin(string $id)
     {
         try {
-            $transfusion = BloodTransfusion::where('public_id', $id)->firstOrFail();
-
-            if ($transfusion->lab_number) {
-                return response()->json([
-                    'message' => 'This request has already been checked in.',
-                ], 400);
-            }
-
-            $datePrefix = now()->format('ymd');
-
-            // Use Cache lock to prevent race condition
-            $lock = Cache::lock('generate_lab_number', 10);
-
-            if ($lock->get()) {
-                try {
-                    $latestLabNumber = BloodTransfusion::where('lab_number', 'like', $datePrefix . '%')
-                        ->orderBy('lab_number', 'desc')
-                        ->value('lab_number');
-
-                    if ($latestLabNumber) {
-                        $sequence = (int) substr($latestLabNumber, -3);
-                        $nextSequence = $sequence + 1;
-                    } else {
-                        $nextSequence = 1;
-                    }
-
-                    $labNumber = $datePrefix . str_pad($nextSequence, 3, '0', STR_PAD_LEFT);
-
-                    $transfusion->update([
-                        'lab_number' => $labNumber,
-                        'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CHECKED_IN ?? $transfusion->status, // Use appropriate status if you have it
-                        'checkin_by_user_id' => Auth::id(),
-                    ]);
-                } finally {
-                    $lock->release();
-                }
-            } else {
-                return response()->json([
-                    'message' => 'System is currently processing another request, please try again in a moment.',
-                ], 429);
-            }
-
+            $labNumber = $this->writeService->checkinTransaction($id);
             return response()->json([
                 'message' => 'Successfully checked in with Lab Number: ' . $labNumber,
                 'lab_number' => $labNumber,
             ], 200);
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to check in blood request.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -611,7 +574,25 @@ class BloodTransfusionController extends Controller
         }
     }
 
-    // ---------- Workflow Actions ----------
+    // ---------- Complete Transaction ----------
+    public function completeTransaction(string $id)
+    {
+        try {
+            $this->writeService->completeTransaction($id);
+            return response()->json(['message' => 'Blood Request Completed Successfully']);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to complete blood request.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Hold Blood Pack ----------
     public function holdBloodPack(string $detailPublicId)
     {
         try {
@@ -628,69 +609,50 @@ class BloodTransfusionController extends Controller
         }
     }
 
-    public function acceptIncompatible(string $detailPublicId)
-    {
-        try {
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            $detail->update([
-                'is_approval_incompatible' => true
-            ]);
-
-            return response()->json([
-                'message' => 'Incompatible blood has been accepted.'
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to accept incompatible blood.',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
-    }
-
+    // ---------- Release Blood Pack ----------
     public function releaseBloodPack(string $detailPublicId)
     {
         try {
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            $detail->update(['blood_release_status' => true]);
-
-            if ($detail->blood_stock_id) {
-                $stock = BloodStock::find($detail->blood_stock_id);
-                if ($stock) {
-                    $stock->update(['blood_status' => BloodStockStatus::TAKEN_OUT]);
-                }
-            }
-
-            return response()->json([
-                'message' => 'Blood pack has been released.'
-            ], 200);
+            $this->writeService->releaseBloodPack($detailPublicId);
+            return response()->json(['message' => 'Blood pack has been released.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Failed to release blood pack.',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
 
+    // ---------- Approve Incompatible ----------
+    public function acceptIncompatible(string $detailPublicId)
+    {
+        try {
+            $this->writeService->approveIncompatible($detailPublicId);
+            return response()->json(['message' => 'Incompatible Blood Has Been Approved.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to approve incompatible blood.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Unrelease Blood Pack ----------
     public function unreleaseBloodPack(string $detailPublicId)
     {
         try {
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            $detail->update(['blood_release_status' => false]);
-
-            if ($detail->blood_stock_id) {
-                $stock = BloodStock::find($detail->blood_stock_id);
-                if ($stock) {
-                    $stock->update(['blood_status' => BloodStockStatus::USED]);
-                }
-            }
-
-            return response()->json([
-                'message' => 'Blood pack has been unreleased (status: USED).'
-            ], 200);
+            $this->writeService->unReleaseBloodPack($detailPublicId);
+            return response()->json(['message' => 'Blood has been un-released.']);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to unrelease blood pack.',
-                'error'   => $e->getMessage(),
+                'message' => 'Failed to unrelease blood.',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -704,7 +666,20 @@ class BloodTransfusionController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print preview File!'], 500);
+            return response()->json(['message' => 'Failed to print incompatible letter file!'], 500);
+        }
+    }
+
+    // ---------- Print Crossmatch Result ----------
+    public function printCrossmatchResult(string $transfusionPublicID, ?string $btDetailID = null)
+    {
+        try {
+            $print = 'crossmatch-result';
+            return $this->printService->crossmatchResult($transfusionPublicID, $btDetailID, $print);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to print crossmatch result file!'], 500);
         }
     }
 }

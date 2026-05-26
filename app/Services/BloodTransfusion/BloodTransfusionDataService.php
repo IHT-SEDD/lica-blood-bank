@@ -39,12 +39,12 @@ class BloodTransfusionDataService
         $dateRange = $request->input('date_range');
 
         $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
-            ->whereNull('deleted_at');
+            ->withoutTrashed();
 
         $this->applyDateRangeFilter($query, $dateRange);
         $this->applySearchFilter($query, $searchValue);
 
-        $recordsTotal = BloodTransfusion::whereNull('deleted_at')->count();
+        $recordsTotal = BloodTransfusion::withoutTrashed()->count();
         $recordsFiltered = $query->count();
 
         if ($length !== -1) {
@@ -216,10 +216,14 @@ class BloodTransfusionDataService
             'blood_request_at' => $item->blood_request_at
                 ? Carbon::parse($item->blood_request_at)->format('Y/m/d')
                 : '-',
+            'deleted_at' => $item->deleted_at
+                ? Carbon::parse($item->deleted_at)->format('Y/m/d')
+                : '-',
             'order_number' => $item->order_number ?? '-',
             'lab_number' => $item->lab_number ?? '-',
             'diagnosis' => $item->diagnosis ?? '-',
             'is_cito' => false,
+            'status' => $item->status,
             'patient' => [
                 'medrec' => $item->patient->medrec ?? '-',
                 'name' => $item->patient->name ?? '-',
@@ -290,6 +294,7 @@ class BloodTransfusionDataService
             'transfusion_result' => $detail->transfusion_result,
             'blood_stock_status' => $detail->bloodStock?->blood_status,
             'is_approval_incompatible' => (bool) $detail->is_approval_incompatible,
+            'is_print_incompatible_letter' => (bool) $detail->is_print_incompatible_letter,
             'blood_release_status' => (bool) $detail->blood_release_status,
         ];
     }

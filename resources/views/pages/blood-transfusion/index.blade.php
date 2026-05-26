@@ -51,7 +51,7 @@
   {{-- Title, Date Range Picker & Add New Blood Request :end --}}
 
   {{-- List Data :begin --}}
-  <div class="col-xxl-8 col-12">
+  <div class="col-xxl-7 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header justify-content-between align-items-center">
@@ -70,12 +70,13 @@
   {{-- List Data :end --}}
 
   {{-- Patient Details :begin --}}
-  <div class="col-xxl-4 col-12">
+  <div class="col-xxl-5 col-12">
     <div class="card">
       {{-- Card Header --}}
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center border-dashed">
         <h5 class="card-title text-capitalize mb-0">{{ __('Patient Details') }}</h5>
-        <div class="card-action d-flex align-items-center gap-2">
+
+        <div class="card-action d-flex align-items-center justify-content-center gap-2">
           {{-- Check In button --}}
           <button class="btn btn-sm btn-soft-secondary d-none fs-6 fw-semibold" id="btn-checkin-lab" data-id=""
             data-bs-title="Check In Patient" data-bs-toggle="tooltip" data-bs-trigger="hover">
@@ -87,6 +88,14 @@
             data-bs-title="Print Barcode" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-printer fs-4 me-2"></i> Barcode
           </button>
+
+          {{-- Complete Transaction button --}}
+          <button data-id="" class="btn btn-sm btn-success d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-complete-transaction" data-bs-title="Complete This Transaction" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-flag-check fs-lg me-1"></i> Complete
+          </button>
+
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>
@@ -101,86 +110,41 @@
   </div>
   {{-- Patient Details :end --}}
 
-  {{-- Test List :begin --}}
-  <div class="col-xxl-6 col-12">
-    <div class="card">
-      {{-- Card Header --}}
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center justify-content-start gap-2">
-          <h5 class="card-title text-capitalize m-0">{{ __('Test List') }}</h5>
-          {{-- Finish blood request button --}}
-          <button class="btn btn-sm btn-soft-success m-0" id="btn-test-done" data-id=""
-            data-bs-title="Finish Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-circle-check fs-4"></i>
-          </button>
-
-          {{-- Hold blood pack button --}}
-          <button class="btn btn-sm btn-soft-warning d-none m-0" id="btn-hold-blood-pack" data-id=""
-            data-bs-title="Hold This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-heart-pause fs-4"></i>
-          </button>
-
-          {{-- Release blood pack button --}}
-          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-release-blood-pack" data-id=""
-            data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-heart-up fs-4"></i>
-          </button>
-          {{-- Don't Release blood pack button --}}
-          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-unrelease-blood-pack" data-id=""
-            data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-heart-x fs-4"></i>
-          </button>
-
-          {{-- Print crossmatch result incompotible blood pack button --}}
-          <button class="btn btn-sm btn-soft-primary d-none m-0" id="btn-print-incompletter" data-id=""
-            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
-            <i class="ti ti-printer fs-4"></i>
-          </button>
-        </div>
-
-        <div class="card-action">
-          {{-- Accept blood pack button --}}
-          <button class="btn btn-sm btn-soft-success me-2 d-none" id="btn-accept-blood-pack" data-id=""
-            data-bs-title="Approve Release This Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-droplet-check fs-4"></i>
-          </button>
-          <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
-        </div>
-      </div>
-
-      {{-- Card Body --}}
-      <div class="card-body">
-        @include('pages.blood-transfusion.partials.datatables.list-test-table')
-      </div>
-    </div>
-  </div>
-  {{-- Test List :end --}}
-
   {{-- Bag Request List :begin --}}
-  <div class="col-xxl-6 col-12">
+  <div class="col-xxl-7 col-12">
     <div class="card">
       {{-- Card Header --}}
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center justify-content-start gap-2">
-          <h5 class="card-title text-capitalize m-0">{{ __('Bag Request List') }}</h5>
+      <div class="card-header d-flex justify-content-between align-items-center border-dashed">
+        <h5 class="card-title text-capitalize mb-0">{{ __('Bag Request List') }}</h5>
 
+        <div class="d-flex align-items-center justify-content-center gap-2">
           {{-- Edit blood pack button --}}
-          <button class="btn btn-sm btn-soft-primary d-none m-0" id="btn-edit-blood-pack" data-id=""
-            data-bs-toggle="modal" data-bs-target="#edit_blood_pack_modal" data-bs-title="Edit blood pack"
-            data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-pencil fs-4"></i>
+          <button class="btn btn-sm btn-soft-primary d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-edit-blood-pack" data-id="" data-bs-toggle="modal" data-bs-target="#edit_blood_pack_modal"
+            data-bs-title="Edit blood pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-pencil fs-lg"></i>
           </button>
 
           {{-- Release all blood button --}}
-          <button class="btn btn-sm btn-soft-danger d-none m-0" id="btn-release-all-blood-pack" data-id=""
-            data-bs-title="Release All Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-heart-share fs-4"></i>
+          <button class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-release-all-blood-pack" data-id="" data-bs-title="Release All Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-heart-share fs-lg me-1"></i> Release All
           </button>
-        </div>
 
-        <div class="card-action">
-          <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
+          {{-- Print crossmatch result button --}}
+          <button data-id="" class="btn btn-sm btn-soft-info d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-print-result" data-bs-title="Print Crossmatch Result" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-printer fs-lg me-1"></i> Result
+          </button>
+
+          {{-- Print incompatible letter button --}}
+          <button data-id="" class="btn btn-sm btn-soft-primary d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-print-incompletter" data-bs-title="Print Crossmatch Result Incompatible Blood Pack"
+            data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-printer fs-4 me-1"></i> Incompatible Letter
+          </button>
         </div>
       </div>
 
@@ -191,6 +155,58 @@
     </div>
   </div>
   {{-- Bag Request List :end --}}
+
+  {{-- Test List :begin --}}
+  <div class="col-xxl-5 col-12">
+    <div class="card">
+      {{-- Card Header --}}
+      <div class="card-header d-flex justify-content-between align-items-center border-dashed">
+        <h5 class="card-title text-capitalize mb-0">{{ __('Test List') }}</h5>
+
+        <div class="d-flex justify-content-center align-items-center gap-2">
+          {{-- Finish blood request button --}}
+          <button data-id="" class="btn btn-sm btn-soft-success fw-medium" style="font-size: 11.9px;" id="btn-test-done"
+            data-bs-title="Finish Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-circle-check fs-4 me-1"></i> Finish
+          </button>
+
+          {{-- Hold blood pack button --}}
+          <button data-id="" class="btn btn-sm btn-soft-warning d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-hold-blood-pack" data-bs-title="Hold This Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-heart-pause fs-4 me-1"></i> Hold
+          </button>
+
+          {{-- Release blood pack button --}}
+          <button data-id="" class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-release-blood-pack" data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-heart-up fs-4 me-1"></i> Release
+          </button>
+
+          {{-- Don't Release blood pack button --}}
+          <button data-id="" class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-unrelease-blood-pack" data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-heart-x fs-4 me-1"></i> Don't Release
+          </button>
+
+          {{-- Approve incompatible button --}}
+          <button data-id="" class="btn btn-sm btn-soft-success d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-accept-blood-pack" data-bs-title="Approve Release This Blood Pack" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-droplet-check fs-4 me-1"></i> Approve Incompatible
+          </button>
+        </div>
+      </div>
+
+      {{-- Card Body --}}
+      <div class="card-body">
+        @include('pages.blood-transfusion.partials.datatables.list-test-table')
+      </div>
+    </div>
+  </div>
+  {{-- Test List :end --}}
 
   {{-- Timeline :begin --}}
   <div class="col-xxl-6 col-12 d-none">

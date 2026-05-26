@@ -1,5 +1,6 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import { TextFormatter } from "../../../utility/ui";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- GLOBAL VARIABLES ----------
 const BASE_URL = "/blood-transfusion";
@@ -10,6 +11,9 @@ const TABLE = {
     test: "#list-test-table",
     bloodPack: "#edit-blood-pack-available-table",
 };
+const SelectorBtnPrintResult = "btn-print-result";
+const SelectorBtnComplete = "btn-complete-transaction";
+const SelectorBtnReleaseAll = "btn-release-all-blood-pack";
 
 // ---------- INSTANCES ----------
 export let listRequestTableInstance;
@@ -71,50 +75,110 @@ const isTableInitialized = (selector) => $.fn.DataTable.isDataTable(selector);
 export function DatatableRequestBlood() {
     if (isTableInitialized(TABLE.request)) return;
     const REQUESTCOLUMNS = [
-        { data: "blood_request_at" },
-        { data: "patient.name" },
-        { data: "patient.medrec" },
-        { data: "lab_number" },
-        { data: "order_number" },
-        { data: "room.name" },
         {
-            data: "is_cito",
-            orderable: false,
-            searchable: false,
-            render: (data) =>
-                data
-                    ? `<i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning"></i>`
-                    : "-",
+            data: "blood_request_at",
+            render: (data) => {
+                const bloodRequestAt = DateTimeFormatter.dateOnly(data);
+                return `<span class="fs-6 fw-semibold">${bloodRequestAt}</span>`;
+            },
+        },
+        {
+            data: "patient.name",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
+        },
+        {
+            data: "patient.medrec",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
+        },
+        {
+            data: "lab_number",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
+        },
+        {
+            data: "order_number",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
+        },
+        {
+            data: "room.name",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
         },
         {
             data: null,
             orderable: false,
             searchable: false,
-            render: (data) => `
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-soft-primary"
-                            data-bs-toggle="dropdown">
-                            <i class="ti ti-dots"></i>
-                        </button>
+            render: (row, data) => {
+                const status = TextFormatter.format(row.status);
+                switch (status) {
+                    case "Blood Transfusion Checked In":
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Checked In" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                            <i class="ti ti-user-check"></i>
+                        </span>`;
+                        break;
+                    case "Blood Transfusion Finished":
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Finished" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                            <i class="ti ti-shield-check"></i>
+                        </span>`;
+                        break;
+                    case "Blood Transfusion Registered":
+                        return `<span style="font-size: 20px;" class="text-info" data-bs-title="Registered" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                                <i class="ti ti-circle-dashed-check"></i>
+                            </span>`;
+                        break;
+                    case "Blood Transfusion Deleted":
+                        return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Deleted" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                                <i class="ti ti-trash"></i>
+                            </span>`;
+                        break;
+                    default:
+                        return `<span class="fs-6 fw-semibold uppercase">-</span>`;
+                        break;
+                }
+            },
+        },
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: (data) => {
+                const hasLabNumber =
+                    data.lab_number !== null || data.lab_number !== "-";
+                const isDeleted =
+                    data.deleted_at !== null || data.deleted_at !== "-";
 
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a class="dropdown-item btn-edit-blood-transfusion ${!data.lab_number || data.lab_number === "-" ? "disabled" : ""}"
-                                    data-public-id="${data.public_id}"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#edit_data_blood_transfusion_modal">
-                                    Edit
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-danger btn-delete-blood-transfusion"
-                                    data-public-id="${data.public_id}">
-                                    Delete
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                `,
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
+                    <i class="ti ti-dots align-middle"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" data-bs-toggle="modal" data-bs-target="#edit_data_blood_transfusion_modal" type="button">
+                            <i class="ti ti-pencil align-middle me-1 fs-4"></i>
+                                Edit
+                            </button>
+                        </li>
+                        <li>
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "" : "disabled text-muted"}" type="button">
+                            <i class="ti ti-archive align-middle me-1 fs-4"></i>
+                                Archive
+                            </button>
+                        </li>
+                        <li>
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "text-danger" : "disabled text-muted"}" type="button">
+                            <i class="ti ti-trash align-middle me-1 fs-4"></i>
+                                Delete
+                            </button>
+                        </li>
+                    </ul>`;
+            },
         },
     ];
 
@@ -144,6 +208,15 @@ export function DatatableRequestBlood() {
                 responsivePriority: 2,
             },
         ],
+        drawCallback: function () {
+            const tooltipTriggerList = document.querySelectorAll(
+                '[data-bs-toggle="tooltip"]',
+            );
+
+            [...tooltipTriggerList].forEach((tooltipTriggerEl) => {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        },
     });
 }
 
@@ -206,7 +279,31 @@ export function DatatableListBagRequest() {
             data: "blood_stock_status",
             render: function (_, data, row) {
                 const status = TextFormatter.format(row.blood_stock_status);
-                return `<span class="fs-6 fw-semibold uppercase">${status}</span>`;
+                switch (status) {
+                    case "In Use":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heartbeat fs-4"></i> In Use
+                            </span>`;
+                        break;
+                    case "Used":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-x fs-4"></i> Not Release
+                            </span>`;
+                        break;
+                    case "Taken Out":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-up fs-4"></i> Released
+                            </span>`;
+                        break;
+                    case "Hold":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-pause fs-4"></i> Hold
+                            </span>`;
+                        break;
+                    default:
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">${status}</span>`;
+                        break;
+                }
             },
         },
         {
@@ -270,6 +367,24 @@ export function DatatableListBagRequest() {
                 return renderCrossmatchResult(row.crossmatch_result);
             },
         },
+        {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: (data) => `
+                    <div class="dropdown">
+                        <a class="dropdown-toggle drop-arrow-none text-muted card-drop" data-bs-toggle="dropdown" href="#">
+                            <i class="ti ti-dots-vertical fs-lg"></i>
+                        </a>
+
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" id="btn-print-result-per-blood" href="#" data-public-id="${data.public_id}">
+                                <i class="ti ti-printer fs-4 me-1"></i> Result
+                            </a>
+                        </div>
+                    </div>
+                `,
+        },
     ];
 
     listBagRequestTableInstance = new GlobalAdvanceDatatable(TABLE.bagRequest, {
@@ -293,15 +408,16 @@ export function DatatableListBagRequest() {
         drawCallback: () => initTomSelect(".select-bag-number"),
     });
 }
+
 // ---------- RENDER RESULT CROSSMATCH ----------
 function renderCrossmatchResult(result) {
     switch (result) {
         case "Compatible":
-            return `<span class="badge badge-pill bg-success">Compatible</span>`;
+            return `<span class="badge badge-label text-bg-success">Compatible</span>`;
         case "Incompatible":
-            return `<span class="badge badge-pill bg-danger">Incompatible</span>`;
+            return `<span class="badge badge-label text-bg-danger">Incompatible</span>`;
         default:
-            return `<span class="badge badge-pill bg-secondary">Not Result Yet</span>`;
+            return `<span class="badge badge-label text-bg-secondary">No Result Yet</span>`;
     }
 }
 
@@ -312,8 +428,18 @@ export function DatatableListTest() {
     let resultOptions = [];
 
     const TESTCOLUMNS = [
-        { data: "bag_number" },
-        { data: "test_name" },
+        {
+            data: "bag_number",
+            render: function (_, data, row) {
+                return `<span class="fw-semibold uppercase" style="font-size: 11.5px;">${row.bag_number}</span>`;
+            },
+        },
+        {
+            data: "test_name",
+            render: function (_, data, row) {
+                return `<span class="fw-medium uppercase" style="font-size: 11.9px;">${row.test_name}</span>`;
+            },
+        },
         {
             data: "result_value",
             render: (_, __, row) => {
@@ -347,7 +473,7 @@ export function DatatableListTest() {
 
                 // 2. MASUKKAN optionsHtml DI ATAS options
                 return `
-            <select class="select-test-result" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
+            <select class="select-test-result fs-6 fw-semibold" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
                 ${optionsHtml}
                 ${options}
             </select>
@@ -629,6 +755,35 @@ export async function completeTest() {
             $(TABLE.bagRequest)
                 .DataTable()
                 .ajax.reload(function (json) {
+                    const allHaveCrossmatch =
+                        json.data &&
+                        json.data.length > 0 &&
+                        json.data.every(
+                            (bag) =>
+                                bag.crossmatch_result &&
+                                bag.crossmatch_result.toString().trim() !== "",
+                        );
+
+                    const btnComplete =
+                        document.getElementById(SelectorBtnComplete);
+                    if (btnComplete) {
+                        btnComplete.disabled = !allHaveCrossmatch;
+                    }
+
+                    const btnReleaseAll = document.getElementById(
+                        SelectorBtnReleaseAll,
+                    );
+                    if (btnReleaseAll) {
+                        btnReleaseAll.disabled = !allHaveCrossmatch;
+                    }
+
+                    const btnPrintResult = document.getElementById(
+                        SelectorBtnPrintResult,
+                    );
+                    if (btnPrintResult) {
+                        btnPrintResult.disabled = !allHaveCrossmatch;
+                    }
+
                     if (window.currentBagDetailPublicId && json.data) {
                         const updatedBag = json.data.find(
                             (b) =>
