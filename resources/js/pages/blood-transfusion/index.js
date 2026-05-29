@@ -126,7 +126,8 @@ export function updatePatientDetailUI(data) {
     const hasLabNumber =
         data.lab_number?.toString().trim() &&
         data.lab_number?.toString().trim() !== "-";
-    const isCompleted = data.status && data.status === "blood_transfusion_finished";
+    const isCompleted =
+        data.status && data.status === "blood_transfusion_finished";
 
     window.HandlingButtonState("#list-request-table", data, {
         buttons: [
@@ -495,12 +496,12 @@ window.updateWorkflowButtonsState = function () {
                 showButtons(btnRelease);
             }
 
-            showButtons(btnHold, btnUnrelease, btnPrintIncomp);
+            showButtons(btnHold, btnUnrelease);
         }
 
         if (blood_stock_status === "hold") {
             hideButtons(btnHold);
-            showButtons(btnPrintIncomp);
+            showButtons(btnPrintIncomp, btnUnrelease);
 
             // Sudah print incompatible letter
             if (is_print_incompatible_letter) {
@@ -514,10 +515,12 @@ window.updateWorkflowButtonsState = function () {
             }
         }
     } else if (crossmatch_result === "Compatible") {
-        if (
-            blood_stock_status !== "taken_out" &&
-            blood_stock_status !== "used"
-        ) {
+        if (blood_stock_status === "in_use") {
+            showButtons(btnHold, btnRelease, btnUnrelease);
+        }
+
+        if (blood_stock_status === "hold") {
+            hideButtons(btnHold);
             showButtons(btnRelease, btnUnrelease);
         }
     }
