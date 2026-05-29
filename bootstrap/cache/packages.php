@@ -18,6 +18,13 @@
       0 => 'Barryvdh\\LaravelIdeHelper\\IdeHelperServiceProvider',
     ),
   ),
+  'dedoc/scramble' => 
+  array (
+    'providers' => 
+    array (
+      0 => 'Dedoc\\Scramble\\ScrambleServiceProvider',
+    ),
+  ),
   'laravel/breeze' => 
   array (
     'providers' => 

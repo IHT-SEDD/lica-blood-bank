@@ -23,23 +23,22 @@ class StoreBloodTransfusionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-
         $patientPublicId = $this->patient_id !== null ?  $this->patient_id : null;
-        if($patientPublicId){
+        if ($patientPublicId) {
             $patient_id = Patient::where('public_id', $patientPublicId)->first()->id;
         }
         $insurancePublicId = $this->insurance_id !== null ?  $this->insurance_id : null;
-        if($insurancePublicId){
+        if ($insurancePublicId) {
             $insurance_id = Insurance::where('public_id', $insurancePublicId)->first()->id;
         }
 
         $roomPublicId = $this->room_id !== null ?  $this->room_id : null;
-        if($roomPublicId){
+        if ($roomPublicId) {
             $room_id = Room::where('public_id', $roomPublicId)->first()->id;
         }
 
         $doctorPublicId = $this->doctor_id !== null ?  $this->doctor_id : null;
-        if($doctorPublicId){
+        if ($doctorPublicId) {
             $doctor_id = Doctor::where('public_id', $doctorPublicId)->first()->id;
         }
 

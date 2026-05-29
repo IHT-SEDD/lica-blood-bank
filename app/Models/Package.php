@@ -23,6 +23,7 @@ class Package extends Model
     protected $hidden = [
         'id',
     ];
+
     protected static function booted()
     {
         static::creating(function ($package) {
@@ -31,6 +32,7 @@ class Package extends Model
             }
         });
     }
+    
     public function package_tests()
     {
         return $this->hasMany(PackageTest::class, 'package_id');
