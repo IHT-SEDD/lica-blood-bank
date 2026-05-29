@@ -126,6 +126,11 @@ export function DatatableRequestBlood() {
                         break;
                     case "Blood Transfusion Finished":
                         return `<span style="font-size: 20px;" class="text-success" data-bs-title="Finished" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                            <i class="ti ti-droplet-check"></i>
+                        </span>`;
+                        break;
+                    case "Blood Transfusion Completed":
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Finished" data-bs-toggle="tooltip" data-bs-trigger="hover">
                             <i class="ti ti-shield-check"></i>
                         </span>`;
                         break;
@@ -155,12 +160,17 @@ export function DatatableRequestBlood() {
                 const isDeleted =
                     data.deleted_at !== null || data.deleted_at !== "-";
 
+                // <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" data-bs-toggle="modal" data-bs-target="#edit_data_blood_transfusion_modal" type="button">
+                //         <i class="ti ti-pencil align-middle me-1 fs-4"></i>
+                //             Edit
+                //         </button>
+
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" data-bs-toggle="modal" data-bs-target="#edit_data_blood_transfusion_modal" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" type="button">
                             <i class="ti ti-pencil align-middle me-1 fs-4"></i>
                                 Edit
                             </button>

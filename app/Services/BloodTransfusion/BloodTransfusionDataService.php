@@ -8,13 +8,17 @@ use App\Enums\ResultTest;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
+use App\Models\BloodTransfusionLogActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class BloodTransfusionDataService
 {
+    const CACHE_BLOOD_TRANSFUSION_LOG_KEY = "blood_transfusion_log_data";
+
     // ---------- Fungsi Tabel Blood Pack ----------
     public function bloodPackTable(Request $request): array
     {
@@ -51,7 +55,7 @@ class BloodTransfusionDataService
             $query->offset($start)->limit($length);
         }
 
-        $data = $query->orderBy('blood_request_at', 'desc')->get();
+        $data = $query->orderBy('lab_number', 'asc')->get();
 
         return [
             'draw' => $draw,
@@ -162,6 +166,21 @@ class BloodTransfusionDataService
             'data' => $rows,
             'result_options' => ResultTest::toSelect(),
         ];
+    }
+
+    // ---------- Fungsi untuk mengambil data log berdasarkan id ----------
+    public function getDataLogById(string $id)
+    {
+        $cacheKey = self::CACHE_BLOOD_TRANSFUSION_LOG_KEY . ":{$id}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
+            $bloodTransfusionLog = BloodTransfusionLogActivity::where('blood_transfusion_public_id', $id)
+                ->orderBy('timestamp', 'desc')
+                ->limit(50)
+                ->get();
+
+            return $bloodTransfusionLog;
+        });
     }
 
     // ---------- Private Fungsi: Filter tanggal & Search untuk datatable ----------

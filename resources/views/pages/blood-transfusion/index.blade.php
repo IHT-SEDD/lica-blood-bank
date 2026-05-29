@@ -209,7 +209,7 @@
   {{-- Test List :end --}}
 
   {{-- Timeline :begin --}}
-  <div class="col-xxl-6 col-12 d-none">
+  <div class="col-xxl-6 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -219,10 +219,13 @@
         </div>
       </div>
 
-      {{-- Card Body --}}
-      <div class="card-body">
-        @include('pages.blood-transfusion.partials.timeline')
+      {{-- Card Body :begin --}}
+      <div class="card-body blood-transfusion-log-data-container">
+        <div class="timeline timeline-icon-bordered timeline-blood-transfusion-log">
+          {{-- Populate by JS --}}
+        </div>
       </div>
+      {{-- Card Body :end --}}
     </div>
   </div>
   {{-- Timeline :end --}}
@@ -258,7 +261,7 @@
 'resources/js/pages/blood-transfusion/index.js',
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',
 'resources/js/pages/blood-transfusion/form-add.js',
-'resources/js/pages/blood-transfusion/form-edit.js',
+// 'resources/js/pages/blood-transfusion/form-edit.js',
 'resources/js/pages/form-wizard.js'
 ])
 @endsection

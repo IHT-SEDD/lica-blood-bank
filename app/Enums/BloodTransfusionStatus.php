@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum BloodTransfusionStatus : string
+enum BloodTransfusionStatus: string
 {
     case BLOOD_TRANSFUSION_REGISTERED = 'blood_transfusion_registered';
     case BLOOD_TRANSFUSION_CHECKED_IN = 'blood_transfusion_checked_in';

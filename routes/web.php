@@ -66,6 +66,7 @@ Route::middleware('auth')->group(function () {
 
             Route::prefix('{id}')->group(function () {
                 Route::get('/', 'getDataById')->name('get-data');
+                Route::get('log', 'bloodTransfusionLogData')->name('log');
                 Route::patch('/', 'update')->name('update');
                 Route::delete('/', 'destroy')->name('destroy');
 
@@ -97,6 +98,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('utility')->name('utility.')->controller(UtilityController::class)->group(function () {
         Route::get('select/{select}', 'selectData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data');
         Route::get('select-special/{select}/{id}', 'selectDataSpecial')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-special');
+        Route::get('select-batch', 'selectBatchData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-batch');
         Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 

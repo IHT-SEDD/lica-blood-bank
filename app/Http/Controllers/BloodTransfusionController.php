@@ -16,6 +16,7 @@ use App\Enums\BloodTransfusionStatus;
 use App\Http\Requests\BloodTransfusion\StoreBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodPacksRequest;
+use App\Services\BloodTransfusion\BloodTransfusionAddService;
 use App\Services\BloodTransfusion\BloodTransfusionDataService;
 use App\Services\BloodTransfusion\BloodTransfusionDetailTestService;
 use App\Services\BloodTransfusion\BloodTransfusionPrintService;
@@ -33,6 +34,7 @@ class BloodTransfusionController extends Controller
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
     public function __construct(
         protected BloodTransfusionDataService $dataService,
+        protected BloodTransfusionAddService $addService,
         protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
         protected BloodTransfusionPrintService $printService,
         protected BloodTransfusionWriteService $writeService,
@@ -76,110 +78,8 @@ class BloodTransfusionController extends Controller
     // ---------- Store Blood Request ----------
     public function store(StoreBloodTransfusionRequest $request)
     {
-        // dd($request->all());
-        // selectedPacks() adalah helper dari Form Request yang decode JSON
-        $selected_blood_components = json_decode($request->selected_blood_components);
-
-        if (empty($selected_blood_components)) {
-            return response()->json([
-                'message' => 'At least one blood pack must be selected.',
-            ], 422);
-        }
-
-        DB::beginTransaction();
-        try {
-            // ---------- 1. Upsert / create patient ----------
-            // public_id dan medrec di-generate otomatis oleh model booted()
-            if (!empty($request->patient_id)) {
-                $patient = Patient::findOrFail($request->patient_id);
-                $patient->update([
-                    'name'         => $request->name,
-                    'gender'       => $request->gender,
-                    'birthdate'    => $request->birthdate,
-                    'email'        => $request->email,
-                    'phone'        => $request->phone_number,
-                    'blood_group'  => $request->blood_group,
-                    'blood_rhesus' => $request->blood_rhesus,
-                    'address'      => $request->address,
-                ]);
-            } else {
-                $patient = Patient::create([
-                    'name'         => $request->name,
-                    'gender'       => $request->gender,
-                    'birthdate'    => $request->birthdate,
-                    'email'        => $request->email,
-                    'phone'        => $request->phone_number,
-                    'blood_group'  => $request->blood_group,
-                    'blood_rhesus' => $request->blood_rhesus,
-                    'address'      => $request->address,
-                    'is_active'    => true,
-                ]);
-            }
-
-            // ---------- 2. Buat blood transfusion ----------
-            // public_id di-generate otomatis oleh model booted()
-            $transfusion = BloodTransfusion::create([
-                'patient_id'       => $patient->id,
-                'insurance_id'     => $request->insurance_id,
-                'room_id'          => $request->room_id,
-                'doctor_id'        => $request->doctor_id,
-                'relation_name'    => $request->relation_name,
-                'relation_type'    => $request->relation_type,
-                'blood_request_at' => $request->blood_required_at,
-                'diagnosis'        => $request->diagnosis,
-                'status'           => BloodTransfusionStatus::BLOOD_TRANSFUSION_REGISTERED,
-                'blood_quantity'   => count($selected_blood_components),
-            ]);
-
-            // ---------- 3. Buat blood transfusion details (satu per blood pack) ----------
-            // Cari blood_stock_id: blood_pack_id match + belum expired + status available
-            // Dapatkan test yang active
-            $package = Package::with(['package_tests'])->where('is_active', 1)->first();
-
-            foreach ($selected_blood_components as $component) {
-
-                // public_id di-generate otomatis oleh model booted()
-                $transfusionDetail = BloodTransfusionDetail::create([
-                    'blood_transfusion_id' => $transfusion->id,
-                    'component'        => $component?->id,
-                ]);
-
-                // Check Blood Stock bedasarkan Blood Group dan Rhesus Pasien
-                if (!is_null($patient->blood_group) && !is_null($patient->blood_rhesus)) {
-                    $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
-                        ->where('blood_rhesus', $patient->blood_rhesus)
-                        ->where('blood_component', $component->id)
-                        ->first();
-
-                    $transfusionDetail->update([
-                        'blood_pack_id' => $bloodPack?->id,
-                    ]);
-                }
-
-                foreach ($package->package_tests as $key => $test) {
-                    BloodTransfusionDetailTest::create([
-                        'bt_detail_id' => $transfusionDetail->id,
-                        'test_id'      => $test->test_id,
-                        'type'         => 'package',
-                    ]);
-                }
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'message'      => 'Blood request successfully created.',
-                'public_id'    => $transfusion->public_id,
-                'patient_name' => $patient->name,
-            ], 201);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'message' => 'Failed to create blood request.',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        $result = $this->addService->newRequest($request);
+        return response()->json($result['data'], $result['code']);
     }
 
     // ---------- Get Data By Id ----------
@@ -208,102 +108,10 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Update Blood Request ----------
-    public function update(UpdateBloodTransfusionRequest $request, $id)
+    public function update(UpdateBloodTransfusionRequest $request, string $id)
     {
-
-        DB::beginTransaction();
-        try {
-            $transfusion = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor', 'details'])->findOrFail($request->id);
-
-            // Update transaksi
-            $transfusion->update([
-                'insurance_id'     => $request->insurance_id,
-                'room_id'          => $request->room_id,
-                'doctor_id'        => $request->doctor_id,
-                'relation_name'    => $request->relation_name,
-                'relation_type'    => $request->relation_type,
-                'blood_request_at' => $request->blood_required_at,
-                'is_dct'           => $request->is_dct,
-                'diagnosis'        => $request->diagnosis,
-            ]);
-
-            // Update data pasien (blood_group & blood_rhesus)
-            if ($transfusion->patient_id) {
-                $transfusion->patient->update([
-                    'blood_group'  => $request->blood_group,
-                    'blood_rhesus' => $request->blood_rhesus,
-                ]);
-
-                if (!is_null($transfusion->patient->blood_group) && !is_null($transfusion->patient->blood_rhesus)) {
-
-                    foreach ($transfusion->details as $bloodTransfusionDetail) {
-                        // dd($transfusion->patient->blood_group, $transfusion->patient->blood_rhesus, $bloodTransfusionDetail->component);
-                        $bloodPack = BloodPack::where('blood_group', $transfusion->patient->blood_group)
-                            ->where('blood_rhesus', $transfusion->patient->blood_rhesus)
-                            ->where('blood_component', $bloodTransfusionDetail->component)
-                            ->first();
-
-                        $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)
-                            ->where('blood_status', BloodStockStatus::AVAILABLE)
-                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
-                            ->orderBy('expiry_date', 'asc')
-                            ->first();
-
-                        $bloodTransfusionDetail->update([
-                            'blood_stock_id' => $availableStock?->id,
-                            'blood_pack_id' => $bloodPack?->id,
-                        ]);
-
-                        $availableStock->update([
-                            'blood_status' => BloodStockStatus::IN_USE,
-                        ]);
-                    }
-                }
-            }
-
-            DB::commit();
-
-            $data = [
-                'public_id' => $transfusion->public_id,
-                'blood_request_at' => $transfusion->blood_request_at ? \Carbon\Carbon::parse($transfusion->blood_request_at)->format('Y/m/d') : '-',
-                'order_number' => $transfusion->order_number ?? '-',
-                'lab_number' => $transfusion->lab_number ?? '-',
-                'diagnosis' => $transfusion->diagnosis ?? '-',
-                'patient' => [
-                    'medrec' => $transfusion->patient->medrec ?? '-',
-                    'name' => $transfusion->patient->name ?? '-',
-                    'gender' => $transfusion->patient->gender === 'M' ? 'Male' : ($transfusion->patient->gender === 'F' ? 'Female' : '-'),
-                    'email' => $transfusion->patient->email ?? '-',
-                    'address' => $transfusion->patient->address ?? '-',
-                    'age' => $transfusion->patient->birthdate ? \Carbon\Carbon::parse($transfusion->patient->birthdate)->diff(\Carbon\Carbon::now())->format('%yY/%mM/%dD') : '-',
-                    'blood_group' => $transfusion->patient->blood_group ?? '-',
-                    'blood_rhesus' => $transfusion->patient->blood_rhesus ?? '-',
-                ],
-                'room' => [
-                    'name' => $transfusion->room->name ?? '-',
-                    'type' => $transfusion->room->type ? str_replace('_', ' ', str::kebab($transfusion->room->type)) : '-'
-                ],
-                'insurance' => [
-                    'name' => $transfusion->insurance->name ?? '-',
-                ],
-                'doctor' => [
-                    'name' => $transfusion->doctor->name ?? '-',
-                ],
-                'is_cito' => false, // Placeholder since we don't have is_cito column yet
-            ];
-
-            return response()->json([
-                'message' => 'Blood request successfully updated.',
-                'data'    => $data
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'message' => 'Failed to update blood request.',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        $result = $this->writeService->updateData($request, $id);
+        return response()->json($result['data'], $result['code']);
     }
 
     // ---------- Delete Blood Request ----------
@@ -680,6 +488,21 @@ class BloodTransfusionController extends Controller
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Throwable $e) {
             return response()->json(['message' => 'Failed to print crossmatch result file!'], 500);
+        }
+    }
+
+    // ---------- Get Log Data ----------
+    public function bloodTransfusionLogData(string $id)
+    {
+        try {
+            $data = $this->dataService->getDataLogById($id);
+            return response()->json($data)
+                ->setEtag(md5(json_encode($data)))
+                ->header('Cache-Control', 'public, max-age=600');
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Data not found!'
+            ], 404);
         }
     }
 }

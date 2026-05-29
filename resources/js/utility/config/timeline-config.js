@@ -161,3 +161,89 @@ export const BloodStockLogConfigTL = {
         tooltipTitle: "Activity",
     },
 };
+
+// ---------- TIMELINE BLOOD TRANSFUSION LOG CONFIG ----------
+export const BloodTransfusionLogConfigTL = {
+    blood_transfusion_registered: {
+        icon: "circle-dashed-check",
+        colorClass: "text-info fill-info",
+        title: "New Request",
+        tooltipTitle: "New Blood Transfusion Request Registered Successfully",
+    },
+    blood_transfusion_finished: {
+        icon: "droplet-check",
+        colorClass: "text-success fill-success",
+        title: "Crossmatch Finished",
+        tooltipTitle: "Crossmatch Finished Successfully",
+    },
+    crossmatch_finished: {
+        icon: "droplet-check",
+        colorClass: "text-success fill-success",
+        title: "Crossmatch Finished",
+        tooltipTitle: "Crossmatch Finished Successfully",
+    },
+    blood_transfusion_completed: {
+        icon: "shield-check",
+        colorClass: "text-success fill-success",
+        title: "Completed",
+        tooltipTitle: "Blood Transfusion Request Completed Successfully",
+    },
+    blood_transfusion_checked_in: {
+        icon: "user-check",
+        colorClass: "text-success fill-success",
+        title: "Checked In",
+        tooltipTitle: "Patient Checked In Successfully",
+    },
+    blood_transfusion_updated: {
+        icon: "pencil",
+        colorClass: "text-info fill-info",
+        title: "Data Updated",
+        tooltipTitle: "Data Patient Updated Successfully",
+    },
+
+    blood_transfusion_deleted: {
+        icon: "trash",
+        colorClass: "text-danger fill-danger",
+        title: "Deleted",
+        tooltipTitle: "Blood Transfusion Request Deleted",
+    },
+    blood_transfusion_archived: {
+        icon: "archive",
+        colorClass: "text-secondary fill-secondary",
+        title: "Archived",
+        tooltipTitle: "Blood Transfusion Request Archived",
+    },
+
+    blood_stock_hold: {
+        icon: "heart-pause",
+        colorClass: "text-warning fill-warning",
+        title: "Blood Hold",
+        tooltipTitle: "Blood Stock Currently in Hold",
+    },
+    blood_stock_released: {
+        icon: "heart-up",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Released",
+        tooltipTitle: "Blood Stock Released Successfully",
+    },
+    blood_stock_not_released: {
+        icon: "heart-x",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Not Released",
+        tooltipTitle: "Blood Stock Not Released Successfully",
+    },
+    blood_stock_approved_incompatible: {
+        icon: "clipboard-check",
+        colorClass: "text-success fill-success",
+        title: "Incompatible Blood Approved",
+        tooltipTitle:
+            "Blood Stock with Incompatible Result Approved Sucessfully",
+    },
+
+    fallback: {
+        icon: "activity",
+        colorClass: "text-secondary fill-secondary",
+        title: "Activity",
+        tooltipTitle: "Activity",
+    },
+};

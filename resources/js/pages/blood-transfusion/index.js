@@ -12,10 +12,19 @@ import {
     updateDoneButtonState,
 } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
+import { GlobalRenderTimelineItem } from "../../utility/ui";
+import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-config";
+import { initFormEdit } from "./form/edit";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
+// TIMELINE
+const BloodTransfusionLogContainerSelector =
+    ".blood-transfusion-log-data-container";
+const TimelineContainerSelector = ".timeline-blood-transfusion-log";
+
 const DateFilterSelector = ".blood-transfusion-date-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
+const LogDataURL = "/blood-transfusion/detail/log";
 
 const SelectorBtnCheckin = "btn-checkin-lab";
 const SelectorBtnDone = "btn-test-done";
@@ -269,6 +278,7 @@ function initPatientDetail() {
             const data = listRequestTableInstance.getRowData(this);
             const lab_number = data.lab_number;
             updatePatientDetailUI(data);
+            fetchDataBloodStockLog();
         });
 }
 
@@ -787,6 +797,42 @@ function initBagRequestActionButtons() {
         });
 }
 
+// ---------- Generate Timeline dari array log ----------
+async function fetchDataBloodStockLog() {
+    const id = window.currentTransfusionPublicId;
+    if (!id) return;
+
+    try {
+        const res = await fetch(`/blood-transfusion/${id}/log`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        GenerateTimeline(data);
+    } catch (err) {
+        notyf.error({ message: "Failed to fetch blood transfusion log data!" });
+        console.error(err);
+        GenerateTimeline([]);
+    }
+}
+function GenerateTimeline(logs = []) {
+    const bloodTransfusionTimeline = GlobalRenderTimelineItem.create({
+        container: BloodTransfusionLogContainerSelector,
+        wrapper: TimelineContainerSelector,
+        locale: "en-GB",
+        statusConfig: BloodTransfusionLogConfigTL,
+        iconLibrary: "tabler",
+    });
+
+    bloodTransfusionTimeline.render(logs);
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
@@ -799,4 +845,5 @@ document.addEventListener("DOMContentLoaded", function () {
     CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();
+    initFormEdit();
 });

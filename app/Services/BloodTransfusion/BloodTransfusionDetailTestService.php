@@ -2,10 +2,12 @@
 
 namespace App\Services\BloodTransfusion;
 
+use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\ResultTest;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
+use App\Models\BloodTransfusionLogActivity;
 use App\Models\CrossMatchHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -112,36 +114,28 @@ class BloodTransfusionDetailTestService
     public function completeTest(string $detailPublicId): array
     {
         try {
+            DB::beginTransaction();
+
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
+                ->with(['bloodStock'])
                 ->whereNull('deleted_at')
                 ->first();
-
             if (!$detail) {
-                return [
-                    'success' => false,
-                    'message' => 'Detail record not found.',
-                ];
+                return ['success' => false, 'message' => 'Detail record not found.'];
             }
 
             // Ambil semua test untuk detail ini
             $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
                 ->whereNull('deleted_at')
                 ->get();
-
             if ($tests->isEmpty()) {
-                return [
-                    'success' => false,
-                    'message' => 'No tests found for this bag.',
-                ];
+                return ['success' => false, 'message' => 'No tests found for this bag.'];
             }
 
             // Validasi: semua test harus sudah ada result
             $missingResult = $tests->filter(fn($t) => empty($t->result));
             if ($missingResult->isNotEmpty()) {
-                return [
-                    'success' => false,
-                    'message' => 'All tests must have a result before completing.',
-                ];
+                return ['success' => false, 'message' => 'All tests must have a result before completing.'];
             }
 
             // // Validasi: semua test harus sudah verified
@@ -164,10 +158,7 @@ class BloodTransfusionDetailTestService
 
             // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
             $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
-
             $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
-
-            DB::beginTransaction();
 
             $detail->update([
                 'crossmatch_result' => $transfusionResult,
@@ -175,8 +166,25 @@ class BloodTransfusionDetailTestService
 
             $this->insertCrossMatchHistory($detail, $transfusionResult);
 
+            BloodTransfusionLogActivity::create([
+                'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
+                'payload' => $detail,
+                'status' => BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
+                'description' => generateBloodTransfusionLogDescription(
+                    BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
+                    'for bag number ' . $detail->bloodStock->bag_number,
+                    Auth::user()->id
+                ),
+                'created_by_user_name' => Auth::user()->name,
+                'timestamp' => now(),
+            ]);
+
             DB::commit();
 
+            globalLogger('info', 'Crossmatch Test Finished Successfully!', [
+                'id' => $detail->bloodTransfusion->public_id,
+                'payload' => $detail,
+            ], 200, 'donebloodtransfusion');
             return [
                 'success' => true,
                 'message' => "Test completed. Result: {$transfusionResult}.",
@@ -184,13 +192,16 @@ class BloodTransfusionDetailTestService
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
+            globalLogger('error', 'Crossmatch Test Failed to Finished!', [
+                'detail_public_id' => $detailPublicId,
+                'error' => $th->getMessage(),
+            ], 500, 'donebloodtransfusion');
             return [
                 'success' => false,
                 'message' => 'Failed to complete test.' . $th->getMessage(),
             ];
         }
     }
-
 
     private function insertCrossMatchHistory($detail, $transfusionResult)
     {
@@ -212,5 +223,13 @@ class BloodTransfusionDetailTestService
                 'result' => $transfusionResult,
             ]);
         }
+    }
+    private function generateDescription(BloodTransfusion $transfusion): string
+    {
+        return match (true) {
+            !empty($transfusion->order_number) => 'for order number ' . $transfusion->order_number,
+            !empty($transfusion->lab_number) => 'for lab number ' . $transfusion->lab_number,
+            default => 'for patient medrec ' . $transfusion->patient->medrec,
+        };
     }
 }

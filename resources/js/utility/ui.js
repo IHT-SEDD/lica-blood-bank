@@ -94,7 +94,7 @@ export function setHidden(id, hidden) {
 }
 
 // ---------- Helper: Timestamp Formatter ----------
-export function TimestampFormatter(isoString, locale) {
+export function TimestampFormatter(isoString, locale, hour12) {
     if (!isoString) return "-";
     const date = new Date(isoString);
     const options = {
@@ -103,9 +103,9 @@ export function TimestampFormatter(isoString, locale) {
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit",
-        hour12: true,
+        hour12: hour12 ?? true,
     };
-    return date.toLocaleString(locale, options);
+    return date.toLocaleString(locale, options, hour12);
 }
 
 // ---------- Global render timeline item ----------
@@ -118,6 +118,7 @@ export class GlobalRenderTimelineItem {
         this.formatTimestamp = options.timestampFormatter ?? TimestampFormatter;
         this.renderItem =
             options.renderItem ?? this._defaultRenderItem.bind(this);
+        this.iconLibrary = options.iconLibrary ?? "lucide";
 
         // Simpan referensi tooltip Bootstrap agar bisa di-dispose saat destroy
         this._tooltipInstances = [];
@@ -138,7 +139,7 @@ export class GlobalRenderTimelineItem {
 
         this._disposeTooltips();
 
-        if (!logs.length) {
+        if (!logs || !logs.length) {
             this.renderEmpty();
             return this;
         }
@@ -182,6 +183,14 @@ export class GlobalRenderTimelineItem {
         return new GlobalRenderTimelineItem(options);
     }
 
+    _iconMarkup(iconName, extraClasses = "", attrs = "") {
+        if (this.iconLibrary === "tabler") {
+            return `<i class="ti ti-${iconName} ${extraClasses}" ${attrs}></i>`;
+        }
+        // lucide: pakai data-lucide, class hanya untuk styling
+        return `<i data-lucide="${iconName}" class="${extraClasses}" ${attrs}></i>`;
+    }
+
     // ---------- Private: render satu item (default, bisa di-override) ----------
     _defaultRenderItem(log) {
         const config =
@@ -190,9 +199,16 @@ export class GlobalRenderTimelineItem {
         const timestamp = this.formatTimestamp(
             log.timestamp ?? log.created_at,
             this.locale,
+            false
         );
         const description = log.description ?? "-";
         const createdByUser = log.created_by_user_name ?? "-";
+
+        const iconMarkup = this._iconMarkup(
+            config.icon,
+            `fs-4 ${config.colorClass} align-middle`,
+            `data-bs-title="${config.tooltipTitle}" data-bs-toggle="tooltip" data-bs-trigger="hover"`,
+        );
 
         return `
             <div class="timeline-item d-flex align-items-stretch">
@@ -200,10 +216,7 @@ export class GlobalRenderTimelineItem {
                     ${timestamp}
                 </div>
                 <div class="timeline-dot">
-                    <i class="ti ti-${config.icon} fs-4 ${config.colorClass} align-middle"
-                       data-bs-title="${config.tooltipTitle}"
-                       data-bs-toggle="tooltip"
-                       data-bs-trigger="hover"></i>
+                    ${iconMarkup}
                 </div>
                 <div class="timeline-content ps-3 pb-2">
                     <h5 class="mb-1 fw-semibold">${config.title}</h5>
@@ -218,7 +231,7 @@ export class GlobalRenderTimelineItem {
 
     // ---------- Private: re-init lucide icons ----------
     _initLucide() {
-        if (typeof lucide !== "undefined") {
+        if (this.iconLibrary === "lucide" && typeof lucide !== "undefined") {
             lucide.createIcons();
         }
     }
