@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\Route;
 // --------------------------------------------------------------------------
 Route::prefix('v1')->name('v1.')->group(function () {
     // ---------- Insert New Request ----------
-    Route::get('/token', [ApiController::class, 'generateToken'])->name('generate-token');
+    Route::get('/token', [ApiController::class, 'generateToken'])->name('Generate Token');
     
     // --------------------------------------------------------------------------
     // Routes API Blood Transfusion
     // --------------------------------------------------------------------------
-    Route::prefix('blood-transfusion')->name('blood-transfusion.')->controller(BloodTransfusionApiController::class)->group(function () {
+    Route::prefix('blood-transfusion')->name('Blood Transfusion.')->controller(BloodTransfusionApiController::class)->group(function () {
         // ---------- Insert New Request ----------
-        Route::post('/', 'newRequest')->name('new');
+        Route::post('/', 'newRequest')->name('New Request');
     });
 });

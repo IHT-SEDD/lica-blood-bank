@@ -4,9 +4,13 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Services\API\ApiUtilityService;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+
+#[Group('API Utility')]
 class ApiController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan ----------
@@ -15,6 +19,12 @@ class ApiController extends Controller
     ) {}
 
     // ---------- Generate Token ----------
+    #[Endpoint(
+        operationId: 'generateToken',
+        title: 'Generate API Token',
+        description: 'Generate API Token for Authorization',
+        method: 'GET'
+    )]
     public function generateToken(Request $request): JsonResponse
     {
         $request->validate([

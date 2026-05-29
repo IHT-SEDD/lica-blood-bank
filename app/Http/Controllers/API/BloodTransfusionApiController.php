@@ -9,9 +9,14 @@ use App\Models\BloodTransfusion;
 use App\Services\API\ApiUtilityService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiAddService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiUpdateService;
+use Dedoc\Scramble\Attributes\Endpoint;
+use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Dedoc\Scramble\Attributes\SchemaName;
 
+
+#[Group('Blood Transfusion API')]
 class BloodTransfusionApiController extends Controller
 {
     // ---------- Panggil semua service yang dibutuhkan ----------
@@ -22,6 +27,12 @@ class BloodTransfusionApiController extends Controller
     ) {}
 
     // ---------- Insert New Request ----------
+    #[Endpoint(
+        operationId: 'newRequest',
+        title: 'Insert New Request',
+        description: 'Insert or Update Blood Transfusion Request',
+        method: 'POST'
+    )]
     public function newRequest(NewBloodTransfusionRequest $request): JsonResponse
     {
         try {

@@ -3,10 +3,12 @@
 namespace App\Http\Requests\API;
 
 use App\Services\API\ApiUtilityService;
+use Dedoc\Scramble\Attributes\SchemaName;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+#[SchemaName('Blood Transfusion Body Request')]
 class NewBloodTransfusionRequest extends FormRequest
 {
     /**

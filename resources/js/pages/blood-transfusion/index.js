@@ -96,6 +96,7 @@ window.HandlingButtonState = function (tableID, data, options = {}) {
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
         maxDate: "today",
+        defaultDate: "today",
     });
 
     $(document)

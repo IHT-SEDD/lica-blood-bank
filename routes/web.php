@@ -7,6 +7,7 @@ use App\Http\Controllers\LockSessionController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UtilityController;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
 // --------------------------------------------------------------------------
