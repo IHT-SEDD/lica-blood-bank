@@ -1,4 +1,4 @@
-import { CustomChartJs, ins } from "../app";
+import { CustomChartJs, ins } from "../utility/chart/chart";
 
 new CustomChartJs({
     selector: "#promptsChart",

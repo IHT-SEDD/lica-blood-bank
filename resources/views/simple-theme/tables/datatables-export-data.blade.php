@@ -1,8 +1,6 @@
 @extends('layouts.vertical', ['title' => 'Export Data Datatables'])
 
 @section('styles')
-@vite(['node_modules/datatables.net-responsive-bs5/css/responsive.bootstrap5.min.css',
-'node_modules/datatables.net-bs5/css/dataTables.bootstrap5.min.css'])
 @endsection
 
 @section('content')

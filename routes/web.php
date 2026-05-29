@@ -7,6 +7,7 @@ use App\Http\Controllers\LockSessionController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UtilityController;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
 // --------------------------------------------------------------------------
@@ -37,6 +38,23 @@ Route::middleware('auth')->group(function () {
                 Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
             });
 
+            // ---------- Detail group routes ----------
+            Route::prefix('detail')->name('detail.')->group(function () {
+                Route::patch('{id}/update-stock', 'updateBagNumber')->name('update-stock');
+
+                Route::prefix('print')->name('print.')->group(function () {
+                    Route::get('incompatible-letter/{id}', 'printIncompatibleLetter')->name('incompatible-letter');
+                    Route::get('crossmatch-result/{id}/{btDetailID?}', 'printCrossmatchResult')->name('crossmatch-result');
+                });
+
+                Route::prefix('{id}')->group(function () {
+                    Route::post('hold', 'holdBloodPack')->name('hold-blood-pack');
+                    Route::post('accept-incompatible', 'acceptIncompatible')->name('accept-incompatible');
+                    Route::post('release', 'releaseBloodPack')->name('release-blood-pack');
+                    Route::post('unrelease', 'unreleaseBloodPack')->name('unrelease-blood-pack');
+                });
+            });
+
             // ---------- Test group routes ----------
             Route::prefix('test')->name('test.')->group(function () {
                 Route::patch('{id}/update-result', 'updateTestResult')->name('update-result');
@@ -46,34 +64,20 @@ Route::middleware('auth')->group(function () {
 
             // ---------- CRUD ----------
             Route::post('store', 'store')->name('store');
-            Route::get('{id}', 'getDataById')->name('get-data');
-            Route::patch('{id}', 'update')->name('update');
-            Route::delete('{id}', 'destroy')->name('destroy');
 
-            // ---------- Checkin ----------
-            Route::post('{id}/checkin', 'checkin')->name('checkin');
+            Route::prefix('{id}')->group(function () {
+                Route::get('/', 'getDataById')->name('get-data');
+                Route::get('log', 'bloodTransfusionLogData')->name('log');
+                Route::patch('/', 'update')->name('update');
+                Route::delete('/', 'destroy')->name('destroy');
 
-            // ---------- Bag Request ----------
-            Route::get('{id}/bag-requests', 'datatableListBagRequest')
-                ->name('datatable-bag-request');
-
-            // ---------- Tests ----------
-            Route::get('{id}/tests', 'datatableListTest')
-                ->name('datatable-list-test');
-
-            // ---------- Blood Packs ----------
-            Route::patch('detail/{id}/update-stock', 'updateBagNumber')
-                ->name('update-bag-number');
-
-        Route::patch('{id}/update-blood-packs', 'updateBloodPacks')
-            ->name('update-blood-packs');
-
-        // ---------- Workflow Actions ----------
-        Route::post('detail/{id}/hold', 'holdBloodPack')->name('hold-blood-pack');
-        Route::post('detail/{id}/accept-incompatible', 'acceptIncompatible')->name('accept-incompatible');
-        Route::post('detail/{id}/release', 'releaseBloodPack')->name('release-blood-pack');
-        Route::post('detail/{id}/unrelease', 'unreleaseBloodPack')->name('unrelease-blood-pack');
-    });
+                Route::post('checkin', 'checkin')->name('checkin');
+                Route::post('complete', 'completeTransaction')->name('complete');
+                Route::get('bag-requests', 'datatableListBagRequest')->name('bag-requests');
+                Route::get('tests', 'datatableListTest')->name('tests');
+                Route::patch('update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');
+            });
+        });
 
     // --------------------------------------------------------------------------
     // Master Group Routes -> master.*
@@ -83,10 +87,10 @@ Route::middleware('auth')->group(function () {
             Route::get('{master}', 'index')->where('master', implode('|', array_keys(config('master'))))->name('index');
             Route::get('{master}/data', 'datatable')->where('master', implode('|', array_keys(config('master'))))->name('datatable');
             Route::get('{master}/data/{id}', 'getDataById')->where('master', implode('|', array_keys(config('master'))))->name('get-data');
-            Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data')->middleware('throttle:master');
-            Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data')->middleware('throttle:master');
-            Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data')->middleware('throttle:master');
-            Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data')->middleware('throttle:master');
+            Route::post('{master}', 'submitData')->where('master', implode('|', array_keys(config('master'))))->name('submit-data');
+            Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
+            Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
+            Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data');
         });
 
     // --------------------------------------------------------------------------
@@ -95,6 +99,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('utility')->name('utility.')->controller(UtilityController::class)->group(function () {
         Route::get('select/{select}', 'selectData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data');
         Route::get('select-special/{select}/{id}', 'selectDataSpecial')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-special');
+        Route::get('select-batch', 'selectBatchData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-batch');
         Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 

@@ -3,7 +3,7 @@
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
   {{-- Select Role --}}
- 
+
 
   {{-- Date filter :begin --}}
   <div>
@@ -11,9 +11,9 @@
       <span class="input-group-text" id="master-room-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-room-table-date-filter"
-        aria-describedby="master-room-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-        data-range-date="true" type="text" placeholder="Choose date range" />
+      <input class="form-control master-room-table-date-filter" aria-describedby="master-room-table-date-filter"
+        data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
+        placeholder="Choose date range" />
     </div>
   </div>
   {{-- Date filter :begin --}}
@@ -55,7 +55,7 @@
     <label class="form-label" for="type">Type
       <span class="text-danger">*</span>
     </label>
-     <select class="form-control" id="type" name="type">
+    <select class="form-control" id="type" name="type">
       <option value="">Choose type</option>
       <option value="rawat_jalan">Rawat Jalan</option>
       <option value="rawat_inap">Rawat Inap</option>
@@ -64,9 +64,10 @@
   </div>
   <div class="col-lg-12">
     <label class="form-label" for="general_code">General Code
- 
+
     </label>
-    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text" placeholder="Enter General Code" />
+    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text"
+      placeholder="Enter General Code" />
   </div>
 
   {{-- Is Active? --}}

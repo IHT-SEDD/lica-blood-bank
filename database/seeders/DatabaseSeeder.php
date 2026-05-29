@@ -19,6 +19,10 @@ class DatabaseSeeder extends Seeder
             BloodPackSeeder::class,
             StorageAndRackSeeder::class,
             VendorSeeeder::class,
+            RoomSeeder::class,
+            InsuranceSeeder::class,
+            DoctorSeeder::class,
+            TestSeeder::class,
         ]);
     }
 }

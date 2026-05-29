@@ -12,15 +12,91 @@ import {
     updateDoneButtonState,
 } from "./analytic/datatables-helper";
 import TomSelect from "tom-select";
+import { GlobalRenderTimelineItem } from "../../utility/ui";
+import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-config";
+import { initFormEdit } from "./form/edit";
 
-// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
+// ---------- Global variable untuk memudahkan penyesuaian ----------
+// TIMELINE
+const BloodTransfusionLogContainerSelector =
+    ".blood-transfusion-log-data-container";
+const TimelineContainerSelector = ".timeline-blood-transfusion-log";
+
 const DateFilterSelector = ".blood-transfusion-date-filter";
-// ---------- Global variable untuk memudahkan penyesuaian :end ----------
+const PRINT_URL = "/blood-transfusion/detail/print";
+const LogDataURL = "/blood-transfusion/detail/log";
 
-// ---------- Filter tanggal dari flatpickr untuk data di tabel :begin ----------
+const SelectorBtnCheckin = "btn-checkin-lab";
+const SelectorBtnDone = "btn-test-done";
+const SelectorBtnPrintBarcode = "btn-print-barcode";
+const SelectorBtnPrintResult = "btn-print-result";
+const SelectorBtnComplete = "btn-complete-transaction";
+const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
+const SelectorBtnPrintIncompLetter = "btn-print-incompletter";
+
+const SelectorBtnRelease = "btn-release-blood-pack";
+const SelectorBtnUnrelease = "btn-unrelease-blood-pack";
+const SelectorBtnReleaseAll = "btn-release-all-blood-pack";
+const SelectorBtnAccept = "btn-accept-blood-pack";
+const SelectorBtnConfirmAccept = "confirm_accept_incompatible";
+const SelectorBtnHold = "btn-hold-blood-pack";
+const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
+
+const getCheckinBtn = () => document.getElementById(SelectorBtnCheckin);
+const getCompleteBtn = () => document.getElementById(SelectorBtnComplete);
+const getFinishBtn = () => document.getElementById(SelectorBtnDone);
+const getPrintBarcodeBtn = () =>
+    document.getElementById(SelectorBtnPrintBarcode);
+
+// ---------- Handle Button State ----------
+window.HandlingButtonState = function (tableID, data, options = {}) {
+    const { buttons = [], onReady = null, ...restOptions } = options;
+    if (!data) return;
+
+    buttons.forEach(({ selector, conditions, action = "show", className }) => {
+        const el =
+            document.getElementById(selector) ??
+            document.querySelector(selector);
+        if (!el) return;
+
+        const conditionMet =
+            typeof conditions === "function"
+                ? conditions(data, { tableID, ...restOptions })
+                : true;
+
+        switch (action) {
+            case "show":
+                conditionMet
+                    ? el.classList.remove("d-none")
+                    : el.classList.add("d-none");
+                break;
+            case "hide":
+                conditionMet
+                    ? el.classList.add("d-none")
+                    : el.classList.remove("d-none");
+                break;
+            case "enable":
+                el.disabled = !conditionMet;
+                break;
+            case "disable":
+                el.disabled = conditionMet;
+                break;
+            case "toggle":
+                el.classList.toggle(className ?? "d-none", !conditionMet);
+                break;
+        }
+    });
+
+    if (typeof onReady === "function") {
+        onReady(data, { tableID, ...restOptions });
+    }
+};
+
+// ---------- Filter tanggal dari flatpickr untuk data di tabel ----------
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
         maxDate: "today",
+        defaultDate: "today",
     });
 
     $(document)
@@ -34,13 +110,10 @@ function DateRangeFilter() {
             }
         });
 }
-// ---------- Filter tanggal dari flatpickr untuk data di tabel :end ----------
 
-// ---------- Menampilkan detail pasien dari row yang diklik :begin ----------
+// ---------- Menampilkan detail pasien dari row yang diklik ----------
 export function updatePatientDetailUI(data) {
     if (!data) return;
-
-    // Update DOM dengan data dari baris yang dipilih
     const setElementText = (selector, text) => {
         const el = document.querySelector(
             `[data-patient-detail="${selector}"]`,
@@ -60,49 +133,143 @@ export function updatePatientDetailUI(data) {
     setElementText("blood_group", data.patient?.blood_group);
     setElementText("blood_rhesus", data.patient?.blood_rhesus);
 
-    // Toggle Check In button based on lab_number
-    const btnCheckin = document.getElementById("btn-checkin-lab");
-    const btnEditBloodPack = document.getElementById("btn-edit-blood-pack");
+    const hasLabNumber =
+        data.lab_number?.toString().trim() &&
+        data.lab_number?.toString().trim() !== "-";
+    const isCompleted =
+        data.status && data.status === "blood_transfusion_finished";
 
-    if (data.lab_number && data.lab_number !== "-") {
-        if (btnCheckin) {
-            btnCheckin.classList.add("d-none");
-        }
-        if (btnEditBloodPack) {
-            btnEditBloodPack.disabled = false;
-        }
-    } else {
-        if (btnCheckin) {
-            btnCheckin.classList.remove("d-none");
-            btnCheckin.dataset.id = data.public_id;
-        }
-        if (btnEditBloodPack) {
-            btnEditBloodPack.disabled = true;
-        }
-    }
+    window.HandlingButtonState("#list-request-table", data, {
+        buttons: [
+            // btn-checkin-lab: tampil jika belum ada lab number
+            {
+                selector: SelectorBtnCheckin,
+                action: "show",
+                conditions: (d) => !hasLabNumber,
+            },
+            {
+                selector: SelectorBtnComplete,
+                action: "show",
+                conditions: (d) => !isCompleted && hasLabNumber,
+            },
+            // btn-print-barcode: tampil & enable jika sudah ada lab number
+            {
+                selector: SelectorBtnPrintBarcode,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnPrintBarcode,
+                action: "enable",
+                conditions: (d) => hasLabNumber,
+            },
+            // btn-edit-blood-pack: tampil & enable jika sudah ada lab number
+            {
+                selector: SelectorBtnEditBloodPack,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnEditBloodPack,
+                action: "enable",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnReleaseAll,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnPrintResult,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+        ],
+        onReady: (d) => {
+            // Set dataset.id pada checkin button jika belum ada lab number
+            if (!hasLabNumber) {
+                const BTN_CHECKIN = getCheckinBtn();
+                if (BTN_CHECKIN) BTN_CHECKIN.dataset.id = d.public_id;
+            }
 
-    // Update list bag request table
-    window.currentTransfusionPublicId = data.public_id;
-    window.currentTransfusionLabNumber = data.lab_number; // Save lab number state
-    window.currentBagDetailPublicId = null; // Reset bag filter when switching transfusion
-    window.currentBagTransfusionResult = null;
-    if (
-        listBagRequestTableInstance &&
-        $.fn.DataTable.isDataTable("#list-bag-request-table")
-    ) {
-        $("#list-bag-request-table").DataTable().ajax.reload(null, false);
-    }
+            if (hasLabNumber) {
+                const BTN_COMPLETE = getCompleteBtn();
+                if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
+            }
 
-    // Reset test table (requires bag row click to load)
-    if (
-        listTestTableInstance &&
-        $.fn.DataTable.isDataTable("#list-test-table")
-    ) {
-        $("#list-test-table").DataTable().ajax.reload(null, false);
-    }
+            // Update list bag request table
+            window.currentTransfusionPublicId = d.public_id;
+            window.currentTransfusionLabNumber = d.lab_number;
+            window.currentBagDetailPublicId = null;
+            window.currentBagCrossmatchResult = null;
+
+            if (
+                listBagRequestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-bag-request-table")
+            ) {
+                $("#list-bag-request-table")
+                    .DataTable()
+                    .ajax.reload(function (json) {
+                        const allHaveCrossmatch =
+                            json.data &&
+                            json.data.length > 0 &&
+                            json.data.every(
+                                (bag) =>
+                                    bag.crossmatch_result &&
+                                    bag.crossmatch_result.toString().trim() !==
+                                        "",
+                            );
+
+                        const btnComplete =
+                            document.getElementById(SelectorBtnComplete);
+                        if (btnComplete) {
+                            btnComplete.disabled = !allHaveCrossmatch;
+                        }
+
+                        const btnReleaseAll = document.getElementById(
+                            SelectorBtnReleaseAll,
+                        );
+                        if (btnReleaseAll) {
+                            btnReleaseAll.disabled = !allHaveCrossmatch;
+                        }
+
+                        const btnPrintResult = document.getElementById(
+                            SelectorBtnPrintResult,
+                        );
+                        if (btnPrintResult) {
+                            btnPrintResult.disabled = !allHaveCrossmatch;
+                        }
+
+                        if (window.currentBagDetailPublicId && json.data) {
+                            const updatedBag = json.data.find(
+                                (b) =>
+                                    b.public_id ===
+                                    window.currentBagDetailPublicId,
+                            );
+
+                            if (updatedBag) {
+                                window.currentBagData = updatedBag;
+
+                                if (
+                                    typeof window.updateWorkflowButtonsState ===
+                                    "function"
+                                ) {
+                                    window.updateWorkflowButtonsState();
+                                }
+                            }
+                        }
+                    }, false);
+            }
+
+            if (
+                listTestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-test-table")
+            ) {
+                $("#list-test-table").DataTable().ajax.reload(null, false);
+            }
+        },
+    });
 }
-// ---------- Menampilkan detail pasien dari row yang diklik :end ----------
-
 function initPatientDetail() {
     $(document)
         .off("click", "#list-request-table tbody tr")
@@ -111,11 +278,12 @@ function initPatientDetail() {
             if (!listRequestTableInstance) return;
             const data = listRequestTableInstance.getRowData(this);
             const lab_number = data.lab_number;
-            updatePatientDetailUI(data); // Panggil fungsi update
+            updatePatientDetailUI(data);
+            fetchDataBloodStockLog();
         });
 }
 
-// ---------- Menampilkan test list dari row bag request yang diklik :begin ----------
+// ---------- Menampilkan test list dari row bag request yang diklik ----------
 function initBagRequestRowClick() {
     $(document)
         .off("click", "#list-bag-request-table tbody tr")
@@ -146,10 +314,9 @@ function initBagRequestRowClick() {
 
             // Set the detail filter and reload test table
             window.currentBagDetailPublicId = data.public_id;
-            window.currentBagTransfusionResult =
-                data.transfusion_result || null;
+            window.currentBagCrossmatchResult = data.crossmatch_result || null;
             window.currentBagData = data;
-            
+
             // Update workflow buttons
             if (typeof window.updateWorkflowButtonsState === "function") {
                 window.updateWorkflowButtonsState();
@@ -163,15 +330,14 @@ function initBagRequestRowClick() {
             }
         });
 }
-// ---------- Menampilkan test list dari row bag request yang diklik :end ----------
 
-// ---------- Handle Check In Lab Number :begin ----------
+// ---------- Handle Check In Lab Number ----------
 function CheckInLabNumber() {
-    const btnCheckin = document.getElementById("btn-checkin-lab");
-    if (!btnCheckin) return;
+    const BTN_CHECKIN = getCheckinBtn();
+    if (!BTN_CHECKIN) return;
 
-    const newBtn = btnCheckin.cloneNode(true);
-    btnCheckin.parentNode.replaceChild(newBtn, btnCheckin);
+    const newBtn = BTN_CHECKIN.cloneNode(true);
+    BTN_CHECKIN.parentNode.replaceChild(newBtn, BTN_CHECKIN);
 
     newBtn.addEventListener("click", async function () {
         const id = this.dataset.id;
@@ -227,7 +393,446 @@ function CheckInLabNumber() {
         }
     });
 }
-// ---------- Handle Check In Lab Number :end ----------
+
+// ---------- Handle Complete ----------
+function CompleteTransaction() {
+    const BTN_COMPLETE = getCompleteBtn();
+    if (!BTN_COMPLETE) return;
+
+    const completeNewBtn = BTN_COMPLETE.cloneNode(true);
+    BTN_COMPLETE.parentNode.replaceChild(completeNewBtn, BTN_COMPLETE);
+
+    completeNewBtn.addEventListener("click", async function () {
+        const id = this.dataset.id;
+        if (!id) return;
+
+        // Prevent multiple clicks
+        const originalText = this.innerHTML;
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        this.disabled = true;
+
+        try {
+            const response = await fetch(`/blood-transfusion/${id}/complete`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || "Failed to complete request!",
+                });
+            } else {
+                notyf.success({
+                    message:
+                        result.message ||
+                        "Blood Request Completed Successfully!",
+                });
+                this.classList.add("d-none");
+                if (
+                    listRequestTableInstance &&
+                    $.fn.DataTable.isDataTable("#list-request-table")
+                ) {
+                    listRequestTableInstance.instance.ajax.reload(null, false);
+                }
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({
+                message: error.message || "Failed to complete request!",
+            });
+        } finally {
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }
+    });
+}
+
+// ---------- Handle Done Button ----------
+function initDoneButton() {
+    const BTN_FINISH = getFinishBtn();
+    if (!BTN_FINISH) return;
+
+    const newBtn = BTN_FINISH.cloneNode(true);
+    BTN_FINISH.parentNode.replaceChild(newBtn, BTN_FINISH);
+
+    // Initially disabled
+    newBtn.disabled = true;
+
+    newBtn.addEventListener("click", function () {
+        completeTest();
+    });
+}
+
+window.updateWorkflowButtonsState = function () {
+    const btnHold = document.getElementById(SelectorBtnHold);
+    const btnRelease = document.getElementById(SelectorBtnRelease);
+    const btnUnrelease = document.getElementById(SelectorBtnUnrelease);
+    const btnAccept = document.getElementById(SelectorBtnAccept);
+    const btnPrintIncomp = document.getElementById(
+        SelectorBtnPrintIncompLetter,
+    );
+
+    const showButtons = (...btns) =>
+        btns.forEach((btn) => btn?.classList.remove("d-none"));
+    const hideButtons = (...btns) =>
+        btns.forEach((btn) => btn?.classList.add("d-none"));
+
+    hideButtons(btnHold, btnRelease, btnUnrelease, btnAccept);
+
+    const data = window.currentBagData;
+    const {
+        crossmatch_result,
+        blood_stock_status,
+        is_print_incompatible_letter,
+        is_approval_incompatible,
+    } = data;
+    if (!data || !data.crossmatch_result) return;
+
+    if (crossmatch_result === "Incompatible") {
+        if (blood_stock_status === "in_use") {
+            // Sudah print incompatible letter tetapi belum approve incompatible
+            if (is_print_incompatible_letter && !is_approval_incompatible) {
+                showButtons(btnAccept);
+            }
+            // Sudah approve incompatible
+            if (is_approval_incompatible) {
+                showButtons(btnRelease);
+            }
+
+            showButtons(btnHold, btnUnrelease);
+        }
+
+        if (blood_stock_status === "hold") {
+            hideButtons(btnHold);
+            showButtons(btnPrintIncomp, btnUnrelease);
+
+            // Sudah print incompatible letter
+            if (is_print_incompatible_letter) {
+                showButtons(btnAccept, btnUnrelease);
+            }
+
+            // Sudah approve incompatible
+            if (is_approval_incompatible) {
+                showButtons(btnUnrelease, btnRelease);
+                hideButtons(btnAccept);
+            }
+        }
+    } else if (crossmatch_result === "Compatible") {
+        if (blood_stock_status === "in_use") {
+            showButtons(btnHold, btnRelease, btnUnrelease);
+        }
+
+        if (blood_stock_status === "hold") {
+            hideButtons(btnHold);
+            showButtons(btnRelease, btnUnrelease);
+        }
+    }
+};
+
+// ---------- Handle Bag Request Action Buttons ----------
+function initBagRequestActionButtons() {
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+
+    // ---------- Helpers ----------
+    const reloadBagRequestTable = () => {
+        if (
+            listBagRequestTableInstance &&
+            $.fn.DataTable.isDataTable("#list-bag-request-table")
+        ) {
+            $("#list-bag-request-table")
+                .DataTable()
+                .ajax.reload(function (json) {
+                    if (window.currentBagDetailPublicId && json.data) {
+                        const updatedBag = json.data.find(
+                            (b) =>
+                                b.public_id === window.currentBagDetailPublicId,
+                        );
+
+                        if (updatedBag) {
+                            window.currentBagData = updatedBag;
+
+                            if (
+                                typeof window.updateWorkflowButtonsState ===
+                                "function"
+                            ) {
+                                window.updateWorkflowButtonsState();
+                            }
+                        }
+                    }
+                }, false);
+        }
+    };
+    const doAction = async ({
+        url,
+        method = "POST",
+        successMessage = "Action successful!",
+        errorMessage = "Action failed!",
+        onSuccess = null,
+    }) => {
+        try {
+            const response = await fetch(url, {
+                method,
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || errorMessage,
+                });
+                return;
+            }
+
+            notyf.success({
+                message: result.message || successMessage,
+            });
+
+            reloadBagRequestTable();
+
+            if (typeof onSuccess === "function") {
+                onSuccess(result);
+            }
+        } catch (error) {
+            console.error(error);
+
+            notyf.error({
+                message: errorMessage,
+            });
+        }
+    };
+    const handlePrint = async (url) => {
+        showPageLoading();
+
+        try {
+            const res = await fetch(url, {
+                method: "GET",
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+
+                notyf.error({
+                    message:
+                        err?.message ?? `HTTP error! status: ${res.status}`,
+                });
+
+                hidePageLoading();
+                return;
+            }
+
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            let iframe = document.getElementById("__print_preview_iframe__");
+
+            if (iframe) iframe.remove();
+
+            iframe = document.createElement("iframe");
+
+            iframe.id = "__print_preview_iframe__";
+
+            iframe.style.cssText =
+                "position:fixed;top:0;left:0;width:100%;height:100%;border:none;opacity:0;pointer-events:none;z-index:-1;";
+
+            iframe.src = blobUrl;
+
+            iframe.onload = () => {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (printErr) {
+                    console.error(printErr);
+
+                    notyf.error({
+                        message: "Failed to open print dialog.",
+                    });
+                } finally {
+                    hidePageLoading();
+
+                    reloadBagRequestTable();
+
+                    setTimeout(() => {
+                        URL.revokeObjectURL(blobUrl);
+                        iframe.remove();
+                    }, 30000);
+                }
+            };
+
+            document.body.appendChild(iframe);
+        } catch (err) {
+            console.error("[Print] Network error:", err);
+            notyf.error({
+                message: "Network error, failed to load print file.",
+            });
+
+            hidePageLoading();
+        }
+    };
+
+    // Hold Blood
+    $(document)
+        .off("click", "#" + SelectorBtnHold)
+        .on("click", "#" + SelectorBtnHold, function (e) {
+            e.preventDefault();
+            if (!window.currentBagDetailPublicId) return;
+            doAction({
+                url: `/blood-transfusion/detail/${window.currentBagDetailPublicId}/hold`,
+            });
+        });
+
+    // Release Blood
+    $(document)
+        .off("click", "#" + SelectorBtnRelease)
+        .on("click", "#" + SelectorBtnRelease, function (e) {
+            e.preventDefault();
+            if (!window.currentBagDetailPublicId) return;
+            doAction({
+                url: `/blood-transfusion/detail/${window.currentBagDetailPublicId}/release`,
+            });
+        });
+
+    // Unrelease
+    $(document)
+        .off("click", "#" + SelectorBtnUnrelease)
+        .on("click", "#" + SelectorBtnUnrelease, function (e) {
+            e.preventDefault();
+            if (!window.currentBagDetailPublicId) return;
+            doAction({
+                url: `/blood-transfusion/detail/${window.currentBagDetailPublicId}/unrelease`,
+            });
+        });
+
+    // Print Incompatible Letter
+    $(document)
+        .off("click", "#" + SelectorBtnPrintIncompLetter)
+        .on("click", "#" + SelectorBtnPrintIncompLetter, function (e) {
+            e.preventDefault();
+            handlePrint(
+                `${PRINT_URL}/incompatible-letter/${window.currentTransfusionPublicId}`,
+            );
+        });
+
+    // Print Result
+    $(document)
+        .off("click", "#" + SelectorBtnPrintResult)
+        .on("click", "#" + SelectorBtnPrintResult, function (e) {
+            e.preventDefault();
+            handlePrint(
+                `${PRINT_URL}/crossmatch-result/${window.currentTransfusionPublicId}`,
+            );
+        });
+    $(document)
+        .off("click", "#" + SelectorBtnPrintResultPerBlood)
+        .on("click", "#" + SelectorBtnPrintResultPerBlood, function (e) {
+            e.preventDefault();
+            const detailId = $(this).data("public-id");
+            if (!detailId) return;
+
+            handlePrint(
+                `${PRINT_URL}/crossmatch-result/${window.currentTransfusionPublicId}/${detailId}`,
+            );
+        });
+
+    // Approve incompatible
+    $(document)
+        .off("click", "#" + SelectorBtnAccept)
+        .on("click", "#" + SelectorBtnAccept, function (e) {
+            e.preventDefault();
+            const confirmBtn = document.getElementById(
+                "confirm_accept_incompatible",
+            );
+            if (confirmBtn) {
+                confirmBtn.dataset.detailId = window.currentBagDetailPublicId;
+            }
+
+            const modalEl = document.getElementById(
+                "accept_incompatible_blood_modal",
+            );
+            if (modalEl) {
+                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+            }
+        });
+    $(document)
+        .off("click", "#" + SelectorBtnConfirmAccept)
+        .on("click", "#" + SelectorBtnConfirmAccept, async function (e) {
+            e.preventDefault();
+            const detailId = this.dataset.detailId;
+            if (!detailId) return;
+
+            const originalText = this.innerHTML;
+            this.innerHTML =
+                '<span class="spinner-border spinner-border-sm"></span> Processing...';
+            this.disabled = true;
+
+            await doAction({
+                url: `/blood-transfusion/detail/${detailId}/accept-incompatible`,
+                successMessage: "Incompatible blood accepted successfully!",
+                errorMessage: "Failed to accept incompatible blood!",
+                onSuccess: () => {
+                    const modalEl = document.getElementById(
+                        "accept_incompatible_blood_modal",
+                    );
+
+                    if (modalEl) {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    }
+                },
+            });
+
+            this.innerHTML = originalText;
+            this.disabled = false;
+        });
+}
+
+// ---------- Generate Timeline dari array log ----------
+async function fetchDataBloodStockLog() {
+    const id = window.currentTransfusionPublicId;
+    if (!id) return;
+
+    try {
+        const res = await fetch(`/blood-transfusion/${id}/log`, {
+            method: "GET",
+            cache: "no-store",
+            headers: {
+                "Cache-Control": "no-cache",
+                Pragma: "no-cache",
+            },
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        GenerateTimeline(data);
+    } catch (err) {
+        notyf.error({ message: "Failed to fetch blood transfusion log data!" });
+        console.error(err);
+        GenerateTimeline([]);
+    }
+}
+function GenerateTimeline(logs = []) {
+    const bloodTransfusionTimeline = GlobalRenderTimelineItem.create({
+        container: BloodTransfusionLogContainerSelector,
+        wrapper: TimelineContainerSelector,
+        locale: "en-GB",
+        statusConfig: BloodTransfusionLogConfigTL,
+        iconLibrary: "tabler",
+    });
+
+    bloodTransfusionTimeline.render(logs);
+}
 
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
@@ -238,191 +843,8 @@ document.addEventListener("DOMContentLoaded", function () {
     initPatientDetail();
     initBagRequestRowClick();
     CheckInLabNumber();
+    CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();
+    initFormEdit();
 });
-
-// ---------- Handle Done Button :begin ----------
-function initDoneButton() {
-    const btn = document.getElementById("btn-test-done");
-    if (!btn) return;
-
-    const newBtn = btn.cloneNode(true);
-    btn.parentNode.replaceChild(newBtn, btn);
-
-    // Initially disabled
-    newBtn.disabled = true;
-
-    newBtn.addEventListener("click", function () {
-        completeTest();
-    });
-}
-// ---------- Handle Done Button :end ----------
-
-window.updateWorkflowButtonsState = function() {
-    const btnHold = document.getElementById("btn-hold-blood-pack");
-    const btnRelease = document.getElementById("btn-release-blood-pack");
-    const btnUnrelease = document.getElementById("btn-unrelease-blood-pack");
-    const btnPrint = document.getElementById("btn-print-crossmatch-incompatible");
-    const btnAccept = document.getElementById("btn-accept-blood-pack");
-    
-    // Hide all initially
-    if (btnHold) btnHold.classList.add("d-none");
-    if (btnRelease) btnRelease.classList.add("d-none");
-    if (btnUnrelease) btnUnrelease.classList.add("d-none");
-    if (btnPrint) btnPrint.classList.add("d-none");
-    if (btnAccept) btnAccept.classList.add("d-none");
-
-    const data = window.currentBagData;
-    if (!data || !data.crossmatch_result) return;
-
-    if (data.crossmatch_result === "Incompatible") {
-        if (data.blood_stock_status !== 'already_taken' && data.blood_stock_status !== 'taken_out' && data.blood_stock_status !== 'used') {
-            if (btnHold) btnHold.classList.remove("d-none");
-        } else if (data.blood_stock_status === 'already_taken') {
-            if (!data.is_approval_incompatible) {
-                if (btnPrint) btnPrint.classList.remove("d-none");
-                if (btnAccept) btnAccept.classList.remove("d-none");
-                if (btnUnrelease) btnUnrelease.classList.remove("d-none");
-            } else {
-                if (btnRelease) btnRelease.classList.remove("d-none");
-                if (btnUnrelease) btnUnrelease.classList.remove("d-none");
-            }
-        }
-    } else if (data.crossmatch_result === "Compatible") {
-        if (data.blood_stock_status !== 'taken_out' && data.blood_stock_status !== 'used') {
-            if (btnRelease) btnRelease.classList.remove("d-none");
-            if (btnUnrelease) btnUnrelease.classList.remove("d-none");
-        }
-    }
-}
-
-function initBagRequestActionButtons() {
-    // Helper for fetch actions
-    const doAction = async (url, method = "POST") => {
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
-                },
-            });
-            const result = await response.json();
-            if (!response.ok) {
-                notyf.error({ message: result.message || "Action failed!" });
-            } else {
-                notyf.success({ message: result.message || "Action successful!" });
-                if (listBagRequestTableInstance && $.fn.DataTable.isDataTable("#list-bag-request-table")) {
-                    $("#list-bag-request-table").DataTable().ajax.reload(function(json) {
-                        // Find the updated bag data and refresh buttons
-                        if (window.currentBagDetailPublicId && json.data) {
-                            const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
-                            if (updatedBag) {
-                                window.currentBagData = updatedBag;
-                                if (typeof window.updateWorkflowButtonsState === "function") {
-                                    window.updateWorkflowButtonsState();
-                                }
-                            }
-                        }
-                    }, false);
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            notyf.error({ message: "An error occurred." });
-        }
-    };
-
-    $(document).off("click", "#btn-hold-blood-pack").on("click", "#btn-hold-blood-pack", function (e) {
-        e.preventDefault();
-        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/hold`);
-    });
-
-    $(document).off("click", "#btn-release-blood-pack").on("click", "#btn-release-blood-pack", function (e) {
-        e.preventDefault();
-        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/release`);
-    });
-
-    $(document).off("click", "#btn-unrelease-blood-pack").on("click", "#btn-unrelease-blood-pack", function (e) {
-        e.preventDefault();
-        if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/unrelease`);
-    });
-
-    $(document).off("click", "#btn-print-crossmatch-incompatible").on("click", "#btn-print-crossmatch-incompatible", function (e) {
-        e.preventDefault();
-        notyf.success({ message: "Printing crossmatch incompatible result..." });
-    });
-
-    $(document).off("click", "#btn-accept-blood-pack").on("click", "#btn-accept-blood-pack", function (e) {
-        e.preventDefault();
-        const confirmBtn = document.getElementById("confirm_accept_incompatible");
-        if (confirmBtn) {
-            confirmBtn.dataset.detailId = window.currentBagDetailPublicId;
-        }
-        const modalEl = document.getElementById("accept_incompatible_blood_modal");
-        if (modalEl) {
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            modal.show();
-        }
-    });
-
-    $(document).off("click", "#confirm_accept_incompatible").on("click", "#confirm_accept_incompatible", async function (e) {
-        e.preventDefault();
-        const detailId = this.dataset.detailId;
-        if (!detailId) return;
-
-        const originalText = this.innerHTML;
-        this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-        this.disabled = true;
-
-        try {
-            const response = await fetch(`/blood-transfusion/detail/${detailId}/accept-incompatible`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
-                },
-            });
-            const result = await response.json();
-            
-            if (!response.ok) {
-                notyf.error({ message: result.message || "Failed to accept incompatible blood!" });
-            } else {
-                notyf.success({ message: result.message || "Incompatible blood accepted successfully!" });
-                
-                const modalEl = document.getElementById("accept_incompatible_blood_modal");
-                if (modalEl) {
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    if (modal) modal.hide();
-                }
-                
-                if (listBagRequestTableInstance && $.fn.DataTable.isDataTable("#list-bag-request-table")) {
-                    $("#list-bag-request-table").DataTable().ajax.reload(function(json) {
-                        if (window.currentBagDetailPublicId && json.data) {
-                            const updatedBag = json.data.find(b => b.public_id === window.currentBagDetailPublicId);
-                            if (updatedBag) {
-                                window.currentBagData = updatedBag;
-                                if (typeof window.updateWorkflowButtonsState === "function") {
-                                    window.updateWorkflowButtonsState();
-                                }
-                            }
-                        }
-                    }, false);
-                }
-            }
-        } catch (error) {
-            console.error(error);
-            notyf.error({ message: "An error occurred." });
-        } finally {
-            this.innerHTML = originalText;
-            this.disabled = false;
-        }
-    });
-}
-// ---------- Handle Bag Request Action Buttons :end ----------
-

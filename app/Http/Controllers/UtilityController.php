@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\UtilityService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class UtilityController extends Controller
@@ -27,6 +28,33 @@ class UtilityController extends Controller
         return response()->json(
             $this->service->getSelectDataSpecial($request, $select, $id)
         );
+    }
+
+    // ---------- Fungsi untuk mengambil data secara batch agar bisa ditampilkan di select ----------
+    public function selectBatchData(Request $request): JsonResponse
+    {
+        $keys = $request->input('keys', []);
+
+        if (empty($keys) || !is_array($keys)) {
+            return response()->json(['results' => []]);
+        }
+
+        $results = [];
+        foreach ($keys as $key) {
+            $fakeRequest = Request::create(
+                "/utility/select/{$key}",
+                'GET',
+                ['q' => '']
+            );
+
+            try {
+                $results[$key] = $this->service->getSelectData($fakeRequest, $key);
+            } catch (\Throwable $e) {
+                $results[$key] = ['results' => []];
+            }
+        }
+
+        return response()->json($results);
     }
 
     // ---------- Fungsi untuk mengambil data per id ----------

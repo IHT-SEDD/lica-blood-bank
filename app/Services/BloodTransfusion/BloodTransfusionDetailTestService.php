@@ -2,96 +2,18 @@
 
 namespace App\Services\BloodTransfusion;
 
+use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\ResultTest;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
+use App\Models\BloodTransfusionLogActivity;
 use App\Models\CrossMatchHistory;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class BloodTransfusionDetailTestService
 {
-    /**
-     * Mengambil data test list untuk datatable berdasarkan public_id transfusion.
-     * Menyertakan result_options dari Enum ResultTest agar frontend tidak perlu
-     * mendefinisikan ulang opsi yang sudah ada di backend.
-     */
-    public function getDatatableData(string $publicId, int $draw, ?string $detailPublicId = null): array
-    {
-        $transfusion = BloodTransfusion::where('public_id', $publicId)
-            ->whereNull('deleted_at')
-            ->first();
-
-        if (!$transfusion) {
-            return [
-                'draw'            => $draw,
-                'recordsTotal'    => 0,
-                'recordsFiltered' => 0,
-                'data'            => [],
-                'result_options'  => ResultTest::toSelect(),
-            ];
-        }
-
-        // Ambil semua detail beserta test-nya (satu detail bisa punya banyak tes)
-        $detailQuery = BloodTransfusionDetail::with([
-            'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
-            'bloodTransfusionDetailTests.test:id,name',
-            'bloodStock:id,bag_number',
-            'bloodTransfusionDetailTests.verifiedByUser:id,name',
-            'bloodTransfusionDetailTests.validatedByUser:id,name',
-        ])
-            ->where('blood_transfusion_id', $transfusion->id)
-            ->whereNull('deleted_at');
-
-        // Filter by specific detail (bag) if provided
-        if ($detailPublicId) {
-            $detailQuery->where('public_id', $detailPublicId);
-        }
-
-        $details = $detailQuery->get();
-
-        $rows = [];
-
-        foreach ($details as $detail) {
-            $tests = $detail->bloodTransfusionDetailTests ?? collect();
-
-            if ($tests->isEmpty()) {
-                // Tampilkan baris kosong agar detail tetap terlihat
-                $rows[] = [
-                    'detail_test_public_id' => null,
-                    'bag_number'             => '-',
-                    'test_name'             => '-',
-                    'result_value'          => null,
-                    'is_verified'           => false,
-                    'is_validated'          => false,
-                ];
-                continue;
-            }
-            // dd($tests);
-            foreach ($tests as $detailTest) {
-                $rows[] = [
-                    'detail_test_public_id' => $detailTest->public_id,
-                    'test_name'             => $detailTest->test?->name ?? '-',
-                    'bag_number'            => $detail->bloodStock?->bag_number ?? '-',
-                    'result_value'          => $detailTest->result,   // raw enum value
-                    'verified'           => !empty($detailTest->verified_at) && !empty($detailTest->verified_by_user_id),
-                    'validated'          => !empty($detailTest->validated_at) && !empty($detailTest->validated_by_user_id),
-                ];
-            }
-        }
-
-        $total = count($rows);
-
-        return [
-            'draw'            => $draw,
-            'recordsTotal'    => $total,
-            'recordsFiltered' => $total,
-            'data'            => $rows,
-            'result_options'  => ResultTest::toSelect(),  // opsi dropdown dari Enum
-        ];
-    }
-
     /**
      * Menyimpan hasil (result) ke record BloodTransfusionDetailTest.
      * Memvalidasi bahwa value yang dikirim adalah salah satu case Enum ResultTest.
@@ -192,78 +114,88 @@ class BloodTransfusionDetailTestService
     public function completeTest(string $detailPublicId): array
     {
         try {
-                    $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
-                    ->whereNull('deleted_at')
-                    ->first();
+            DB::beginTransaction();
 
-                if (!$detail) {
-                    return [
-                        'success' => false,
-                        'message' => 'Detail record not found.',
-                    ];
-                }
+            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
+                ->with(['bloodStock'])
+                ->whereNull('deleted_at')
+                ->first();
+            if (!$detail) {
+                return ['success' => false, 'message' => 'Detail record not found.'];
+            }
 
-                // Ambil semua test untuk detail ini
-                $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
-                    ->whereNull('deleted_at')
-                    ->get();
+            // Ambil semua test untuk detail ini
+            $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
+                ->whereNull('deleted_at')
+                ->get();
+            if ($tests->isEmpty()) {
+                return ['success' => false, 'message' => 'No tests found for this bag.'];
+            }
 
-                if ($tests->isEmpty()) {
-                    return [
-                        'success' => false,
-                        'message' => 'No tests found for this bag.',
-                    ];
-                }
+            // Validasi: semua test harus sudah ada result
+            $missingResult = $tests->filter(fn($t) => empty($t->result));
+            if ($missingResult->isNotEmpty()) {
+                return ['success' => false, 'message' => 'All tests must have a result before completing.'];
+            }
 
-                // Validasi: semua test harus sudah ada result
-                $missingResult = $tests->filter(fn($t) => empty($t->result));
-                if ($missingResult->isNotEmpty()) {
-                    return [
-                        'success' => false,
-                        'message' => 'All tests must have a result before completing.',
-                    ];
-                }
+            // // Validasi: semua test harus sudah verified
+            // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
+            // if ($missingVerified->isNotEmpty()) {
+            //     return [
+            //         'success' => false,
+            //         'message' => 'All tests must be verified before completing.',
+            //     ];
+            // }
 
-                // // Validasi: semua test harus sudah verified
-                // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
-                // if ($missingVerified->isNotEmpty()) {
-                //     return [
-                //         'success' => false,
-                //         'message' => 'All tests must be verified before completing.',
-                //     ];
-                // }
+            // // Validasi: semua test harus sudah validated
+            // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
+            // if ($missingValidated->isNotEmpty()) {
+            //     return [
+            //         'success' => false,
+            //         'message' => 'All tests must be validated before completing.',
+            //     ];
+            // }
 
-                // // Validasi: semua test harus sudah validated
-                // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
-                // if ($missingValidated->isNotEmpty()) {
-                //     return [
-                //         'success' => false,
-                //         'message' => 'All tests must be validated before completing.',
-                //     ];
-                // }
+            // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
+            $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
+            $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
 
-                // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-                $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
+            $detail->update([
+                'crossmatch_result' => $transfusionResult,
+            ]);
 
-                $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
+            $this->insertCrossMatchHistory($detail, $transfusionResult);
 
-                DB::beginTransaction();
+            BloodTransfusionLogActivity::create([
+                'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
+                'payload' => $detail,
+                'status' => BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
+                'description' => generateBloodTransfusionLogDescription(
+                    BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
+                    'for bag number ' . $detail->bloodStock->bag_number,
+                    Auth::user()->id
+                ),
+                'created_by_user_name' => Auth::user()->name,
+                'timestamp' => now(),
+            ]);
 
-                $detail->update([
-                    'crossmatch_result' => $transfusionResult,
-                ]);
+            DB::commit();
 
-                $this->insertCrossMatchHistory($detail, $transfusionResult);
-
-                DB::commit();
-
-                return [
-                    'success' => true,
-                    'message' => "Test completed. Result: {$transfusionResult}.",
-                    'crossmatch_result' => $transfusionResult,
-                ];
+            globalLogger('info', 'Crossmatch Test Finished Successfully!', [
+                'id' => $detail->bloodTransfusion->public_id,
+                'payload' => $detail,
+            ], 200, 'donebloodtransfusion');
+            return [
+                'success' => true,
+                'message' => "Test completed. Result: {$transfusionResult}.",
+                'crossmatch_result' => $transfusionResult,
+            ];
         } catch (\Throwable $th) {
             DB::rollBack();
+            globalLogger('error', 'Crossmatch Test Failed to Finished!', [
+                'detail_public_id' => $detailPublicId,
+                'error' => $th->getMessage(),
+            ], 500, 'donebloodtransfusion');
             return [
                 'success' => false,
                 'message' => 'Failed to complete test.' . $th->getMessage(),
@@ -271,26 +203,33 @@ class BloodTransfusionDetailTestService
         }
     }
 
+    private function insertCrossMatchHistory($detail, $transfusionResult)
+    {
+        // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
 
-    private function insertCrossMatchHistory($detail, $transfusionResult){
-         // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-
-        if(is_null($detail)) return false;
+        if (is_null($detail)) return false;
 
         $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
-        if($history){
+        if ($history) {
             $history->update([
                 'result' => $transfusionResult,
                 'blood_stock_id' => $detail->blood_stock_id,
                 'updated_at' => now()
             ]);
-        }else{
+        } else {
             $history = CrossMatchHistory::create([
                 'blood_transfusion_detail_id' => $detail->id,
                 'blood_stock_id' => $detail->blood_stock_id,
                 'result' => $transfusionResult,
             ]);
         }
-
+    }
+    private function generateDescription(BloodTransfusion $transfusion): string
+    {
+        return match (true) {
+            !empty($transfusion->order_number) => 'for order number ' . $transfusion->order_number,
+            !empty($transfusion->lab_number) => 'for lab number ' . $transfusion->lab_number,
+            default => 'for patient medrec ' . $transfusion->patient->medrec,
+        };
     }
 }

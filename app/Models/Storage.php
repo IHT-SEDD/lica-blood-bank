@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\InvalidateSelectCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
 class Storage extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, InvalidateSelectCache;
 
     protected $fillable = [
         'public_id',
