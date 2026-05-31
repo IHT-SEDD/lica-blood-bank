@@ -1,6 +1,7 @@
 // ---------- Import Libraries ----------
 import { GlobalAdvanceFlatpickr } from "../../app";
 import { TextFormatter } from "../../utility/ui";
+import { initPrintPreview } from "./print";
 import {
     DatatableRequestBlood,
     listRequestTableInstance,
@@ -149,7 +150,7 @@ function initBagRequestRowClick() {
             window.currentBagTransfusionResult =
                 data.transfusion_result || null;
             window.currentBagData = data;
-            
+
             // Update workflow buttons
             if (typeof window.updateWorkflowButtonsState === "function") {
                 window.updateWorkflowButtonsState();
@@ -240,6 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
     CheckInLabNumber();
     initDoneButton();
     initBagRequestActionButtons();
+    initPrintPreview();
 });
 
 // ---------- Handle Done Button :begin ----------
@@ -265,7 +267,7 @@ window.updateWorkflowButtonsState = function() {
     const btnUnrelease = document.getElementById("btn-unrelease-blood-pack");
     const btnPrint = document.getElementById("btn-print-crossmatch-incompatible");
     const btnAccept = document.getElementById("btn-accept-blood-pack");
-    
+
     // Hide all initially
     if (btnHold) btnHold.classList.add("d-none");
     if (btnRelease) btnRelease.classList.add("d-none");
@@ -281,7 +283,6 @@ window.updateWorkflowButtonsState = function() {
             if (btnHold) btnHold.classList.remove("d-none");
         } else if (data.blood_stock_status === 'already_taken') {
             if (!data.is_approval_incompatible) {
-                if (btnPrint) btnPrint.classList.remove("d-none");
                 if (btnAccept) btnAccept.classList.remove("d-none");
                 if (btnUnrelease) btnUnrelease.classList.remove("d-none");
             } else {
@@ -289,6 +290,8 @@ window.updateWorkflowButtonsState = function() {
                 if (btnUnrelease) btnUnrelease.classList.remove("d-none");
             }
         }
+          if (btnPrint) btnPrint.classList.remove("d-none");
+          btnPrint.dataset.id = window.currentTransfusionPublicId;
     } else if (data.crossmatch_result === "Compatible") {
         if (data.blood_stock_status !== 'taken_out' && data.blood_stock_status !== 'used') {
             if (btnRelease) btnRelease.classList.remove("d-none");
@@ -351,11 +354,6 @@ function initBagRequestActionButtons() {
         if (window.currentBagDetailPublicId) doAction(`/blood-transfusion/detail/${window.currentBagDetailPublicId}/unrelease`);
     });
 
-    $(document).off("click", "#btn-print-crossmatch-incompatible").on("click", "#btn-print-crossmatch-incompatible", function (e) {
-        e.preventDefault();
-        notyf.success({ message: "Printing crossmatch incompatible result..." });
-    });
-
     $(document).off("click", "#btn-accept-blood-pack").on("click", "#btn-accept-blood-pack", function (e) {
         e.preventDefault();
         const confirmBtn = document.getElementById("confirm_accept_incompatible");
@@ -389,18 +387,18 @@ function initBagRequestActionButtons() {
                 },
             });
             const result = await response.json();
-            
+
             if (!response.ok) {
                 notyf.error({ message: result.message || "Failed to accept incompatible blood!" });
             } else {
                 notyf.success({ message: result.message || "Incompatible blood accepted successfully!" });
-                
+
                 const modalEl = document.getElementById("accept_incompatible_blood_modal");
                 if (modalEl) {
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                     if (modal) modal.hide();
                 }
-                
+
                 if (listBagRequestTableInstance && $.fn.DataTable.isDataTable("#list-bag-request-table")) {
                     $("#list-bag-request-table").DataTable().ajax.reload(function(json) {
                         if (window.currentBagDetailPublicId && json.data) {

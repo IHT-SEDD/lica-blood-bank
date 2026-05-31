@@ -130,7 +130,7 @@
 
           {{-- Print crossmatch result incompotible blood pack button --}}
           <button class="btn btn-sm btn-soft-primary m-0" id="btn-print-crossmatch-incompatible" data-id=""
-            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            data-bs-title="Print Crossmatch Result Incompatible Blood Pack" data-bs-toggle="tooltip" data-bs-trigger="hover" data-print="crossmatch-result"  data-preview-url="{{ route('blood-transfusion.print', ':print') }}">
             <i class="ti ti-printer fs-4"></i>
           </button>
         </div>
@@ -239,6 +239,6 @@
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',
 'resources/js/pages/blood-transfusion/form-add.js',
 'resources/js/pages/blood-transfusion/form-edit.js',
-'resources/js/pages/form-wizard.js'
+'resources/js/pages/form-wizard.js',
 ])
 @endsection

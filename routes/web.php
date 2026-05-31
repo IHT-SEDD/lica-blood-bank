@@ -73,6 +73,9 @@ Route::middleware('auth')->group(function () {
         Route::post('detail/{id}/accept-incompatible', 'acceptIncompatible')->name('accept-incompatible');
         Route::post('detail/{id}/release', 'releaseBloodPack')->name('release-blood-pack');
         Route::post('detail/{id}/unrelease', 'unreleaseBloodPack')->name('unrelease-blood-pack');
+
+        // ---------- Print ----------
+        Route::get('print/{print}', 'print')->name('print');
     });
 
     // --------------------------------------------------------------------------
