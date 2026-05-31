@@ -1,0 +1,704 @@
+[
+    {
+        "name": "dr Syofyan Zein, Sp.PD",
+        "no_telephone": null,
+        "general_code": "94",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Siswono, Sp.OG",
+        "no_telephone": "08159417701",
+        "general_code": "95",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ronny Undaya, Sp.THT",
+        "no_telephone": "08164211187",
+        "general_code": "96",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Nurhayati, Sp.A",
+        "no_telephone": "087836932093",
+        "general_code": "97",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Djohari Tony,",
+        "no_telephone": "087727778884",
+        "general_code": "101",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Rahup Ardi,",
+        "no_telephone": "081312182238",
+        "general_code": "104",
+        "is_active": "1"
+    },
+    {
+        "name": "dr La Royba Hawa, Sp.OG",
+        "no_telephone": "081313316767",
+        "general_code": "113",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Husni Riadi Nasution, Sp.An",
+        "no_telephone": "081326513843",
+        "general_code": "132",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Rizal Agus Tiansyah, SpA",
+        "no_telephone": "081919791997",
+        "general_code": "133",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Windaningsih,",
+        "no_telephone": "081324009238",
+        "general_code": "134",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Tarjono, SpB",
+        "no_telephone": "081227500066",
+        "general_code": "136",
+        "is_active": "1"
+    },
+    {
+        "name": "drg. Tetet Sandri Suprobowati,",
+        "no_telephone": "0817224859",
+        "general_code": "149",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Tini Sugihartini, SpKJ",
+        "no_telephone": "085215673770",
+        "general_code": "152",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Widiyana,",
+        "no_telephone": "081214112888",
+        "general_code": "156",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Wahyudi Hartono, MKK,SP.OG",
+        "no_telephone": "087770222149",
+        "general_code": "160",
+        "is_active": "1"
+    },
+    {
+        "name": "drg. Yayak Nurlaela S, Sp.Pros",
+        "no_telephone": "081395567711",
+        "general_code": "161",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Uun Maesunah,",
+        "no_telephone": "087877739988",
+        "general_code": "167",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ayu Nuur Annissa,",
+        "no_telephone": "08122302514",
+        "general_code": "168",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Laely Trisfillaely, ",
+        "no_telephone": null,
+        "general_code": "176",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Nurasiyah,",
+        "no_telephone": "081947318301",
+        "general_code": "177",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Moch. Reza Mahdi, Sp.P.D",
+        "no_telephone": "081220040296",
+        "general_code": "178",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Indriani Silvia, Sp.PK",
+        "no_telephone": "081908168254",
+        "general_code": "185",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Muhamad Jupri,",
+        "no_telephone": "085352193335",
+        "general_code": "186",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Shella Ayu Vidada,",
+        "no_telephone": "085747162860",
+        "general_code": "216",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Hanifah Mirzanie, Sp.OG",
+        "no_telephone": "085266868576",
+        "general_code": "224",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Wahyu Waspodo, SpB",
+        "no_telephone": "08111623311",
+        "general_code": "238",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Eka Budhi Satyawardana, Sp.BS",
+        "no_telephone": "08156081504",
+        "general_code": "239",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Veronica Christy Gunaputri, SpM",
+        "no_telephone": "081320722366",
+        "general_code": "240",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Moh Edi Sutanto, ",
+        "no_telephone": null,
+        "general_code": "611",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Arif Fajar Maulana,",
+        "no_telephone": "082127064047",
+        "general_code": "612",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. H. Agung Suhartono, ",
+        "no_telephone": null,
+        "general_code": "660",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Yayat Hidayat Prayitno, drg",
+        "no_telephone": "081222372001",
+        "general_code": "661",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Anne Alia Dewi, Sp.An",
+        "no_telephone": "081314341855",
+        "general_code": "666",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. H. Zulfan, Sp.PD",
+        "no_telephone": null,
+        "general_code": "667",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Rizmayadi Anwar, Sp.OT",
+        "no_telephone": "08170277666",
+        "general_code": "668",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Rachmat Prayitno, SpB,Mars",
+        "no_telephone": "08112413373",
+        "general_code": "669",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Andi Suharso, Sp.S",
+        "no_telephone": "081220336222",
+        "general_code": "689",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Fitri Lutfia, Sp.Rad",
+        "no_telephone": "081320705315",
+        "general_code": "690",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Riyanto,",
+        "no_telephone": "085294856314",
+        "general_code": "692",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Budiana,",
+        "no_telephone": "081111171117",
+        "general_code": "693",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Putri Reno Sori, SpDV",
+        "no_telephone": "08561133975",
+        "general_code": "796",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Taufik Hadiyat,",
+        "no_telephone": "083823986797",
+        "general_code": "797",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Aditya Galih Dharmawan, ",
+        "no_telephone": null,
+        "general_code": "820",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Astari Anggara Dewi, Sp.PD",
+        "no_telephone": "081385026427",
+        "general_code": "825",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Rizky Admagusta, Sp. OT",
+        "no_telephone": "082138676704",
+        "general_code": "826",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Nicholas Adrian, Sp. A",
+        "no_telephone": null,
+        "general_code": "827",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Vania Marissa Sekar Astrini,",
+        "no_telephone": "081903711768",
+        "general_code": "828",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Dinda Dwi Gusdinar,",
+        "no_telephone": "081224444024",
+        "general_code": "829",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Azlan Sain, Sp. JP",
+        "no_telephone": "081296629573",
+        "general_code": "1115",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Lucyana, dr",
+        "no_telephone": null,
+        "general_code": "1116",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Arya, Sp. KFR",
+        "no_telephone": "081380878545",
+        "general_code": "1117",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Dini Hari Anggraini, Sp. P",
+        "no_telephone": null,
+        "general_code": "1118",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Dita Kurnia Sanie, Sp.P",
+        "no_telephone": "081314803920",
+        "general_code": "1162",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. ALIFAH SYARAFINA,",
+        "no_telephone": "083820480130",
+        "general_code": "1164",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Anandya Anton A H, Sp.A",
+        "no_telephone": "085817792615",
+        "general_code": "1165",
+        "is_active": "1"
+    },
+    {
+        "name": "drg Lira Masri, Sp. BM",
+        "no_telephone": "081224102110",
+        "general_code": "1166",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Edo Yudistira, Sp. PD",
+        "no_telephone": "082174687223",
+        "general_code": "1167",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. ELa Laelasari, Sp.PA",
+        "no_telephone": "081320267216",
+        "general_code": "1169",
+        "is_active": "1"
+    },
+    {
+        "name": "Dita Kurnia Sanie, Sp.P",
+        "no_telephone": "081314803920",
+        "general_code": "1172",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Dedi Irfan,",
+        "no_telephone": "081394819181",
+        "general_code": "1173",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Tubagus Budi Pratama,",
+        "no_telephone": "081221810488",
+        "general_code": "1174",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Yanuar Janatun Na'im,",
+        "no_telephone": "087718596000",
+        "general_code": "1175",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Mentari,",
+        "no_telephone": "085711001099",
+        "general_code": "1176",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Triyani Retno Pamungkas,",
+        "no_telephone": "089636706569",
+        "general_code": "1177",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Vania Marissa Sekar Astrini, ",
+        "no_telephone": null,
+        "general_code": "1178",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Annisa Halimatussadiah,",
+        "no_telephone": "082121963592",
+        "general_code": "1179",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ria Afriani,",
+        "no_telephone": "082220325446",
+        "general_code": "1180",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Muhammad Fadli Amir,",
+        "no_telephone": "088808203940",
+        "general_code": "1182",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Sofyan, Sp.PD",
+        "no_telephone": "081221440319",
+        "general_code": "1183",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Allan Yudhiatmoko, Sp.S",
+        "no_telephone": null,
+        "general_code": "1195",
+        "is_active": "1"
+    },
+    {
+        "name": " Angelika Lestari Siregar, M.Bio",
+        "no_telephone": null,
+        "general_code": "1196",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Chandrawati Gultom, Sp.KFR",
+        "no_telephone": null,
+        "general_code": "1197",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Dasa, Sp.BS",
+        "no_telephone": null,
+        "general_code": "1198",
+        "is_active": "1"
+    },
+    {
+        "name": "drg Ferry Sugianto, Sp.KGA",
+        "no_telephone": null,
+        "general_code": "1199",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Guntur Saputra, Sp.RAD",
+        "no_telephone": null,
+        "general_code": "1200",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ike Dewi W, S.Pa, M.kes",
+        "no_telephone": null,
+        "general_code": "1201",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ilin Nurina, Sp.KFR",
+        "no_telephone": null,
+        "general_code": "1202",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Kirman Krismantana, Sp.An",
+        "no_telephone": null,
+        "general_code": "1203",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Lusy Octavia Saputri, Sp.An",
+        "no_telephone": null,
+        "general_code": "1204",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Partomo M Darwis, Sp.M, H.",
+        "no_telephone": null,
+        "general_code": "1205",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Rahmat, Sp.B",
+        "no_telephone": null,
+        "general_code": "1206",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ratnasari Liliana, Sp.S",
+        "no_telephone": null,
+        "general_code": "1207",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Residen, ",
+        "no_telephone": null,
+        "general_code": "1208",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ressi Yudi Murti, Sp.OT",
+        "no_telephone": null,
+        "general_code": "1209",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Yenni, Sp.KK",
+        "no_telephone": null,
+        "general_code": "1210",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Mochamad Faisal Adam, Sp. JP",
+        "no_telephone": "083872528216",
+        "general_code": "1260",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Deden Bonni Koswara., MM",
+        "no_telephone": null,
+        "general_code": null,
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Ilham Rizky Ernawan, Sp.BS",
+        "no_telephone": "081220649116",
+        "general_code": "1287",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Rezky Endah Putri, Sp.A",
+        "no_telephone": "081322268241",
+        "general_code": "1298",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Diah Ayu Novitasari",
+        "no_telephone": "0895374635501",
+        "general_code": "1299",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Resti Ayu Nur Azizah",
+        "no_telephone": "081222320996",
+        "general_code": "1302",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Hilmi Aziz",
+        "no_telephone": "082126453146",
+        "general_code": "1301",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Anita Wijaya",
+        "no_telephone": "081312666785",
+        "general_code": "1300",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Theresia Sri Rezeki, Sp.JP",
+        "no_telephone": null,
+        "general_code": "1310",
+        "is_active": "1"
+    },
+    {
+        "name": "wahyudi",
+        "no_telephone": null,
+        "general_code": null,
+        "is_active": "1"
+    },
+    {
+        "name": "dr.Wahyudi Hartono, MKK,SP.OG",
+        "no_telephone": "087770222149",
+        "general_code": "160",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. ANDIKA RAMADHANI, Sp.BS",
+        "no_telephone": "081221877897",
+        "general_code": "1315",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. LUHUR ARTSONUGROHO, Sp.KJ",
+        "no_telephone": null,
+        "general_code": "1319",
+        "is_active": "1"
+    },
+    {
+        "name": "Dr Adithya Rahman, S.Kom, M.Kom",
+        "no_telephone": "088218560168",
+        "general_code": null,
+        "is_active": "1"
+    },
+    {
+        "name": "Irvan Fajriyanto",
+        "no_telephone": "085321842520",
+        "general_code": "xxx",
+        "is_active": "1"
+    },
+    {
+        "name": "dr Ade Hasan Basri",
+        "no_telephone": "082129306444",
+        "general_code": "xz",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Mochamad Ahlidin Firdaus, Sp.B",
+        "no_telephone": "0",
+        "general_code": "1320",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Hadwer Wicaksono Pandjaitan, Sp.M",
+        "no_telephone": "08888888",
+        "general_code": "1323",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Hari Sandi Sumardi W, Sp.OG)",
+        "no_telephone": "123321",
+        "general_code": "1321",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Fajar Putra Pratama",
+        "no_telephone": "085123123",
+        "general_code": "1330",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Syaiful Syukur",
+        "no_telephone": "085085",
+        "general_code": "1325",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Alfa Rezi Ramadhan",
+        "no_telephone": "08123",
+        "general_code": "1329",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Fika Yuliawati",
+        "no_telephone": "0853",
+        "general_code": "1324",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Phantom Yo Kemala",
+        "no_telephone": "0851",
+        "general_code": "1327",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Selia Cahyani",
+        "no_telephone": "0",
+        "general_code": "1326",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Mita Kusumarani",
+        "no_telephone": "0",
+        "general_code": "1328",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Januar Az Zahrani",
+        "no_telephone": "0853",
+        "general_code": "1331",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. ALEXANDRA VICTORIA AUGUSTINE RUHUKAIL, Sp. JP",
+        "no_telephone": "081317779907",
+        "general_code": "1357",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. ANDRU ASWAR, Sp.JP",
+        "no_telephone": "088888",
+        "general_code": "1358",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Christian Haryanto Junaedi, Sp.K.J.",
+        "no_telephone": "08080808080808",
+        "general_code": "1373",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Hadi Rahmatsyah",
+        "no_telephone": "08111111",
+        "general_code": "1231",
+        "is_active": "1"
+    },
+    {
+        "name": "dr. Muhammad Ikhsan Amadea, Sp.PD.",
+        "no_telephone": "0813241610004",
+        "general_code": "1381",
+        "is_active": "1"
+    }
+]

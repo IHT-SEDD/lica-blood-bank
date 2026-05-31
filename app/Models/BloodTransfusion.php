@@ -24,12 +24,14 @@ class BloodTransfusion extends Model
         'blood_request_at',
         'diagnosis',
         'finish_at',
+        'archived_at',
         'status',
         'is_dct',
         'is_approval_incompatible',
         'blood_quantity',
         'checkin_by_user_id',
         'finish_by_user_id',
+        'archive_by_user_id',
         'deleted_by_user_id',
     ];
 

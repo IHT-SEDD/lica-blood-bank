@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\InvalidateSelectCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,7 +10,7 @@ use Illuminate\Support\Str;
 
 class Package extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InvalidateSelectCache;
 
     protected $fillable = [
         'public_id',
@@ -22,6 +23,7 @@ class Package extends Model
     protected $hidden = [
         'id',
     ];
+
     protected static function booted()
     {
         static::creating(function ($package) {
@@ -30,6 +32,7 @@ class Package extends Model
             }
         });
     }
+    
     public function package_tests()
     {
         return $this->hasMany(PackageTest::class, 'package_id');

@@ -44,6 +44,7 @@
         "flatpickr": "^4.6.13",
         "fullcalendar": "^6.1.15",
         "glightbox": "^3.3.0",
+        "glob": "^13.0.6",
         "handlebars": "^4.7.8",
         "jquery": "3.7.1",
         "jsvectormap": "^1.7.0",

@@ -22,6 +22,7 @@ class BloodTransfusionDetail extends Model
         'transfusion_result',
         'transfusion_text',
         'transfusion_at',
+        'is_print_incompatible_letter',
         'is_approval_incompatible',
         'blood_release_status',
         'deleted_at'

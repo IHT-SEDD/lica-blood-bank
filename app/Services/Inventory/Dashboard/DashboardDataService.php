@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory\Dashboard;
 
+use App\Enums\BloodStockStatus;
 use App\Models\BloodStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,9 @@ class DashboardDataService
                 SUM(CASE WHEN blood_packs.blood_group = 'B'  AND blood_packs.blood_rhesus = '-' THEN 1 ELSE 0 END) as b_negative_count,
                 SUM(CASE WHEN blood_packs.blood_group = 'AB' AND blood_packs.blood_rhesus = '-' THEN 1 ELSE 0 END) as ab_negative_count,
                 SUM(CASE WHEN blood_packs.blood_group = 'O'  AND blood_packs.blood_rhesus = '-' THEN 1 ELSE 0 END) as o_negative_count
-            ")->first();
+            ")
+            ->whereNotIn('blood_status', [BloodStockStatus::TAKEN_OUT, BloodStockStatus::DESTROYED])
+            ->first();
 
         $aPositive = (int) ($raw->a_positive_count  ?? 0);
         $bPositive = (int) ($raw->b_positive_count  ?? 0);
@@ -74,7 +77,7 @@ class DashboardDataService
                 'updated_at',
             ])->with([
                 'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
-            ]);
+            ])->whereNotIn('blood_status', [BloodStockStatus::TAKEN_OUT, BloodStockStatus::DESTROYED]);
 
         $query->whereHas('bloodPacks', function ($q) use ($bloodRhesus) {
             $q->where('blood_rhesus', $bloodRhesus);

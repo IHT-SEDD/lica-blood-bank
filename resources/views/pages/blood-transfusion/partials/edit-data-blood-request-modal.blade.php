@@ -1,4 +1,4 @@
-<x-modal-layout id="edit_data_blood_transfusion_modal" size="modal-lg" title="Edit Blood Transfusion Request">
+<x-modal-layout id="edit_data_blood_transfusion_modal" title="Edit Blood Transfusion Request">
     {{-- Form Edit :begin --}}
     <form class="row g-2" id="edit_data_blood_transfusion" autocomplete="off" novalidate>
         <input type="hidden" id="edit_data_blood_transfusion_id" name="id" />
@@ -13,22 +13,22 @@
             <div class="col-xxl-6 col-md-6 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-blood-group">{{ __('Blood Group') }}</label>
                 <select class="form-control" id="edit_data_select-blood-group" name="blood_group"
-                    placeholder="{{ __('A,B,AB,O') }}"></select>
+                    placeholder="{{ __('Choose Blood Group') }}"></select>
             </div>
 
             {{-- Blood Rhesus --}}
             <div class="col-xxl-6 col-md-6 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-blood-rhesus">{{ __('Blood Rhesus') }}</label>
                 <select class="form-control" id="edit_data_select-blood-rhesus" name="blood_rhesus"
-                    placeholder="{{ __('+/-') }}"></select>
+                    placeholder="{{ __('Choose Blood Rhesus') }}"></select>
             </div>
 
             {{-- Relation Name --}}
             <div class="col-xxl-6 col-md-12 col-12 mt-2">
                 <label class="form-label" for="edit_data_relation_name">{{ __('Relation Name') }}
                 </label>
-                <input autocomplete="off" class="form-control" id="edit_data_relation_name" name="relation_name" type="text"
-                    placeholder="{{ __('Patient Relation Name') }}" />
+                <input autocomplete="off" class="form-control" id="edit_data_relation_name" name="relation_name"
+                    type="text" placeholder="{{ __('Patient Relation Name') }}" />
             </div>
 
             {{-- Relation Type --}}
@@ -45,11 +45,11 @@
             </div>
 
             {{-- Insurance --}}
-            <div class="col-xxl-6 col-md-6 col-12 mt-2">
+            <div class="col-xxl-12 col-md-12 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-insurance">{{ __('Insurance') }}</label>
                 <span class="text-danger">*</span>
                 <select class="form-control" id="edit_data_select-insurance" name="insurance_id"
-                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}" ></select>
+                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}"></select>
             </div>
 
             {{-- Room --}}
@@ -57,38 +57,41 @@
                 <label class="form-label" for="edit_data_select-room">{{ __('Room') }}</label>
                 <span class="text-danger">*</span>
                 <select class="form-control" id="edit_data_select-room" name="room_id"
-                    placeholder="{{ __('Choose') }} {{ __('Room') }}" ></select>
+                    placeholder="{{ __('Choose') }} {{ __('Room') }}"></select>
             </div>
 
             {{-- Doctor --}}
-            <div class="col-xxl-12 col-md-12 col-12 mt-2">
+            <div class="col-xxl-6 col-md-12 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-doctor">{{ __('Doctor') }}</label>
                 <span class="text-danger">*</span>
                 <select class="form-control" id="edit_data_select-doctor" name="doctor_id"
-                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}" ></select>
+                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}"></select>
             </div>
 
             {{-- Blood Required Date --}}
             <div class="col-xxl-12 col-md-12 col-12 mt-2">
-                <label class="col-form-label m-0" for="edit_data_blood_required_at">
-                    {{ __('Required Date') }}
-                    <span class="text-danger">*</span>
-                </label>
-                <input class="form-control patient-blood-required-date" aria-describedby="edit_data_blood_required_at"
-                    data-date-format="d-m-Y" data-provider="flatpickr" type="text" id="edit_data_blood_required_at" name="blood_required_at"
-                    placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
+                <div class="d-flex flex-column align-items-start justify-content-center gap-1">
+                    <label class="form-label m-0" for="edit_data_blood_required_at">
+                        {{ __('Required Date') }}
+                        <span class="text-danger">*</span>
+                    </label>
+                    <input class="form-control patient-blood-required-date"
+                        aria-describedby="edit_data_blood_required_at" data-date-format="d-m-Y"
+                        data-provider="flatpickr" type="text" id="edit_data_blood_required_at" name="blood_required_at"
+                        placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
+                </div>
             </div>
 
             {{-- Diagnosis --}}
             <div class="col-xxl-12 col-md-12 col-12 mt-2">
                 <label class="form-label" for="edit_data_diagnosis">{{ __('Diagnosis') }}</label>
-                <textarea class="form-control" id="edit_data_diagnosis" name="diagnosis" placeholder="{{ __('Diagnosis') }}"
-                    rows="3"></textarea>
+                <textarea class="form-control" id="edit_data_diagnosis" name="diagnosis"
+                    placeholder="{{ __('Diagnosis') }}" rows="3"></textarea>
             </div>
 
             {{-- DCT Status --}}
-            <div class="col-xxl-2 col-md-2 col-2 mt-2">
-                <label class="form-label" for="edit_data_is_dct">{{ __('DCT') }}</label>
+            <div class="col-xxl-12 col-md-12 col-12 mt-2">
+                <label class="form-label" for="edit_data_is_dct">{{ __('Direct Coomb Test?') }}</label>
                 <div class="form-check">
                     <input class="form-check-input" id="edit_data_is_dct" name="is_dct" type="checkbox">
                     <label class="form-check-label" for="edit_data_is_dct">
