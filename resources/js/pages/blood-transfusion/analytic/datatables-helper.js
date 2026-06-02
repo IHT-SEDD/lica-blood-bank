@@ -160,11 +160,6 @@ export function DatatableRequestBlood() {
                 const isDeleted =
                     data.deleted_at !== null || data.deleted_at !== "-";
 
-                // <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" data-bs-toggle="modal" data-bs-target="#edit_data_blood_transfusion_modal" type="button">
-                //         <i class="ti ti-pencil align-middle me-1 fs-4"></i>
-                //             Edit
-                //         </button>
-
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
@@ -381,19 +376,23 @@ export function DatatableListBagRequest() {
             data: null,
             orderable: false,
             searchable: false,
-            render: (data) => `
-                    <div class="dropdown">
-                        <a class="dropdown-toggle drop-arrow-none text-muted card-drop" data-bs-toggle="dropdown" href="#">
-                            <i class="ti ti-dots-vertical fs-lg"></i>
-                        </a>
-
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" id="btn-print-result-per-blood" href="#" data-public-id="${data.public_id}">
+            render: (data) => {
+                return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
+                        <i class="ti ti-dots align-middle"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Result
-                            </a>
-                        </div>
-                    </div>
-                `,
+                            </button>
+                        </li>
+                        <li>
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
+                                <i class="ti ti-printer fs-4 me-1"></i> Barcode
+                            </button>
+                        </li>
+                    </ul>`;
+            },
         },
     ];
 

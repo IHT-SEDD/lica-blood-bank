@@ -184,7 +184,6 @@ function HistoryOrderTable() {
                 d.status = filters.status;
             },
         },
-        order: [5, "desc"],
         columns: HistoryOrderTableColumns,
         useHideColumn: true,
         columnDefs: [

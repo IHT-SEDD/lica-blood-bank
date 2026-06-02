@@ -17,8 +17,6 @@ use Illuminate\Support\Str;
 
 class BloodTransfusionDataService
 {
-    const CACHE_BLOOD_TRANSFUSION_LOG_KEY = "blood_transfusion_log_data";
-
     // ---------- Fungsi Tabel Blood Pack ----------
     public function bloodPackTable(Request $request): array
     {
@@ -171,16 +169,15 @@ class BloodTransfusionDataService
     // ---------- Fungsi untuk mengambil data log berdasarkan id ----------
     public function getDataLogById(string $id)
     {
-        $cacheKey = self::CACHE_BLOOD_TRANSFUSION_LOG_KEY . ":{$id}";
+        $bloodTransfusionLog = BloodTransfusionLogActivity::where(
+            'blood_transfusion_public_id',
+            $id
+        )
+            ->orderBy('timestamp', 'asc')
+            ->limit(50)
+            ->get();
 
-        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
-            $bloodTransfusionLog = BloodTransfusionLogActivity::where('blood_transfusion_public_id', $id)
-                ->orderBy('timestamp', 'desc')
-                ->limit(50)
-                ->get();
-
-            return $bloodTransfusionLog;
-        });
+        return $bloodTransfusionLog;
     }
 
     // ---------- Private Fungsi: Filter tanggal & Search untuk datatable ----------

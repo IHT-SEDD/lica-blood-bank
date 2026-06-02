@@ -153,6 +153,12 @@ export const BloodStockLogConfigTL = {
         title: "Blood Stock Destroyed",
         tooltipTitle: "Blood Stock Destroyed",
     },
+    expired: {
+        icon: "droplet-x",
+        colorClass: "text-danger fill-danger",
+        title: "Blood Stock Expired",
+        tooltipTitle: "Blood Stock Expired",
+    },
 
     fallback: {
         icon: "activity",

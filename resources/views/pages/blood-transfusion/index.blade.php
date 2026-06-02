@@ -257,6 +257,8 @@
 @endsection
 
 @section('scripts')
+<script src="{{ asset('vendor/qz/rsvp.min.js')}}"></script>
+<script src="{{ asset('vendor/qz/qz-tray.js')}}"></script>
 @vite([
 'resources/js/pages/blood-transfusion/index.js',
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',

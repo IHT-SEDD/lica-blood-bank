@@ -1,4 +1,3 @@
-import TomSelect from "tom-select";
 import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -8,32 +7,6 @@ const FormEditSelector = "edit_data_transfusion-reaction"; // id selector untuk 
 const ReloadDatatableSelector = "master-transfusion-reaction-reload"; // reload datatable index
 const ModalEditSelector = "edit_data_master_transfusion-reaction_modal"; // id selector untuk modal edit
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
-
-// ---------- Select role dari tom-select untuk form add new data :begin ----------
-// function SelectRole() {
-//     new TomSelect("#select-role", {
-//         valueField: "id",
-//         labelField: "text",
-//         searchField: "text",
-//         sortField: {
-//             field: "id",
-//             direction: "asc",
-//         },
-//         create: false,
-//         preload: true,
-//         load: function(query, callback) {
-//             fetch(`/utility/select/role?q=${encodeURIComponent(query)}`)
-//                 .then((response) => response.json())
-//                 .then((json) => {
-//                     callback(json.results);
-//                 })
-//                 .catch(() => {
-//                     callback();
-//                 });
-//         },
-//     });
-// }
-// ---------- Select role dari tom-select untuk form add new data :begin ----------
 
 // ---------- Handle form penambahan user baru :begin ----------
 function AddNewTransfusionReaction() {

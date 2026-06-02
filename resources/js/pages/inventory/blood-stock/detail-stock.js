@@ -316,6 +316,7 @@ function GenerateTimeline(logs = []) {
         wrapper: TimelineContainerSelector,
         locale: "en-GB",
         statusConfig: BloodStockLogConfigTL,
+        iconLibrary: "tabler",
     });
 
     bloodStockTimeline.render(logs);

@@ -67,6 +67,9 @@ class BloodTransfusionAddService
             ]);
 
             $package = Package::with(['package_tests'])->where('is_active', 1)->first();
+            if (empty($package)) {
+                return ['success' => false, 'code' => 422, 'data' => ['message' => 'Package Test with code',]];
+            }
 
             foreach ($selected_blood_components as $component) {
                 $transfusionDetail = BloodTransfusionDetail::create([
