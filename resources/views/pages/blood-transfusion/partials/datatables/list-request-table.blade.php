@@ -8,8 +8,9 @@
       <th>{{ __('Order No') }}</th>
       <th>{{ __('Room') }}</th>
       <th>
-        <i data-lucide="triangle-alert" class="fs-4 text-warning fill-warning" data-bs-title="CITO"
-          data-bs-toggle="tooltip" data-bs-trigger="hover">
+        <span class="fs-4" data-bs-title="Status Badge" data-bs-toggle="tooltip" data-bs-trigger="hover">
+          <i class="ti ti-info-circle"></i>
+        </span>
       </th>
       <th>{{ __('Action') }}</th>
     </tr>

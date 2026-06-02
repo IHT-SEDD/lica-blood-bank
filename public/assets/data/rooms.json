@@ -1,0 +1,835 @@
+[
+    {
+        "room": "Direktur Utama",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1",
+        "is_active": "1"
+    },
+    {
+        "room": "Wakil Direktur Pelayanan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Rawat Jalan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10101",
+        "is_active": "1"
+    },
+    {
+        "room": "Poliklinik",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010101",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Dalam",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010101",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Mata",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010102",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Gigi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010103",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Anak",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010104",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Kebidanan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010105",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik THT",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010106",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Bedah",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010107",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Kulit & Kelamin",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010108",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Orthopedi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010109",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Bedah Saraf",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010110",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Melati",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010111",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Jantung",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010112",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik DOTS",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010113",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Geriatri",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010114",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Rehab Medik",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010115",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Mawar",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010116",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Fisioterapi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010117",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Hemodialisa",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010118",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Dalam 2",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010119",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Saraf",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010120",
+        "is_active": "1"
+    },
+    {
+        "room": "MCU",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010121",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Kemoterapi (HOT)",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010122",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Nyeri",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010123",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Luka Modern",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010124",
+        "is_active": "1"
+    },
+    {
+        "room": "Thalesemia",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010125",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik VIP",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010126",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Gigi Bedah Mulut",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010127",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Gawat Darurat",
+        "type": "igd",
+        "class": "2",
+        "general_code": "10102",
+        "is_active": "1"
+    },
+    {
+        "room": "Gawat Darurat",
+        "type": "igd",
+        "class": "2",
+        "general_code": "1010201",
+        "is_active": "1"
+    },
+    {
+        "room": "Bedah",
+        "type": "igd",
+        "class": "2",
+        "general_code": "101020101",
+        "is_active": "1"
+    },
+    {
+        "room": "IGD",
+        "type": "igd",
+        "class": "2",
+        "general_code": "101020102",
+        "is_active": "1"
+    },
+    {
+        "room": "IGD VK",
+        "type": "igd",
+        "class": "2",
+        "general_code": "101020103",
+        "is_active": "1"
+    },
+    {
+        "room": "Non Bedah",
+        "type": "igd",
+        "class": "2",
+        "general_code": "1010202",
+        "is_active": "1"
+    },
+    {
+        "room": "Non Bedah",
+        "type": "igd",
+        "class": "2",
+        "general_code": "101020201",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Rawat Inap",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "10103",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Anak",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010301",
+        "is_active": "1"
+    },
+    {
+        "room": "Golek",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030101",
+        "is_active": "1"
+    },
+    {
+        "room": "Kidang Kencana 3",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030118",
+        "is_active": "1"
+    },
+    {
+        "room": "Kidang Emas ",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030121",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Bedah",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010302",
+        "is_active": "1"
+    },
+    {
+        "room": "Manalagi 1",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030201",
+        "is_active": "1"
+    },
+    {
+        "room": "Manalagi 2",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030202",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Obgyn",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010303",
+        "is_active": "1"
+    },
+    {
+        "room": "Gincu 1",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030301",
+        "is_active": "1"
+    },
+    {
+        "room": "Gincu 3",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030302",
+        "is_active": "1"
+    },
+    {
+        "room": "Gincu 4",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030303",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Interna",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010304",
+        "is_active": "1"
+    },
+    {
+        "room": "Cengkir 1",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030401",
+        "is_active": "1"
+    },
+    {
+        "room": "Cengkir 2",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030402",
+        "is_active": "1"
+    },
+    {
+        "room": "Cengkir 3",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030403",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Umum",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010305",
+        "is_active": "1"
+    },
+    {
+        "room": "Kweni",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030501",
+        "is_active": "1"
+    },
+    {
+        "room": "Arumanis",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030502",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan VIP",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010306",
+        "is_active": "1"
+    },
+    {
+        "room": "Kidang Kencana 1",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030601",
+        "is_active": "1"
+    },
+    {
+        "room": "Kidang Kencana 2",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030602",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Bayi",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010307",
+        "is_active": "1"
+    },
+    {
+        "room": "Gincu 2",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030701",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Jiwa",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010308",
+        "is_active": "1"
+    },
+    {
+        "room": "Malgova",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030801",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Intensif",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010309",
+        "is_active": "1"
+    },
+    {
+        "room": "ICU",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030901",
+        "is_active": "1"
+    },
+    {
+        "room": "ICU 2",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030902",
+        "is_active": "1"
+    },
+    {
+        "room": "NICU",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030903",
+        "is_active": "1"
+    },
+    {
+        "room": "NCCU",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101030904",
+        "is_active": "1"
+    },
+    {
+        "room": "Perawatan Isolasi",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "1010310",
+        "is_active": "1"
+    },
+    {
+        "room": "Isolasi Kebidanan",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101031001",
+        "is_active": "1"
+    },
+    {
+        "room": "Isolasi Khusus",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101031002",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Farmasi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10104",
+        "is_active": "1"
+    },
+    {
+        "room": "Gudang",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010401",
+        "is_active": "1"
+    },
+    {
+        "room": "Pusat Gudang",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040101",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010402",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo Rajal",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040201",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo IGD",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040202",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo Ranap",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040203",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo Gincu3",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040204",
+        "is_active": "1"
+    },
+    {
+        "room": "Depo IBS",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101040205",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Laboratorium",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10105",
+        "is_active": "1"
+    },
+    {
+        "room": "Patologi Klinik",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010501",
+        "is_active": "1"
+    },
+    {
+        "room": "Laboratorium Central",
+        "type": "rujukan",
+        "class": "2",
+        "general_code": "101050101",
+        "is_active": "1"
+    },
+    {
+        "room": "Laboratorium Gawat Darurat",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101050102",
+        "is_active": "1"
+    },
+    {
+        "room": "Patologi Anatomi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010502",
+        "is_active": "1"
+    },
+    {
+        "room": "Laboratorium PA",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101050201",
+        "is_active": "1"
+    },
+    {
+        "room": "Bank Darah RS",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010503",
+        "is_active": "1"
+    },
+    {
+        "room": "BDRS",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101050301",
+        "is_active": "1"
+    },
+    {
+        "room": "IGD",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010504",
+        "is_active": "1"
+    },
+    {
+        "room": "Laboratorium IGD",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101050401",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Kedokteran Forensik & Medikolegal",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10106",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi CSSD & Loundry",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10107",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Rekam Medis",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10108",
+        "is_active": "1"
+    },
+    {
+        "room": "Pendaftaran Rawat Jalan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1010801",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Rekam Medis",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10109",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Radiologi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10110",
+        "is_active": "1"
+    },
+    {
+        "room": "Radiologi",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1011001",
+        "is_active": "1"
+    },
+    {
+        "room": "Radiologi Central",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101100101",
+        "is_active": "1"
+    },
+    {
+        "room": "Instalasi Bedah Sentral",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10111",
+        "is_active": "1"
+    },
+    {
+        "room": "Bedah Sentral",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1011101",
+        "is_active": "1"
+    },
+    {
+        "room": "Kamar Operasi",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "101110101",
+        "is_active": "1"
+    },
+    {
+        "room": "Wakil Direktur Umum & Keuangan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "102",
+        "is_active": "1"
+    },
+    {
+        "room": "Bidang Umum, Diklat & Kepegawaian",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10201",
+        "is_active": "1"
+    },
+    {
+        "room": "Kasubag. Diklat",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1020101",
+        "is_active": "1"
+    },
+    {
+        "room": "Diklat",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "102010101",
+        "is_active": "1"
+    },
+    {
+        "room": "Kasubag Kepegawaian",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1020102",
+        "is_active": "1"
+    },
+    {
+        "room": "Bidang PRMHH",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10202",
+        "is_active": "1"
+    },
+    {
+        "room": "Kasubag. Hukum & Rekam Medik",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1020201",
+        "is_active": "1"
+    },
+    {
+        "room": "Kasubag PPL & SIMRS",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "1020202",
+        "is_active": "1"
+    },
+    {
+        "room": "Bidang Keuangan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "10203",
+        "is_active": "1"
+    },
+    {
+        "room": "Direktur Sumber Daya Manusia & Pendidikan",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "103",
+        "is_active": "1"
+    },
+    {
+        "room": "Direktur Umum & Operasional",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "104",
+        "is_active": "1"
+    },
+    {
+        "room": "APS",
+        "type": "rujukan",
+        "class": "2",
+        "general_code": null,
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Jantung 2",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010129",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik DOTS 2",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010131",
+        "is_active": "1"
+    },
+    {
+        "room": "UJICOBA",
+        "type": "rawat_inap",
+        "class": "2",
+        "general_code": "zzz",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Anak 2",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010133",
+        "is_active": "1"
+    },
+    {
+        "room": "Klinik Dalam 3",
+        "type": "rawat_jalan",
+        "class": "2",
+        "general_code": "101010134",
+        "is_active": "1"
+    }
+]

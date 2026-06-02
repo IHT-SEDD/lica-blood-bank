@@ -1,0 +1,82 @@
+[
+    {
+        "name": "Tanpa Asuransi/Umum",
+        "is_active": "1",
+        "general_code": "1"
+    },
+    {
+        "name": "BPJS/JKN",
+        "is_active": "1",
+        "general_code": "2"
+    },
+    {
+        "name": "POLYTAMA",
+        "is_active": "1",
+        "general_code": "3"
+    },
+    {
+        "name": "INHEALT",
+        "is_active": "1",
+        "general_code": "4"
+    },
+    {
+        "name": "KAI",
+        "is_active": "1",
+        "general_code": "5"
+    },
+    {
+        "name": "JM",
+        "is_active": "1",
+        "general_code": "6"
+    },
+    {
+        "name": "JASA RAHARJA",
+        "is_active": "1",
+        "general_code": "7"
+    },
+    {
+        "name": "YAKES TELKOM",
+        "is_active": "1",
+        "general_code": "8"
+    },
+    {
+        "name": "MoU",
+        "is_active": "1",
+        "general_code": "9"
+    },
+    {
+        "name": "LAIN-LAIN",
+        "is_active": "1",
+        "general_code": "10"
+    },
+    {
+        "name": "RENCANA BPJS",
+        "is_active": "1",
+        "general_code": "11"
+    },
+    {
+        "name": "RENCANA JM",
+        "is_active": "1",
+        "general_code": "12"
+    },
+    {
+        "name": "BRI LIFE",
+        "is_active": "1",
+        "general_code": "14"
+    },
+    {
+        "name": "BPJS ITER",
+        "is_active": "1",
+        "general_code": "13"
+    },
+    {
+        "name": "TASPEN",
+        "is_active": "1",
+        "general_code": "15"
+    },
+    {
+        "name": "BPJS KETENAGAKERJAAN",
+        "is_active": "1",
+        "general_code": "16"
+    }
+]

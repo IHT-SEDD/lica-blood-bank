@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\BloodGroup;
 use App\Enums\BloodComponent;
+use App\Traits\InvalidateSelectCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Validation\Rules\Enum;
 
 class BloodPack extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InvalidateSelectCache;
 
     protected $fillable = [
         'public_id',

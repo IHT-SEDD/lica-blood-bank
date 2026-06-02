@@ -8,6 +8,7 @@ use App\Models\OrderLogActivity;
 use App\Observers\OrderBloodDetailObserver;
 use App\Observers\OrderBloodObserver;
 use App\Observers\OrderLogActivityObserver;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
@@ -32,5 +33,13 @@ class AppServiceProvider extends ServiceProvider
         OrderBlood::observe(OrderBloodObserver::class);
         OrderBloodDetail::observe(OrderBloodDetailObserver::class);
         OrderLogActivity::observe(OrderLogActivityObserver::class);
+
+        // ---------- Register API for Scramble ----------
+        Scramble::registerApi('v1', [
+            'info' => [
+                'version' => '1.0'
+            ],
+            'api_path' => 'api/v1',
+        ]);
     }
 }

@@ -246,6 +246,38 @@ return [
             'path' => storage_path('logs/blood-destroy/restore-blood-destroy-data.log'),
             'level' => 'debug',
         ],
+
+        // Blood Transfusions Loggings
+        'newbloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/new-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'updatebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/update-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'donebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/done-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'completebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/complete-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'incompatibleresult' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/incompatible-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'bloodstockactivity' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/blood-stock-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];
