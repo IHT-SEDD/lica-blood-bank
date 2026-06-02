@@ -1,6 +1,5 @@
 // ---------- Import Libraries ----------
 import { GlobalAdvanceFlatpickr } from "../../app";
-import { TextFormatter } from "../../utility/ui";
 import {
     DatatableRequestBlood,
     listRequestTableInstance,
@@ -11,10 +10,10 @@ import {
     completeTest,
     updateDoneButtonState,
 } from "./analytic/datatables-helper";
-import TomSelect from "tom-select";
-import { GlobalRenderTimelineItem } from "../../utility/ui";
+import { GlobalRenderTimelineItem, TextFormatter } from "../../utility/ui";
 import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-config";
 import { initFormEdit } from "./form/edit";
+import { QzManager } from "../../utility/config/qz";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 // TIMELINE
@@ -32,6 +31,7 @@ const SelectorBtnPrintBarcode = "btn-print-barcode";
 const SelectorBtnPrintResult = "btn-print-result";
 const SelectorBtnComplete = "btn-complete-transaction";
 const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
+const SelectorBtnPrintBarcodePerBlood = "btn-print-barcode-per-blood";
 const SelectorBtnPrintIncompLetter = "btn-print-incompletter";
 
 const SelectorBtnRelease = "btn-release-blood-pack";
@@ -195,6 +195,9 @@ export function updatePatientDetailUI(data) {
             if (hasLabNumber) {
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
+                const BTN_PRINT_BARCODE = getPrintBarcodeBtn();
+                if (BTN_PRINT_BARCODE)
+                    BTN_PRINT_BARCODE.dataset.id = d.public_id;
             }
 
             // Update list bag request table
@@ -682,6 +685,38 @@ function initBagRequestActionButtons() {
             hidePageLoading();
         }
     };
+    const handlePrintBarcode = async (url) => {
+        showPageLoading();
+
+        try {
+            const res = await fetch(url, {
+                method: "GET",
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                notyf.error({
+                    message:
+                        err?.message ?? `HTTP error! status: ${res.status}`,
+                });
+
+                hidePageLoading();
+                return;
+            }
+
+            const data = await res.json();
+            await QzManager.sendZpl(data.data ?? [], "barcode-blood");
+
+            hidePageLoading();
+        } catch (err) {
+            console.error("[Print] Network error:", err);
+            notyf.error({
+                message: "Network error, failed to load print file.",
+            });
+
+            hidePageLoading();
+        }
+    };
 
     // Hold Blood
     $(document)
@@ -736,14 +771,27 @@ function initBagRequestActionButtons() {
             );
         });
     $(document)
-        .off("click", "#" + SelectorBtnPrintResultPerBlood)
-        .on("click", "#" + SelectorBtnPrintResultPerBlood, function (e) {
+        .off("click", "." + SelectorBtnPrintResultPerBlood)
+        .on("click", "." + SelectorBtnPrintResultPerBlood, function (e) {
             e.preventDefault();
             const detailId = $(this).data("public-id");
             if (!detailId) return;
 
             handlePrint(
                 `${PRINT_URL}/crossmatch-result/${window.currentTransfusionPublicId}/${detailId}`,
+            );
+        });
+
+    // Print Barcode
+    $(document)
+        .off("click", "." + SelectorBtnPrintBarcodePerBlood)
+        .on("click", "." + SelectorBtnPrintBarcodePerBlood, function (e) {
+            e.preventDefault();
+            const detailId = $(this).data("public-id");
+            if (!detailId) return;
+
+            handlePrintBarcode(
+                `${PRINT_URL}/barcode/${window.currentTransfusionPublicId}/${detailId}`,
             );
         });
 
@@ -834,6 +882,62 @@ function GenerateTimeline(logs = []) {
     bloodTransfusionTimeline.render(logs);
 }
 
+// ---------- Handle Print Barcode ----------
+function PrintBarcode() {
+    const BTN_PRINT_BARCODE = getPrintBarcodeBtn();
+    if (!BTN_PRINT_BARCODE) return;
+
+    const newBtn = BTN_PRINT_BARCODE.cloneNode(true);
+    BTN_PRINT_BARCODE.parentNode.replaceChild(newBtn, BTN_PRINT_BARCODE);
+
+    newBtn.addEventListener("click", async function () {
+        const id = this.dataset.id;
+        if (!id) return;
+
+        const originalText = this.innerHTML;
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        this.disabled = true;
+
+        try {
+            const response = await fetch(
+                `/blood-transfusion/detail/print/barcode/${id}`,
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || "Failed to Print Barcode!",
+                });
+                return;
+            }
+
+            notyf.success({
+                message: result.message || "Barcode berhasil dicetak!",
+            });
+
+            // Kirim data ke QZ Tray untuk dicetak
+            await QzManager.sendZpl(result.data ?? []);
+
+            if (
+                listRequestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-request-table")
+            ) {
+                listRequestTableInstance.instance.ajax.reload(null, false);
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({
+                message: error.message || "Failed to print barcode!",
+            });
+        } finally {
+            this.innerHTML = originalText;
+            this.disabled = false;
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
@@ -843,6 +947,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initPatientDetail();
     initBagRequestRowClick();
     CheckInLabNumber();
+    PrintBarcode();
     CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();

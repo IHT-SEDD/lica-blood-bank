@@ -5,17 +5,17 @@ return [
     'PRC' => [
         'label' => 'Packed Red Cells',
         'keywords' => ['PRC', 'Packed Red Cells', 'Thalasemia', 'Thalassemia', 'Labu Darah'],
-        'general_codes' => ['543', '2461', '2462', '2463'],
+        'general_codes' => ['543', '2461', '2462', '2463', '2464', '2784'],
     ],
     'TC' => [
         'label' => 'Trombocyte Concentrate',
         'keywords' => ['TC', 'Trombocyte', 'Trombosit', 'Platelet'],
-        'general_codes' => [],
+        'general_codes' => ['2472'],
     ],
     'FFP' => [
         'label' => 'Fresh Frozen Plasma',
         'keywords' => ['FFP', 'Fresh Frozen Plasma', 'Plasma'],
-        'general_codes' => [],
+        'general_codes' => ['2467'],
     ],
     'CRYO' => [
         'label' => 'Cryoprecipitate',
@@ -25,12 +25,11 @@ return [
     'WRC' => [
         'label' => 'Washed Red Cells',
         'keywords' => ['WRC', 'Washed Red Cells'],
-        'general_codes' => [],
+        'general_codes' => ['2469'],
     ],
     'WB' => [
         'label' => 'Whole Blood',
         'keywords' => ['WB', 'Whole Blood', 'Darah Lengkap'],
         'general_codes' => [],
     ],
-
 ];

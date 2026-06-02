@@ -74,7 +74,7 @@ class HistoryOrderDataService
         $request->sort_dir ?? 'asc'
       );
     } else {
-      $query->latest();
+      $query->orderBy('po_number', 'asc');
     }
 
     // ---------- Tampilkan data ke tabel frontend ----------

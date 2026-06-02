@@ -491,14 +491,33 @@ class BloodTransfusionController extends Controller
         }
     }
 
+    // ---------- Print Barcode Blood ----------
+    public function printBarcodeBlood(string $id, ?string $btDetailID = null)
+    {
+        try {
+            $data = $this->printService->barcodeBlood($id, $btDetailID);
+            return response()->json([
+                'message' => 'Successfully Print Barcode',
+                'data' => $data,
+            ], 200);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to print barcode.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // ---------- Get Log Data ----------
     public function bloodTransfusionLogData(string $id)
     {
         try {
             $data = $this->dataService->getDataLogById($id);
-            return response()->json($data)
-                ->setEtag(md5(json_encode($data)))
-                ->header('Cache-Control', 'public, max-age=600');
+            return response()->json($data);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Data not found!'
