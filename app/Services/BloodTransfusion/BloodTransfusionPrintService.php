@@ -84,6 +84,8 @@ class BloodTransfusionPrintService
         'room_id',
         'lab_number',
         'is_dct',
+        'relation_type',
+        'relation_name',
         'created_at',
       ])
       ->with([
@@ -103,7 +105,9 @@ class BloodTransfusionPrintService
             $query->where('public_id', $btDetailID);
           }
         },
-        'details.bloodStock:id,public_id,bag_number,blood_volume,aftap_date,expiry_date,process_date'
+        'details.bloodStock:id,public_id,bag_number,blood_volume,aftap_date,expiry_date,process_date',
+        'details.bloodTransfusionDetailTest:id,public_id,bt_detail_id,result_by_user_id',
+        'details.bloodTransfusionDetailTest.resultByUser:id,public_id,name',
       ])
       ->firstOrFail();
 
@@ -114,11 +118,18 @@ class BloodTransfusionPrintService
       );
     }
 
+    if (!empty($transfusionData->relation_type) && $transfusionData->relation_type == 'husband' || $transfusionData->relation_type == 'wife') {
+      $relation = $transfusionData->relation_name;
+    } else {
+      $relation = null;
+    }
+
     try {
       return [
         'patient_name' => $transfusionData->patient->name,
         'patient_gender' => $transfusionData->patient->gender,
         'patient_medrec' => $transfusionData->patient->medrec,
+        'patient_relation' => $relation,
         'patient_birthdate' => optional($transfusionData->patient->birthdate)?->format('Y-m-d'),
         'room_name' => $transfusionData->room->name,
         'room_class' => $transfusionData->room->class,
@@ -134,6 +145,7 @@ class BloodTransfusionPrintService
               'process_date' => $detail->bloodStock->process_date,
               'expiry_date' => $detail->bloodStock->expiry_date,
               'crossmatch_result' => $detail->crossmatch_result,
+              'crossmatch_by' => $detail->bloodTransfusionDetailTest->resultByUser->name,
             ];
           })
           ->values(),
