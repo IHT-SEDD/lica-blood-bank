@@ -162,6 +162,7 @@ class BloodTransfusionDetailTestService
 
             $detail->update([
                 'crossmatch_result' => $transfusionResult,
+                'crossmatch_finish_at' => now(),
             ]);
 
             $this->insertCrossMatchHistory($detail, $transfusionResult);

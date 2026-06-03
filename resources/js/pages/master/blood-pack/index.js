@@ -130,6 +130,26 @@ function AddNewBloodPack() {
                     },
                 },
             },
+            storage_temperature_from: {
+                validators: {
+                    notEmpty: {
+                        message: "Storage temperature from is required",
+                    },
+                    isNumber: {
+                        message: "Storage temperature from must be a number",
+                    },
+                },
+            },
+            storage_temperature_to: {
+                validators: {
+                    notEmpty: {
+                        message: "Storage temperature to is required",
+                    },
+                    isNumber: {
+                        message: "Storage temperature to must be a number",
+                    },
+                },
+            },
         },
     );
     // ---------- Validasi inputan form :end ----------
@@ -204,6 +224,26 @@ function EditDataBloodPack() {
                     },
                     isNumber: {
                         message: "Danger quantity must be a number",
+                    },
+                },
+            },
+            storage_temperature_from: {
+                validators: {
+                    notEmpty: {
+                        message: "Storage temperature from is required",
+                    },
+                    isNumber: {
+                        message: "Storage temperature from must be a number",
+                    },
+                },
+            },
+            storage_temperature_to: {
+                validators: {
+                    notEmpty: {
+                        message: "Storage temperature to is required",
+                    },
+                    isNumber: {
+                        message: "Storage temperature to must be a number",
                     },
                 },
             },

@@ -19,6 +19,7 @@ class BloodTransfusionDetail extends Model
         'component',
         'blood_pack_id',
         'crossmatch_result',
+        'crossmatch_finish_at',
         'transfusion_result',
         'transfusion_text',
         'transfusion_at',
