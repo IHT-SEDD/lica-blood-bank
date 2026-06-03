@@ -67,13 +67,19 @@ class MasterService
     // ---------- Ambil data config master.php ----------
     $modules = $this->getMasterConfig($master);
     $modelClass = $modules['model'];
+
     // ---------- Mulai transaksi database :begin----------
     DB::beginTransaction();
     try {
       // ---------- Ambil model & data fillable ----------
       $model = new $modelClass;
-      $data = $request->only($model->getFillable());
 
+      // ---------- Kondisi khusus untuk Spatie Role karena tidak memiliki fillable ----------
+      if ($modelClass === \Spatie\Permission\Models\Role::class) {
+        $data = $request->only(['name', 'guard_name', 'description']);
+      } else {
+        $data = $request->only($model->getFillable());
+      }
 
       // ---------- Panggil hook sebelum insert jika ada ----------
       if (method_exists($modelClass, 'beforeCreate')) {
