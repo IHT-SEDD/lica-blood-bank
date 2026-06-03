@@ -10,6 +10,7 @@ enum BloodComponent: string
     case FFP = 'FFP';
     case CRYO = 'CRYO';
     case WRC = 'WRC';
+    case LP = 'LP';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum BloodComponent: string
             self::FFP => 'Fresh Frozen Plasma',
             self::CRYO => 'Cryoprecipitate',
             self::WRC => 'Washed Red Cells',
+            self::LP => 'Liquid Plasma',
         };
     }
 
@@ -40,6 +42,7 @@ enum BloodComponent: string
             self::FFP->value => 'Fresh Frozen Plasma',
             self::CRYO->value => 'Cryoprecipitate',
             self::WRC->value => 'Washed Red Cells',
+            self::LP->value => 'Liquid Plasma',
             default => null,
         };
     }

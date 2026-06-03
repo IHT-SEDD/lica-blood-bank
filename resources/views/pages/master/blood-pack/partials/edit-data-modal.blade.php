@@ -46,6 +46,22 @@
     type="number" />
   </div>
 
+    {{-- Storage Temperature From --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="edit_storage_temperature_from">{{ __('Storage Temperature') }} {{ __('From') }}
+      <span class="text-danger">*</span>
+    </label>
+    <input autocomplete="off" class="form-control" id="edit_storage_temperature_from" name="storage_temperature_from" type="number" />
+  </div>
+
+  {{-- Storage Temperature To --}}
+  <div class="col-lg-6">
+    <label class="form-label" for="edit_storage_temperature_to">{{ __('Storage Temperature') }} {{ __('To') }}
+      <span class="text-danger">*</span>
+    </label>
+    <input autocomplete="off" class="form-control" id="edit_storage_temperature_to" name="storage_temperature_to" type="number" />
+  </div>
+
   {{-- Is Active? --}}
   <div class="col-lg-12">
    <div>

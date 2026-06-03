@@ -100,11 +100,13 @@ class BloodTransfusionPrintService
             'blood_stock_id',
             'component',
             'crossmatch_result',
+            'crossmatch_finish_at',
           ]);
           if ($btDetailID) {
             $query->where('public_id', $btDetailID);
           }
         },
+        'details.bloodPack:id,public_id,storage_temperature_from,storage_temperature_to',
         'details.bloodStock:id,public_id,bag_number,blood_volume,aftap_date,expiry_date,process_date',
         'details.bloodTransfusionDetailTest:id,public_id,bt_detail_id,result_by_user_id',
         'details.bloodTransfusionDetailTest.resultByUser:id,public_id,name',
@@ -135,8 +137,26 @@ class BloodTransfusionPrintService
         'room_class' => $transfusionData->room->class,
         'blood_details' => $transfusionData->details
           ->map(function ($detail) use ($transfusionData) {
+            // ----- CLIA -----
+            $cliaMap = [
+              'HCV' => $detail->bloodStock->is_hcv,
+              'HIV' => $detail->bloodStock->is_hiv,
+              'HBsAg' => $detail->bloodStock->is_hbsag,
+              'Sifilis' => $detail->bloodStock->is_syphilis,
+            ];
+
+            $reactiveList = array_keys(array_filter($cliaMap, fn($v) => $v == 1));
+            $nonReactiveList = array_keys(array_filter($cliaMap, fn($v) => $v == 0));
+
+            $clia = [
+              'reactive' => !empty($reactiveList) ? implode(', ', $reactiveList) : null,
+              'non_reactive' => !empty($nonReactiveList) ? implode(', ', $nonReactiveList) : null,
+            ];
+
             return [
               'bag_number' => $detail->bloodStock->bag_number,
+              'storage_temp_from' => $detail->bloodPack->storage_temperature_from,
+              'storage_temp_to' => $detail->bloodPack->storage_temperature_to,
               'blood_volume' => $detail->bloodStock->blood_volume,
               'blood_group' => $transfusionData->patient->blood_group,
               'blood_rhesus' => $transfusionData->patient->blood_rhesus,
@@ -145,7 +165,10 @@ class BloodTransfusionPrintService
               'process_date' => $detail->bloodStock->process_date,
               'expiry_date' => $detail->bloodStock->expiry_date,
               'crossmatch_result' => $detail->crossmatch_result,
+              'crossmatch_finish_at' => $detail->crossmatch_finish_at,
               'crossmatch_by' => $detail->bloodTransfusionDetailTest->resultByUser->name,
+              'released_at' => now(),
+              'clia' => $clia,
             ];
           })
           ->values(),

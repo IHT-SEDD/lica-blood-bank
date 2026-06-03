@@ -23,6 +23,8 @@ class BloodPack extends Model
         'blood_component',
         'warning_quantity',
         'danger_quantity',
+        'storage_temperature_from',
+        'storage_temperature_to',
         'is_active',
     ];
 
