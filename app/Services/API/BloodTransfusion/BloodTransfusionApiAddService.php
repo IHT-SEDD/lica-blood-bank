@@ -187,15 +187,16 @@ class BloodTransfusionApiAddService
             return true;
         });
 
-        $unique = [];
-        foreach ($filtered as $tes) {
-            $kode = $tes['kode_jenis_tes'] ?? null;
-            if ($kode && !isset($unique[$kode])) {
-                $unique[$kode] = $tes;
-            }
-        }
+        // $unique = [];
+        // foreach ($filtered as $tes) {
+        //     $kode = $tes['kode_jenis_tes'] ?? null;
+        //     if ($kode && !isset($unique[$kode])) {
+        //         $unique[$kode] = $tes;
+        //     }
+        // }
 
-        return array_values($unique);
+        // return array_values($unique);
+        return array_values($filtered);
     }
     // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
     public function resolveBloodComponentAndQuantity(array $filteredTests): array
