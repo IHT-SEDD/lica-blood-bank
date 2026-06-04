@@ -83,10 +83,10 @@
             <i class="ti ti-file-check fs-4 me-2"></i> Check In
           </button>
 
-          {{-- Print barcode button --}}
-          <button class="btn btn-sm btn-soft-info d-none fs-6 fw-semibold" id="btn-print-barcode" data-id=""
-            data-bs-title="Print Barcode" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-printer fs-4 me-2"></i> Barcode
+          {{-- Print nota button --}}
+          <button class="btn btn-sm btn-soft-info d-none fs-6 fw-semibold" id="btn-print-nota" data-id=""
+            data-bs-title="Print Nota" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-printer fs-4 me-2"></i> Nota
           </button>
 
           {{-- Complete Transaction button --}}

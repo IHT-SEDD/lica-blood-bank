@@ -8,6 +8,7 @@ use App\Http\Requests\API\NewBloodTransfusionRequest;
 use App\Models\BloodTransfusion;
 use App\Services\API\ApiUtilityService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiAddService;
+use App\Services\API\BloodTransfusion\BloodTransfusionApiDataService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiUpdateService;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -22,6 +23,7 @@ class BloodTransfusionApiController extends Controller
     // ---------- Panggil semua service yang dibutuhkan ----------
     public function __construct(
         protected BloodTransfusionApiAddService $apiAddService,
+        protected BloodTransfusionApiDataService $apiDataService,
         protected BloodTransfusionApiUpdateService $apiUpdateService,
         protected ApiUtilityService $apiUtilityService,
     ) {}
@@ -67,6 +69,44 @@ class BloodTransfusionApiController extends Controller
             return $this->apiUtilityService->errorResponse(
                 $e->getMessage(),
             );
+        }
+    }
+
+    // ---------- Send Result ----------
+    #[Endpoint(
+        operationId: 'sendResult',
+        title: 'Send Result to SIMRS',
+        description: 'Send Blood Transfusion Result to SIMRS',
+        method: 'GET'
+    )]
+    public function sendResult(string $orderNumber): JsonResponse
+    {
+        try {
+            $transfusion = BloodTransfusion::where('order_number', $orderNumber)->first();
+
+            if (!$transfusion) {
+                return $this->apiUtilityService->errorResponse(
+                    'Blood transfusion order not found.'
+                );
+            }
+
+            $isFinished = !is_null($transfusion->finish_at)
+                || $transfusion->status === BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED;
+
+            if (!$isFinished) {
+                return $this->apiUtilityService->errorResponse(
+                    'Blood transfusion order not yet finished.'
+                );
+            }
+
+            $result = $this->apiDataService->sendResult($orderNumber);
+
+            return $this->apiUtilityService->successResponse(
+                'Blood transfusion result sent to SIMRS successfully.',
+                $result
+            );
+        } catch (\Throwable $e) {
+            return $this->apiUtilityService->errorResponse($e->getMessage());
         }
     }
 }

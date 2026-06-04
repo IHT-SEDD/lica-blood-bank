@@ -1,8 +1,4 @@
-import {
-    buildZplBarcodeBlood,
-    buildZplBarcodeTransaction,
-    buildZplDefault,
-} from "./barcode";
+import { buildZplBarcodeBlood, buildZplDefault } from "./barcode";
 
 export const QzManager = (() => {
     const PRINTER_PRIORITIES = ["BarcodeBDRS"];
@@ -121,7 +117,7 @@ export const QzManager = (() => {
 
         for (const item of items) {
             const zpl = buildZPL(item, padleft, print);
-            console.log(zpl);
+            console.log(item, zpl);
             const result = [{ type: "raw", format: "plain", data: zpl }];
 
             try {
@@ -143,239 +139,9 @@ export const QzManager = (() => {
 })();
 
 function buildZPL(item, padleft, printType) {
-    // const { patient_name, no_lab, medrec, birth_date, gender, blood_group } =
-    //     item;
-    // const barcodeWidth = 200;
-    // const barcodeX = Math.floor((padleft - barcodeWidth) / 2);
-    // console.log(item);
-
-    // let zpl = "";
-    // switch (printType) {
-    //     case "barcode-blood":
-    //         zpl = "^XA";
-    //         zpl += "^PW799";
-    //         zpl += "^LH0,0";
-
-    //         // ----- Header -----
-    //         zpl += "^CF0,50";
-    //         zpl += "^FO80,40^FDINSTALASI PELAYANAN DARAH^FS";
-    //         zpl += "^FO85,90^FDRUMAH SAKIT UMUM DAERAH^FS";
-    //         zpl += "^FO260,140^FDINDRAMAYU^FS";
-    //         zpl += "^CF0,25";
-    //         zpl +=
-    //             "^FO100,200^FDJl. Murah Nara No. 7 Telp. (0234) 272655 - Indramayu^FS";
-    //         zpl += "^FO50,240^GB700,3,3^FS";
-
-    //         // ----- Kantong Darah -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,265^FDKantong No^FS";
-    //         zpl += "^FO230,265^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,265^FD${item.bag_number}^FS`;
-
-    //         // ----- Golongan Darah -----
-    //         zpl += "^CF0,60";
-    //         zpl += `^FO610,270^FD${item.component}^FS`;
-    //         zpl += "^CF0,80";
-    //         zpl += `^FO610,325^FD${item.blood_group}${item.blood_rhesus}^FS`;
-
-    //         // ----- Tanggal Darah -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,302^FDTanggal Aftap^FS";
-    //         zpl += "^FO230,302^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,302^FD${item.aftap_date}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,339^FDTanggal Proses^FS";
-    //         zpl += "^FO230,339^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,339^FD${item.process_date}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,378^FDTanggal Expire^FS";
-    //         zpl += "^FO230,378^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,378^FD${item.expiry_date}^FS`;
-
-    //         // ----- Divider -----
-    //         zpl += "^FO50,415^GB700,3,3^FS";
-
-    //         // ----- Pasien -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,440^FDTanggal diberikan^FS";
-    //         zpl += "^FO260,440^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += "^FO280,440^FD2026-04-01^FS";
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,477^FDNama O.S^FS";
-    //         zpl += "^FO260,477^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,477^FD${item.patient_name}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,514^FDNo. Register^FS";
-    //         zpl += "^FO260,514^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,514^FD${item.patient_medrec}^FS`;
-    //         // zpl += "^CF0,25";
-    //         // zpl += "^FO50,551^FDNama Suami/Istri^FS";
-    //         // zpl += "^FO260,551^FD:^FS";
-    //         // zpl += "^CF0,26";
-    //         // zpl += `^FO280,551^FD${item.patient_relation}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,551^FDRuangan/Kelas^FS";
-    //         zpl += "^FO260,551^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,551^FD${item.room_name}/${item.room_class}^FS`;
-
-    //         // ----- Divider -----
-    //         zpl += "^FO50,625^GB700,3,3^FS";
-
-    //         // ----- Crossmatch -----
-    //         zpl += "^CF0,27";
-    //         zpl += "^FO50,650^FDCrossmatching dijalankan oleh^FS";
-    //         zpl += "^FO410,650^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO435,650^FD${item.crossmatch_by}^FS`;
-    //         zpl += "^CF0,27";
-    //         zpl += "^FO340,687^FDHasil^FS";
-    //         zpl += "^FO410,687^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO435,687^FD${item.crossmatch_result}^FS`;
-
-    //         // ----- Header Perhatian -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,815^FDPERHATIAN^FS";
-
-    //         // ----- Body Perhatian -----
-    //         zpl += "^CF0,20";
-    //         zpl +=
-    //             "^FO50,850^FDSetiap darah yang akan ditransfusikan pada labelnya harus ditandatangani^FS";
-    //         zpl +=
-    //             "^FO50,875^FDoleh petugas yang mentransfusikan, dengan sebelumnya mencocokkan^FS";
-    //         zpl +=
-    //             "^FO50,900^FDFormulir Permintaan Darah dengan kantong darah, label & identitas OS.^FS";
-    //         zpl +=
-    //             "^FO50,925^FDBila ada ketidakcocokan, segera kembalikan ke Bank Darah RS Setempat.^FS";
-    //         zpl +=
-    //             "^FO50,950^FDLabel ini jangan dilepas dari kantong darah yang sedang ditransfusikan.^FS";
-
-    //         // ----- Header Catatan -----
-    //         zpl += "^CF0,28";
-    //         zpl += "^FO50,1000^GB700,50,50^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += "^FO70,1015^FR";
-    //         zpl += "^FDCATATAN UNTUK RUMAH SAKIT BILA ADA REAKSI TRANSFUSI^FS";
-
-    //         // ----- Body Catatan -----
-    //         zpl += "^CF0,20";
-    //         zpl +=
-    //             "^FO50,1060^FD1. Gejala-gejala reaksi transfusi : _________________________________^FS";
-    //         zpl +=
-    //             "^FO50,1090^FD2. Label ini, kantong darah dan contoh darah post transfusi harap dikirim ke^FS";
-    //         zpl +=
-    //             "^FO50,1110^FDInstalasi Pelayanan Darah RSUD Indramayu, Jl. Murah Nara No.7 Indramayu^FS";
-    //         zpl += "^XZ";
-    //         break;
-
-    //     case "barcode-transaction":
-    //         zpl = "^XA";
-    //         zpl += "^PW799";
-    //         zpl += "^LH0,0";
-
-    //         // ----- Header -----
-    //         zpl += "^CF0,50";
-    //         zpl += "^FO80,40^FDINSTALASI PELAYANAN DARAH^FS";
-    //         zpl += "^FO85,90^FDRUMAH SAKIT UMUM DAERAH^FS";
-    //         zpl += "^FO260,140^FDINDRAMAYU^FS";
-    //         zpl += "^CF0,25";
-    //         zpl +=
-    //             "^FO100,200^FDJl. Murah Nara No. 7 Telp. (0234) 272655 - Indramayu^FS";
-    //         zpl += "^FO50,240^GB700,3,3^FS";
-
-    //         // ----- Pasien -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,265^FDBNo. Lab^FS";
-    //         zpl += "^FO230,265^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,265^FD${item.lab_number}^FS`;
-
-    //         // ----- Tanggal Darah -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,302^FDNo. Order^FS";
-    //         zpl += "^FO230,302^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,302^FD${item.order_number}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,339^FDNama^FS";
-    //         zpl += "^FO230,339^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,339^FD${item.patient_name}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,378^FDRuangan/Kelas^FS";
-    //         zpl += "^FO230,378^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO250,378^FD${item.room_name}/${item.room_class}^FS`;
-
-    //         // ----- Divider -----
-    //         zpl += "^FO50,415^GB700,3,3^FS";
-
-    //         // ----- Barcode -----
-    //         zpl += "^CF0,30";
-    //         zpl += "^BY2,3,70";
-    //         zpl += `^FO480,445^BC^FD${item.lab_number}^FS`;
-
-    //         // ----- Pasien -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,440^FDKomponen^FS";
-    //         zpl += "^FO260,440^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,440^FD${item.component}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,477^FDJumlah^FS";
-    //         zpl += "^FO260,477^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,477^FD${item.blood_quantity}^FS`;
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,514^FDGolongan Darah^FS";
-    //         zpl += "^FO260,514^FD:^FS";
-    //         zpl += "^CF0,26";
-    //         zpl += `^FO280,514^FD${item.blood_group}, Rh(${item.blood_rhesus})^FS`;
-
-    //         // ----- Divider -----
-    //         zpl += "^FO50,551^GB700,3,3^FS";
-
-    //         // ----- Header Perhatian -----
-    //         zpl += "^CF0,25";
-    //         zpl += "^FO50,588^FDPERHATIAN^FS";
-
-    //         // ----- Body Perhatian -----
-    //         zpl += "^CFN,20";
-    //         zpl +=
-    //             "^FO50,623^FDBerikan label ini ke petugas BDRS untuk pengambilan darah^FS";
-    //         zpl += "^FO50,643^FDHarap simpan label dan jangan sampai hilang^FS";
-    //         zpl += "^XZ";
-    //         break;
-    //     default:
-    //         zpl = "^XA";
-    //         zpl += "^CFB,20";
-    //         zpl += `^FB${padleft},1,0,C`;
-    //         zpl += `^FO0,15^FD${patient_name.substring(0, 20)}^FS`;
-    //         zpl += "^BY2,3,70";
-    //         zpl += `^FO${barcodeX},40^BC^FD${no_lab.substring(4)}^FS`;
-    //         zpl += `^FB${padleft},1,0,C`;
-    //         zpl += "^CFA,20";
-    //         zpl += `^FO0,135^FD${medrec.substring(0, 20)} / ${birth_date} / ${gender}^FS`;
-    //         zpl += "^XZ";
-    //         break;
-    // }
-
-    // return zpl;
-    console.log(item);
-
     switch (printType) {
         case "barcode-blood":
             return buildZplBarcodeBlood(item);
-        case "barcode-transaction":
-            return buildZplBarcodeTransaction(item);
         default:
             return buildZplDefault(item, padleft);
     }
@@ -388,6 +154,7 @@ function resolvePrintData(data, printType) {
                 patient_name: data.patient_name,
                 patient_gender: data.patient_gender,
                 patient_medrec: data.patient_medrec,
+                patient_lab_number: data.patient_lab_number,
                 patient_birthdate: data.patient_birthdate,
                 room_name: data.room_name,
                 room_class: data.room_class,
@@ -406,6 +173,7 @@ function resolvePrintData(data, printType) {
                 crossmatch_finish_at: detail.crossmatch_finish_at,
                 crossmatch_by: detail.crossmatch_by,
                 released_at: detail.released_at,
+                clia: detail.clia,
             }));
 
         default:
