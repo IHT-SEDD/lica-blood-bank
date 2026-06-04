@@ -69,4 +69,48 @@ class BloodTransfusionApiController extends Controller
             );
         }
     }
+
+    // ---------- Send Result ----------
+    // #[Endpoint(
+    //     operationId: 'sendResult',
+    //     title: 'Send Result to SIMRS',
+    //     description: 'Send Blood Transfusion Result to SIMRS',
+    //     method: 'GET'
+    // )]
+    // public function sendResult(string $orderNumber)
+    // {
+    //     try {
+    //         $validated = $request->validated();
+    //         $orderNumber = $validated['transaksi']['no_order'];
+    //         $existing = BloodTransfusion::where('order_number', $orderNumber)->first();
+
+    //         // ---- Jika transaksi dengan nomor order yang sama, maka update data
+    //         if ($existing) {
+    //             $isFinished = !is_null($existing->finish_at) || $existing->status === BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED;
+
+    //             if ($isFinished) {
+    //                 return $this->apiUtilityService->errorResponse(
+    //                     'Blood transfusion order has already been finished and cannot be updated.'
+    //                 );
+    //             }
+    //             $result = $this->apiUpdateService->updateData($existing, $validated);
+
+    //             return $this->apiUtilityService->successResponse(
+    //                 'Blood transfusion request updated successfully',
+    //                 $result
+    //             );
+    //         }
+
+    //         // ---- Jika transaksi belum ada, maka create data
+    //         $result = $this->apiAddService->insertNewData($request->validated());
+    //         return $this->apiUtilityService->successResponse(
+    //             'Blood transfusion request created successfully',
+    //             $result
+    //         );
+    //     } catch (\Throwable $e) {
+    //         return $this->apiUtilityService->errorResponse(
+    //             $e->getMessage(),
+    //         );
+    //     }
+    // }
 }

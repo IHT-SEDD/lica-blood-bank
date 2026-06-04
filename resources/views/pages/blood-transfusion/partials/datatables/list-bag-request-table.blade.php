@@ -2,11 +2,11 @@
   id="list-bag-request-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th>{{ __('Bag No.') }}</th>
+      <th>{{ __('No. Bag') }}</th>
       <th>{{ __('Status') }}</th>
-      <th>{{ __('Blood Pack') }}</th>
+      <th>{{ __('Detail') }}</th>
       <th>{{ __('Expiry') }}</th>
-      <th>{{ __('Crossmatch Result') }}</th>
+      <th>{{ __('Result') }}</th>
       <th>{{ __('Action') }}</th>
     </tr>
   </thead>

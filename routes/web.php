@@ -44,6 +44,7 @@ Route::middleware('auth')->group(function () {
 
                 Route::prefix('print')->name('print.')->group(function () {
                     Route::get('incompatible-letter/{id}', 'printIncompatibleLetter')->name('incompatible-letter');
+                    Route::get('nota/{id}', 'printNota')->name('nota');
                     Route::get('crossmatch-result/{id}/{btDetailID?}', 'printCrossmatchResult')->name('crossmatch-result');
                     Route::get('barcode/{id}/{btDetailID?}', 'printBarcodeBlood')->name('barcode');
                 });

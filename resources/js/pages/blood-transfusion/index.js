@@ -27,7 +27,7 @@ const LogDataURL = "/blood-transfusion/detail/log";
 
 const SelectorBtnCheckin = "btn-checkin-lab";
 const SelectorBtnDone = "btn-test-done";
-const SelectorBtnPrintBarcode = "btn-print-barcode";
+const SelectorBtnPrintNota = "btn-print-nota";
 const SelectorBtnPrintResult = "btn-print-result";
 const SelectorBtnComplete = "btn-complete-transaction";
 const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
@@ -45,8 +45,7 @@ const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
 const getCheckinBtn = () => document.getElementById(SelectorBtnCheckin);
 const getCompleteBtn = () => document.getElementById(SelectorBtnComplete);
 const getFinishBtn = () => document.getElementById(SelectorBtnDone);
-const getPrintBarcodeBtn = () =>
-    document.getElementById(SelectorBtnPrintBarcode);
+const getPrintNotaBtn = () => document.getElementById(SelectorBtnPrintNota);
 
 // ---------- Handle Button State ----------
 window.HandlingButtonState = function (tableID, data, options = {}) {
@@ -154,12 +153,12 @@ export function updatePatientDetailUI(data) {
             },
             // btn-print-barcode: tampil & enable jika sudah ada lab number
             {
-                selector: SelectorBtnPrintBarcode,
+                selector: SelectorBtnPrintNota,
                 action: "show",
                 conditions: (d) => hasLabNumber,
             },
             {
-                selector: SelectorBtnPrintBarcode,
+                selector: SelectorBtnPrintNota,
                 action: "enable",
                 conditions: (d) => hasLabNumber,
             },
@@ -195,9 +194,8 @@ export function updatePatientDetailUI(data) {
             if (hasLabNumber) {
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
-                const BTN_PRINT_BARCODE = getPrintBarcodeBtn();
-                if (BTN_PRINT_BARCODE)
-                    BTN_PRINT_BARCODE.dataset.id = d.public_id;
+                const BTN_PRINT_NOTA = getPrintNotaBtn();
+                if (BTN_PRINT_NOTA) BTN_PRINT_NOTA.dataset.id = d.public_id;
             }
 
             // Update list bag request table
@@ -883,57 +881,80 @@ function GenerateTimeline(logs = []) {
 }
 
 // ---------- Handle Print Barcode ----------
-function PrintBarcode() {
-    const BTN_PRINT_BARCODE = getPrintBarcodeBtn();
-    if (!BTN_PRINT_BARCODE) return;
+function PrintNota() {
+    const BTN_PRINT_NOTA = getPrintNotaBtn();
+    if (!BTN_PRINT_NOTA) return;
 
-    const newBtn = BTN_PRINT_BARCODE.cloneNode(true);
-    BTN_PRINT_BARCODE.parentNode.replaceChild(newBtn, BTN_PRINT_BARCODE);
+    const newBtn = BTN_PRINT_NOTA.cloneNode(true);
+    BTN_PRINT_NOTA.parentNode.replaceChild(newBtn, BTN_PRINT_NOTA);
 
     newBtn.addEventListener("click", async function () {
         const id = this.dataset.id;
         if (!id) return;
 
-        const originalText = this.innerHTML;
-        this.innerHTML =
-            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
-        this.disabled = true;
+        showPageLoading();
 
         try {
-            const response = await fetch(
-                `/blood-transfusion/detail/print/barcode/${id}`,
+            const res = await fetch(
+                `/blood-transfusion/detail/print/nota/${id}`,
             );
 
-            const result = await response.json();
-
-            if (!response.ok) {
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
                 notyf.error({
-                    message: result.message || "Failed to Print Barcode!",
+                    message:
+                        err?.message ?? `HTTP error! status: ${res.status}`,
                 });
+                hidePageLoading();
                 return;
             }
 
-            notyf.success({
-                message: result.message || "Barcode berhasil dicetak!",
-            });
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
 
-            // Kirim data ke QZ Tray untuk dicetak
-            await QzManager.sendZpl(result.data ?? []);
+            let iframe = document.getElementById("__print_preview_iframe__");
 
-            if (
-                listRequestTableInstance &&
-                $.fn.DataTable.isDataTable("#list-request-table")
-            ) {
-                listRequestTableInstance.instance.ajax.reload(null, false);
-            }
-        } catch (error) {
-            console.error(error);
+            if (iframe) iframe.remove();
+
+            iframe = document.createElement("iframe");
+
+            iframe.id = "__print_preview_iframe__";
+
+            iframe.style.cssText =
+                "position:fixed;top:0;left:0;width:100%;height:100%;border:none;opacity:0;pointer-events:none;z-index:-1;";
+
+            iframe.src = blobUrl;
+
+            iframe.onload = () => {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (printErr) {
+                    console.error(printErr);
+
+                    notyf.error({
+                        message: "Failed to open print dialog.",
+                    });
+                } finally {
+                    hidePageLoading();
+
+                    reloadBagRequestTable();
+
+                    setTimeout(() => {
+                        URL.revokeObjectURL(blobUrl);
+                        iframe.remove();
+                    }, 30000);
+                }
+            };
+
+            document.body.appendChild(iframe);
+        } catch (err) {
+            console.error("[Print] Network error:", err);
             notyf.error({
-                message: error.message || "Failed to print barcode!",
+                message: "Network error, failed to load print file.",
             });
-        } finally {
-            this.innerHTML = originalText;
-            this.disabled = false;
+
+            hidePageLoading();
         }
     });
 }
@@ -947,7 +968,7 @@ document.addEventListener("DOMContentLoaded", function () {
     initPatientDetail();
     initBagRequestRowClick();
     CheckInLabNumber();
-    PrintBarcode();
+    PrintNota();
     CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();
