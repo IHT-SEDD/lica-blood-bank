@@ -27,6 +27,7 @@ class BloodTransfusion extends Model
         'archived_at',
         'status',
         'is_dct',
+        'dct_value',
         'is_approval_incompatible',
         'blood_quantity',
         'checkin_by_user_id',

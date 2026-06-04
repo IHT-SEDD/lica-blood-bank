@@ -78,6 +78,20 @@ export function initFormEdit() {
         enableTime: true,
     });
 
+    // ---------- Toggle DCT Value ----------
+    const dctCheckbox = document.getElementById("edit_data_is_dct");
+    const dctWrapper = document.getElementById("edit_data_dct_value_wrapper");
+
+    function toggleDctValue(checked) {
+        if (dctWrapper) dctWrapper.style.display = checked ? "" : "none";
+    }
+
+    if (dctCheckbox) {
+        dctCheckbox.addEventListener("change", function () {
+            toggleDctValue(this.checked);
+        });
+    }
+
     // ---------- Validation ----------
     const EditDataValidation = GlobalFormValidation.init(
         "#" + FormEditSelector,
@@ -121,6 +135,7 @@ export function initFormEdit() {
                     "insurance",
                     "room",
                     "doctor",
+                    "dct-value",
                 ]),
             ]);
 
@@ -153,6 +168,10 @@ export function initFormEdit() {
                 "#edit_data_select-doctor",
                 selectData["doctor"]?.results ?? [],
             );
+            const EditDCTSelectInstance = destroyAndInitWithOptions(
+                "#edit_data_select-dct-value",
+                selectData["dct-value"]?.results ?? [],
+            );
 
             document.getElementById("edit_data_blood_transfusion_id").value =
                 trans.id;
@@ -170,8 +189,8 @@ export function initFormEdit() {
                     : dateEl._flatpickrInstance.clear();
             }
 
-            const dctCheckbox = document.getElementById("edit_data_is_dct");
-            if (dctCheckbox) dctCheckbox.checked = !!trans.is_dct;
+            dctCheckbox.checked = !!trans.is_dct;
+            toggleDctValue(!!trans.is_dct);
 
             if (trans.patient_blood_group && EditBloodGroupSelectInstance) {
                 EditBloodGroupSelectInstance.setValue(

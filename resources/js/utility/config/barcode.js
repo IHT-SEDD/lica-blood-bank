@@ -62,6 +62,7 @@ export function buildZplBarcodeBlood(item) {
     return [
         "^XA",
         "^PW799", // lebar cetak (dot); sesuaikan dengan lebar kertas printer
+        "^CI28", // Unicode UTF-8
         "^LH0,0", // titik awal cetak (kiri atas)
         bloodHeader(),
         bloodInfoRow(200, "Kantong No", item.bag_number),
@@ -74,7 +75,7 @@ export function buildZplBarcodeBlood(item) {
         bloodInfoRow(
             348,
             "Suhu Simpan",
-            `${item.storage_temp_from}-${item.storage_temp_to}`,
+            `${item.storage_temp_from}-${item.storage_temp_to}°C`,
         ),
         cliaRows(item.clia),
 
