@@ -382,7 +382,7 @@
             <strong>{{ $detail->component ?? '-' }}</strong>
           </td>
           <td class="text-center">
-            {{ formatResult($mayor?->result) }}
+            {{ $detail->component == 'TC' ? '' : formatResult($mayor?->result) }}
           </td>
           <td class="text-center">
             {{ formatResult($minor?->result) }}
