@@ -200,16 +200,21 @@ class MasterService
     try {
       // ---------- Ambil model ----------
       $model = new $modelClass;
-      // dd($model);
+
       // ---------- Konfigurasi khusus ----------
       $useOnlyId = ['role'];
 
-      // ---------- Ambil data master ----------
-      $query = $modelClass::query()->withTrashed();
+      // ---------- Kondisi khusus untuk Spatie Role karena tidak memiliki soft delete ----------
+      if ($modelClass === \Spatie\Permission\Models\Role::class) {
+        $query = $modelClass::query();
+      } else {
+        $query = $modelClass::query()->withTrashed();
+      }
 
       $query->where(function ($q) use ($id, $master, $useOnlyId) {
         if (in_array($master, $useOnlyId)) {
           $q->where('id', $id);
+          dd($id);
         } else {
           if (\Illuminate\Support\Str::isUuid($id)) {
             $q->where('public_id', $id);
