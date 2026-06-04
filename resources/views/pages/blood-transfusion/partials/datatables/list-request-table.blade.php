@@ -4,8 +4,8 @@
       <th>{{ __('Date') }}</th>
       <th>{{ __('Name') }}</th>
       <th>{{ __('Medrec') }}</th>
-      <th>{{ __('Lab No') }}</th>
-      <th>{{ __('Order No') }}</th>
+      <th>{{ __('No. BDRS') }}</th>
+      <th>{{ __('No. Order') }}</th>
       <th>{{ __('Room') }}</th>
       <th>
         <span class="fs-4" data-bs-title="Status Badge" data-bs-toggle="tooltip" data-bs-trigger="hover">

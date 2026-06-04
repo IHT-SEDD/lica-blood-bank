@@ -25,6 +25,7 @@ class BloodTransfusionPrintService
 {
   protected array $printMap = [
     'incompatible-letter' => 'pdf.blood_transfusion.incompatible-letter',
+    'nota' => 'pdf.blood_transfusion.nota',
     'crossmatch-result' => 'pdf.blood_transfusion.crossmatch-result',
     'blood-patient-card' => 'pdf.blood_transfusion.blood_card_patient',
   ];
@@ -44,6 +45,25 @@ class BloodTransfusionPrintService
           'is_print_incompatible_letter' => true,
         ]);
       $response = $this->generatePdfResponse($print, $printData);
+
+      DB::commit();
+
+      return $response;
+    } catch (Throwable $th) {
+      DB::rollBack();
+      throw $th;
+    }
+  }
+
+  // ---------- Fungsi Print Nota ----------
+  public function nota(string $transfusionPublicID, string $print): BinaryFileResponse
+  {
+    try {
+      DB::beginTransaction();
+
+      $this->validatePrintTemplate($print);
+      $printData = $this->queryTransfusionData($transfusionPublicID, null);
+      $response = $this->generatePdfResponse($print, $printData, paperSize: [0, 0, 683.4, 791.6]);
 
       DB::commit();
 
@@ -107,7 +127,7 @@ class BloodTransfusionPrintService
           }
         },
         'details.bloodPack:id,public_id,storage_temperature_from,storage_temperature_to',
-        'details.bloodStock:id,public_id,bag_number,blood_volume,aftap_date,expiry_date,process_date',
+        'details.bloodStock',
         'details.bloodTransfusionDetailTest:id,public_id,bt_detail_id,result_by_user_id',
         'details.bloodTransfusionDetailTest.resultByUser:id,public_id,name',
       ])
@@ -131,6 +151,7 @@ class BloodTransfusionPrintService
         'patient_name' => $transfusionData->patient->name,
         'patient_gender' => $transfusionData->patient->gender,
         'patient_medrec' => $transfusionData->patient->medrec,
+        'patient_lab_number' => $transfusionData->lab_number,
         'patient_relation' => $relation,
         'patient_birthdate' => optional($transfusionData->patient->birthdate)?->format('Y-m-d'),
         'room_name' => $transfusionData->room->name,
@@ -167,7 +188,7 @@ class BloodTransfusionPrintService
               'crossmatch_result' => $detail->crossmatch_result,
               'crossmatch_finish_at' => $detail->crossmatch_finish_at,
               'crossmatch_by' => $detail->bloodTransfusionDetailTest->resultByUser->name,
-              'released_at' => now(),
+              'released_at' => now()->format('Y-m-d H:i:s'),
               'clia' => $clia,
             ];
           })
@@ -226,7 +247,7 @@ class BloodTransfusionPrintService
       abort(404, "Print template [{$print}] not found.");
     }
   }
-  private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null): BinaryFileResponse
+  private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null, ?array $paperSize = null): BinaryFileResponse
   {
     $printBy = Auth::user()->name;
     $fileName = strtoupper($print) . '_' . $printData->lab_number;
@@ -243,6 +264,10 @@ class BloodTransfusionPrintService
     $fileName .= '.pdf';
     $storagePath = 'blood-transfusion/prints/' . $fileName;
     $pdf = Pdf::loadView($this->printMap[$print], ['data' => $printData, 'printBy' => $printBy]);
+
+    if ($paperSize) {
+      $pdf->setPaper($paperSize, 'portrait');
+    }
 
     Storage::disk('public')->put($storagePath, $pdf->output());
     $absolutePath = Storage::disk('public')->path($storagePath);

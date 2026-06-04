@@ -2,7 +2,7 @@
  id="list-test-table">
  <thead class="thead-sm text-uppercase fs-xxs">
   <tr>
-   <th>{{ __('Bag Number') }}</th>
+   <th>{{ __('No. Bag') }}</th>
    <th>{{ __('Test') }}</th>
    <th>{{ __('Result') }}</th>
   </tr>

@@ -478,6 +478,19 @@ class BloodTransfusionController extends Controller
         }
     }
 
+    // ---------- Print Nota ----------
+    public function printNota(string $transfusionPublicID)
+    {
+        try {
+            $print = 'nota';
+            return $this->printService->nota($transfusionPublicID, $print);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to print nota file!'], 500);
+        }
+    }
+
     // ---------- Print Crossmatch Result ----------
     public function printCrossmatchResult(string $transfusionPublicID, ?string $btDetailID = null)
     {

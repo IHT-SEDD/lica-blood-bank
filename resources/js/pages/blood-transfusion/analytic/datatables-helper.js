@@ -323,7 +323,7 @@ export function DatatableListBagRequest() {
         },
         {
             data: null,
-            title: "Expiry Date",
+            title: "Expiry",
             orderable: false,
             searchable: false,
             render: (_, __, row) => {
