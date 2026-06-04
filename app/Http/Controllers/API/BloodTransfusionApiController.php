@@ -8,6 +8,7 @@ use App\Http\Requests\API\NewBloodTransfusionRequest;
 use App\Models\BloodTransfusion;
 use App\Services\API\ApiUtilityService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiAddService;
+use App\Services\API\BloodTransfusion\BloodTransfusionApiDataService;
 use App\Services\API\BloodTransfusion\BloodTransfusionApiUpdateService;
 use Dedoc\Scramble\Attributes\Endpoint;
 use Dedoc\Scramble\Attributes\Group;
@@ -22,6 +23,7 @@ class BloodTransfusionApiController extends Controller
     // ---------- Panggil semua service yang dibutuhkan ----------
     public function __construct(
         protected BloodTransfusionApiAddService $apiAddService,
+        protected BloodTransfusionApiDataService $apiDataService,
         protected BloodTransfusionApiUpdateService $apiUpdateService,
         protected ApiUtilityService $apiUtilityService,
     ) {}
@@ -71,46 +73,40 @@ class BloodTransfusionApiController extends Controller
     }
 
     // ---------- Send Result ----------
-    // #[Endpoint(
-    //     operationId: 'sendResult',
-    //     title: 'Send Result to SIMRS',
-    //     description: 'Send Blood Transfusion Result to SIMRS',
-    //     method: 'GET'
-    // )]
-    // public function sendResult(string $orderNumber)
-    // {
-    //     try {
-    //         $validated = $request->validated();
-    //         $orderNumber = $validated['transaksi']['no_order'];
-    //         $existing = BloodTransfusion::where('order_number', $orderNumber)->first();
+    #[Endpoint(
+        operationId: 'sendResult',
+        title: 'Send Result to SIMRS',
+        description: 'Send Blood Transfusion Result to SIMRS',
+        method: 'GET'
+    )]
+    public function sendResult(string $orderNumber): JsonResponse
+    {
+        try {
+            $transfusion = BloodTransfusion::where('order_number', $orderNumber)->first();
 
-    //         // ---- Jika transaksi dengan nomor order yang sama, maka update data
-    //         if ($existing) {
-    //             $isFinished = !is_null($existing->finish_at) || $existing->status === BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED;
+            if (!$transfusion) {
+                return $this->apiUtilityService->errorResponse(
+                    'Blood transfusion order not found.'
+                );
+            }
 
-    //             if ($isFinished) {
-    //                 return $this->apiUtilityService->errorResponse(
-    //                     'Blood transfusion order has already been finished and cannot be updated.'
-    //                 );
-    //             }
-    //             $result = $this->apiUpdateService->updateData($existing, $validated);
+            $isFinished = !is_null($transfusion->finish_at)
+                || $transfusion->status === BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED;
 
-    //             return $this->apiUtilityService->successResponse(
-    //                 'Blood transfusion request updated successfully',
-    //                 $result
-    //             );
-    //         }
+            if (!$isFinished) {
+                return $this->apiUtilityService->errorResponse(
+                    'Blood transfusion order not yet finished.'
+                );
+            }
 
-    //         // ---- Jika transaksi belum ada, maka create data
-    //         $result = $this->apiAddService->insertNewData($request->validated());
-    //         return $this->apiUtilityService->successResponse(
-    //             'Blood transfusion request created successfully',
-    //             $result
-    //         );
-    //     } catch (\Throwable $e) {
-    //         return $this->apiUtilityService->errorResponse(
-    //             $e->getMessage(),
-    //         );
-    //     }
-    // }
+            $result = $this->apiDataService->sendResult($orderNumber);
+
+            return $this->apiUtilityService->successResponse(
+                'Blood transfusion result sent to SIMRS successfully.',
+                $result
+            );
+        } catch (\Throwable $e) {
+            return $this->apiUtilityService->errorResponse($e->getMessage());
+        }
+    }
 }
