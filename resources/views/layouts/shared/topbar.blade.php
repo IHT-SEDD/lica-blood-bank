@@ -94,6 +94,33 @@
                 {{-- Dropdown Master :end --}}
             </div>
             @endif
+
+            {{-- Report Menu --}}
+            <div class="topbar-item d-none d-lg-flex">
+                {{-- Dropdown Report :begin --}}
+                <div class="dropdown">
+                    {{-- Dropdown Button --}}
+                    <button class="topbar-link btn shadow-none btn-link px-2 dropdown-toggle drop-arrow-none"
+                        data-bs-auto-close="true" data-bs-toggle="dropdown" data-bs-offset="0,13" type="button"
+                        aria-haspopup="false" aria-expanded="false">
+                        Report <i class="ti ti-chevron-down ms-1"></i>
+                    </button>
+
+                    {{-- Dropdown Menu :begin --}}
+                    <ul class="dropdown-menu">
+                        @foreach(config('report') as $key => $item)
+                        <li>
+                            <a class="dropdown-item {{ request()->is('report/'.$key.'*') ? 'active' : '' }}"
+                                href="{{ route('report.index', $key) }}">
+                                {{ Str::headline($key) }}
+                            </a>
+                        </li>
+                        @endforeach
+                    </ul>
+                    {{-- Dropdown Menu :end --}}
+                </div>
+                {{-- Dropdown Master :end --}}
+            </div>
         </div>
         {{-- Left Side :end --}}
 

@@ -481,8 +481,8 @@ class StockInAddService
         $process = Carbon::createFromFormat('d-m-Y', $item['process_date'])->startOfDay();
         $expiry = Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->startOfDay();
 
-        if ($aftap->gte($today)) return "Aftap date at row {$row} must be before today";
-        if ($process->gte($today)) return "Process date at row {$row} must be before today";
+        // if ($aftap->gte($today)) return "Aftap date at row {$row} must be before today";
+        // if ($process->gte($today)) return "Process date at row {$row} must be before today";
         if ($process->lt($aftap)) return "Process date at row {$row} cannot be before aftap date";
         if ($expiry->lte($today)) return "Expiry date at row {$row} must be greater than today";
         if ($expiry->lt($aftap)) return "Expiry date at row {$row} cannot be before aftap date";

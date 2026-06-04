@@ -6,6 +6,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\LockSessionController;
 use App\Http\Controllers\MasterController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\UtilityController;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
@@ -93,6 +94,15 @@ Route::middleware('auth')->group(function () {
             Route::patch('{master}/{id}', 'editData')->where('master', implode('|', array_keys(config('master'))))->name('edit-data');
             Route::delete('{master}/data/{id}', 'deleteData')->where('master', implode('|', array_keys(config('master'))))->name('delete-data');
             Route::patch('{master}/{id}/restore', 'restoreData')->where('master', implode('|', array_keys(config('master'))))->name('restore-data');
+        });
+
+    // --------------------------------------------------------------------------
+    // Report Group Routes -> report.*
+    // --------------------------------------------------------------------------
+    Route::prefix('report')->name('report.')->controller(ReportController::class)
+        ->group(function () {
+            // ---------- Page ----------
+            Route::get('{report}', 'index')->name('index');
         });
 
     // --------------------------------------------------------------------------
