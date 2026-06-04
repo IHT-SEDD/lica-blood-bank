@@ -496,7 +496,6 @@ class BloodTransfusionController extends Controller
     {
         try {
             $data = $this->printService->barcodeBlood($id, $btDetailID);
-            dd($data);
             return response()->json([
                 'message' => 'Successfully Print Barcode',
                 'data' => $data,
