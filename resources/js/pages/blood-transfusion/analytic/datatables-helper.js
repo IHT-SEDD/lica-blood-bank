@@ -659,7 +659,10 @@ export function updateDoneButtonState() {
     }
 
     // If this bag already has a transfusion result, keep Done disabled
-    if (window.currentBagCrossmatchResult) {
+    if (
+        window.currentBagCrossmatchResult &&
+        window.currentBagCrossmatchResult.toString().trim() !== ""
+    ) {
         btn.disabled = true;
         return;
     }
@@ -737,7 +740,6 @@ export async function completeTest() {
         );
 
         const res = await response.json();
-
         if (!response.ok) {
             throw new Error(res.message);
         }
@@ -764,6 +766,25 @@ export async function completeTest() {
             $(TABLE.bagRequest)
                 .DataTable()
                 .ajax.reload(function (json) {
+                    if (window.currentBagDetailPublicId && json.data) {
+                        const updatedBag = json.data.find(
+                            (b) =>
+                                b.public_id === window.currentBagDetailPublicId,
+                        );
+                        if (updatedBag) {
+                            window.currentBagData = updatedBag;
+                            window.currentBagCrossmatchResult =
+                                updatedBag.crossmatch_result ||
+                                window.currentBagCrossmatchResult;
+                            if (
+                                typeof window.updateWorkflowButtonsState ===
+                                "function"
+                            ) {
+                                window.updateWorkflowButtonsState();
+                            }
+                        }
+                    }
+
                     const allHaveCrossmatch =
                         json.data &&
                         json.data.length > 0 &&
@@ -791,22 +812,6 @@ export async function completeTest() {
                     );
                     if (btnPrintResult) {
                         btnPrintResult.disabled = !allHaveCrossmatch;
-                    }
-
-                    if (window.currentBagDetailPublicId && json.data) {
-                        const updatedBag = json.data.find(
-                            (b) =>
-                                b.public_id === window.currentBagDetailPublicId,
-                        );
-                        if (updatedBag) {
-                            window.currentBagData = updatedBag;
-                            if (
-                                typeof window.updateWorkflowButtonsState ===
-                                "function"
-                            ) {
-                                window.updateWorkflowButtonsState();
-                            }
-                        }
                     }
                 }, false);
         }

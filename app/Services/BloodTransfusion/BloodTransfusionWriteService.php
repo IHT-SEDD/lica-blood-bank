@@ -315,6 +315,7 @@ class BloodTransfusionWriteService
                 'relation_type' => $request->relation_type,
                 'blood_request_at' => $request->blood_required_at,
                 'is_dct' => $request->is_dct,
+                'dct_value' => $request->dct_value,
                 'diagnosis' => $request->diagnosis,
             ]);
             if ($transfusion->patient_id) {

@@ -57,6 +57,9 @@ return [
         'label' => 'name',
         'with' => [],
     ],
+    'dct-value' => [
+        'type' => 'enum',
+    ],
 
     // ---------- I ----------
     'incoming-stock-status' => [

@@ -151,7 +151,7 @@ export function updatePatientDetailUI(data) {
                 action: "show",
                 conditions: (d) => !isCompleted && hasLabNumber,
             },
-            // btn-print-barcode: tampil & enable jika sudah ada lab number
+            // btn-print-note: tampil & enable jika sudah ada lab number
             {
                 selector: SelectorBtnPrintNota,
                 action: "show",

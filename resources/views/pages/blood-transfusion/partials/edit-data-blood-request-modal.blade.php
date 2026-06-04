@@ -99,6 +99,13 @@
                     </label>
                 </div>
             </div>
+
+            {{-- DCT Value --}}
+            <div class="col-xxl-6 col-md-12 col-12 mt-2" id="edit_data_dct_value_wrapper" style="display:none;">
+                <label class="form-label" for="edit_data_select-dct-value">{{ __('DCT Value') }}</label>
+                <select class="form-control" id="edit_data_select-dct-value" name="dct_value"
+                    placeholder="{{ __('Choose') }} {{ __('DCT Value') }}"></select>
+            </div>
         </div>
 
         <hr />
