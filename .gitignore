@@ -16,7 +16,8 @@
 /public/build
 /public/hot
 /public/storage
-/public/vendor/qz
+/public/vendor/qz/key.pem
+/public/vendor/qz/override.crt
 /storage/*.key
 /storage/pail
 /vendor
