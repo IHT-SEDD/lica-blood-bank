@@ -43,8 +43,8 @@ class AddNewOrderRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'po_number.required' => 'Purchase Order wajib dipilih.',
-            'po_number.exists' => 'Purchase Order yang dipilih tidak valid.',
+            'po_number.required' => 'Harap buat nomor PO terlebih dahulu.',
+            'po_number.exists' => 'Nomor PO sudah pernah dibuat, silahkan buat ulang nomor PO.',
             'blood_data.required' => 'Minimal 1 data darah wajib diisi.',
             'blood_data.min' => 'Minimal 1 data darah wajib diisi.',
             'blood_data.*.blood_pack_id.required' => 'Blood pack wajib dipilih.',

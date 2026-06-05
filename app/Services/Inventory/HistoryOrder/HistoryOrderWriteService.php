@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class HistoryOrderWriteService
 {
@@ -31,10 +32,6 @@ class HistoryOrderWriteService
             $totalQuantity = collect($request->blood_data)
                 ->sum(fn($item) => (int) $item['quantity']);
 
-            // ---------- Validasi PO Number ----------
-            $poNumberExists = OrderBlood::where('po_number', $request->po_number)->exists();
-            $poNumber = (!empty($request->po_number) && !$poNumberExists) ? $request->po_number : $this->generatePoNumber();
-
             // ---------- Ambil data vendor ----------
             $vendor = Vendor::where('public_id', $request->vendor_id)->first();
 
@@ -50,7 +47,7 @@ class HistoryOrderWriteService
             // ---------- Insert ke tabel order_bloods ----------
             $newOrderData = OrderBlood::create([
                 'vendor_id' => $vendorId,
-                'po_number' => $poNumber,
+                'po_number' => $request->po_number,
                 'total_quantity' => $totalQuantity,
                 'description' => $request->description ?? NULL,
                 'status' => $status,
@@ -80,7 +77,7 @@ class HistoryOrderWriteService
 
             // ---------- Insert Order Log Activity ----------
             OrderLogActivity::create([
-                'po_number' => $poNumber,
+                'po_number' => $request->po_number,
                 'vendor_name' => $vendorName,
                 'order_data' => $newOrderData->toArray(),
                 'order_blood_data' => collect($orderBloodDetails)
@@ -90,7 +87,7 @@ class HistoryOrderWriteService
                 'status' => $statusLog,
                 'description' => generateOrderLogDescription(
                     $statusLog,
-                    $poNumber,
+                    $request->po_number,
                     $user->id
                 ),
                 'timestamp' => $newOrderData->created_at,
@@ -131,7 +128,7 @@ class HistoryOrderWriteService
     public function generatePoNumber(): string
     {
         $year = now()->format('Y');
-        $last = OrderBlood::where('po_number', 'like', "P{$year}OB%")
+        $last = OrderBlood::withTrashed()->where('po_number', 'like', "P{$year}OB%")
             ->lockForUpdate()
             ->orderByDesc('po_number')
             ->first();
@@ -161,7 +158,7 @@ class HistoryOrderWriteService
                 OrderBloodStatus::ORDER_CREATED->value,
             ];
             if (!in_array($order->status->value, $editableStatuses)) {
-                return response()->json(['message' => 'Order cannot be edited in current status!'], 422);
+                return response()->json(['message' => 'Permintaan tidak bisa diubah!'], 422);
             }
 
             $changes = []; // Catat field yang berubah untuk log
@@ -206,7 +203,9 @@ class HistoryOrderWriteService
                 $totalQuantity = 0;
 
                 foreach ($request->blood_data as $item) {
-                    $bloodPack = BloodPack::where('id', $item['blood_pack_id'])->firstOrFail();
+                    $bloodPack = Str::isUuid($item['blood_pack_id'])
+                        ? BloodPack::where('public_id', $item['blood_pack_id'])->firstOrFail()
+                        : BloodPack::findOrFail($item['blood_pack_id']);
 
                     $detail = OrderBloodDetail::create([
                         'order_blood_id' => $order->id,
@@ -809,5 +808,20 @@ class HistoryOrderWriteService
     {
         Cache::forget(self::CACHE_ORDER_BY_ID_KEY . ":{$id}");
         Cache::forget(self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}");
+    }
+
+    private function getAvailablePoNumber(string $requestedPoNumber)
+    {
+        $poNumber = $requestedPoNumber;
+
+        while (
+            OrderBlood::withTrashed()
+            ->where('po_number', $poNumber)
+            ->exists()
+        ) {
+            $poNumber++;
+        }
+
+        return $poNumber;
     }
 }
