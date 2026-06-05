@@ -28,8 +28,6 @@ class DashboardController extends Controller
     // ---------- Fungsi ambil data untuk blood stock table ----------
     public function bloodStockTabe(Request $request)
     {
-        return response()->json(
-            $this->dataService->bloodStockTable($request)
-        );
+        return $this->dataService->bloodStockTable($request);
     }
 }

@@ -30,9 +30,7 @@ class BloodStockController extends Controller
     // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable ----------
     public function bloodStockTable(Request $request)
     {
-        return response()->json(
-            $this->dataService->bloodStockTable($request)
-        );
+        return $this->dataService->bloodStockTable($request);
     }
 
     // ---------- Fungsi untuk status label ----------
@@ -80,9 +78,7 @@ class BloodStockController extends Controller
     // ---------- Stock blood data detail table ----------
     public function detailStockBloodDataTable(Request $request, string $id)
     {
-        return response()->json(
-            $this->dataService->detailStockBloodDataTable($request, $id)
-        );
+        return $this->dataService->detailStockBloodDataTable($request, $id);
     }
 
     // ---------- Stock blood data by id ----------

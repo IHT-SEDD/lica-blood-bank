@@ -20,36 +20,36 @@ enum BloodStockLogActivityStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::BLOOD_STOCK_CREATED_BY_MANUAL => '(CREATE MANUAL)',
-            self::BLOOD_STOCK_CREATED_BY_SCAN => '(CREATE SCAN)',
-            self::BLOOD_STOCK_DELETED => '(DELETED)',
-            self::BLOOD_STOCK_PERMANENT_DELETED => '(PERMANENT DELETED)',
-            self::BLOOD_STOCK_UPDATED => '(UPDATED)',
-            self::BLOOD_STOCK_RESTORED => '(RESTORED)',
+            self::BLOOD_STOCK_CREATED_BY_MANUAL => '(PENAMBAHAN VIA MANUAL)',
+            self::BLOOD_STOCK_CREATED_BY_SCAN => '(PENAMBAHAN VIA SCAN)',
+            self::BLOOD_STOCK_DELETED => '(DIHAPUS)',
+            self::BLOOD_STOCK_PERMANENT_DELETED => '(DIHAPUS PERMANEN)',
+            self::BLOOD_STOCK_UPDATED => '(DIPERBAHARUI)',
+            self::BLOOD_STOCK_RESTORED => '(DIPULIHKAN)',
 
-            self::BLOOD_STOCK_IN_USE => '(IN USE)',
-            self::BLOOD_STOCK_TAKEN_OUT => '(TAKEN OUT)',
-            self::BLOOD_STOCK_EXPIRED => '(EXPIRED)',
-            self::BLOOD_STOCK_DESTROYED => '(DESTROYED)',
-            self::BLOOD_STOCK_UNDESTROYED => '(UNDESTROYED)',
+            self::BLOOD_STOCK_IN_USE => '(SEDANG DIGUNAKAN)',
+            self::BLOOD_STOCK_TAKEN_OUT => '(DIKELUARKAN)',
+            self::BLOOD_STOCK_EXPIRED => '(KADALUARSA)',
+            self::BLOOD_STOCK_DESTROYED => '(DIMUSNAHKAN)',
+            self::BLOOD_STOCK_UNDESTROYED => '(BATAL DIMUSNAHKAN)',
         };
     }
 
     public function template(): string
     {
         return match ($this) {
-            self::BLOOD_STOCK_CREATED_BY_MANUAL => 'Blood Stock %s: Manually created successfully by User ID %s.',
-            self::BLOOD_STOCK_CREATED_BY_SCAN => 'Blood Stock %s: Created successfully via scan by User ID %s.',
-            self::BLOOD_STOCK_DELETED => 'Blood Stock %s: Deleted successfully by User ID %s.',
-            self::BLOOD_STOCK_PERMANENT_DELETED => 'Blood Stock %s: Permanent deleted successfully by User ID %s.',
-            self::BLOOD_STOCK_UPDATED => 'Blood Stock %s: Updated successfully by User ID %s.',
-            self::BLOOD_STOCK_RESTORED => 'Blood Stock %s: Restored successfully by User ID %s.',
+            self::BLOOD_STOCK_CREATED_BY_MANUAL => 'Stok Darah %s: Sukses ditambahkan dengan metode manual oleh user dengan username %s.',
+            self::BLOOD_STOCK_CREATED_BY_SCAN => 'Stok Darah %s: Sukses ditambahkan dengan metode scan oleh user dengan username %s.',
+            self::BLOOD_STOCK_DELETED => 'Stok Darah %s: Telah dihapus oleh user dengan username %s.',
+            self::BLOOD_STOCK_PERMANENT_DELETED => 'Stok Darah %s: Telah dihapus permanen oleh user dengan username %s.',
+            self::BLOOD_STOCK_UPDATED => 'Stok Darah %s: Sukses diperbaharui datanya oleh user dengan username %s.',
+            self::BLOOD_STOCK_RESTORED => 'Stok Darah %s: Sukses dipulihkan oleh user dengan username %s.',
 
-            self::BLOOD_STOCK_IN_USE => 'Blood Stock %s: Currently in use. Successfully logged by User ID %s.',
-            self::BLOOD_STOCK_TAKEN_OUT => 'Blood Stock %s: Taken out, %s. Successfully logged by User ID %s.',
-            self::BLOOD_STOCK_EXPIRED => 'Blood Stock %s: Has been expired. Successfully logged by User ID %s.',
-            self::BLOOD_STOCK_DESTROYED => 'Blood Stock %s: Destroyed successfully by User ID %s.',
-            self::BLOOD_STOCK_UNDESTROYED => 'Blood Stock %s: Undestroyed successfully by User ID %s.',
+            self::BLOOD_STOCK_IN_USE => 'Stok Darah %s: Darah sedang digunakan pada pasien dengan nama %s.',
+            self::BLOOD_STOCK_TAKEN_OUT => 'Stok Darah %s: Taken out, %s. Successfully logged by User ID %s.',
+            self::BLOOD_STOCK_EXPIRED => 'Stok Darah %s: Darah sudah expire/kadaluarsa, sukses dicatat oleh user dengan username %s.',
+            self::BLOOD_STOCK_DESTROYED => 'Stok Darah %s: Darah sudah dimusnahkan oleh user dengan username %s.',
+            self::BLOOD_STOCK_UNDESTROYED => 'Stok Darah %s: Darah berhasil dibatalkan pemusnahan oleh user dengan username %s.',
         };
     }
 }

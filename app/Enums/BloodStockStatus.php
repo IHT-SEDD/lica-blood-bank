@@ -31,21 +31,21 @@ enum BloodStockStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::REGISTERED => 'Blood Registered',
-            self::AVAILABLE => 'Available',
-            self::RETURNED => 'Blood Has Returned',
-            self::DESTROYED => 'Blood has Destroyed',
-            self::DELETED => 'Blood has Deleted',
-            self::RESTORED => 'Blood has Restored',
+            self::REGISTERED => 'Terdaftar',
+            self::AVAILABLE => 'Tersedia',
+            self::RETURNED => 'Dikembalikan',
+            self::DESTROYED => 'Dimusnahkan',
+            self::DELETED => 'Dihapus',
+            self::RESTORED => 'Dipulihkan',
 
-            self::IN_USE => 'Blood Currently in Use',
-            self::USED => 'Blood Currently have been used',
+            self::IN_USE => 'Sedang Digunakan',
+            self::USED => 'Sudah Pernah Digunakan',
 
-            self::HOLD => 'Blood in Hold',
+            self::HOLD => 'Sedang Di Tahan',
             
-            self::ALREADY_TAKEN => 'Blood Already Taken',
-            self::TAKEN_OUT => 'Blood Has Taken Out from Storage',
-            self::EXPIRED => 'Expired',
+            self::ALREADY_TAKEN => 'Sudah Ada Pemilik',
+            self::TAKEN_OUT => 'Dikeluarkan',
+            self::EXPIRED => 'Expire',
         };
     }
 

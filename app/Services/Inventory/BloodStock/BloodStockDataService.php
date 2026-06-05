@@ -13,11 +13,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Facades\Excel;
+use Yajra\DataTables\Facades\DataTables;
 
 class BloodStockDataService
 {
-  const CACHE_BLOOD_STOCK_LOG_KEY = "blood_stock_log_data";
-
   // ---------- Fungsi select po pada form add ----------
   public function selectPO(Request $request): array
   {
@@ -82,29 +81,42 @@ class BloodStockDataService
 
     $this->applyDateFilter($query, $request);
 
-    if ($request->filled('search')) {
-      $search = $request->search;
-
-      $query->where(function ($q) use ($search) {
-        $q->where('blood_packs.blood_group', 'like', "%{$search}%")
-          ->orWhere('blood_packs.blood_component', 'like', "%{$search}%")
-          ->orWhere('blood_packs.blood_rhesus', 'like', "%{$search}%");
-      });
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    } else {
-      $query->orderByDesc('total_blood_data');
-    }
-
-    return $query->paginate($request->filled('per_page', 10));
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('blood_packs.blood_group', 'like', "%{$search}%")
+              ->orWhere('blood_packs.blood_component', 'like', "%{$search}%")
+              ->orWhere('blood_packs.blood_rhesus', 'like', "%{$search}%");
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $columns = [
+          0 => 'blood_group',
+          1 => 'blood_rhesus',
+          2 => 'blood_component',
+          3 => 'total_blood_data',
+          4 => 'updated_at',
+        ];
+        $order = $request->input('order.0.column');
+        $dir = $request->input('order.0.dir', 'asc');
+        if (isset($columns[$order])) {
+          $query->orderBy($columns[$order], $dir);
+        } else {
+          $query->orderByAsc('updated_at');
+        }
+      })
+      ->toJson();
   }
 
   // ---------- Fungsi untuk menampilkan data ke tabel stock blood detail ----------
   public function detailStockBloodDataTable(Request $request, string $id)
   {
+    $bloodStatus = $request->string('blood_status')->toString() ?: null;
     $bloodPackId = BloodPack::where('public_id', $id)->value('id');
+
     $query = BloodStock::withTrashed()
       ->select([
         'id',
@@ -125,27 +137,49 @@ class BloodStockDataService
       ->with([
         'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
         'storageRacks:id,public_id,blood_group,rack_type,name',
-      ])->where('blood_pack_id', $bloodPackId);
+      ])->where('blood_pack_id', $bloodPackId)
+      ->when($bloodStatus, fn($q) => $q->where(
+        'blood_status',
+        $bloodStatus
+      ));
 
     $this->applyDateFilter($query, $request);
 
-    // ---------- Filter berdasarkan status ----------
-    if ($request->filled('status')) {
-      $query->where('blood_status', $request->status);
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    }
-
-    $draw = (int) $request->input('draw', 1);
-
-    return [
-      'draw' => $draw,
-      'recordsTotal' => count($query->get()),
-      'recordsFiltered' => count($query->get()),
-      'data' => $query->get(),
-    ];
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('bag_number', 'like', "%{$search}%")
+              ->orWhere('bag_number_lica', 'like', "%{$search}%");
+          })->orWhereHas('bloodPacks', function ($q) use ($search) {
+            $q->where('blood_group', 'like', "%{$search}%")
+              ->orWhere('blood_rhesus', 'like', "%{$search}%")
+              ->orWhere('blood_component', 'like', "%{$search}%");
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $columns = [
+          0 => 'bag_number',
+          1 => 'bag_number_lica',
+          2 => 'blood_volume',
+          3 => 'aftap_date',
+          4 => 'process_date',
+          5 => 'expiry_date',
+          6 => 'blood_status',
+          7 => 'created_at',
+          8 => 'updated_at',
+        ];
+        $columnIndex = $request->input('order.0.column');
+        $direction = $request->input('order.0.dir', 'asc');
+        if (isset($columns[$columnIndex])) {
+          $query->orderBy($columns[$columnIndex], $direction);
+        } else {
+          $query->orderBy('updated_at', 'desc');
+        }
+      })
+      ->toJson();
   }
 
   // ---------- Fungsi untuk mengambil data stock blood by id ----------
@@ -196,18 +230,17 @@ class BloodStockDataService
   // ---------- Fungsi untuk mengambil data log berdasarkan id ----------
   public function getDataLogById(string $id)
   {
-    $cacheKey = self::CACHE_BLOOD_STOCK_LOG_KEY . ":{$id}";
+    $bloodPackId = BloodPack::where('public_id', $id)->value('id');
 
-    return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
-      $bloodPackId = BloodPack::where('public_id', $id)->value('id');
-      $bloodStockPublicIds = BloodStock::withTrashed()->where('blood_pack_id', $bloodPackId)->pluck('public_id');
-      $bloodStockLog = BloodStockLogActivity::whereIn('blood_stock_public_id', $bloodStockPublicIds)
-        ->orderBy('timestamp', 'desc')
-        ->limit(50)
-        ->get();
-
-      return $bloodStockLog;
-    });
+    return BloodStockLogActivity::whereIn(
+      'blood_stock_public_id',
+      BloodStock::withTrashed()
+        ->where('blood_pack_id', $bloodPackId)
+        ->select('public_id')
+    )
+      ->orderByDesc('timestamp')
+      ->limit(200)
+      ->get();
   }
 
   // ---------- Fungsi untuk export data ke Excel :begin ----------
@@ -245,12 +278,6 @@ class BloodStockDataService
     return Excel::download(new BloodStockExport($bloodStocks), $fileName);
   }
   // ---------- Fungsi untuk export data ke Excel :end ----------
-
-  // ---------- Clear Cache ----------
-  public function clearBloodStockCache(string $id)
-  {
-    Cache::forget(self::CACHE_BLOOD_STOCK_LOG_KEY . ":{$id}");
-  }
 
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data ----------
   protected function applyDateFilter(Builder $query, Request $request)

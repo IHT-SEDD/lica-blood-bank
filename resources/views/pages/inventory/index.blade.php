@@ -73,7 +73,7 @@
       <div class="card-body">
         {{-- Title & Icon --}}
         <div class="d-flex justify-content-between align-items-start mb-4">
-          <h5 class="card-title mb-0">{{ __('Blood Stocks Chart') }}</h5>
+          <h5 class="card-title mb-0">{{ __('Grafik Stok Darah') }}</h5>
           <div>
             <i class="fs-24 svg-sw-10 text-danger fill-danger mb-0" data-lucide="heart-pulse"></i>
           </div>
@@ -106,7 +106,7 @@
           {{-- List Stock Tab --}}
           <li class="nav-item">
             <a aria-expanded="false" class="nav-link active" data-bs-toggle="tab" href="#list-stock">
-              {{ __('List Blood Stock') }}
+              {{ __('Data Stok Darah') }}
             </a>
           </li>
         </ul>
