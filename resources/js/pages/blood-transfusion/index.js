@@ -759,6 +759,16 @@ function initBagRequestActionButtons() {
             );
         });
 
+    // Release All Blood
+    $(document)
+        .off("click", "#" + SelectorBtnReleaseAll)
+        .on("click", "#" + SelectorBtnReleaseAll, function (e) {
+            e.preventDefault();
+            doAction({
+                url: `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
+            });
+        });
+
     // Print Result
     $(document)
         .off("click", "#" + SelectorBtnPrintResult)

@@ -124,6 +124,7 @@ class HistoryOrderController extends Controller
     {
         try {
             $data = $this->dataService->getDataOrderAndLogById($id);
+            dd($data);
 
             return response()->json($data)
                 ->setEtag(md5(json_encode($data)))

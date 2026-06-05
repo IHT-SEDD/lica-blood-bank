@@ -116,30 +116,42 @@ class BloodTransfusionDetailTestService
         try {
             DB::beginTransaction();
 
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
+            $detail = BloodTransfusionDetail::withoutTrashed()->where('public_id', $detailPublicId)
                 ->with(['bloodStock'])
-                ->whereNull('deleted_at')
                 ->first();
             if (!$detail) {
                 return ['success' => false, 'message' => 'Detail record not found.'];
             }
 
             // Ambil semua test untuk detail ini
-            $tests = BloodTransfusionDetailTest::where('bt_detail_id', $detail->id)
-                ->whereNull('deleted_at')
+            $tests = BloodTransfusionDetailTest::withoutTrashed()->with(['test:id,public_id,name'])
+                ->where('bt_detail_id', $detail->id)
                 ->get();
             if ($tests->isEmpty()) {
                 return ['success' => false, 'message' => 'No tests found for this bag.'];
             }
 
+            $requiredTests = $tests->reject(function ($t) use ($detail) {
+                return
+                    strtolower($detail->component ?? '') === 'tc' &&
+                    strtolower($t->test?->name ?? '') === 'mayor';
+            });
+
             // Validasi: semua test harus sudah ada result
-            $missingResult = $tests->filter(fn($t) => empty($t->result));
+            $missingResult = $requiredTests->filter(
+                fn($t) => empty($t->result)
+            );
             if ($missingResult->isNotEmpty()) {
-                return ['success' => false, 'message' => 'All tests must have a result before completing.'];
+                return [
+                    'success' => false,
+                    'message' => 'All tests must have a result before completing.',
+                ];
             }
 
             // // Validasi: semua test harus sudah verified
-            // $missingVerified = $tests->filter(fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id));
+            // $missingVerified = $requiredTests->filter(
+            //     fn($t) => empty($t->verified_at) || empty($t->verified_by_user_id)
+            // );
             // if ($missingVerified->isNotEmpty()) {
             //     return [
             //         'success' => false,
@@ -148,7 +160,9 @@ class BloodTransfusionDetailTestService
             // }
 
             // // Validasi: semua test harus sudah validated
-            // $missingValidated = $tests->filter(fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id));
+            // $missingValidated = $requiredTests->filter(
+            //     fn($t) => empty($t->validated_at) || empty($t->validated_by_user_id)
+            // );
             // if ($missingValidated->isNotEmpty()) {
             //     return [
             //         'success' => false,
@@ -157,8 +171,13 @@ class BloodTransfusionDetailTestService
             // }
 
             // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-            $allCompatible = $tests->every(fn($t) => $t->result === ResultTest::COMPATIBLE->value);
-            $transfusionResult = $allCompatible ? 'Compatible' : 'Incompatible';
+            $allCompatible = $requiredTests->every(
+                fn($t) => $t->result === ResultTest::COMPATIBLE->value
+            );
+
+            $transfusionResult = $allCompatible
+                ? 'Compatible'
+                : 'Incompatible';
 
             $detail->update([
                 'crossmatch_result' => $transfusionResult,

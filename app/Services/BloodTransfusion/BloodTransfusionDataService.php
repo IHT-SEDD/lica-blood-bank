@@ -111,15 +111,14 @@ class BloodTransfusionDataService
             ];
         }
 
-        $detailQuery = BloodTransfusionDetail::with([
+        $detailQuery = BloodTransfusionDetail::withoutTrashed()->with([
             'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
             'bloodTransfusionDetailTests.test:id,name',
             'bloodStock:id,bag_number',
             'bloodTransfusionDetailTests.verifiedByUser:id,name',
             'bloodTransfusionDetailTests.validatedByUser:id,name',
         ])
-            ->where('blood_transfusion_id', $transfusion->id)
-            ->whereNull('deleted_at');
+            ->where('blood_transfusion_id', $transfusion->id);
 
         if ($detailPublicId) {
             $detailQuery->where('public_id', $detailPublicId);
@@ -146,6 +145,7 @@ class BloodTransfusionDataService
             foreach ($tests as $detailTest) {
                 $rows[] = [
                     'detail_test_public_id' => $detailTest->public_id,
+                    'component' => $detail->component,
                     'test_name' => $detailTest->test?->name ?? '-',
                     'bag_number' => $detail->bloodStock?->bag_number ?? '-',
                     'result_value' => $detailTest->result,

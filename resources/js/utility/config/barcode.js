@@ -4,6 +4,15 @@ const font = (size, f = 0) => `^CF${f},${size}`;
 // Cetak teks pada posisi (x, y)
 const field = (x, y, text) => `^FO${x},${y}^FD${text}^FS`;
 
+const fieldFH = (x, y, text) => `^FO${x},${y}^FH^FD${text}^FS`;
+
+const zplEncode = (char) =>
+    [...new TextEncoder().encode(char)]
+        .map((b) => `_${b.toString(16).toUpperCase().padStart(2, "0")}`)
+        .join("");
+
+const DEGREE = zplEncode("°");
+
 // Gambar garis horizontal; ubah w untuk lebar, t untuk ketebalan
 const hline = (x, y, w = 700, h = 3, t = 3) =>
     `^FO${x},${y}^GB${w},${h},${t}^FS`;
@@ -72,11 +81,20 @@ export function buildZplBarcodeBlood(item) {
         bloodInfoRow(237, "Tanggal Aftap", item.aftap_date),
         bloodInfoRow(274, "Tanggal Proses", item.process_date),
         bloodInfoRow(311, "Tanggal Expire", item.expiry_date),
-        bloodInfoRow(
-            348,
-            "Suhu Simpan",
-            `${item.storage_temp_from}-${item.storage_temp_to}°C`,
-        ),
+        // bloodInfoRow(
+        //     348,
+        //     "Suhu Simpan",
+        //     `${item.storage_temp_from}-${item.storage_temp_to}°C`,
+        // ),
+        font(25) +
+            field(50, 348, "Suhu Simpan") +
+            field(230, 348, ":") +
+            font(26) +
+            fieldFH(
+                250,
+                348,
+                `${item.storage_temp_from}-${item.storage_temp_to}${DEGREE}C`,
+            ),
         cliaRows(item.clia),
 
         // Barcode nomor kantong

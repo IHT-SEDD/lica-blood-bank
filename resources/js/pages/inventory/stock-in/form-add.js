@@ -46,7 +46,6 @@ const REQUIRED_FIELDS = [
     "blood_volume",
     "aftap_date",
     "expiry_date",
-    "process_date",
 ];
 
 function f(idx, field) {

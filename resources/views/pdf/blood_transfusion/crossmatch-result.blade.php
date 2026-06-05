@@ -44,6 +44,12 @@
       object-fit: contain;
     }
 
+    .barcode-signature {
+      height: 10.5%;
+      width: auto;
+      object-fit: contain;
+    }
+
     .title {
       font-size: 22px;
       font-weight: bold;
@@ -412,6 +418,10 @@
     </table>
 
     {{-- Signature --}}
+    @php
+    $username = strtolower($printBy ?? '');
+    $barcodePath = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
+    @endphp
     <table style="margin-top: 18px;">
       <tr>
         <td width="65%" align="center">
@@ -419,13 +429,13 @@
         <td width="35%" align="center">
           <div class="paragraph"><strong>{{ __('Indramayu') }}, {{ now()->format('d F Y') }}</strong></div>
           <div class="paragraph"><strong>{{ __('Pemeriksa') }}</strong></div>
+          @if (file_exists($barcodePath))
           <br>
+          <img class="barcode-signature" src="{{ $barcodePath }}" alt="Barcode Signature">
           <br>
-          <br>
-          <br>
-          <br>
-          <br>
-          <br>
+          @else
+          <br><br><br>
+          @endif
           <div class="heading-3">
             <strong>{{ $printBy ?? '_______________' }}</strong>
           </div>

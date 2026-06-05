@@ -174,7 +174,7 @@
                         @auth
                         @php
                         $user = auth()->user();
-                        $role = $user->load('roles')->name;
+                        $role = $user->getRoleNames()->first();
                         @endphp
 
                         {{-- Header --}}
@@ -184,8 +184,9 @@
 
                         {{-- User Info --}}
                         <div class="dropdown-item fw-semibold mb-0">
-                            <h5 class="mb-1">{{ $user->name ?? __('Please set your name'). '!' }}</h5>
+                            <h5 class="mb-1">{{ $user->username ?? __('Please set your username'). '!' }}</h5>
                             <h6 class="mb-0">{{ __('Role') }}: {{ $role ?? __('Please set your role'). '!' }}</h6>
+
                         </div>
 
                         <div class="dropdown-divider"></div>

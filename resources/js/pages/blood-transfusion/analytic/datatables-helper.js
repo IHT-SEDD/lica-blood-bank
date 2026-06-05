@@ -482,7 +482,7 @@ export function DatatableListTest() {
 
                 // 2. MASUKKAN optionsHtml DI ATAS options
                 return `
-            <select class="select-test-result fs-6 fw-semibold" data-id="${row.detail_test_public_id}" placeholder="Choose Result" ${isDisabled}>
+            <select class="select-test-result fs-6 fw-semibold" data-id="${row.detail_test_public_id}" data-test-name="${row.test_name}" data-component="${row.component}" placeholder="Choose Result" ${isDisabled}>
                 ${optionsHtml}
                 ${options}
             </select>
@@ -685,7 +685,14 @@ export function updateDoneButtonState() {
     rows.forEach((row) => {
         // Check result select — must have a non-empty value
         const resultSelect = row.querySelector(".select-test-result");
-        if (!resultSelect || !resultSelect.value) {
+        if (!resultSelect) {
+            allComplete = false;
+            return;
+        }
+        const isOptional =
+            resultSelect.dataset.testName?.toLowerCase() === "mayor" &&
+            resultSelect.dataset.component?.toLowerCase() === "tc";
+        if (!isOptional && !resultSelect.value?.trim()) {
             allComplete = false;
             return;
         }
