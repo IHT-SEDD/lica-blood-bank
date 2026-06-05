@@ -250,6 +250,7 @@ class BloodTransfusionPrintService
   private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null, ?array $paperSize = null): BinaryFileResponse
   {
     $printBy = Auth::user()->name;
+    $username = Auth::user()->username;
     $fileName = strtoupper($print) . '_' . $printData->lab_number;
 
     // print per blood bag

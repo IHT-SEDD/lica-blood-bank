@@ -433,6 +433,31 @@ class BloodTransfusionController extends Controller
         }
     }
 
+    // ---------- Release All Blood Pack ----------
+    public function releaseAllBloodPack(string $transfusionPublicID)
+    {
+        try {
+            $bloodTransfusionId = BloodTransfusion::where('public_id', $transfusionPublicID)->value('id');
+            $btDetailPublicIds = BloodTransfusionDetail::query()
+                ->with(['bloodTransfusion'])
+                ->where('blood_transfusion_id', $bloodTransfusionId)
+                ->pluck('public_id');
+            foreach ($btDetailPublicIds as $detailPublicId) {
+                $this->writeService->releaseBloodPack($detailPublicId);
+            }
+            return response()->json([
+                'message' => 'All Blood pack has been released.',
+            ]);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to release all blood pack.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
     // ---------- Approve Incompatible ----------
     public function acceptIncompatible(string $detailPublicId)
     {

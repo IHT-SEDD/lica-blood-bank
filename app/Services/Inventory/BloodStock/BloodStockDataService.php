@@ -135,7 +135,14 @@ class BloodStockDataService
       $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
     }
 
-    return $query->paginate($request->filled('per_page', 10));
+    $draw = (int) $request->input('draw', 1);
+
+    return [
+      'draw' => $draw,
+      'recordsTotal' => count($query->get()),
+      'recordsFiltered' => count($query->get()),
+      'data' => $query->get(),
+    ];
   }
 
   // ---------- Fungsi untuk mengambil data stock blood by id ----------

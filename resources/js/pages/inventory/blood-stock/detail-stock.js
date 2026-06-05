@@ -269,6 +269,7 @@ function BloodStockDataTable() {
             },
             columns: BloodStockDataTableColumns,
             useHideColumn: true,
+            serverSide: true,
             columnDefs: [
                 {
                     targets: -1,
