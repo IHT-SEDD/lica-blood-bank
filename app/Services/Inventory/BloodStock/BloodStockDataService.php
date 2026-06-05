@@ -30,7 +30,10 @@ class BloodStockDataService
         'public_id',
         'po_number',
       ])
-      ->whereIn('status', ['all_order_stock_registered', 'some_order_stock_registered']);
+      ->whereIn('status', ['all_order_stock_registered', 'some_order_stock_registered'])
+      ->whereDoesntHave('incomingBloods', function ($q) {
+        $q->where('status', 'stock_ready');
+      });
 
     // ---------- Handle search field ----------
     if (!empty($search)) {

@@ -63,4 +63,10 @@ class OrderBlood extends Model
     {
         return $this->hasMany(OrderBloodDetail::class, 'order_blood_id');
     }
+
+    // Relation to incoming_bloods
+    public function incomingBloods()
+    {
+        return $this->hasMany(IncomingBlood::class, 'po_number', 'po_number');
+    }
 }
