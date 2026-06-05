@@ -37,7 +37,6 @@ import { GlobalDataAction } from "./utility/data/action";
 import { initComponents } from "./utility/app/components";
 import { initPortletCard } from "./utility/app/portlet-card";
 import { initSidenav } from "./utility/app/sidenav";
-import { initTitleTextAnimation } from "./utility/app/title-animation";
 import { initBloodStockStatusLabel } from "./utility/app/blood-stock";
 import { initLanguageSwitcher } from "./utility/app/language-switcher";
 import { initPreloader } from "./utility/app/preloader";
@@ -67,7 +66,6 @@ class App {
         initPassword();
         initDismissible();
         initSidenav();
-        initTitleTextAnimation();
         initBloodStockStatusLabel();
         initLanguageSwitcher();
     }

@@ -305,6 +305,7 @@ function HandleSubmitChanges() {
             const noteEl = row.querySelector(`textarea[name*="note"]`);
 
             const bloodPackId = bloodPackEl?.tomselect?.getValue();
+            console.log(bloodPackId)
             const quantity = quantityEl?.value?.trim();
 
             if (!bloodPackId || !quantity) {

@@ -10,8 +10,6 @@ enum BloodStockStatus: string
     // -- used ketika kantong darah sudah digunakan atau tidak dikeluarkan/tidak di release
     // -- hold ketika kantong darah sudah sedang menunggu approval untuk di release atau tidak. Berlaku untuk hasil crossmatch incompatible
 
-
-
     // --- Inventory
     case REGISTERED = 'registered'; // Untuk kantong darah yang sudah didaftarkan tapi belum ada digudang
     case AVAILABLE = 'available'; // Untuk kantong darah yang belum digunakan sama sekali
@@ -35,15 +33,19 @@ enum BloodStockStatus: string
         return match ($this) {
             self::REGISTERED => 'Blood Registered',
             self::AVAILABLE => 'Available',
-            self::IN_USE => 'Blood Currently in Use',
-            self::HOLD => 'Blood in Hold',
-            self::ALREADY_TAKEN => 'Blood Already Taken',
-            self::TAKEN_OUT => 'Blood Has Taken Out from Storage',
-            self::EXPIRED => 'Expired',
             self::RETURNED => 'Blood Has Returned',
             self::DESTROYED => 'Blood has Destroyed',
             self::DELETED => 'Blood has Deleted',
             self::RESTORED => 'Blood has Restored',
+
+            self::IN_USE => 'Blood Currently in Use',
+            self::USED => 'Blood Currently have been used',
+
+            self::HOLD => 'Blood in Hold',
+            
+            self::ALREADY_TAKEN => 'Blood Already Taken',
+            self::TAKEN_OUT => 'Blood Has Taken Out from Storage',
+            self::EXPIRED => 'Expired',
         };
     }
 

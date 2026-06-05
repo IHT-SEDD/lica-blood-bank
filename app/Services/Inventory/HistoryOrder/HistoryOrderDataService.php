@@ -116,7 +116,7 @@ class HistoryOrderDataService
 
     return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
 
-      $order = OrderBlood::where('public_id', $id)
+      $order = OrderBlood::withoutTrashed()->where('public_id', $id)
         ->with(['orderBloodDetails', 'orderBloodDetails.bloodPacks', 'vendors', 'users.roles'])
         ->firstOrFail();
 

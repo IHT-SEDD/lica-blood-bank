@@ -286,7 +286,9 @@ class StockInAddService
         'blood_pack_id' => $bloodPackId,
         'blood_volume' => $item['blood_volume'],
         'aftap_date' => Carbon::createFromFormat('d-m-Y', $item['aftap_date'])->toDateString(),
-        'process_date' => Carbon::createFromFormat('d-m-Y', $item['process_date'])->toDateString(),
+        'process_date' => !empty($item['process_date'])
+          ? Carbon::createFromFormat('d-m-Y', $item['process_date'])->toDateString()
+          : null,
         'expiry_date' => Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->toDateString(),
         'is_hiv' => (bool) ($item['is_hiv'] ?? false),
         'is_hbsag' => (bool) ($item['is_hbsag'] ?? false),
@@ -394,7 +396,7 @@ class StockInAddService
       if (
         empty($bagNumber) || empty($bloodGroup) || empty($rhesus) ||
         empty($bloodComponent) || is_null($volume) ||
-        is_null($aftapRaw) || is_null($expiryRaw) || is_null($processRaw)
+        is_null($aftapRaw) || is_null($expiryRaw)
       ) {
         return response()->json([
           'message' => "Row {$excelRowNumber}: required field missing",
@@ -406,7 +408,9 @@ class StockInAddService
         'blood_pack_key' => strtoupper("{$bloodGroup}|{$rhesus}|{$bloodComponent}"),
         'blood_volume' => $volume,
         'aftap_date' => Carbon::parse($this->parseExcelDate($aftapRaw))->format('d-m-Y'),
-        'process_date' => Carbon::parse($this->parseExcelDate($processRaw))->format('d-m-Y'),
+        'process_date' => !empty($processRaw)
+          ? Carbon::parse($this->parseExcelDate($processRaw))->format('d-m-Y')
+          : null,
         'expiry_date' => Carbon::parse($this->parseExcelDate($expiryRaw))->format('d-m-Y'),
         'is_hiv' => $this->parseSerologicalValue($row->get(8)),
         'is_hcv' => $this->parseSerologicalValue($row->get(9)),
@@ -478,15 +482,21 @@ class StockInAddService
 
       try {
         $aftap = Carbon::createFromFormat('d-m-Y', $item['aftap_date'])->startOfDay();
-        $process = Carbon::createFromFormat('d-m-Y', $item['process_date'])->startOfDay();
+        $process = !empty($item['process_date'])
+          ? Carbon::createFromFormat('d-m-Y', $item['process_date'])->startOfDay()
+          : null;
         $expiry = Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->startOfDay();
 
         // if ($aftap->gte($today)) return "Aftap date at row {$row} must be before today";
         // if ($process->gte($today)) return "Process date at row {$row} must be before today";
-        if ($process->lt($aftap)) return "Process date at row {$row} cannot be before aftap date";
+        if ($process && $process->lt($aftap)) {
+          return "Process date at row {$row} cannot be before aftap date";
+        }
         if ($expiry->lte($today)) return "Expiry date at row {$row} must be greater than today";
         if ($expiry->lt($aftap)) return "Expiry date at row {$row} cannot be before aftap date";
-        if ($expiry->lt($process)) return "Expiry date at row {$row} cannot be before process date";
+        if ($process && $expiry->lt($process)) {
+          return "Expiry date at row {$row} cannot be before process date";
+        }
       } catch (\Exception) {
         return "Invalid date format at row {$row}";
       }
