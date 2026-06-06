@@ -20,7 +20,7 @@
   {{-- Title, Date Range Picker & Add New Blood Request :begin --}}
   <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
     {{-- Title --}}
-    <h1 class="fw-bold uppercase">{{ __('Transfusion') }}</h1>
+    <h1 class="fw-bold uppercase">{{ __('Transfusi') }}</h1>
 
     {{-- Date Range Picker & Add New Blood Request Button :begin --}}
     <div class="d-flex align-items-center justify-content-center gap-2">
@@ -32,19 +32,19 @@
           </span>
           <input class="form-control blood-transfusion-date-filter" aria-describedby="blood-transfusion-date-filter"
             data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
-            placeholder="{{ __('Choose Date Range') }}" />
+            placeholder="{{ __('Filter rentang tanggal') }}" />
         </div>
       </div>
 
       {{-- Button Add New Blood Request --}}
       <button class="btn btn-info" data-bs-target="#add_blood_request_modal" data-bs-toggle="modal" type="button">
-        {{ __('Add Blood Request') }}
+        {{ __('Tambah Permintaan') }}
       </button>
     </div>
     {{-- Date Range Picker & Add New Blood Request Button :end --}}
 
     {{-- Modal Add New Blood Request --}}
-    <x-modal-layout id="add_blood_request_modal" size="modal-lg" title="{{ __('Add New Blood Request') }}">
+    <x-modal-layout id="add_blood_request_modal" size="modal-lg" title="{{ __('Tambah Permintaan Darah Baru') }}">
       @include('pages.blood-transfusion.partials.form-add-blood-request')
     </x-modal-layout>
   </div>
@@ -55,7 +55,7 @@
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title mb-0">{{ __('List Data of') }} {{ __('Blood Request') }}</h5>
+        <h5 class="card-title mb-0">{{ __('Data Permintaan Darah') }}</h5>
         <div class="card-action d-flex align-items-center gap-2">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
@@ -74,7 +74,7 @@
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center border-dashed">
-        <h5 class="card-title text-capitalize mb-0">{{ __('Patient Details') }}</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('Data Detail Pasien') }}</h5>
 
         <div class="card-action d-flex align-items-center justify-content-center gap-2">
           {{-- Check In button --}}
@@ -93,7 +93,7 @@
           <button data-id="" class="btn btn-sm btn-success d-none fw-medium" style="font-size: 11.9px;"
             id="btn-complete-transaction" data-bs-title="Complete This Transaction" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-flag-check fs-lg me-1"></i> Complete
+            <i class="ti ti-flag-check fs-lg me-1"></i> Transaksi Selesai
           </button>
 
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
@@ -115,35 +115,35 @@
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center border-dashed">
-        <h5 class="card-title text-capitalize mb-0">{{ __('Bag Request List') }}</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('List Labu Darah') }}</h5>
 
         <div class="d-flex align-items-center justify-content-center gap-2">
           {{-- Edit blood pack button --}}
           <button class="btn btn-sm btn-soft-primary d-none fw-medium" style="font-size: 11.9px;"
             id="btn-edit-blood-pack" data-id="" data-bs-toggle="modal" data-bs-target="#edit_blood_pack_modal"
-            data-bs-title="Edit blood pack" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            data-bs-title="Edit Data Labu Darah" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-pencil fs-lg"></i>
           </button>
 
           {{-- Release all blood button --}}
           <button class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-release-all-blood-pack" data-id="" data-bs-title="Release All Blood Pack" data-bs-toggle="tooltip"
+            id="btn-release-all-blood-pack" data-id="" data-bs-title="Keluarkan Semua Labu Darah" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-heart-share fs-lg me-1"></i> Release All
+            <i class="ti ti-heart-share fs-lg me-1"></i> Keluarkan Semua
           </button>
 
           {{-- Print crossmatch result button --}}
           <button data-id="" class="btn btn-sm btn-soft-info d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-print-result" data-bs-title="Print Crossmatch Result" data-bs-toggle="tooltip"
+            id="btn-print-result" data-bs-title="Print Hasil Crossmatch" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-printer fs-lg me-1"></i> Result
+            <i class="ti ti-printer fs-lg me-1"></i> Hasil Crossmatch
           </button>
 
           {{-- Print incompatible letter button --}}
           <button data-id="" class="btn btn-sm btn-soft-primary d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-print-incompletter" data-bs-title="Print Crossmatch Result Incompatible Blood Pack"
+            id="btn-print-incompletter" data-bs-title="Print Surat Incompatible"
             data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-printer fs-4 me-1"></i> Incompatible Letter
+            <i class="ti ti-printer fs-4 me-1"></i> Surat Incompatible
           </button>
         </div>
       </div>
@@ -161,39 +161,39 @@
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center border-dashed">
-        <h5 class="card-title text-capitalize mb-0">{{ __('Test List') }}</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('List Pemeriksaan') }}</h5>
 
         <div class="d-flex justify-content-center align-items-center gap-2">
           {{-- Finish blood request button --}}
           <button data-id="" class="btn btn-sm btn-soft-success fw-medium" style="font-size: 11.9px;" id="btn-test-done"
-            data-bs-title="Finish Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-circle-check fs-4 me-1"></i> Finish
+            data-bs-title="Selesaikan Pemeriksaan Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            <i class="ti ti-circle-check fs-4 me-1"></i> Selesai Crossmatch
           </button>
 
           {{-- Hold blood pack button --}}
           <button data-id="" class="btn btn-sm btn-soft-warning d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-hold-blood-pack" data-bs-title="Hold This Blood Pack" data-bs-toggle="tooltip"
+            id="btn-hold-blood-pack" data-bs-title="Tahan Labu Darah" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-heart-pause fs-4 me-1"></i> Hold
+            <i class="ti ti-heart-pause fs-4 me-1"></i> Tahan
           </button>
 
           {{-- Release blood pack button --}}
           <button data-id="" class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-release-blood-pack" data-bs-title="Release This Blood Pack" data-bs-toggle="tooltip"
+            id="btn-release-blood-pack" data-bs-title="Keluarkan Labu Darah Ini" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-heart-up fs-4 me-1"></i> Release
+            <i class="ti ti-heart-up fs-4 me-1"></i> Keluarkan
           </button>
 
           {{-- Don't Release blood pack button --}}
           <button data-id="" class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-unrelease-blood-pack" data-bs-title="Don't Release This Blood Pack" data-bs-toggle="tooltip"
+            id="btn-unrelease-blood-pack" data-bs-title="Tidak Keluarkan Labu Darah Ini" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
-            <i class="ti ti-heart-x fs-4 me-1"></i> Don't Release
+            <i class="ti ti-heart-x fs-4 me-1"></i> Tidak Keluarkan
           </button>
 
           {{-- Approve incompatible button --}}
           <button data-id="" class="btn btn-sm btn-soft-success d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-accept-blood-pack" data-bs-title="Approve Release This Blood Pack" data-bs-toggle="tooltip"
+            id="btn-accept-blood-pack" data-bs-title="Approve Hasil Incompatible Untuk Labu Darah Ini" data-bs-toggle="tooltip"
             data-bs-trigger="hover">
             <i class="ti ti-droplet-check fs-4 me-1"></i> Approve Incompatible
           </button>

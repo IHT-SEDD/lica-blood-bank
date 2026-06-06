@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => 'History Order'])
+@extends('layouts.vertical', ['title' => 'Permintaan Darah'])
 
 @section('styles')
 @endsection
@@ -8,11 +8,11 @@
   {{-- Title & Add New Order :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Title --}}
-    <h1 class="fw-bold">{{ __('History Order') }}</h1>
+    <h1 class="fw-bold">{{ __('Riwayat Permintaan Darah') }}</h1>
 
     {{-- Button Add New Order --}}
     <a href="{{ route('inventory.history-order.new-order') }}" class="btn btn-soft-info">
-      {{ __('Add New Order') }}
+      {{ __('Buat Permintaan Baru') }}
     </a>
   </div>
   {{-- Title & Add New Order :end --}}
@@ -23,8 +23,6 @@
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">{{ __('List Data of History Order') }}</h5>
-
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Export to excel --}}
@@ -36,13 +34,13 @@
           {{-- Select Status --}}
           <div>
             <select class="form-control form-control-sm tomselect-sm" id="filter-order-status"
-              name="filter-order-status" placeholder="Filter by status..."></select>
+              name="filter-order-status" placeholder="Filter status"></select>
           </div>
 
           {{-- Select Vendor --}}
           <div>
             <select class="form-control form-control-sm tomselect-sm" id="filter-order-vendor"
-              name="filter-order-vendor" placeholder="Filter by vendor..."></select>
+              name="filter-order-vendor" placeholder="Filter PMI"></select>
           </div>
 
           {{-- Date Range Picker :begin --}}
@@ -53,7 +51,7 @@
               </span>
               <input class="form-control form-control-sm history-order-table-date-filter"
                 aria-describedby="history-order-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-                data-range-date="true" type="text" placeholder="Choose date range" />
+                data-range-date="true" type="text" placeholder="Filter rentang tanggal" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -68,14 +66,14 @@
           id="history-order-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              <th>{{ __('PO Number') }}</th>
-              <th>{{ __('Vendor') }}</th>
-              <th>{{ __('Total Qty') }}</th>
-              <th>{{ __('Blood Group') }}</th>
-              <th>{{ __('Status') }}</th>
-              <th>{{ __('Created At') }}</th>
-              <th>{{ __('Deleted At') }}</th>
-              <th>{{ __('Action') }}</th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
             </tr>
           </thead>
         </table>

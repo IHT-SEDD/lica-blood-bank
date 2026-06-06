@@ -20,13 +20,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
-use Spatie\Permission\Models\Role;
+use Yajra\DataTables\Facades\DataTables;
 
 class HistoryOrderDataService
 {
-  const CACHE_ORDER_BY_ID_KEY = "order_and_log_data_by_id";
-  const CACHE_ORDER_BY_PO_KEY = "order_and_log_data_by_PO";
-
   // ---------- Fungsi untuk menampilkan data history order ke tabel :begin ----------
   public function historyOrderTable(Request $request)
   {
@@ -41,44 +38,48 @@ class HistoryOrderDataService
     // ---------- Terapkan filter untuk tanggal pada data ----------
     $this->applyDateFilter($query, $request);
 
-    // ---------- Filter berdasarkan vendor ----------
-    if ($request->filled('vendor')) {
-      $query->whereHas('vendors', function ($q) use ($request) {
-        $q->where('public_id', $request->vendor);
-      });
-    }
-
-    // ---------- Filter berdasarkan status ----------
-    if ($request->filled('status')) {
-      $query->where('status', $request->status);
-    }
-
-    // ---------- Handle search pada kolom data ----------
-    if ($request->filled('search')) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('po_number', 'like', "%{$search}%")
-          ->orWhereHas('vendors', function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%");
-          })
-          ->orWhereHas('orderBloods.bloodPacks', function ($q) use ($search) {
-            $q->where('blood_group', 'like', "%{$search}%");
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('vendor')) {
+          $query->whereHas('vendors', function ($q) use ($request) {
+            $q->where('public_id', $request->vendor);
           });
-      });
-    }
-
-    // ---------- Urutkan data ----------
-    if ($request->filled('sort_by')) {
-      $query->orderBy(
-        $request->sort_by,
-        $request->sort_dir ?? 'asc'
-      );
-    } else {
-      $query->orderBy('po_number', 'asc');
-    }
-
-    // ---------- Tampilkan data ke tabel frontend ----------
-    return $query->paginate($request->get('per_page', 10));
+        }
+        if ($request->filled('status')) {
+          $query->where('status', $request->status);
+        }
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('po_number', 'like', "%{$search}%")
+              ->orWhereHas('vendors', function ($vendor) use ($search) {
+                $vendor->where('name', 'like', "%{$search}%");
+              })
+              ->orWhereHas('orderBloodDetails.bloodPacks', function ($bloodPack) use ($search) {
+                $bloodPack
+                  ->where('blood_group', 'like', "%{$search}%")
+                  ->orWhere('blood_rhesus', 'like', "%{$search}%")
+                  ->orWhere('blood_component', 'like', "%{$search}%");
+              });
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $columns = [
+          0 => 'po_number',
+          1 => 'status',
+          2 => 'created_at',
+          3 => 'updated_at',
+        ];
+        $orderColumn = $request->input('order.0.column');
+        $orderDir = $request->input('order.0.dir', 'asc');
+        if (isset($columns[$orderColumn])) {
+          $query->orderBy($columns[$orderColumn], $orderDir);
+        } else {
+          $query->orderBy('po_number', 'asc');
+        }
+      })
+      ->toJson();
   }
   // ---------- Fungsi untuk menampilkan data history order ke tabel :end ----------
 
@@ -112,37 +113,29 @@ class HistoryOrderDataService
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
   public function getDataOrderAndLogById(string $id)
   {
-    $cacheKey = self::CACHE_ORDER_BY_ID_KEY . ":{$id}";
+    $order = OrderBlood::withoutTrashed()->where('public_id', $id)
+      ->with(['orderBloodDetails', 'orderBloodDetails.bloodPacks', 'vendors', 'users.roles'])
+      ->firstOrFail();
+    $log = OrderLogActivity::where('po_number', $order->po_number)
+      ->orderByDesc('timestamp')
+      ->limit(200)
+      ->get();
 
-    return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($id) {
-
-      $order = OrderBlood::withoutTrashed()->where('public_id', $id)
-        ->with(['orderBloodDetails', 'orderBloodDetails.bloodPacks', 'vendors', 'users.roles'])
-        ->firstOrFail();
-
-      $log = OrderLogActivity::where('po_number', $order->po_number)
-        ->get();
-
-      return [
-        'order' => $order,
-        'log' => $log,
-      ];
-    });
+    return [
+      'order' => $order,
+      'log' => $log,
+    ];
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :begin ----------
   public function getDataOrderByPO(string $poNumber)
   {
-    $cacheKey = self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}";
+    $order = OrderBlood::where('po_number', $poNumber)
+      ->with(['orderBloodDetails', 'vendors', 'users.roles'])
+      ->firstOrFail();
 
-    return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($poNumber) {
-      $order = OrderBlood::where('po_number', $poNumber)
-        ->with(['orderBloodDetails', 'vendors', 'users.roles'])
-        ->firstOrFail();
-
-      return $order;
-    });
+    return $order;
   }
   // ---------- Fungsi untuk mengambil data order & log berdasarkan id :end ----------
 

@@ -10,10 +10,12 @@ use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionLogActivity;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
+use Yajra\DataTables\Facades\DataTables;
 
 class BloodTransfusionDataService
 {
@@ -32,69 +34,64 @@ class BloodTransfusionDataService
     }
 
     // ---------- Fungsi Tabel Blood Request ----------
-    public function bloodRequestTable(Request $request): array
+    public function bloodRequestTable(Request $request): JsonResponse
     {
-        $draw = (int) $request->input('draw', 1);
-        $searchValue = trim($request->input('search.value', ''));
-        $start = max((int) $request->input('start', 0), 0);
-        $length = (int) $request->input('length', 10);
-        $dateRange = $request->input('date_range');
-
         $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
             ->withoutTrashed();
+        $this->applyDateRangeFilter($query, $request->input('date_range'));
 
-        $this->applyDateRangeFilter($query, $dateRange);
-        $this->applySearchFilter($query, $searchValue);
-
-        $recordsTotal = BloodTransfusion::withoutTrashed()->count();
-        $recordsFiltered = $query->count();
-
-        if ($length !== -1) {
-            $query->offset($start)->limit($length);
-        }
-
-        $data = $query->orderBy('lab_number', 'asc')->get();
-
-        return [
-            'draw' => $draw,
-            'recordsTotal' => $recordsTotal,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $data->map(fn($item) => $this->mapBloodRequestRow($item)),
-        ];
+        return DataTables::eloquent($query)
+            ->filter(function ($query) use ($request) {
+                $search = trim($request->input('search.value', ''));
+                if (!empty($search)) {
+                    $this->applySearchFilter($query, $search);
+                }
+            })
+            ->order(function ($query) use ($request) {
+                $columns = [
+                    0 => 'lab_number',
+                    1 => 'patient_id',
+                    2 => 'doctor_id',
+                    3 => 'room_id',
+                    4 => 'created_at',
+                ];
+                $order = $request->input('order.0.column');
+                $dir = $request->input('order.0.dir', 'asc');
+                if (isset($columns[$order])) {
+                    $query->orderBy($columns[$order], $dir);
+                } else {
+                    $query->orderBy('lab_number', 'asc');
+                }
+            })
+            ->addColumn('row_data', function ($item) {
+                return $this->mapBloodRequestRow($item);
+            })
+            ->toJson();
     }
 
     // ---------- Fungsi Tabel List Bag Request ----------
-    public function listBagRequestTable(Request $request, string $id): array
+    public function listBagRequestTable(Request $request, string $id): JsonResponse
     {
         $draw = (int) $request->input('draw', 1);
 
         $transfusion = BloodTransfusion::where('public_id', $id)->first();
         if (!$transfusion) {
-            return [
-                'draw' => $draw,
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => [],
-            ];
+            return DataTables::of(collect())->toJson();
         }
 
-        $details = BloodTransfusionDetail::with('bloodPack')
-            ->where('blood_transfusion_id', $transfusion->id)
-            ->get();
-        $data = $details->map(fn($detail) => $this->mapBagRequestRow($detail, $transfusion));
+        $query = BloodTransfusionDetail::with('bloodPack')
+            ->where('blood_transfusion_id', $transfusion->id);
 
-        return [
-            'draw' => $draw,
-            'recordsTotal' => $details->count(),
-            'recordsFiltered' => $details->count(),
-            'data' => $data,
-        ];
+        return DataTables::eloquent($query)
+            ->addColumn('row_data', function ($detail) use ($transfusion) {
+                return $this->mapBagRequestRow($detail, $transfusion);
+            })
+            ->toJson();
     }
 
     // ---------- Fungsi Tabel List Test ----------
-    public function listTestTable(Request $request, string $id): array
+    public function listTestTable(Request $request, string $id): JsonResponse
     {
-        $draw = (int) $request->input('draw', 1);
         $detailPublicId = $request->input('detail_id');
 
         $transfusion = BloodTransfusion::where('public_id', $id)
@@ -102,46 +99,38 @@ class BloodTransfusionDataService
             ->first();
 
         if (!$transfusion) {
-            return [
-                'draw' => $draw,
-                'recordsTotal' => 0,
-                'recordsFiltered' => 0,
-                'data' => [],
-                'result_options' => ResultTest::toSelect(),
-            ];
+            return DataTables::of([])->with(['result_options' => ResultTest::toSelect()])
+                ->toJson();
         }
 
-        $detailQuery = BloodTransfusionDetail::withoutTrashed()->with([
-            'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
-            'bloodTransfusionDetailTests.test:id,name',
-            'bloodStock:id,bag_number',
-            'bloodTransfusionDetailTests.verifiedByUser:id,name',
-            'bloodTransfusionDetailTests.validatedByUser:id,name',
-        ])
+        $detailQuery = BloodTransfusionDetail::withoutTrashed()
+            ->with([
+                'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
+                'bloodTransfusionDetailTests.test:id,name',
+                'bloodStock:id,bag_number',
+                'bloodTransfusionDetailTests.verifiedByUser:id,name',
+                'bloodTransfusionDetailTests.validatedByUser:id,name',
+            ])
             ->where('blood_transfusion_id', $transfusion->id);
-
         if ($detailPublicId) {
             $detailQuery->where('public_id', $detailPublicId);
         }
 
-        $details = $detailQuery->get();
         $rows = [];
-
-        foreach ($details as $detail) {
+        foreach ($detailQuery->get() as $detail) {
             $tests = $detail->bloodTransfusionDetailTests ?? collect();
-
             if ($tests->isEmpty()) {
                 $rows[] = [
                     'detail_test_public_id' => null,
+                    'component' => $detail->component,
                     'bag_number' => '-',
                     'test_name' => '-',
                     'result_value' => null,
-                    'is_verified' => false,
-                    'is_validated' => false,
+                    'verified' => false,
+                    'validated' => false,
                 ];
                 continue;
             }
-
             foreach ($tests as $detailTest) {
                 $rows[] = [
                     'detail_test_public_id' => $detailTest->public_id,
@@ -149,21 +138,16 @@ class BloodTransfusionDataService
                     'test_name' => $detailTest->test?->name ?? '-',
                     'bag_number' => $detail->bloodStock?->bag_number ?? '-',
                     'result_value' => $detailTest->result,
-                    'verified' => !empty($detailTest->verified_at) && !empty($detailTest->verified_by_user_id),
-                    'validated' => !empty($detailTest->validated_at) && !empty($detailTest->validated_by_user_id),
+                    'verified' => !empty($detailTest->verified_at)
+                        && !empty($detailTest->verified_by_user_id),
+                    'validated' => !empty($detailTest->validated_at)
+                        && !empty($detailTest->validated_by_user_id),
                 ];
             }
         }
 
-        $total = count($rows);
-
-        return [
-            'draw' => $draw,
-            'recordsTotal' => $total,
-            'recordsFiltered' => $total,
-            'data' => $rows,
-            'result_options' => ResultTest::toSelect(),
-        ];
+        return DataTables::of($rows)->with(['result_options' => ResultTest::toSelect()])
+            ->toJson();
     }
 
     // ---------- Fungsi untuk mengambil data log berdasarkan id ----------

@@ -56,23 +56,19 @@ class BloodTransfusionController extends Controller
     // ---------- Datatable Blood Request ----------
     public function datatableBloodRequest(Request $request)
     {
-        return response()->json($this->dataService->bloodRequestTable($request));
+        return $this->dataService->bloodRequestTable($request);
     }
 
     // ---------- List Bag Request Datatable ----------
     public function datatableListBagRequest(Request $request, string $id)
     {
-        return response()->json(
-            $this->dataService->listBagRequestTable($request, $id)
-        );
+        return $this->dataService->listBagRequestTable($request, $id);
     }
 
     // ---------- Datatable List Test ----------
     public function datatableListTest(Request $request, string $id)
     {
-        return response()->json(
-            $this->dataService->listTestTable($request, $id)
-        );
+        return $this->dataService->listTestTable($request, $id);
     }
 
     // ---------- Store Blood Request ----------

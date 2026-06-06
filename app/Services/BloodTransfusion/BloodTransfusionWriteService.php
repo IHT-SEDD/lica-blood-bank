@@ -28,7 +28,7 @@ class BloodTransfusionWriteService
                     ->firstOrFail();
                 if ($transfusion->lab_number) {
                     throw new \RuntimeException(
-                        'This request has already been checked in.'
+                        'Pasien ini telah di checkin!'
                     );
                 }
 
@@ -37,7 +37,7 @@ class BloodTransfusionWriteService
                 $lock = Cache::lock('generate_lab_number', 10);
                 if (!$lock->get()) {
                     throw new \RuntimeException(
-                        'System is currently processing another request, please try again in a moment.'
+                        'Sistem sedang melakukan permintaan anda, harap menunggu!'
                     );
                 }
 
@@ -63,7 +63,7 @@ class BloodTransfusionWriteService
                         'description' => generateBloodTransfusionLogDescription(
                             BloodTransfusionLogActivityStatus::CHECKED_IN,
                             $this->generateDescription($transfusion),
-                            Auth::user()->id
+                            Auth::user()->username
                         ),
                         'created_by_user_name' => Auth::user()->name,
                         'timestamp' => now(),
@@ -97,12 +97,12 @@ class BloodTransfusionWriteService
                     ->lockForUpdate()
                     ->firstOrFail();
                 if ($transfusion->finish_at) {
-                    throw new \RuntimeException('This request has been completed');
+                    throw new \RuntimeException('Transaksi ini sudah diselesaikan!');
                 }
 
                 $lock = Cache::lock('complete_transaction', 10);
                 if (!$lock->get()) {
-                    throw new \RuntimeException('System is currently processing another request, please try again in a moment.');
+                    throw new \RuntimeException('Sistem sedang melakukan permintaan anda, harap menunggu!');
                 }
 
                 try {
@@ -119,7 +119,7 @@ class BloodTransfusionWriteService
                         'description' => generateBloodTransfusionLogDescription(
                             BloodTransfusionLogActivityStatus::COMPLETED,
                             $this->generateDescription($transfusion),
-                            Auth::user()->id
+                            Auth::user()->username
                         ),
                         'created_by_user_name' => Auth::user()->name,
                         'timestamp' => now(),
@@ -149,7 +149,7 @@ class BloodTransfusionWriteService
             DB::transaction(function () use ($detailPublicId) {
                 $detail = $this->getLockedDetail($detailPublicId);
                 if (!$detail->blood_stock_id) {
-                    throw new \RuntimeException('Blood stock not assigned to this detail.');
+                    throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::HOLD);
 
@@ -160,7 +160,8 @@ class BloodTransfusionWriteService
                     'description' => generateBloodTransfusionLogDescription(
                         BloodTransfusionLogActivityStatus::BLOOD_HOLD,
                         $this->generateDescription($detail->bloodTransfusion),
-                        Auth::user()->id
+                        $detail->bloodStock->bag_number,
+                        Auth::user()->username
                     ),
                     'created_by_user_name' => Auth::user()->name,
                     'timestamp' => now(),
@@ -189,7 +190,7 @@ class BloodTransfusionWriteService
                     ['blood_release_status', false],
                 ]);
                 if (!$detail->blood_stock_id) {
-                    throw new \RuntimeException('Blood stock not assigned to this detail.');
+                    throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
                 $detail->update(['blood_release_status' => true]);
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::TAKEN_OUT);
@@ -201,7 +202,8 @@ class BloodTransfusionWriteService
                     'description' => generateBloodTransfusionLogDescription(
                         BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
                         $this->generateDescription($detail->bloodTransfusion),
-                        Auth::user()->id
+                        $detail->bloodStock->bag_number,
+                        Auth::user()->username
                     ),
                     'created_by_user_name' => Auth::user()->name,
                     'timestamp' => now(),
@@ -230,7 +232,7 @@ class BloodTransfusionWriteService
                     ['blood_release_status', false],
                 ]);
                 if (!$detail->blood_stock_id) {
-                    throw new \RuntimeException('Blood stock not assigned to this detail.');
+                    throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::USED);
 
@@ -241,7 +243,8 @@ class BloodTransfusionWriteService
                     'description' => generateBloodTransfusionLogDescription(
                         BloodTransfusionLogActivityStatus::BLOOD_DONT_RELEASE,
                         $this->generateDescription($detail->bloodTransfusion),
-                        Auth::user()->id
+                        $detail->bloodStock->bag_number,
+                        Auth::user()->username
                     ),
                     'created_by_user_name' => Auth::user()->name,
                     'timestamp' => now(),
@@ -281,7 +284,8 @@ class BloodTransfusionWriteService
                     'description' => generateBloodTransfusionLogDescription(
                         BloodTransfusionLogActivityStatus::APPROVE_INCOMPATIBLE,
                         $this->generateDescription($detail->bloodTransfusion),
-                        Auth::user()->id
+                        Auth::user()->username,
+                        $detail->bloodStock->bag_number
                     ),
                     'created_by_user_name' => Auth::user()->name,
                     'timestamp' => now(),
@@ -326,10 +330,12 @@ class BloodTransfusionWriteService
 
                 if (!is_null($transfusion->patient->blood_group) && !is_null($transfusion->patient->blood_rhesus)) {
                     foreach ($transfusion->details as $bloodTransfusionDetail) {
-                        $bloodPack = BloodPack::where('blood_group', $transfusion->patient->blood_group)->where('blood_rhesus', $transfusion->patient->blood_rhesus)
+                        $bloodPack = BloodPack::where('blood_group', $transfusion->patient->blood_group)
+                            ->where('blood_rhesus', $transfusion->patient->blood_rhesus)
                             ->where('blood_component', $bloodTransfusionDetail->component)
                             ->first();
-                        $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)->where('blood_status', BloodStockStatus::AVAILABLE)
+                        $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)
+                            ->where('blood_status', BloodStockStatus::AVAILABLE)
                             ->where('expiry_date', '>=', $transfusion->blood_request_at)
                             ->orderBy('expiry_date', 'asc')
                             ->first();
@@ -357,7 +363,7 @@ class BloodTransfusionWriteService
                 'description' => generateBloodTransfusionLogDescription(
                     BloodTransfusionLogActivityStatus::UPDATED,
                     $this->generateDescription($transfusion),
-                    Auth::id()
+                    Auth::user()->username
                 ),
                 'created_by_user_name' => Auth::user()->name,
                 'timestamp' => now(),
@@ -397,7 +403,7 @@ class BloodTransfusionWriteService
             return [
                 'success' => true,
                 'code' => 200,
-                'data' => ['message' => 'Blood request successfully updated.', 'data' => $data,]
+                'data' => ['message' => 'Data transaksi berhasil diperbaharui', 'data' => $data,]
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -408,7 +414,7 @@ class BloodTransfusionWriteService
             return [
                 'success' => false,
                 'code' => 500,
-                'data' => ['message' => 'Failed to update blood request.', 'error' => $e->getMessage(),]
+                'data' => ['message' => 'Data transaksi gagal diperbaharui', 'error' => $e->getMessage(),]
             ];
         }
     }
@@ -417,7 +423,7 @@ class BloodTransfusionWriteService
     private function getLockedDetail(string $detailPublicId, array $conditions = []): BloodTransfusionDetail
     {
         return BloodTransfusionDetail::where('public_id', $detailPublicId)
-            ->with(['bloodTransfusion'])
+            ->with(['bloodTransfusion', 'bloodStock'])
             ->when(!empty($conditions), fn($q) => $q->where($conditions))
             ->lockForUpdate()
             ->firstOrFail();
@@ -432,9 +438,9 @@ class BloodTransfusionWriteService
     private function generateDescription(BloodTransfusion $transfusion): string
     {
         return match (true) {
-            !empty($transfusion->order_number) => 'for order number ' . $transfusion->order_number,
-            !empty($transfusion->lab_number) => 'for lab number ' . $transfusion->lab_number,
-            default => 'for patient medrec ' . $transfusion->patient->medrec,
+            !empty($transfusion->order_number) => 'dengan no. order ' . $transfusion->order_number,
+            !empty($transfusion->lab_number) => 'dengan no. lab ' . $transfusion->lab_number,
+            default => 'dengan medrec pasien ' . $transfusion->patient->medrec,
         };
     }
     private function generatePayloadLog(BloodTransfusionDetail $detail, string $actionAtField): array

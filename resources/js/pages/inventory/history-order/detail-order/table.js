@@ -30,14 +30,14 @@ export function HandleTableBlood() {
             <tr id="row_blood_data_${idx}">
                 <td>
                     <select class="form-control form-control-sm"
-                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Choose blood"></select>
+                        id="${f(idx, "blood_pack_id")}" name="${f(idx, "blood_pack_id")}" placeholder="Pilih darah"></select>
                 </td>
                 <td>
                     <input type="text" class="form-control"
-                        id="${f(idx, "quantity")}" name="${f(idx, "quantity")}" placeholder="Quantity" />
+                        id="${f(idx, "quantity")}" name="${f(idx, "quantity")}" placeholder="Jumlah darah" />
                 </td>
                 <td>
-                    <textarea autocomplete="off" class="form-control form-control-sm" id="${f(idx, "note")}" name="${f(idx, "note")}" placeholder="Note" type="text" rows="3"></textarea>
+                    <textarea autocomplete="off" class="form-control form-control-sm" id="${f(idx, "note")}" name="${f(idx, "note")}" placeholder="Catatan" type="text" rows="3"></textarea>
                 </td>
                 <td>
                     <button type="button" class="btn btn-sm btn-soft-danger delete_row_blood_data"
@@ -128,7 +128,7 @@ export function HandleTableBlood() {
         if (!btn) return;
 
         if (tableBody.querySelectorAll("tr").length <= 1) {
-            notyf.error({ message: "At least 1 row is required!" });
+            notyf.error({ message: "Minimal 1 data wajib dimiliki!" });
             return;
         }
 
@@ -176,7 +176,7 @@ export function HandleTableBlood() {
     addRowBtn.addEventListener("click", () => {
         const count = parseInt(addRowCountInput?.value);
         if (!count || count < 1) {
-            notyf.error({ message: "Fill the count row input first!" });
+            notyf.error({ message: "Isi jumlah darah yang ingin ditambah terlebih dahulu!" });
             return;
         }
         AddTableRow(count);

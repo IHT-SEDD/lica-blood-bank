@@ -12,7 +12,7 @@ window.hidePageLoading = function () {
 
 // ---------- Notyf Global Config ----------
 window.notyf = new Notyf({
-    duration: 4000,
+    duration: 6000,
     ripple: true,
     dismissible: true,
     position: {
@@ -199,7 +199,7 @@ export class GlobalRenderTimelineItem {
         const timestamp = this.formatTimestamp(
             log.timestamp ?? log.created_at,
             this.locale,
-            false
+            false,
         );
         const description = log.description ?? "-";
         const createdByUser = log.created_by_user_name ?? "-";
@@ -323,6 +323,9 @@ export class DateTimeFormatter {
     }
     static datetime24(date) {
         return this.format(date, "d M Y H:i");
+    }
+    static shortDateTime(date) {
+        return this.format(date, "d/m/y H:i");
     }
 
     // ========================

@@ -88,7 +88,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     $statusLog,
                     $request->po_number,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => $newOrderData->created_at,
             ]);
@@ -104,7 +104,7 @@ class HistoryOrderWriteService
 
             // ---------- Lempar sukses respon ke frontend ----------
             return response()->json([
-                'message' => 'New order data inserted succesfully!',
+                'message' => 'Data permintaan darah baru berhasil dibuat!',
                 'data' => $newOrderData
             ]);
         } catch (\Throwable $e) {
@@ -119,7 +119,7 @@ class HistoryOrderWriteService
 
             // ---------- Lempar error respon ke frontend ----------
             return response()->json([
-                'message' => 'New order data failed to insert!',
+                'message' => 'Data permintaan darah baru gagal dibuat!',
             ], 500);
         }
     }
@@ -158,7 +158,7 @@ class HistoryOrderWriteService
                 OrderBloodStatus::ORDER_CREATED->value,
             ];
             if (!in_array($order->status->value, $editableStatuses)) {
-                return response()->json(['message' => 'Permintaan tidak bisa diubah!'], 422);
+                return response()->json(['message' => 'Permintaan darah saat ini tidak bisa diubah!'], 422);
             }
 
             $changes = []; // Catat field yang berubah untuk log
@@ -242,7 +242,7 @@ class HistoryOrderWriteService
             // ---------- Simpan jika ada perubahan ----------
             if (empty($changes)) {
                 DB::rollBack();
-                return response()->json(['message' => 'No changes detected.'], 200);
+                return response()->json(['message' => 'Tidak ada perubahan yang dilakukan.'], 200);
             }
 
             // ---------- Reset generated PO file jika ada perubahan ----------
@@ -278,7 +278,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::ORDER_UPDATED,
                     $order->po_number,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
             ]);
@@ -290,7 +290,7 @@ class HistoryOrderWriteService
                 'changes' => $changes,
             ], 200, 'updateorder');
             return response()->json([
-                'message' => 'Order data updated successfully!',
+                'message' => 'Data permintaan darah berhasil diperbaharui!',
                 'data' => $order->fresh(['orderBloodDetails.bloodPacks', 'vendors']),
             ]);
         } catch (\Throwable $e) {
@@ -300,7 +300,7 @@ class HistoryOrderWriteService
                 'id' => $id,
                 'error' => $e->getMessage(),
             ], 500, 'updateorder');
-            return response()->json(['message' => 'Failed to update order data!'], 500);
+            return response()->json(['message' => 'Data permintaan darah gagal diperbaharui!'], 500);
         }
     }
 
@@ -435,7 +435,7 @@ class HistoryOrderWriteService
             // ---------- Validasi: file harus sudah pernah di-generate ----------
             if (!$order->po_file_path || !Storage::disk('public')->exists($order->po_file_path)) {
                 return response()->json([
-                    'message' => 'PO File not found! Please generate the PO File first.',
+                    'message' => 'File PO tidak ditemukan! Harap buat file PO terlebih dahulu.',
                 ], 404);
             }
 
@@ -456,7 +456,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::PO_FILE_DOWNLOADED,
                     $poNumber,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
                 'po_file_path' => $order->po_file_path,
@@ -487,7 +487,7 @@ class HistoryOrderWriteService
 
             // ---------- Lempar error respon ke frontend ----------
             return response()->json([
-                'message' => 'PO File failed to download!',
+                'message' => 'File PO Gagal Didownload!',
             ], 500);
         }
     }
@@ -513,7 +513,7 @@ class HistoryOrderWriteService
             // ---------- Validasi: file harus sudah pernah di-generate ----------
             if (!$order->po_file_path || !Storage::disk('public')->exists($order->po_file_path)) {
                 return response()->json([
-                    'message' => 'PO File not found! Please generate the PO File first.',
+                    'message' => 'File PO tidak ditemukan! Harap buat file PO terlebih dahulu.',
                 ], 404);
             }
 
@@ -534,7 +534,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::PO_FILE_PRINTED,
                     $poNumber,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
                 'po_file_path' => $order->po_file_path,
@@ -565,7 +565,7 @@ class HistoryOrderWriteService
 
             // ---------- Lempar error respon ke frontend ----------
             return response()->json([
-                'message' => 'PO File failed to print!',
+                'message' => 'File PO Gagal Dicetak!',
             ], 500);
         }
     }
@@ -584,9 +584,8 @@ class HistoryOrderWriteService
 
             if (!$order) {
                 DB::rollBack();
-
                 return response()->json([
-                    'message' => 'Order cannot be completed because all stock is not registered.',
+                    'message' => 'Permintaan darah tidak bisa diselesaikan, Karena semua darah belum terdaftar disistem.',
                 ], 422);
             }
 
@@ -609,7 +608,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::ORDER_DONE,
                     $poNumber,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
             ]);
@@ -623,7 +622,7 @@ class HistoryOrderWriteService
 
             // ---------- Return sebagai download ----------
             return response()->json([
-                'message' => 'Order set to done successfully!',
+                'message' => 'Permintaan darah berhasil diselesaikan!',
                 'data' => $order->fresh(['orderBloodDetails.bloodPacks', 'vendors']),
             ]);
         } catch (\Throwable $e) {
@@ -638,7 +637,7 @@ class HistoryOrderWriteService
 
             // ---------- Lempar error respon ke frontend ----------
             return response()->json([
-                'message' => 'Order failed set to done!',
+                'message' => 'Permintaan darah gagal diselesaikan!',
             ], 500);
         }
     }
@@ -664,9 +663,8 @@ class HistoryOrderWriteService
             // ---------- Validasi order ----------
             if (!$order) {
                 DB::rollBack();
-
                 return response()->json([
-                    'message' => 'Order cannot be deleted because current status is not allowed.',
+                    'message' => 'Permintaan darah saat ini tidak bisa dihapus.',
                 ], 422);
             }
 
@@ -697,7 +695,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::ORDER_DELETED,
                     $order->po_number,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
                 'deleted_at' => now(),
@@ -711,7 +709,7 @@ class HistoryOrderWriteService
             ], 200, 'deleteorder');
 
             return response()->json([
-                'message' => 'Order deleted successfully!',
+                'message' => 'Permintaan darah berhasil dihapus!',
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -722,7 +720,7 @@ class HistoryOrderWriteService
             ], 500, 'deleteorder');
 
             return response()->json([
-                'message' => 'Order failed to delete!',
+                'message' => 'Permintaan darah gagal dihapus!',
             ], 500);
         }
     }
@@ -744,7 +742,7 @@ class HistoryOrderWriteService
             if (!$order) {
                 DB::rollBack();
                 return response()->json([
-                    'message' => 'Order cannot be restored because current status is not allowed.',
+                    'message' => 'Permintaan darah saat ini tidak bisa dipulihkan.',
                 ], 422);
             }
 
@@ -775,7 +773,7 @@ class HistoryOrderWriteService
                 'description' => generateOrderLogDescription(
                     OrderLogActivityStatus::ORDER_RESTORED,
                     $order->po_number,
-                    $user->id
+                    $user->username
                 ),
                 'timestamp' => now(),
                 'deleted_at' => now(),
@@ -788,7 +786,7 @@ class HistoryOrderWriteService
                 'po_number' => $order->po_number,
             ], 200, 'restoredorder');
             return response()->json([
-                'message' => 'Order restored successfully!',
+                'message' => 'Permintaan darah berhasil dipulihkan!',
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -798,7 +796,7 @@ class HistoryOrderWriteService
                 'error' => $e->getMessage(),
             ], 500, 'restoredorder');
             return response()->json([
-                'message' => 'Order failed to restore!',
+                'message' => 'Permintaan darah gagal dipulihkan!',
             ], 500);
         }
     }
@@ -808,20 +806,5 @@ class HistoryOrderWriteService
     {
         Cache::forget(self::CACHE_ORDER_BY_ID_KEY . ":{$id}");
         Cache::forget(self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}");
-    }
-
-    private function getAvailablePoNumber(string $requestedPoNumber)
-    {
-        $poNumber = $requestedPoNumber;
-
-        while (
-            OrderBlood::withTrashed()
-            ->where('po_number', $poNumber)
-            ->exists()
-        ) {
-            $poNumber++;
-        }
-
-        return $poNumber;
     }
 }

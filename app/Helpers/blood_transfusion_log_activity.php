@@ -2,14 +2,10 @@
 
 use App\Enums\BloodTransfusionLogActivityStatus;
 
-function generateBloodTransfusionLogDescription(
- BloodTransfusionLogActivityStatus $status,
- string $bagNumber,
- string $userId
-): string {
+function generateBloodTransfusionLogDescription(BloodTransfusionLogActivityStatus $status, mixed ...$params): string
+{
  return $status->label() . ' ' . sprintf(
   $status->template(),
-  $bagNumber,
-  $userId
+  ...$params
  );
 }

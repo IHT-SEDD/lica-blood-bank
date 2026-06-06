@@ -9,11 +9,12 @@
  <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
   {{-- Button Add New Order --}}
   <a href="{{ route('inventory.history-order.index') }}" class="btn btn-soft-primary">
-   Back to history order
+   <i class="ti ti-arrow-left-dashed fs-lg align-middle flex-shrink-0 me-1"></i>
+   {{ __('Keluar') }}
   </a>
 
   {{-- Title --}}
-  <h1 class="fw-bold">Add New Order</h1>
+  <h1 class="fw-bold">Buat Permintaan Darah Baru</h1>
  </div>
  {{-- Header :end --}}
 

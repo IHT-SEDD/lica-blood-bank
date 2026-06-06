@@ -21,7 +21,7 @@
   <a href="{{ route('inventory.history-order.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.history-order.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="file-heart"></i></span>
-    <span class="menu-text">{{ __('Riwayat Permintaan Darah') }}</span>
+    <span class="menu-text">{{ __('Permintaan Darah') }}</span>
   </a>
 </li>
 
