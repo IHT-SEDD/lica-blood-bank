@@ -13,6 +13,7 @@ import {
 } from "../../../utility/ui";
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 import { TableActionHandler } from "./detail/table-action";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Filter datatable
@@ -98,16 +99,18 @@ function BloodStockDataTable() {
     const BloodStockDataTableColumns = [
         {
             data: null,
-            title: "No",
+            title: "No.",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
         },
-        { data: "bag_number", title: "Bag No." },
-        { data: "bag_number_lica", title: "Bag No. LICA" },
+        { data: "bag_number", title: "No. Labu" },
+        { data: "bag_number_lica", title: "No. Labu LICA" },
         {
             data: null,
-            title: "Blood Pack",
+            title: "Detail",
             render: (data, row) => {
                 const bloodPack = data.blood_packs;
                 return `${bloodPack.blood_group}${bloodPack.blood_rhesus} ${bloodPack.blood_component}`;
@@ -117,16 +120,18 @@ function BloodStockDataTable() {
         {
             data: null,
             title: "Status",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row) => {
                 const isDeleted = row.deleted_at !== null;
                 if (isDeleted) {
                     return `<span class="badge badge-label fw-semibold badge-soft-danger">
                         <i class="ti ti-trash align-middle me-2 fs-4"></i>
-                        Trashed
+                        Dihapus
                     </span>`;
                 }
 
-                switch (row.blood_status) {
+                switch (row.blood_status.value || row.blood_status) {
                     case "expired":
                         return `<span class="badge badge-label fw-semibold badge-soft-danger">
                             <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
@@ -136,26 +141,26 @@ function BloodStockDataTable() {
                     case "in_use":
                         return `<span class="badge badge-label fw-semibold badge-soft-info">
                             <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
-                            In Use
+                            Sedang Digunakan
                         </span>`;
                         break;
                     case "available":
                         return `<span class="badge badge-label fw-semibold badge-soft-success">
                             <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
-                            Available
+                            Tersedia
                         </span>`;
                         break;
                     case "destroyed":
                         return `<span class="badge badge-label fw-semibold badge-soft-danger">
                             <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
-                            Destroyed
+                            Dimusnahkan
                         </span>`;
                         break;
 
                     default:
                         return `<span class="badge badge-label fw-semibold badge-soft-primary">
                             <i class="ti ti-droplet align-middle me-2 fs-4"></i>
-                            ${row.blood_status}
+                            ${row.blood_status.value || row.blood_status}
                         </span>`;
                         break;
                 }
@@ -163,49 +168,51 @@ function BloodStockDataTable() {
         },
         {
             data: "expiry_date",
-            title: "Expired",
+            title: "Tgl. Expire",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "aftap_date",
-            title: "Aftap",
+            title: "Tgl. Aftap",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "process_date",
-            title: "Process",
+            title: "Tgl. Proses",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "used_at",
-            title: "Used At",
+            title: "Tgl. Digunakan",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "created_at",
-            title: "Ready At",
+            title: "Tgl. Tersedia",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "deleted_at",
-            title: "Deleted At",
+            title: "Tgl. Dihapus",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
@@ -233,19 +240,19 @@ function BloodStockDataTable() {
                      <li>
                          <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-stock-blood ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                          <i class="ti ti-recycle align-middle me-2 fs-4"></i>
-                         Restore
+                         Pulihkan
                          </button>
                      </li>
                      <li class="${isDeleted ? "" : "d-none"}">
                          <button id="permanent-delete-data-${row.public_id}" class="dropdown-item fw-medium btn-permanent-delete-stock-blood ${isDeleted ? "enabled text-danger" : "text-muted"}" data-permanent-delete-id="${row.public_id}" type="button">
                          <i class="ti ti-trash align-middle me-2 fs-4"></i>
-                         Permanent Delete
+                         Hapus Permanen
                          </button>
                      </li>
                      <li class="${isDeleted ? "d-none" : ""}">
                          <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-stock-blood ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
                          <i class="ti ti-trash align-middle me-2 fs-4"></i>
-                         Delete
+                         Hapus
                          </button>
                      </li>
                  </ul>
@@ -255,7 +262,7 @@ function BloodStockDataTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    stockBloodDataTableInstance = new GlobalAdvanceDatatable(
+    stockBloodDataTableInstance = new GlobalAdvanceYajraDatatable(
         DatatableSelector,
         {
             ajax: {
@@ -269,7 +276,6 @@ function BloodStockDataTable() {
             },
             columns: BloodStockDataTableColumns,
             useHideColumn: true,
-            serverSide: true,
             columnDefs: [
                 {
                     targets: -1,
@@ -280,6 +286,7 @@ function BloodStockDataTable() {
                     responsivePriority: 2,
                 },
             ],
+            pageLength: 50,
         },
     );
 }
@@ -303,7 +310,7 @@ async function fetchDataBloodStockLog() {
         bloodStockLogData = data;
         return data;
     } catch (err) {
-        notyf.error({ message: "Failed to fetch blood stock log data!" });
+        notyf.error({ message: "Gagal mengambil data log aktivitas!" });
         console.error(err);
     } finally {
         hidePageLoading();
@@ -328,7 +335,7 @@ function EditStorageRack() {
     new GlobalAdvanceTomselect("#edit_data_blood_stock_storage_rack", {
         valueField: "id",
         preload: true,
-        noResultsText: "Storage rack not found",
+        noResultsText: "Rak penyimpanan tidak ditemukan",
         load: function (query, callback) {
             fetch(`/utility/select/storage-rack?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())

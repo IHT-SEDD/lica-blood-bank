@@ -2,7 +2,7 @@
 <div class="col-xxl-6 col-12">
  {{-- Patient Name --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Name / Gender') }}
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Nama / JK') }}
   </div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0">
    <span id="patient_detail" data-patient-detail="name"></span>
@@ -27,13 +27,13 @@
 
  {{-- Patient Age --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Age') }}</div>
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Umur') }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0" id="patient_detail" data-patient-detail="age"></div>
  </div>
 
  {{-- Patient Blood Group --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Blood Group Rhesus')
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Goldar & Rhesus')
    }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0">
    <span id="patient_detail" data-patient-detail="blood_group"></span>
@@ -43,7 +43,7 @@
 
  {{-- Patient Address --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Address') }}</div>
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Alamat') }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0" id="patient_detail" data-patient-detail="address"></div>
  </div>
 </div>
@@ -53,13 +53,13 @@
 <div class="col-xxl-6 col-12">
  {{-- Patient Insurance --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Insurance') }}</div>
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Asuransi') }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0" id="patient_detail" data-patient-detail="insurance"></div>
  </div>
 
  {{-- Patient Room --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Room / Patient Type') }}</div>
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Ruangan / Jenis Pasien') }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0">
    <span id="patient_detail" data-patient-detail="room"></span>
    <span class="text-muted">/</span>
@@ -69,7 +69,7 @@
 
  {{-- Patient Doctor --}}
  <div class="row mb-2">
-  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Doctor') }}</div>
+  <div class="col-12 text-capitalize text-muted fw-medium my-0" style="font-size: 11.5px;">{{ __('Dokter') }}</div>
   <div class="col-12 text-capitalize fs-6 fw-semibold my-0" id="patient_detail" data-patient-detail="doctor"></div>
  </div>
 

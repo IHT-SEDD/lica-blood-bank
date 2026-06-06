@@ -12,11 +12,7 @@
   <a href="{{ route('inventory.blood-stock.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.blood-stock.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="folder-heart"></i></span>
-    <span class="menu-text">{{ __('Blood Stock') }}</span>
-    <i data-lucide="circle-alert" class="menu-icon d-none text-danger fill-danger" id="danger_stock_alert_icon"
-      data-bs-title="Some Stock in Danger Quantity" data-bs-toggle="tooltip" data-bs-trigger="hover"></i>
-    <i data-lucide="triangle-alert" class="menu-icon d-none text-warning fill-warning" id="warning_stock_alert_icon"
-      data-bs-title="Some Stock in Warning Quantity" data-bs-toggle="tooltip" data-bs-trigger="hover"></i>
+    <span class="menu-text">{{ __('Detail Stok Darah') }}</span>
   </a>
 </li>
 
@@ -25,7 +21,7 @@
   <a href="{{ route('inventory.history-order.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.history-order.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="file-heart"></i></span>
-    <span class="menu-text">{{ __('History Order') }}</span>
+    <span class="menu-text">{{ __('Permintaan Darah') }}</span>
   </a>
 </li>
 
@@ -34,7 +30,7 @@
   <a href="{{ route('inventory.stock-in.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.stock-in.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="heart-plus"></i></span>
-    <span class="menu-text">{{ __('Stock In') }}</span>
+    <span class="menu-text">{{ __('Stok Masuk') }}</span>
   </a>
 </li>
 
@@ -43,7 +39,7 @@
   <a href="{{ route('inventory.stock-out.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.stock-out.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="heart-minus"></i></span>
-    <span class="menu-text">{{ __('Stock Out') }}</span>
+    <span class="menu-text">{{ __('Stok Keluar') }}</span>
   </a>
 </li>
 
@@ -52,6 +48,6 @@
   <a href="{{ route('inventory.destroy-blood.index') }}"
     class="side-nav-link {{ request()->routeIs('inventory.destroy-blood.*') ? 'active' : '' }}">
     <span class="menu-icon"><i data-lucide="heart-off"></i></span>
-    <span class="menu-text">{{ __('Blood Destroy') }}</span>
+    <span class="menu-text">{{ __('Pemusnahan Darah') }}</span>
   </a>
 </li>

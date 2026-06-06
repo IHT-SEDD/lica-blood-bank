@@ -12,7 +12,7 @@ window.hidePageLoading = function () {
 
 // ---------- Notyf Global Config ----------
 window.notyf = new Notyf({
-    duration: 4000,
+    duration: 6000,
     ripple: true,
     dismissible: true,
     position: {
@@ -199,7 +199,7 @@ export class GlobalRenderTimelineItem {
         const timestamp = this.formatTimestamp(
             log.timestamp ?? log.created_at,
             this.locale,
-            false
+            false,
         );
         const description = log.description ?? "-";
         const createdByUser = log.created_by_user_name ?? "-";
@@ -324,6 +324,9 @@ export class DateTimeFormatter {
     static datetime24(date) {
         return this.format(date, "d M Y H:i");
     }
+    static shortDateTime(date) {
+        return this.format(date, "d/m/y H:i");
+    }
 
     // ========================
     // MONTHS
@@ -334,31 +337,31 @@ export class DateTimeFormatter {
             "Feb",
             "Mar",
             "Apr",
-            "May",
+            "Mei",
             "Jun",
             "Jul",
-            "Aug",
+            "Agu",
             "Sep",
-            "Oct",
+            "Okt",
             "Nov",
-            "Dec",
+            "Des",
         ];
         return months[index];
     }
     static getMonthLong(index) {
         const months = [
-            "January",
-            "February",
-            "March",
+            "Januari",
+            "Februari",
+            "Maret",
             "April",
-            "May",
-            "June",
-            "July",
-            "August",
+            "Mei",
+            "Juni",
+            "Juli",
+            "Agustus",
             "September",
-            "October",
+            "Oktober",
             "November",
-            "December",
+            "Desember",
         ];
         return months[index];
     }
@@ -367,18 +370,18 @@ export class DateTimeFormatter {
     // WEEKDAYS
     // ========================
     static getWeekdayShort(index) {
-        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        const days = ["Ming", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
         return days[index];
     }
     static getWeekdayLong(index) {
         const days = [
-            "Sunday",
-            "Monday",
-            "Tuesday",
-            "Wednesday",
-            "Thursday",
-            "Friday",
-            "Saturday",
+            "Minggu",
+            "Senin",
+            "Selasa",
+            "Rabu",
+            "Kamis",
+            "Jumat",
+            "Sabtu",
         ];
         return days[index];
     }

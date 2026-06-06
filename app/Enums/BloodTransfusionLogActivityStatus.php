@@ -21,38 +21,38 @@ enum BloodTransfusionLogActivityStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::REGISTERED => '(REGISTERED)',
+            self::REGISTERED => '(TERDAFTAR)',
             self::CHECKED_IN => '(CHECKED IN)',
-            self::FINISHED => '(FINISHED)',
-            self::COMPLETED => '(COMPLETED)',
-            self::DELETED => '(DELETED)',
-            self::ARCHIVED => '(ARCHIVED)',
-            self::UPDATED => '(UPDATED)',
-            self::CROSSMATCH_FINISH => '(CROSSMATCH_FINISHED)',
+            self::FINISHED => '(CROSSMATCH SELESAI)',
+            self::COMPLETED => '(TRANSAKSI SELESAI)',
+            self::DELETED => '(DIHAPUS)',
+            self::ARCHIVED => '(DIARSIP)',
+            self::UPDATED => '(DIPERBAHARUI)',
+            self::CROSSMATCH_FINISH => '(CROSSMATCH SELESAI)',
 
-            self::BLOOD_HOLD => '(BLOOD IN HOLD)',
-            self::BLOOD_RELEASE => '(BLOOD RELEASED)',
-            self::BLOOD_DONT_RELEASE => '(BLOOD NOT RELEASED)',
-            self::APPROVE_INCOMPATIBLE => '(BLOOD APPROVED INCOMPATIBLE)',
+            self::BLOOD_HOLD => '(DARAH SEDANG DITAHAN)',
+            self::BLOOD_RELEASE => '(DARAH DIKELUARKAN)',
+            self::BLOOD_DONT_RELEASE => '(DARAH TIDAK DIKELUARKAN)',
+            self::APPROVE_INCOMPATIBLE => '(INCOMPATIBLE DI APPROVE)',
         };
     }
 
     public function template(): string
     {
         return match ($this) {
-            self::REGISTERED => 'Blood Transfusion %s: Registered sucessfully by User ID %s.',
-            self::CHECKED_IN => 'Blood Transfusion %s: Checked In sucessfully by User ID %s.',
-            self::FINISHED => 'Blood Transfusion %s: Finished successfully by User ID %s.',
-            self::COMPLETED => 'Blood Transfusion %s: Completed successfully by User ID %s.',
-            self::DELETED => 'Blood Transfusion %s: Deleted successfully by User ID %s.',
-            self::ARCHIVED => 'Blood Transfusion %s: Archived successfully by User ID %s.',
-            self::UPDATED => 'Blood Transfusion %s: Data Updated successfully by User ID %s.',
-            self::CROSSMATCH_FINISH => 'Blood Transfusion %s: Crossmatch Finished successfully by User ID %s.',
+            self::REGISTERED => 'Transaksi %s: Berhasil terdaftar oleh %s.',
+            self::CHECKED_IN => 'Transaksi %s: Berhasil dicheckin/diterima oleh user dengan username %s.',
+            self::FINISHED => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',
+            self::COMPLETED => 'Transaksi %s: Transaksi telah diselesaikan oleh user dengan username %s.',
+            self::DELETED => 'Transaksi %s: Dihapus oleh user dengan username %s.',
+            self::ARCHIVED => 'Transaksi %s: Diarsip oleh user dengan username %s.',
+            self::UPDATED => 'Transaksi %s: Data berhasil diperbaharui oleh user dengan username %s.',
+            self::CROSSMATCH_FINISH => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',
 
-            self::BLOOD_HOLD => '(Blood Bag) Blood Transfusion %s: Set to Hold successfully by User ID %s.',
-            self::BLOOD_RELEASE => '(Blood Bag) Blood Transfusion %s: Released (taken_out) successfully by User ID %s.',
-            self::BLOOD_DONT_RELEASE => '(Blood Bag) Blood Transfusion %s: Not Released (used) successfully by User ID %s.',
-            self::APPROVE_INCOMPATIBLE => '(Blood Bag) Blood Transfusion %s: Approved incompatible successfully by User ID %s.',
+            self::BLOOD_HOLD => 'Transaksi %s: Darah dengan no. labu %s, status nya diubah menjadi ditahan oleh user dengan username %s',
+            self::BLOOD_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, telah dikeluarkan oleh user dengan username %s',
+            self::BLOOD_DONT_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, tidak dikeluarkan oleh user dengan username %s',
+            self::APPROVE_INCOMPATIBLE => 'Transaksi %s: Hasil incompatible disetujui oleh user dengan username %s, untuk darah dengan no. labu %s',
         };
     }
 }

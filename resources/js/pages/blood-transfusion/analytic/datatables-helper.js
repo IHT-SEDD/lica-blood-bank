@@ -1,4 +1,5 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
 
@@ -77,43 +78,50 @@ export function DatatableRequestBlood() {
     const REQUESTCOLUMNS = [
         {
             data: "blood_request_at",
+            title: "Tgl. Permintaan",
             render: (data) => {
-                const bloodRequestAt = DateTimeFormatter.dateOnly(data);
+                const bloodRequestAt = DateTimeFormatter.shortDateTime(data);
                 return `<span class="fs-6 fw-semibold">${bloodRequestAt}</span>`;
             },
         },
         {
             data: "patient.name",
+            title: "Nama",
             render: (data) => {
                 return `<span class="fs-6 fw-semibold">${data}</span>`;
             },
         },
         {
             data: "patient.medrec",
+            title: "Medrec",
             render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data}</span>`;
+                return `<span class="fs-6 fw-semibold">${data ?? ""}</span>`;
             },
         },
         {
             data: "lab_number",
+            title: "No. BDRS",
             render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data}</span>`;
+                return `<span class="fs-6 fw-semibold">${data ?? ""}</span>`;
             },
         },
         {
             data: "order_number",
+            title: "No. Order",
             render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data}</span>`;
+                return `<span class="fs-6 fw-semibold">${data ?? ""}</span>`;
             },
         },
         {
             data: "room.name",
+            title: "Ruangan",
             render: (data) => {
                 return `<span class="fs-6 fw-semibold">${data}</span>`;
             },
         },
         {
             data: null,
+            defaultContent: "",
             orderable: false,
             searchable: false,
             render: (row, data) => {
@@ -125,22 +133,22 @@ export function DatatableRequestBlood() {
                         </span>`;
                         break;
                     case "Blood Transfusion Finished":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Finished" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Crossmatch Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
                             <i class="ti ti-droplet-check"></i>
                         </span>`;
                         break;
                     case "Blood Transfusion Completed":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Finished" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
                             <i class="ti ti-shield-check"></i>
                         </span>`;
                         break;
                     case "Blood Transfusion Registered":
-                        return `<span style="font-size: 20px;" class="text-info" data-bs-title="Registered" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                        return `<span style="font-size: 20px;" class="text-info" data-bs-title="Terdaftar" data-bs-toggle="tooltip" data-bs-trigger="hover">
                                 <i class="ti ti-circle-dashed-check"></i>
                             </span>`;
                         break;
                     case "Blood Transfusion Deleted":
-                        return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Deleted" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                        return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dihapus" data-bs-toggle="tooltip" data-bs-trigger="hover">
                                 <i class="ti ti-trash"></i>
                             </span>`;
                         break;
@@ -154,32 +162,31 @@ export function DatatableRequestBlood() {
             data: null,
             orderable: false,
             searchable: false,
-            render: (data) => {
-                const hasLabNumber =
-                    data.lab_number !== null || data.lab_number !== "-";
-                const isDeleted =
-                    data.deleted_at !== null || data.deleted_at !== "-";
+            title: "Aksi",
+            render: (data, type, row) => {
+                const hasLabNumber = row.lab_number !== null;
+                const isDeleted = row.deleted_at !== null;
 
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled text-muted"}" type="button">
                             <i class="ti ti-pencil align-middle me-1 fs-4"></i>
                                 Edit
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "" : "disabled text-muted"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "disabled text-muted" : ""}" type="button">
                             <i class="ti ti-archive align-middle me-1 fs-4"></i>
-                                Archive
+                                Arsipkan
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "text-danger" : "disabled text-muted"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "disabled text-muted" : "text-danger"}" type="button">
                             <i class="ti ti-trash align-middle me-1 fs-4"></i>
-                                Delete
+                                Hapus
                             </button>
                         </li>
                     </ul>`;
@@ -187,13 +194,11 @@ export function DatatableRequestBlood() {
         },
     ];
 
-    listRequestTableInstance = new GlobalAdvanceDatatable(TABLE.request, {
-        serverSide: true,
+    listRequestTableInstance = new GlobalAdvanceYajraDatatable(TABLE.request, {
         searchDelay: 1000,
         rowSelect: true,
         ajax: {
             url: `${DATATABLE_URL}/blood-request`,
-            type: "GET",
             dataSrc: "data",
             data: (d) => {
                 d.date_range = document.querySelector(
@@ -231,23 +236,25 @@ export function DatatableListBagRequest() {
     const BAGREQUESTCOLUMNS = [
         {
             data: null,
+            title: "No. Labu",
             orderable: false,
             searchable: false,
             render: (_, __, row) => {
-                const bloodRhesusEmpty = row.blood_rhesus === "-";
-                const bloodGroupEmpty = row.blood_group === "-";
-                const stockNotAvailable = row.has_available_stock === null;
+                const rowData = row.row_data;
+                const bloodRhesusEmpty = rowData.blood_rhesus === "-";
+                const bloodGroupEmpty = rowData.blood_group === "-";
+                const stockNotAvailable = rowData.has_available_stock === null;
 
                 let message = null;
-
                 if (bloodRhesusEmpty && bloodGroupEmpty) {
-                    message = "Please Set Blood Group & Rhesus First!";
+                    message = "Pasien belum mempunyai golongan darah & rhesus!";
                 } else if (bloodRhesusEmpty) {
-                    message = "Please Set Blood Rhesus First!";
+                    message = "Pasien belum mempunyai rhesus!";
                 } else if (bloodGroupEmpty) {
-                    message = "Please Set Blood Group First!";
+                    message = "Pasien belum mempunyai golongan darah!";
                 } else if (stockNotAvailable) {
-                    message = "Blood Stock Not Available!";
+                    message =
+                        "Tidak ada labu darah yang tersedia untuk pasien ini!";
                 }
 
                 if (message) {
@@ -258,11 +265,11 @@ export function DatatableListBagRequest() {
                     window.currentTransfusionLabNumber === "-"
                         ? "disabled"
                         : "";
-                const options = row.available_stocks
+                const options = rowData.available_stocks
                     .map(
                         (stock) => `
                                     <option value="${stock.id}"
-                                        ${row.selected_stock_id == stock.id ? "selected" : ""}>
+                                        ${rowData.selected_stock_id == stock.id ? "selected" : ""}>
                                         ${stock.text}
                                     </option>
                                 `,
@@ -270,7 +277,7 @@ export function DatatableListBagRequest() {
                     .join("");
 
                 let optionsHtml =
-                    '<option value="" selected disabled>Choose Bag Number</option>' +
+                    '<option value="" selected disabled>Pilih no. labu</option>' +
                     options;
                 return `
                             <select class="select-bag-number fs-6 fw-semibold" placeholder="Choose Bag Number"
@@ -281,28 +288,30 @@ export function DatatableListBagRequest() {
             },
         },
         {
-            data: "blood_stock_status",
+            data: null,
+            title: "Status",
             render: function (_, data, row) {
-                const status = TextFormatter.format(row.blood_stock_status);
+                const rowData = row.row_data;
+                const status = TextFormatter.format(rowData.blood_stock_status);
                 switch (status) {
                     case "In Use":
                         return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heartbeat fs-4"></i> In Use
+                                <i class="ti ti-heartbeat fs-4"></i> Sedang Digunakan
                             </span>`;
                         break;
                     case "Used":
                         return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-x fs-4"></i> Not Release
+                                <i class="ti ti-heart-x fs-4"></i> Tidak Dikeluarkan
                             </span>`;
                         break;
                     case "Taken Out":
                         return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-up fs-4"></i> Released
+                                <i class="ti ti-heart-up fs-4"></i> Dikeluarkan
                             </span>`;
                         break;
                     case "Hold":
                         return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-pause fs-4"></i> Hold
+                                <i class="ti ti-heart-pause fs-4"></i> Ditahan
                             </span>`;
                         break;
                     default:
@@ -312,27 +321,31 @@ export function DatatableListBagRequest() {
             },
         },
         {
-            data: "blood_group",
+            data: null,
+            title: "Detail",
             render: function (_, __, row) {
+                const rowData = row.row_data;
                 return `
-                        <span class="text-danger fs-6 fw-semibold">${row.blood_group}</span>
-                        <span class="text-danger fs-6 fw-semibold">${row.blood_rhesus}</span>
-                        <span class="text-danger fs-6 fw-semibold">${row.blood_component}</span>
+                        <span class="text-danger fs-6 fw-semibold">${rowData.blood_pack_label}</span>
                     `;
             },
         },
         {
             data: null,
-            title: "Expiry",
             orderable: false,
+            title: "Tgl. Expire",
             searchable: false,
             render: (_, __, row) => {
-                if (!row.selected_stock_id || !row.available_stocks?.length) {
+                const rowData = row.row_data;
+                if (
+                    !rowData.selected_stock_id ||
+                    !rowData.available_stocks?.length
+                ) {
                     return '<span class="text-muted">-</span>';
                 }
 
-                const selectedStock = row.available_stocks.find(
-                    (stock) => stock.id === row.selected_stock_id,
+                const selectedStock = rowData.available_stocks.find(
+                    (stock) => stock.id === rowData.selected_stock_id,
                 );
 
                 if (!selectedStock?.expiry) {
@@ -368,12 +381,14 @@ export function DatatableListBagRequest() {
         },
         {
             data: "crossmatch_result",
+            title: "Hasil",
             render: function (_, __, row) {
                 return renderCrossmatchResult(row.crossmatch_result);
             },
         },
         {
             data: null,
+            title: "Aksi",
             orderable: false,
             searchable: false,
             render: (data) => {
@@ -382,13 +397,22 @@ export function DatatableListBagRequest() {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
-                                <i class="ti ti-printer fs-4 me-1"></i> Result
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
+                                <i class="ti ti-printer fs-4 me-1"></i> Hasil
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Barcode
+                            </button>
+                        </li>
+                        <li>
+                            <button id="btn-delete-per-blood" data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-per-blood 
+                            ${data.blood_release_status === 1 ? "disabled text-muted" : "text-danger"}" type="button">
+                            <i class="ti ti-trash align-middle me-1 fs-4"></i>
+                                Hapus
                             </button>
                         </li>
                     </ul>`;
@@ -396,26 +420,34 @@ export function DatatableListBagRequest() {
         },
     ];
 
-    listBagRequestTableInstance = new GlobalAdvanceDatatable(TABLE.bagRequest, {
-        serverSide: true,
-        removeSearch: true,
-        removePageInfo: true,
-        removePagination: true,
-        rowSelect: true,
-        ajax: (data, callback) => {
-            if (!window.currentTransfusionPublicId) {
-                return callback(emptyCallback(data.draw));
-            }
-            $.get(
-                `${DATATABLE_URL}/${window.currentTransfusionPublicId}/bag-requests`,
-                data,
-            )
-                .done(callback)
-                .fail(() => callback(emptyCallback(data.draw)));
+    listBagRequestTableInstance = new GlobalAdvanceYajraDatatable(
+        TABLE.bagRequest,
+        {
+            removeSearch: true,
+            removePageInfo: true,
+            removePagination: true,
+            rowSelect: true,
+            ajax: (data, callback) => {
+                if (!window.currentTransfusionPublicId) {
+                    return callback(emptyCallback(data.draw));
+                }
+                $.get(
+                    `${DATATABLE_URL}/${window.currentTransfusionPublicId}/bag-requests`,
+                    data,
+                )
+                    .done(callback)
+                    .fail(() => callback(emptyCallback(data.draw)));
+            },
+            columns: BAGREQUESTCOLUMNS,
+            columnDefs: [
+                {
+                    targets: 0,
+                    width: "200px",
+                },
+            ],
+            drawCallback: () => initTomSelect(".select-bag-number"),
         },
-        columns: BAGREQUESTCOLUMNS,
-        drawCallback: () => initTomSelect(".select-bag-number"),
-    });
+    );
 }
 
 // ---------- RENDER RESULT CROSSMATCH ----------
@@ -439,24 +471,27 @@ export function DatatableListTest() {
     const TESTCOLUMNS = [
         {
             data: "bag_number",
+            title: "No. Labu",
             render: function (_, data, row) {
                 return `<span class="fw-semibold uppercase" style="font-size: 11.5px;">${row.bag_number}</span>`;
             },
         },
         {
             data: "test_name",
+            title: "Test",
             render: function (_, data, row) {
                 return `<span class="fw-medium uppercase" style="font-size: 11.9px;">${row.test_name}</span>`;
             },
         },
         {
             data: "result_value",
+            title: "Hasil",
             render: (_, __, row) => {
                 if (!row.detail_test_public_id) return "-";
-
                 const isDisabled =
                     !window.currentTransfusionLabNumber ||
-                    window.currentTransfusionLabNumber === "-"
+                    window.currentTransfusionLabNumber === "-" ||
+                    row.bag_released === 1
                         ? "disabled"
                         : "";
                 // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
@@ -491,8 +526,7 @@ export function DatatableListTest() {
         },
     ];
 
-    listTestTableInstance = new GlobalAdvanceDatatable(TABLE.test, {
-        serverSide: true,
+    listTestTableInstance = new GlobalAdvanceYajraDatatable(TABLE.test, {
         removeSearch: true,
         removePageInfo: true,
         removePagination: true,
@@ -533,8 +567,7 @@ export function DatatableBloodPackModal() {
         $(TABLE.bloodPack).DataTable().destroy();
     }
 
-    new GlobalAdvanceDatatable(TABLE.bloodPack, {
-        serverSide: true,
+    new GlobalAdvanceYajraDatatable(TABLE.bloodPack, {
         removePageInfo: true,
         removePagination: true,
         removeSearch: true,

@@ -6,6 +6,7 @@ use App\Enums\BloodStockStatus;
 use App\Models\BloodStock;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\Facades\DataTables;
 
 class DashboardDataService
 {
@@ -60,10 +61,11 @@ class DashboardDataService
     //----------- Funsgi Untuk mengambil data blood stock :begin----------
     public function bloodStockTable(Request $request)
     {
-        $bloodRhesus = $request->input('blood_rhesus');
-        $bloodGroup = $request->input('blood_group');
+        $bloodRhesus = $request->string('blood_rhesus')->toString() ?: null;
+        $bloodGroup  = $request->string('blood_group')->toString() ?: null;
 
-        $query = BloodStock::withoutTrashed()
+        $query = BloodStock::query()
+            ->withoutTrashed()
             ->select([
                 'id',
                 'public_id',
@@ -75,35 +77,57 @@ class DashboardDataService
                 'blood_status',
                 'created_at',
                 'updated_at',
-            ])->with([
+            ])
+            ->with([
                 'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
-            ])->whereNotIn('blood_status', [BloodStockStatus::TAKEN_OUT, BloodStockStatus::DESTROYED]);
+            ])
+            ->whereNotIn('blood_status', [
+                BloodStockStatus::TAKEN_OUT,
+                BloodStockStatus::DESTROYED,
+            ])
+            ->when($bloodRhesus, fn($q) => $q->whereHas(
+                'bloodPacks',
+                fn($sub) =>
+                $sub->where('blood_rhesus', $bloodRhesus)
+            ))
+            ->when($bloodGroup, fn($q) => $q->whereHas(
+                'bloodPacks',
+                fn($sub) =>
+                $sub->where('blood_group', $bloodGroup)
+            ));
 
-        $query->whereHas('bloodPacks', function ($q) use ($bloodRhesus) {
-            $q->where('blood_rhesus', $bloodRhesus);
-        });
-        $query->whereHas('bloodPacks', function ($q) use ($bloodGroup) {
-            $q->where('blood_group', $bloodGroup);
-        });
+        return DataTables::eloquent($query)
+            ->filter(function ($query) use ($request) {
+                if ($request->filled('search.value')) {
+                    $search = $request->input('search.value');
+                    $query->where(function ($q) use ($search) {
+                        $q->where('bag_number', 'like', "%{$search}%")
+                            ->orWhere('bag_number_lica', 'like', "%{$search}%")
+                            ->orWhere('expiry_date', 'like', "%{$search}%");
+                    });
+                }
+            })
+            ->addColumn('blood_group', fn($row) => $row->bloodPacks?->blood_group)
+            ->addColumn('blood_rhesus', fn($row) => $row->bloodPacks?->blood_rhesus)
+            ->addColumn('blood_component', fn($row) => $row->bloodPacks?->blood_component)
+            ->editColumn('expiry_date', fn($row) => $row->expiry_date)
+            ->order(function ($query) use ($request) {
+                $columns = [
+                    0 => 'bag_number',
+                    1 => 'bag_number_lica',
+                    2 => 'blood_volume',
+                    3 => 'expiry_date',
+                    4 => 'blood_status',
+                ];
+                $order = $request->input('order.0.column');
+                $dir   = $request->input('order.0.dir', 'asc');
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('bag_number', 'like', "%{$search}%");
-                $q->orWhere('bag_number_lica', 'like', "%{$search}%");
-                $q->orWhere('expiry_date', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('sort_by')) {
-            $query->orderBy(
-                $request->sort_by,
-                $request->sort_dir ?? 'asc'
-            );
-        } else {
-            $query->orderBy('expiry_date', 'asc');
-        }
-
-        return $query->paginate($request->filled('per_page', 50));
+                if (isset($columns[$order])) {
+                    $query->orderBy($columns[$order], $dir);
+                } else {
+                    $query->orderBy('expiry_date', 'asc');
+                }
+            })
+            ->toJson();
     }
 }

@@ -18,7 +18,7 @@ enum OrderLogActivityStatus: string
     case ORDER_CANCELLED = 'order_cancelled';
     case ORDER_DELETED = 'order_deleted';
     case ORDER_RESTORED = 'order_restored';
-    
+
     case SOME_ORDER_STOCK_REGISTERED = 'some_order_stock_registered';
     case ALL_ORDER_STOCK_REGISTERED = 'all_order_stock_registered';
     case ORDER_DONE = 'done';
@@ -27,46 +27,46 @@ enum OrderLogActivityStatus: string
     {
         return match ($this) {
             self::DRAFT_CREATED => '(DRAFT)',
-            self::DRAFT_CANCELLED => '(DRAFT CANCELLED)',
+            self::DRAFT_CANCELLED => '(DRAFT BATAL)',
 
-            self::PO_FILE_GENERATED => '(PO GENERATED)',
-            self::PO_FILE_PRINTED => '(PO PRINTED)',
-            self::PO_FILE_DOWNLOADED => '(PO DOWNLOADED)',
+            self::PO_FILE_GENERATED => '(BUAT FILE PO)',
+            self::PO_FILE_PRINTED => '(CETAK FILE PO)',
+            self::PO_FILE_DOWNLOADED => '(DOWNLOAD FILE PO)',
 
-            self::ORDER_CREATED => '(ORDER CREATED)',
-            self::ORDER_UPDATED => '(ORDER UPDATED)',
-            self::ORDER_CANCELLED => '(ORDER CANCELLED)',
-            self::ORDER_EDITED => '(ORDER EDITED)',
-            self::ORDER_DELETED => '(ORDER DELETED)',
-            self::ORDER_RESTORED => '(ORDER RESTORED)',
+            self::ORDER_CREATED => '(PERMINTAAN BARU)',
+            self::ORDER_UPDATED => '(PERMINTAAN DIPERBAHARUI)',
+            self::ORDER_CANCELLED => '(PERMINTAAN BATAL)',
+            self::ORDER_EDITED => '(PERMINTAAN DIUBAH)',
+            self::ORDER_DELETED => '(PERMINTAAN DIHAPUS)',
+            self::ORDER_RESTORED => '(PERMINTAAN DIPULIHKAN)',
+            self::ORDER_DONE => '(PERMINTAAN SELESAI)',
 
-            self::SOME_ORDER_STOCK_REGISTERED => '(SOME ORDER STOCK REGISTERED)',
-            self::ALL_ORDER_STOCK_REGISTERED => '(ALL ORDER STOCK REGISTERED)',
-            self::ORDER_DONE => '(ORDER DONE)',
+            self::SOME_ORDER_STOCK_REGISTERED => '(BEBERAPA DARAH PERMINTAAN DIDAFTARKAN)',
+            self::ALL_ORDER_STOCK_REGISTERED => '(SEMUA DARAH PERMINTAAN DIDAFTARKAN)',
         };
     }
 
     public function template(): string
     {
         return match ($this) {
-            self::DRAFT_CREATED => '%s: Draft created successfully by User ID %s.',
-            self::DRAFT_CANCELLED => '%s: Draft cancelled successfully by User ID %s.',
-            self::DRAFT_DELETED => '%s: Draft deleted successfully by User ID %s.',
+            self::DRAFT_CREATED => '%s: Permintaan darah berhasil disimpan sebagai draft oleh user dengan username %s.',
+            self::DRAFT_CANCELLED => '%s: Draft permintaan darah berhasil dibatalkan oleh user dengan username %s.',
+            self::DRAFT_DELETED => '%s: Draft permintaan darah berhasil dihapus oleh user dengan username %s.',
 
-            self::PO_FILE_GENERATED => '%s: PO File generated successfully by User ID %s.',
-            self::PO_FILE_PRINTED => '%s: PO File printed by User ID %s.',
-            self::PO_FILE_DOWNLOADED => '%s: PO File downloaded by User ID %s.',
+            self::PO_FILE_GENERATED => '%s: File PO berhasil dibuat oleh user dengan username %s.',
+            self::PO_FILE_PRINTED => '%s: File PO berhasil dicetak/diprint oleh user dengan username %s.',
+            self::PO_FILE_DOWNLOADED => '%s: File PO berhasil didownload/diunduh oleh user dengan username %s.',
 
-            self::ORDER_CREATED => '%s: Order created successfully by User ID %s.',
-            self::ORDER_UPDATED => '%s: Order updated successfully by User ID %s.',
-            self::ORDER_CANCELLED => '%s: Order cancelled successfully by User ID %s.',
-            self::ORDER_EDITED => '%s: Order edited successfully by User ID %s.',
-            self::ORDER_DELETED => '%s: Order deleted successfully by User ID %s.',
-            self::ORDER_RESTORED => '%s: Order restored successfully by User ID %s.',
+            self::ORDER_CREATED => '%s: Permintaan darah baru berhasil dibuat oleh user dengan username %s.',
+            self::ORDER_UPDATED => '%s: Data permintaan darah berhasil diperbaharui oleh user dengan username %s.',
+            self::ORDER_CANCELLED => '%s: Permintaan darah berhasil dibatalkan oleh user dengan username %s.',
+            self::ORDER_EDITED => '%s: Data permintaan darah berhasil diubah oleh user dengan username %s.',
+            self::ORDER_DELETED => '%s: Permintaan darah berhasil dihapus oleh user dengan username %s.',
+            self::ORDER_RESTORED => '%s: Permintaan darah berhasil dipulihkan oleh user dengan username %s.',
+            self::ORDER_DONE => '%s: Permintaan darah berhasil diselesaikan oleh user dengan username %s.',
 
-            self::SOME_ORDER_STOCK_REGISTERED => '%s: Some Order stock are registered successfully by User ID %s.',
-            self::ALL_ORDER_STOCK_REGISTERED => '%s: All Order stock are registered successfully by User ID %s.',
-            self::ORDER_DONE => '%s: Order set to done successfully by User ID %s.',
+            self::SOME_ORDER_STOCK_REGISTERED => '%s: Beberapa darah yang tertera pada permintaan berhasil didaftarkan pada sistem oleh user dengan username %s.',
+            self::ALL_ORDER_STOCK_REGISTERED => '%s: Semua darah yang tertera pada permintaan berhasil didaftarkan pada sistem oleh user dengan username %s.',
         };
     }
 }

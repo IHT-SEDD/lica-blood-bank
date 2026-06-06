@@ -8,7 +8,7 @@
   {{-- Title :begin --}}
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1">
     {{-- Title --}}
-    <h1 class="fw-bold">{{ __('Blood Stock') }}</h1>
+    <h1 class="fw-bold">{{ __('Detail Stok Darah') }}</h1>
   </div>
   {{-- Title :end --}}
 
@@ -18,8 +18,6 @@
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">{{ __('List Data of') }} {{ __('Blood Stock') }}</h5>
-
         {{-- Filters Datatable :begin --}}
         <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 m-0">
           {{-- Export to excel --}}
@@ -36,7 +34,7 @@
               </span>
               <input class="form-control form-control-sm blood-stock-table-date-filter"
                 aria-describedby="blood-stock-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-                data-range-date="true" type="text" placeholder="{{ __('Choose Date Range') }}" />
+                data-range-date="true" type="text" placeholder="{{ __('Filter rentang tanggal') }}" />
             </div>
           </div>
           {{-- Date Range Picker :end --}}
@@ -51,12 +49,11 @@
           id="blood-stock-table">
           <thead class="thead-sm text-uppercase fs-xxs">
             <tr>
-              {{-- <th class="fs-sm" style="width: 1%;"></th> --}}
-              <th>{{ __('Blood Pack') }}</th>
-              <th>{{ __('Quantity') }}</th>
-              <th>{{ __('Status') }}</th>
-              <th>{{ __('Updated At') }}</th>
-              <th>{{ __('Action') }}</th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
+              <th></th>
             </tr>
           </thead>
         </table>
@@ -73,7 +70,7 @@
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">{{ __('Add New') }} {{ __('Blood Stock') }}</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('Tambah Stok Baru') }}</h5>
       </div>
       {{-- Card Header :end --}}
 
@@ -87,48 +84,48 @@
           </div>
           <div class="col-6 mb-2">
             <input class="btn-check" id="method_add_scan" name="method_add" type="radio" value="scan" />
-            <label class="btn btn-outline-primary w-100" for="method_add_scan">{{ __('By Scan') }}</label>
+            <label class="btn btn-outline-primary w-100" for="method_add_scan">{{ __('Scan') }}</label>
           </div>
 
           <hr />
 
           {{-- Choose Purchase Order --}}
           <div class="col-12">
-            <label class="form-label" for="select-purchase-order">{{ __('Choose') }} {{ __('Purchase Order') }}
+            <label class="form-label" for="select-purchase-order">{{ __('Nomor PO') }}
               <span class="text-danger">*</span>
             </label>
             <select class="form-control" id="select-purchase-order" name="po_number"
-              placeholder="Choose purchase order"></select>
+              placeholder="Pilih nomor PO"></select>
           </div>
 
           {{-- Note --}}
           <div class="col-lg-12">
-            <label class="form-label" for="note">Note</label>
+            <label class="form-label" for="note">Catatan</label>
             <textarea autocomplete="off" class="form-control" id="note" name="note" rows="5"
-              placeholder="Blood stock note"></textarea>
+              placeholder="Catatan penambahan stok baru"></textarea>
           </div>
 
           {{-- Choose Bag Number --}}
           <div class="col-12" id="wrap-select-bag-number">
-            <label class="form-label" for="select-bag-number">{{ __('Choose') }} {{ __('Bag Number') }}
+            <label class="form-label" for="select-bag-number">{{ __('No. Labu') }}
               <span class="text-danger">*</span>
             </label>
             <select class="form-control" id="select-bag-number" name="bag_numbers[]" multiple
-              placeholder="Choose bag number"></select>
+              placeholder="Pilih nomor labu darah"></select>
           </div>
 
           {{-- Bag Number by Scan --}}
           <div class="col-lg-12" id="wrap-textarea-bag-numbers">
-            <label class="form-label" for="bag_numbers">{{ __('Bag Number List') }}
+            <label class="form-label" for="bag_numbers">{{ __('No. Labu') }}
               <span class="text-danger">*</span>
             </label>
             <textarea autocomplete="off" class="form-control" id="bag_numbers" name="bag_numbers" rows="8"
-              placeholder="Bag number will appear here"></textarea>
+              placeholder="Nomor labu darah yang di scan"></textarea>
           </div>
 
           {{-- Submit Button --}}
           <div class="col-lg-12">
-            <button class="btn btn-soft-success" type="submit">{{ __('Add Data') }}</button>
+            <button class="btn btn-soft-success" type="submit">{{ __('Tambah Data') }}</button>
           </div>
         </form>
       </div>

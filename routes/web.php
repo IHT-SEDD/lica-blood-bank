@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
                 });
 
                 Route::prefix('{id}')->group(function () {
+                    Route::post('delete', 'deleteBloodPack')->name('delete-blood-pack');
                     Route::post('hold', 'holdBloodPack')->name('hold-blood-pack');
                     Route::post('accept-incompatible', 'acceptIncompatible')->name('accept-incompatible');
                     Route::post('release', 'releaseBloodPack')->name('release-blood-pack');

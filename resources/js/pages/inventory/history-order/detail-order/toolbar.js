@@ -107,7 +107,7 @@ export const ToolbarHandler = {
             const currentOrderData = context.getCurrentOrderData();
 
             if (!currentOrderData?.order?.po_number) {
-                notyf.error({ message: "PO Number not found!" });
+                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
             }
 
@@ -143,16 +143,18 @@ export const ToolbarHandler = {
                 window.URL.revokeObjectURL(url);
 
                 notyf.success({
-                    message: "PO File generated and downloaded successfully!",
+                    message: "File PO berhasil dibuat dan didownload!",
                 });
 
                 // Refresh data agar toolbar update
                 const data = await context.fetchDataDetailOrder();
                 context.setCurrentOrderData(data);
+                await context.refreshPageContent();
                 ToolbarState(data?.order);
             } catch (err) {
                 notyf.error({
-                    message: err.message ?? "Failed to generate PO File!",
+                    message:
+                        err.message ?? "File PO gagal dibuat dan didownload!",
                 });
                 console.error(err);
             } finally {
@@ -171,7 +173,7 @@ export const ToolbarHandler = {
             const currentOrderData = context.getCurrentOrderData();
 
             if (!currentOrderData?.order?.po_number) {
-                notyf.error({ message: "PO Number not found!" });
+                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
             }
 
@@ -193,13 +195,13 @@ export const ToolbarHandler = {
             if (!poFilePath) {
                 notyf.error({
                     message:
-                        "PO File not found! Please generate the PO File first.",
+                        "File PO tidak ditemukan! Harap membuat file PO terlebih dahulu",
                 });
                 return;
             }
 
             if (!poNumber) {
-                notyf.error({ message: "PO Number not found!" });
+                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
             }
 
@@ -228,10 +230,11 @@ export const ToolbarHandler = {
                 a.remove();
                 window.URL.revokeObjectURL(url);
 
-                notyf.success({ message: "PO File downloaded successfully!" });
+                notyf.success({ message: "File PO berhasil didownload!" });
+                await context.refreshPageContent();
             } catch (err) {
                 notyf.error({
-                    message: err.message ?? "Failed to download PO File!",
+                    message: err.message ?? "File PO gagal didownload!",
                 });
                 console.error(err);
             } finally {
@@ -254,13 +257,13 @@ export const ToolbarHandler = {
             if (!poFilePath) {
                 notyf.error({
                     message:
-                        "PO File not found! Please generate the PO File first.",
+                        "File PO tidak ditemukan! Harap membuat file PO terlebih dahulu",
                 });
                 return;
             }
 
             if (!poNumber) {
-                notyf.error({ message: "PO Number not found!" });
+                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
             }
 
@@ -298,7 +301,7 @@ export const ToolbarHandler = {
                     } catch (printErr) {
                         notyf.error({
                             message:
-                                "Failed to open print dialog. Try downloading instead.",
+                                "Gagal membuka print browser! Silakan coba mendownload file nya",
                         });
                         console.error(printErr);
                     } finally {
@@ -310,9 +313,10 @@ export const ToolbarHandler = {
                 };
 
                 document.body.appendChild(iframe);
+                await context.refreshPageContent();
             } catch (err) {
                 notyf.error({
-                    message: err.message ?? "Failed to print PO File!",
+                    message: err.message ?? "Gagal mencetak file PO!",
                 });
                 console.error(err);
             } finally {
@@ -329,9 +333,9 @@ export const ToolbarHandler = {
 
         setToDoneBtn.addEventListener("click", async () => {
             const currentOrderData = context.getCurrentOrderData();
-            
+
             if (!currentOrderData?.order?.po_number) {
-                notyf.error({ message: "PO Number not found!" });
+                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
             }
 
@@ -357,7 +361,7 @@ export const ToolbarHandler = {
                 }
 
                 notyf.success({
-                    message: "Order set to done successfully!",
+                    message: "Permintaan darah berhasil diselesaikan!",
                 });
 
                 // Refresh data agar toolbar update
@@ -366,7 +370,7 @@ export const ToolbarHandler = {
                 ToolbarState(data?.order);
             } catch (err) {
                 notyf.error({
-                    message: err.message ?? "Failed to set order done!",
+                    message: err.message ?? "Permintaan darah gagal diselesaikan!",
                 });
                 console.error(err);
             } finally {

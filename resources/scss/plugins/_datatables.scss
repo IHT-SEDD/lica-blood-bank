@@ -64,7 +64,7 @@ table.dataTable {
                 right: $table-cell-padding-x;
                 bottom: 5px;
                 color: var(--#{$prefix}secondary-color);
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: normal;
                 font-family: tabler-icons !important;
                 display: none;
@@ -110,6 +110,12 @@ table.dataTable {
             background-color: var(--#{$prefix}info-bg-subtle);
             color: inherit;
         }
+
+        > tr {
+            > td.dt-empty {
+                text-align: center;
+            }
+        }
     }
 }
 
@@ -122,6 +128,7 @@ table.dataTable {
 
     .select-item {
         margin: 0 !important;
+        font-size: 12px;
     }
 }
 
