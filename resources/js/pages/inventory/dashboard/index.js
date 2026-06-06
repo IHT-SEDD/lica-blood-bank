@@ -3,6 +3,7 @@ import {
     setBloodFilter,
     ListStockTable,
     SeeDetailBloodStockAction,
+    FilterStatus,
 } from "./datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -210,4 +211,5 @@ document.addEventListener("DOMContentLoaded", function () {
     SeeDetailBloodStockAction();
     InitCardSelection();
     PopulateBloodStat();
+    FilterStatus();
 });

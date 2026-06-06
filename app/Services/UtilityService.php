@@ -179,6 +179,9 @@ class UtilityService
       case 'blood-stock-status':
         $data = collect(\App\Enums\BloodStockStatus::toSelect());
         break;
+      case 'blood-transfusion-status':
+        $data = collect(\App\Enums\BloodTransfusionStatus::toSelect());
+        break;
       case 'dct-value':
         $data = collect(\App\Enums\DCTValue::toSelect());
         break;

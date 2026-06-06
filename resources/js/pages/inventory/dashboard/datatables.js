@@ -1,5 +1,6 @@
 import { DateTimeFormatter } from "../../../utility/ui";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { GlobalAdvanceTomselect } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let listStockTableInstance;
@@ -29,6 +30,28 @@ export function setBloodFilter(bloodGroup, bloodRhesus) {
     activeBloodGroup = bloodGroup;
     activeBloodRhesus = bloodRhesus;
     reloadTable();
+}
+
+function getFilters() {
+    const status = document.querySelector("#filter-status-darah")?.value || "";
+    return { status };
+}
+function FilterStatus() {
+    const filterStatus = new GlobalAdvanceTomselect("#filter-status-darah", {
+        valueField: "id",
+        preload: true,
+        load: function (query, callback) {
+            fetch(
+                `/utility/select/blood-stock-status?q=${encodeURIComponent(query)}`,
+            )
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+        onChange: function () {
+            reloadTable();
+        },
+    });
 }
 
 // ---------- Datatable Blood Stock ----------
@@ -104,6 +127,7 @@ function ListStockTable() {
                 }
             },
         },
+        { data: "patient_name", title: "Nama Pasien" },
         {
             data: "created_at",
             title: "Tgl. Diterima",
@@ -201,8 +225,10 @@ function ListStockTable() {
             ajax: {
                 url: ListStockTableDataURL,
                 data: (d) => {
+                    const filters = getFilters();
                     d.blood_group = activeBloodGroup;
                     d.blood_rhesus = activeBloodRhesus;
+                    d.status = filters.status;
                     return d;
                 },
             },
@@ -229,4 +255,4 @@ function SeeDetailBloodStockAction() {
     });
 }
 
-export { ListStockTable, SeeDetailBloodStockAction };
+export { ListStockTable, SeeDetailBloodStockAction, FilterStatus };

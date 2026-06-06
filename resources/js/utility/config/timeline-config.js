@@ -232,6 +232,12 @@ export const BloodTransfusionLogConfigTL = {
         title: "Labu Darah Dikeluarkan",
         tooltipTitle: "Labu darah berhasil dikeluarkan",
     },
+    blood_stock_deleted: {
+        icon: "trash",
+        colorClass: "text-danger fill-danger",
+        title: "Labu Darah Dihapus",
+        tooltipTitle: "Labu darah berhasil dihapus",
+    },
     blood_stock_not_released: {
         icon: "heart-x",
         colorClass: "text-danger fill-danger",

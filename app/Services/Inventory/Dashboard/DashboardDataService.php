@@ -79,10 +79,12 @@ class DashboardDataService
                 'updated_at',
             ])
             ->with([
-                'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component'
+                'bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+                'bloodTransfusionDetails:id,public_id,blood_stock_id,blood_transfusion_id',
+                'bloodTransfusionDetails.bloodTransfusion:id,public_id,patient_id',
+                'bloodTransfusionDetails.bloodTransfusion.patient:id,public_id,name',
             ])
             ->whereNotIn('blood_status', [
-                BloodStockStatus::TAKEN_OUT,
                 BloodStockStatus::DESTROYED,
             ])
             ->when($bloodRhesus, fn($q) => $q->whereHas(
@@ -106,10 +108,19 @@ class DashboardDataService
                             ->orWhere('expiry_date', 'like', "%{$search}%");
                     });
                 }
+                if ($request->filled('status')) {
+                    $query->where('blood_status', $request->status);
+                }
             })
             ->addColumn('blood_group', fn($row) => $row->bloodPacks?->blood_group)
             ->addColumn('blood_rhesus', fn($row) => $row->bloodPacks?->blood_rhesus)
             ->addColumn('blood_component', fn($row) => $row->bloodPacks?->blood_component)
+            ->addColumn(
+                'patient_name',
+                fn($row) =>
+                $row->bloodTransfusionDetails
+                    ->first()?->bloodTransfusion?->patient?->name
+            )
             ->editColumn('expiry_date', fn($row) => $row->expiry_date)
             ->order(function ($query) use ($request) {
                 $columns = [

@@ -1,6 +1,7 @@
 // ---------- Import Libraries ----------
 import {
     GlobalAdvanceFlatpickr,
+    GlobalAdvanceTomselect,
     GlobalDeleteDataConfirmation,
 } from "../../app";
 import {
@@ -127,6 +128,31 @@ function DateRangeFilter() {
                 listRequestTableInstance.instance.ajax.reload(null, false);
             }
         });
+}
+function FilterStatus() {
+    const filterStatus = new GlobalAdvanceTomselect(
+        "#filter-status-transaction",
+        {
+            valueField: "id",
+            preload: true,
+            load: function (query, callback) {
+                fetch(
+                    `/utility/select/blood-transfusion-status?q=${encodeURIComponent(query)}`,
+                )
+                    .then((res) => res.json())
+                    .then((json) => callback(json.results))
+                    .catch(() => callback());
+            },
+            onChange: function () {
+                if (
+                    listRequestTableInstance &&
+                    $.fn.DataTable.isDataTable("#list-request-table")
+                ) {
+                    listRequestTableInstance.instance.ajax.reload(null, false);
+                }
+            },
+        },
+    );
 }
 
 // ---------- Menampilkan detail pasien dari row yang diklik ----------
@@ -1049,6 +1075,7 @@ function PrintNota() {
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
+    FilterStatus();
 
     // Datatables
     DatatableRequestBlood();

@@ -9,6 +9,7 @@ use App\Traits\InvalidateSelectCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -109,5 +110,11 @@ class BloodStock extends Model
     public function storageRacks(): BelongsTo
     {
         return $this->belongsTo(StorageRack::class, 'storage_rack_id');
+    }
+
+    // Relation from blood_transfusion_detail
+    public function bloodTransfusionDetails(): HasMany
+    {
+        return $this->HasMany(BloodTransfusionDetail::class, 'blood_stock_id');
     }
 }

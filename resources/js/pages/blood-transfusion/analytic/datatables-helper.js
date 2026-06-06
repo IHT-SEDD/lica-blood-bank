@@ -204,6 +204,9 @@ export function DatatableRequestBlood() {
                 d.date_range = document.querySelector(
                     ".blood-transfusion-date-filter",
                 )?.value;
+                d.status = document.querySelector(
+                    "#filter-status-transaction",
+                )?.value;
             },
         },
         columns: REQUESTCOLUMNS,
