@@ -56,6 +56,13 @@
       {{-- Card Header --}}
       <div class="card-header justify-content-between align-items-center">
         <h5 class="card-title mb-0">{{ __('Data Permintaan Darah') }}</h5>
+
+        {{-- Select Status --}}
+        <div>
+          <select class="form-control form-control-sm tomselect-sm" id="filter-status-transaction" name="filter-status-transaction"
+            placeholder="Filter status transaksi"></select>
+        </div>
+        
         <div class="card-action d-flex align-items-center gap-2">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>

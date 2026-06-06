@@ -116,6 +116,14 @@
         <div class="tab-content">
           {{-- List Stock Tab Content --}}
           <div class="tab-pane show active" id="list-stock">
+            <div class="d-flex align-items-center justify-content-between mb-4">
+              {{-- Select Status --}}
+              <div>
+                <select class="form-control form-control-sm tomselect-sm" id="filter-status-darah"
+                  name="filter-status-darah" placeholder="Filter status darah"></select>
+              </div>
+            </div>
+
             {{-- Table :begin --}}
             @include('pages.inventory.sub-pages.dashboard.datatables.list-stock-table')
             {{-- Table :end --}}

@@ -238,34 +238,56 @@ class BloodTransfusionWriteService
                     ->with(['bloodTransfusion', 'bloodStock'])
                     ->lockForUpdate()
                     ->firstOrFail();
-                    
+
+                if ($detail->bloodTransfusion->status === BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED) {
+                    throw new \RuntimeException('Darah tidak bisa dihapus karena transaksi sudah diselesaikan!');
+                }
                 if (!$detail->blood_stock_id) {
                     throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
-                $detail->update(['blood_release_status' => true]);
-                $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::TAKEN_OUT);
+                if ($detail->blood_release_status === 1) {
+                    throw new \RuntimeException('Darah tidak bisa dihapus karena sudah dikeluarkan!');
+                }
+                if ($detail->bloodStock->blood_status === BloodStockStatus::HOLD) {
+                    throw new \RuntimeException('Darah tidak bisa dihapus karena sedang ditahan!');
+                }
+
+                // ---------- Tentukan status stok sebelum hapus ----------
+                $newStatus = (!empty($detail->crossmatch_result) && $detail->crossmatch_finish_at !== null)
+                    ? BloodStockStatus::USED
+                    : BloodStockStatus::AVAILABLE;
+                $this->updateBloodStockStatus($detail->blood_stock_id, $newStatus);
+
+                $payloadLog = $this->generatePayloadLog($detail, 'deleted_at');
+                $transfusion = $detail->bloodTransfusion;
+                $bagNumber = $detail->bloodStock->bag_number;
+                $description = $this->generateDescription($transfusion);
+                $username = Auth::user()->username;
+                $createdByName = Auth::user()->name;
+
+                $detail->forceDelete();
 
                 BloodTransfusionLogActivity::create([
-                    'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
-                    'payload' => $this->generatePayloadLog($detail, 'released_at'),
-                    'status' => BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
+                    'blood_transfusion_public_id' => $transfusion->public_id,
+                    'payload' => $payloadLog,
+                    'status' => BloodTransfusionLogActivityStatus::BLOOD_DELETED,
                     'description' => generateBloodTransfusionLogDescription(
-                        BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
-                        $this->generateDescription($detail->bloodTransfusion),
-                        $detail->bloodStock->bag_number,
-                        Auth::user()->username
+                        BloodTransfusionLogActivityStatus::BLOOD_DELETED,
+                        $description,
+                        $bagNumber,
+                        $username
                     ),
-                    'created_by_user_name' => Auth::user()->name,
+                    'created_by_user_name' => $createdByName,
                     'timestamp' => now(),
                 ]);
 
-                globalLogger('info', 'Blood Stock Released Successfully!', [
-                    'id' => $detail->bloodTransfusion->public_id,
-                    'payload' => $this->generatePayloadLog($detail, 'released_at'),
+                globalLogger('info', 'Blood Stock Deleted Successfully!', [
+                    'id' => $transfusion->public_id,
+                    'payload' => $payloadLog,
                 ], 200, 'bloodstockactivity');
             });
         } catch (\Exception $e) {
-            globalLogger('error', 'Blood Stock Failed to Release!', [
+            globalLogger('error', 'Blood Stock Failed to Delete!', [
                 'detail_public_id' => $detailPublicId,
                 'error' => $e->getMessage(),
             ], 500, 'bloodstockactivity');
@@ -516,7 +538,7 @@ class BloodTransfusionWriteService
                     foreach ($detail->bloodTransfusionDetailTests as $test) {
                         $key = $detail->public_id . '-' . $test->test_id;
                         $existingTests[$key] = [
-                            'result'            => $test->result,
+                            'result' => $test->result,
                             'result_by_user_id' => $test->result_by_user_id,
                         ];
                     }
@@ -550,26 +572,26 @@ class BloodTransfusionWriteService
 
                             $stock->update([
                                 'blood_status' => $newStatus,
-                                'used_at'      => null,
+                                'used_at' => null,
                             ]);
 
                             $user = Auth::user();
 
                             BloodStockLogActivity::create([
                                 'blood_stock_public_id' => $stock->public_id,
-                                'payload'               => json_encode($stock->fresh()->toArray()),
-                                'status'                => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-                                'description'           => generateBloodStockLogDescription(
+                                'payload' => json_encode($stock->fresh()->toArray()),
+                                'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+                                'description' => generateBloodStockLogDescription(
                                     BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
                                     $stock->bag_number,
                                     $user->username
                                 ),
                                 'created_by_user_name'  => $user->name,
-                                'timestamp'             => now(),
+                                'timestamp' => now(),
                             ]);
 
                             globalLogger('info', 'Blood stock returned successfully!', [
-                                'data'       => $stock,
+                                'data' => $stock,
                                 'updated_by' => $user->id,
                             ], 200, 'editbloodstock');
                         }

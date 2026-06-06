@@ -15,6 +15,7 @@ enum BloodTransfusionLogActivityStatus: string
 
     case BLOOD_HOLD = 'blood_stock_hold';
     case BLOOD_RELEASE = 'blood_stock_released';
+    case BLOOD_DELETED = 'blood_stock_deleted';
     case BLOOD_DONT_RELEASE = 'blood_stock_not_released';
     case APPROVE_INCOMPATIBLE = 'blood_stock_approved_incompatible';
 
@@ -32,6 +33,7 @@ enum BloodTransfusionLogActivityStatus: string
 
             self::BLOOD_HOLD => '(DARAH SEDANG DITAHAN)',
             self::BLOOD_RELEASE => '(DARAH DIKELUARKAN)',
+            self::BLOOD_DELETED => '(DARAH DIHAPUS)',
             self::BLOOD_DONT_RELEASE => '(DARAH TIDAK DIKELUARKAN)',
             self::APPROVE_INCOMPATIBLE => '(INCOMPATIBLE DI APPROVE)',
         };
@@ -51,6 +53,7 @@ enum BloodTransfusionLogActivityStatus: string
 
             self::BLOOD_HOLD => 'Transaksi %s: Darah dengan no. labu %s, status nya diubah menjadi ditahan oleh user dengan username %s',
             self::BLOOD_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, telah dikeluarkan oleh user dengan username %s',
+            self::BLOOD_DELETED => 'Transaksi %s: Darah dengan no. labu %s, telah dihapus oleh user dengan username %s',
             self::BLOOD_DONT_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, tidak dikeluarkan oleh user dengan username %s',
             self::APPROVE_INCOMPATIBLE => 'Transaksi %s: Hasil incompatible disetujui oleh user dengan username %s, untuk darah dengan no. labu %s',
         };

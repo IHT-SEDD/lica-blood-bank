@@ -12,10 +12,10 @@ enum BloodTransfusionStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::BLOOD_TRANSFUSION_REGISTERED => 'Blood Transfusion Registered',
-            self::BLOOD_TRANSFUSION_CHECKED_IN => 'Blood Transfusion Checked In',
-            self::BLOOD_TRANSFUSION_FINISHED => 'Blood Transfusion Finished',
-            self::BLOOD_TRANSFUSION_DELETED => 'Blood Transfusion Deleted',
+            self::BLOOD_TRANSFUSION_REGISTERED => 'Terdaftar',
+            self::BLOOD_TRANSFUSION_CHECKED_IN => 'Checkin',
+            self::BLOOD_TRANSFUSION_FINISHED => 'Selesai',
+            self::BLOOD_TRANSFUSION_DELETED => 'Dihapus',
         };
     }
 

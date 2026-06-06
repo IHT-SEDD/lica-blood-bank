@@ -46,6 +46,9 @@ class BloodTransfusionDataService
                 if (!empty($search)) {
                     $this->applySearchFilter($query, $search);
                 }
+                if ($request->filled('status')) {
+                    $query->where('status', $request->status);
+                }
             })
             ->order(function ($query) use ($request) {
                 $columns = [
