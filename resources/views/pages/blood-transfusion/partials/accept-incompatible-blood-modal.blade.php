@@ -1,12 +1,24 @@
-<x-modal-layout id="accept_incompatible_blood_modal" size="modal-md" title="{{ __('Accept Incompatible Blood') }}">
-  <div class="text-center">
-    <i class="ti ti-alert-triangle text-warning mb-3" style="font-size: 5rem;"></i>
-    <h4 class="mb-3">{{ __('Are you sure you want to accept this incompatible blood pack?') }}</h4>
-    <p class="text-muted mb-4">{{ __('This action will mark the blood transfusion as approved for incompatible blood.
-      This cannot be undone.') }}</p>
-    <div class="d-flex align-items-center justify-content-center gap-2">
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-      <button type="button" class="btn btn-warning" id="confirm_accept_incompatible">{{ __('Confirm Accept') }}</button>
+<x-static-modal-layout id="confirmation_data_approve_incompatible_modal" size=""
+  title="Konfirmasi Approve Incompatible">
+  <h4 class="fw-semibold">Apakah kamu yakin ingin
+    <span class="text-lowercase">approve hasil incompatible</span> untuk data ini?
+  </h4>
+  <p class="m-0">Klik
+    <span class="badge badge-label badge-soft-danger">Approve</span>
+    jika kamu ingin untuk <span class="text-lowercase">approve hasil incompatible</span> dan klik
+    <span class="badge badge-label badge-soft-info">Batalkan</span> jika kamu ingin membatalkannya
+  </p>
+
+  <hr />
+
+  <div class="d-flex align-items-center justify-content-end mt-2 gap-2">
+    {{-- Cancel Button --}}
+    <div>
+      <button class="btn btn-info" data-bs-dismiss="modal" type="button">Batalkan</button>
+    </div>
+    {{-- Confirm Button --}}
+    <div>
+      <button class="btn btn-danger" id="confirm_action" type="submit">Approve</button>
     </div>
   </div>
-</x-modal-layout>
+</x-static-modal-layout>

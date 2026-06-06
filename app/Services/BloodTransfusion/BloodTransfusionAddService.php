@@ -108,7 +108,7 @@ class BloodTransfusionAddService
                 'description' => generateBloodTransfusionLogDescription(
                     BloodTransfusionLogActivityStatus::REGISTERED,
                     $description,
-                    Auth::user()->id
+                    Auth::user()->username
                 ),
                 'created_by_user_name' => Auth::user()->name,
                 'timestamp' => now(),
@@ -123,7 +123,7 @@ class BloodTransfusionAddService
             return [
                 'success' => true,
                 'code' => 201,
-                'data' => ['message' => 'Blood request successfully created.', 'public_id' => $transfusion->public_id, 'patient_name' => $patient->name,]
+                'data' => ['message' => 'Transaksi permintaan darah berhasil dibuat', 'public_id' => $transfusion->public_id, 'patient_name' => $patient->name,]
             ];
         } catch (\Exception $e) {
             DB::rollBack();
@@ -134,7 +134,7 @@ class BloodTransfusionAddService
             return [
                 'success' => false,
                 'code' => 500,
-                'data' => ['message' => 'Failed to create blood request.', 'error' => $e->getMessage(),]
+                'data' => ['message' => 'Transaksi permintaan darah gagal dibuat', 'error' => $e->getMessage(),]
             ];
         }
     }

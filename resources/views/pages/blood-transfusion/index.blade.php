@@ -127,8 +127,8 @@
 
           {{-- Release all blood button --}}
           <button class="btn btn-sm btn-soft-danger d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-release-all-blood-pack" data-id="" data-bs-title="Keluarkan Semua Labu Darah" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
+            id="btn-release-all-blood-pack" data-id="" data-bs-title="Keluarkan Semua Labu Darah"
+            data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-share fs-lg me-1"></i> Keluarkan Semua
           </button>
 
@@ -141,8 +141,8 @@
 
           {{-- Print incompatible letter button --}}
           <button data-id="" class="btn btn-sm btn-soft-primary d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-print-incompletter" data-bs-title="Print Surat Incompatible"
-            data-bs-toggle="tooltip" data-bs-trigger="hover">
+            id="btn-print-incompletter" data-bs-title="Print Surat Incompatible" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
             <i class="ti ti-printer fs-4 me-1"></i> Surat Incompatible
           </button>
         </div>
@@ -172,8 +172,7 @@
 
           {{-- Hold blood pack button --}}
           <button data-id="" class="btn btn-sm btn-soft-warning d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-hold-blood-pack" data-bs-title="Tahan Labu Darah" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
+            id="btn-hold-blood-pack" data-bs-title="Tahan Labu Darah" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-heart-pause fs-4 me-1"></i> Tahan
           </button>
 
@@ -193,8 +192,8 @@
 
           {{-- Approve incompatible button --}}
           <button data-id="" class="btn btn-sm btn-soft-success d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-accept-blood-pack" data-bs-title="Approve Hasil Incompatible Untuk Labu Darah Ini" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
+            id="btn-accept-blood-pack" data-bs-title="Approve Hasil Incompatible Untuk Labu Darah Ini"
+            data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-droplet-check fs-4 me-1"></i> Approve Incompatible
           </button>
         </div>
@@ -220,7 +219,7 @@
       </div>
 
       {{-- Card Body :begin --}}
-      <div class="card-body blood-transfusion-log-data-container">
+      <div class="card-body blood-transfusion-log-data-container overflow-auto" style="max-height: 500px;">
         <div class="timeline timeline-icon-bordered timeline-blood-transfusion-log">
           {{-- Populate by JS --}}
         </div>
@@ -251,9 +250,9 @@
 </div>
 
 @include('pages.blood-transfusion.partials.edit-data-blood-request-modal')
-@include('pages.blood-transfusion.partials.delete-data-blood-request-modal')
-@include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
 @include('pages.blood-transfusion.partials.edit-blood-pack-modal')
+@include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
+@include('pages.blood-transfusion.partials.delete-blood-modal')
 @endsection
 
 @section('scripts')
@@ -263,7 +262,6 @@
 'resources/js/pages/blood-transfusion/index.js',
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',
 'resources/js/pages/blood-transfusion/form-add.js',
-// 'resources/js/pages/blood-transfusion/form-edit.js',
 'resources/js/pages/form-wizard.js'
 ])
 @endsection

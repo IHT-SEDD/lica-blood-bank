@@ -10,6 +10,7 @@ enum BloodStockLogActivityStatus: string
     case BLOOD_STOCK_PERMANENT_DELETED = 'blood_stock_permanent_deleted';
     case BLOOD_STOCK_UPDATED = 'blood_stock_updated';
     case BLOOD_STOCK_RESTORED = 'blood_stock_restored';
+    case BLOOD_STOCK_RETURNED = 'blood_stock_returned';
 
     case BLOOD_STOCK_IN_USE = 'blood_stock_in_use';
     case BLOOD_STOCK_TAKEN_OUT = 'blood_stock_taken_out';
@@ -26,6 +27,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_PERMANENT_DELETED => '(DIHAPUS PERMANEN)',
             self::BLOOD_STOCK_UPDATED => '(DIPERBAHARUI)',
             self::BLOOD_STOCK_RESTORED => '(DIPULIHKAN)',
+            self::BLOOD_STOCK_RETURNED => '(DIKEMBALIKAN)',
 
             self::BLOOD_STOCK_IN_USE => '(SEDANG DIGUNAKAN)',
             self::BLOOD_STOCK_TAKEN_OUT => '(DIKELUARKAN)',
@@ -44,6 +46,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_PERMANENT_DELETED => 'Stok Darah %s: Telah dihapus permanen oleh user dengan username %s.',
             self::BLOOD_STOCK_UPDATED => 'Stok Darah %s: Sukses diperbaharui datanya oleh user dengan username %s.',
             self::BLOOD_STOCK_RESTORED => 'Stok Darah %s: Sukses dipulihkan oleh user dengan username %s.',
+            self::BLOOD_STOCK_RETURNED => 'Stok Darah %s: Sukses dikembalikan ke kulkas oleh user dengan username %s.',
 
             self::BLOOD_STOCK_IN_USE => 'Stok Darah %s: Darah sedang digunakan pada pasien dengan nama %s.',
             self::BLOOD_STOCK_TAKEN_OUT => 'Stok Darah %s: Taken out, %s. Successfully logged by User ID %s.',

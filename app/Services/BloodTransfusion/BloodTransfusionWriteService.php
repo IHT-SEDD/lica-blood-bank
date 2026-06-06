@@ -2,14 +2,20 @@
 
 namespace App\Services\BloodTransfusion;
 
+use App\Enums\BloodComponent;
+use App\Enums\BloodStockLogActivityStatus;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\BloodTransfusionStatus;
+use App\Http\Requests\BloodTransfusion\UpdateBloodPacksRequest;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
+use App\Models\BloodStockLogActivity;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
+use App\Models\BloodTransfusionDetailTest;
 use App\Models\BloodTransfusionLogActivity;
+use App\Models\Package;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -189,6 +195,50 @@ class BloodTransfusionWriteService
                 $detail = $this->getLockedDetail($detailPublicId, [
                     ['blood_release_status', false],
                 ]);
+                if (!$detail->blood_stock_id) {
+                    throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
+                }
+                $detail->update(['blood_release_status' => true]);
+                $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::TAKEN_OUT);
+
+                BloodTransfusionLogActivity::create([
+                    'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
+                    'payload' => $this->generatePayloadLog($detail, 'released_at'),
+                    'status' => BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
+                    'description' => generateBloodTransfusionLogDescription(
+                        BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
+                        $this->generateDescription($detail->bloodTransfusion),
+                        $detail->bloodStock->bag_number,
+                        Auth::user()->username
+                    ),
+                    'created_by_user_name' => Auth::user()->name,
+                    'timestamp' => now(),
+                ]);
+
+                globalLogger('info', 'Blood Stock Released Successfully!', [
+                    'id' => $detail->bloodTransfusion->public_id,
+                    'payload' => $this->generatePayloadLog($detail, 'released_at'),
+                ], 200, 'bloodstockactivity');
+            });
+        } catch (\Exception $e) {
+            globalLogger('error', 'Blood Stock Failed to Release!', [
+                'detail_public_id' => $detailPublicId,
+                'error' => $e->getMessage(),
+            ], 500, 'bloodstockactivity');
+            throw $e;
+        }
+    }
+
+    // ---------- Fungsi Delete Blood Pack ----------
+    public function deleteBloodPack(string $detailPublicId): void
+    {
+        try {
+            DB::transaction(function () use ($detailPublicId) {
+                $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
+                    ->with(['bloodTransfusion', 'bloodStock'])
+                    ->lockForUpdate()
+                    ->firstOrFail();
+                    
                 if (!$detail->blood_stock_id) {
                     throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
@@ -415,6 +465,221 @@ class BloodTransfusionWriteService
                 'success' => false,
                 'code' => 500,
                 'data' => ['message' => 'Data transaksi gagal diperbaharui', 'error' => $e->getMessage(),]
+            ];
+        }
+    }
+
+    // ---------- Fungsi Update Data Darah ---------- 
+    public function updateBloodPacks(UpdateBloodPacksRequest $request, string $id): array
+    {
+        try {
+            $transfusion = BloodTransfusion::with(['patient'])->where('public_id', $id)->firstOrFail();
+
+            DB::transaction(function () use ($transfusion, $request) {
+                $selected_blood_components = $request->input('blood_packs');
+
+                // ---------- Validasi awal sebelum proses apapun ----------
+                foreach ($selected_blood_components as $component) {
+                    if (!BloodComponent::getById($component['component_id'])) {
+                        throw new \RuntimeException(
+                            "Komponen darah '{$component['component_id']}' tidak ditemukan."
+                        );
+                    }
+
+                    // ---------- Cek package hanya untuk komponen baru (tidak punya public_id) ----------
+                    $isNewComponent = empty($component['public_id']);
+                    if ($isNewComponent) {
+                        $packageExists = Package::where('is_active', 1)
+                            ->where('blood_component', $component['component_id'])
+                            ->exists();
+
+                        if (!$packageExists) {
+                            throw new \RuntimeException(
+                                "Paket pemeriksaan untuk komponen darah '{$component['component_id']}' tidak ditemukan atau tidak aktif."
+                            );
+                        }
+                    }
+                }
+
+                // ---------- Ambil existing details ----------
+                $existingDetails = BloodTransfusionDetail::with([
+                    'bloodTransfusionDetailTests:id,public_id,bt_detail_id,test_id,result,result_by_user_id',
+                ])
+                    ->select(['id', 'public_id', 'component', 'blood_stock_id', 'blood_pack_id', 'blood_release_status', 'crossmatch_finish_at', 'crossmatch_result'])
+                    ->where('blood_transfusion_id', $transfusion->id)
+                    ->get()
+                    ->keyBy(fn($d) => $d->component . '-' . $d->public_id);
+
+                // ---------- Simpan existing tests untuk merge nanti ----------
+                $existingTests = [];
+                foreach ($existingDetails as $detail) {
+                    foreach ($detail->bloodTransfusionDetailTests as $test) {
+                        $key = $detail->public_id . '-' . $test->test_id;
+                        $existingTests[$key] = [
+                            'result'            => $test->result,
+                            'result_by_user_id' => $test->result_by_user_id,
+                        ];
+                    }
+                }
+
+                // ---------- Tentukan detail yang dihapus (tidak ada di submitted) ----------
+                $submittedPublicIdSet = collect($selected_blood_components)
+                    ->pluck('public_id')
+                    ->filter()
+                    ->flip()
+                    ->toArray();
+
+                foreach ($existingDetails as $detail) {
+                    if (isset($submittedPublicIdSet[$detail->public_id])) continue;
+
+                    // ---------- Blokir hapus jika darah sudah dikeluarkan ----------
+                    if ($detail->blood_release_status == 1) {
+                        throw new \RuntimeException(
+                            "Komponen darah '{$detail->component}' tidak dapat dihapus karena sudah dikeluarkan."
+                        );
+                    }
+
+                    // ---------- Kembalikan status stok ----------
+                    if ($detail->blood_stock_id) {
+                        $stock = BloodStock::where('id', $detail->blood_stock_id)->first();
+
+                        if ($stock) {
+                            $newStatus = (!empty($detail->crossmatch_result) && !empty($detail->crossmatch_finish_at))
+                                ? BloodStockStatus::USED
+                                : BloodStockStatus::AVAILABLE;
+
+                            $stock->update([
+                                'blood_status' => $newStatus,
+                                'used_at'      => null,
+                            ]);
+
+                            $user = Auth::user();
+
+                            BloodStockLogActivity::create([
+                                'blood_stock_public_id' => $stock->public_id,
+                                'payload'               => json_encode($stock->fresh()->toArray()),
+                                'status'                => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+                                'description'           => generateBloodStockLogDescription(
+                                    BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+                                    $stock->bag_number,
+                                    $user->username
+                                ),
+                                'created_by_user_name'  => $user->name,
+                                'timestamp'             => now(),
+                            ]);
+
+                            globalLogger('info', 'Blood stock returned successfully!', [
+                                'data'       => $stock,
+                                'updated_by' => $user->id,
+                            ], 200, 'editbloodstock');
+                        }
+                    }
+
+                    $detail->forceDelete();
+                }
+
+                // ---------- Proses setiap komponen yang dikirim ----------
+                $patient = $transfusion->patient;
+
+                foreach ($selected_blood_components as $component) {
+                    $keyComponent   = $component['component_id'] . '-' . $component['public_id'];
+                    $existingDetail = $existingDetails->get($keyComponent);
+
+                    // ---------- Existing detail dipertahankan ----------
+                    if ($existingDetail) continue;
+
+                    // ---------- Ambil package (sudah divalidasi di atas, pasti ada) ----------
+                    $package = Package::with(['package_tests'])
+                        ->where('is_active', 1)
+                        ->where('blood_component', $component['component_id'])
+                        ->first();
+
+                    // ---------- Buat detail baru ----------
+                    $transfusionDetail = BloodTransfusionDetail::create([
+                        'blood_transfusion_id' => $transfusion->id,
+                        'component'            => $component['component_id'],
+                        'blood_stock_id'       => null,
+                        'blood_pack_id'        => null,
+                        'crossmatch_result'    => null,
+                    ]);
+
+                    // ---------- Auto-assign stok darah jika pasien punya golongan darah ----------
+                    if (!is_null($patient?->blood_group) && !is_null($patient?->blood_rhesus)) {
+                        $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
+                            ->where('blood_rhesus', $patient->blood_rhesus)
+                            ->where('blood_component', $component['component_id'])
+                            ->first();
+
+                        $availableStock = BloodStock::where('blood_pack_id', $bloodPack?->id)
+                            ->where('blood_status', BloodStockStatus::AVAILABLE)
+                            ->where('expiry_date', '>=', $transfusion->blood_request_at)
+                            ->orderBy('expiry_date', 'asc')
+                            ->first();
+
+                        $transfusionDetail->update([
+                            'blood_pack_id'  => $bloodPack?->id,
+                            'blood_stock_id' => $availableStock?->id,
+                        ]);
+
+                        if ($availableStock) {
+                            $availableStock->update([
+                                'blood_status' => BloodStockStatus::IN_USE,
+                                'used_at'      => now(),
+                            ]);
+                        }
+                    }
+
+                    // ---------- Buat test records ----------
+                    foreach ($package->package_tests as $test) {
+                        $lookupKey    = $component['public_id'] . '-' . $test->test_id;
+                        $existingTest = $existingTests[$lookupKey] ?? null;
+
+                        BloodTransfusionDetailTest::create([
+                            'bt_detail_id'      => $transfusionDetail->id,
+                            'test_id'           => $test->test_id,
+                            'type'              => 'package',
+                            'result'            => $existingTest['result'] ?? null,
+                            'result_by_user_id' => $existingTest['result_by_user_id'] ?? null,
+                        ]);
+                    }
+                }
+
+                // ---------- Log aktivitas transfusi (di dalam transaksi) ----------
+                BloodTransfusionLogActivity::create([
+                    'blood_transfusion_public_id' => $transfusion->public_id,
+                    'payload'                     => $transfusion->fresh(['patient', 'insurance', 'room', 'doctor', 'details']),
+                    'status'                      => BloodTransfusionLogActivityStatus::UPDATED,
+                    'description'                 => generateBloodTransfusionLogDescription(
+                        BloodTransfusionLogActivityStatus::UPDATED,
+                        $this->generateDescription($transfusion),
+                        Auth::user()->username
+                    ),
+                    'created_by_user_name'        => Auth::user()->name,
+                    'timestamp'                   => now(),
+                ]);
+            });
+
+            globalLogger('info', 'Blood transfusion blood packs updated successfully!', [
+                'id'      => $transfusion->id,
+                'payload' => $transfusion->fresh(['patient', 'details']),
+            ], 200, 'updatebloodtransfusion');
+
+            return [
+                'success' => true,
+                'code'    => 200,
+                'data'    => ['message' => 'Komponen darah berhasil diperbaharui.'],
+            ];
+        } catch (\RuntimeException $e) {
+            return [
+                'success' => false,
+                'code'    => 422,
+                'data'    => ['message' => $e->getMessage()],
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'code'    => 500,
+                'data'    => ['message' => 'Komponen darah gagal diperbaharui.', 'error' => $e->getMessage()],
             ];
         }
     }

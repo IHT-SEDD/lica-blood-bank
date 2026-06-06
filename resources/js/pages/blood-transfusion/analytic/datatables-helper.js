@@ -160,34 +160,31 @@ export function DatatableRequestBlood() {
         },
         {
             data: null,
-            defaultContent: "",
             orderable: false,
             searchable: false,
             title: "Aksi",
-            render: (data) => {
-                const hasLabNumber =
-                    data.lab_number !== null || data.lab_number !== "-";
-                const isDeleted =
-                    data.deleted_at !== null || data.deleted_at !== "-";
+            render: (data, type, row) => {
+                const hasLabNumber = row.lab_number !== null;
+                const isDeleted = row.deleted_at !== null;
 
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
                     <ul class="dropdown-menu">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium text-primary btn-edit-blood-transfusion ${hasLabNumber ? "" : "disabled text-muted"}" type="button">
                             <i class="ti ti-pencil align-middle me-1 fs-4"></i>
                                 Edit
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "" : "disabled text-muted"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "disabled text-muted" : ""}" type="button">
                             <i class="ti ti-archive align-middle me-1 fs-4"></i>
                                 Arsipkan
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "text-danger" : "disabled text-muted"}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "disabled text-muted" : "text-danger"}" type="button">
                             <i class="ti ti-trash align-middle me-1 fs-4"></i>
                                 Hapus
                             </button>
@@ -340,7 +337,10 @@ export function DatatableListBagRequest() {
             searchable: false,
             render: (_, __, row) => {
                 const rowData = row.row_data;
-                if (!rowData.selected_stock_id || !rowData.available_stocks?.length) {
+                if (
+                    !rowData.selected_stock_id ||
+                    !rowData.available_stocks?.length
+                ) {
                     return '<span class="text-muted">-</span>';
                 }
 
@@ -397,13 +397,22 @@ export function DatatableListBagRequest() {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Hasil
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled" : ""}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Barcode
+                            </button>
+                        </li>
+                        <li>
+                            <button id="btn-delete-per-blood" data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-per-blood 
+                            ${data.blood_release_status === 1 ? "disabled text-muted" : "text-danger"}" type="button">
+                            <i class="ti ti-trash align-middle me-1 fs-4"></i>
+                                Hapus
                             </button>
                         </li>
                     </ul>`;
@@ -430,6 +439,12 @@ export function DatatableListBagRequest() {
                     .fail(() => callback(emptyCallback(data.draw)));
             },
             columns: BAGREQUESTCOLUMNS,
+            columnDefs: [
+                {
+                    targets: 0,
+                    width: "200px",
+                },
+            ],
             drawCallback: () => initTomSelect(".select-bag-number"),
         },
     );
@@ -473,10 +488,10 @@ export function DatatableListTest() {
             title: "Hasil",
             render: (_, __, row) => {
                 if (!row.detail_test_public_id) return "-";
-
                 const isDisabled =
                     !window.currentTransfusionLabNumber ||
-                    window.currentTransfusionLabNumber === "-"
+                    window.currentTransfusionLabNumber === "-" ||
+                    row.bag_released === 1
                         ? "disabled"
                         : "";
                 // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
@@ -552,8 +567,7 @@ export function DatatableBloodPackModal() {
         $(TABLE.bloodPack).DataTable().destroy();
     }
 
-    new GlobalAdvanceDatatable(TABLE.bloodPack, {
-        serverSide: true,
+    new GlobalAdvanceYajraDatatable(TABLE.bloodPack, {
         removePageInfo: true,
         removePagination: true,
         removeSearch: true,

@@ -72,8 +72,6 @@ class BloodTransfusionDataService
     // ---------- Fungsi Tabel List Bag Request ----------
     public function listBagRequestTable(Request $request, string $id): JsonResponse
     {
-        $draw = (int) $request->input('draw', 1);
-
         $transfusion = BloodTransfusion::where('public_id', $id)->first();
         if (!$transfusion) {
             return DataTables::of(collect())->toJson();
@@ -128,6 +126,7 @@ class BloodTransfusionDataService
                     'result_value' => null,
                     'verified' => false,
                     'validated' => false,
+                    'bag_released' => false,
                 ];
                 continue;
             }
@@ -142,6 +141,7 @@ class BloodTransfusionDataService
                         && !empty($detailTest->verified_by_user_id),
                     'validated' => !empty($detailTest->validated_at)
                         && !empty($detailTest->validated_by_user_id),
+                    'bag_released' => $detail->blood_release_status
                 ];
             }
         }

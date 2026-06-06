@@ -69,6 +69,119 @@ function waitForOptions(instance, timeout = 5000) {
         instance.load("");
     });
 }
+function handleBloodPackClick(e) {
+    const btn = e.target.closest(".select-edit-blood-component");
+    if (btn) {
+        selectedEditBloodPacks.push({
+            public_id: btn.dataset.publicId ?? null,
+            component_id: btn.dataset.id,
+            component_text: btn.dataset.text,
+        });
+        renderEditSelectedTable();
+        console.log(selectedEditBloodPacks);
+        notyf.success({ message: "Darah berhasil ditambahkan!" });
+    }
+
+    const removeBtn = e.target.closest(".remove-edit-blood-component");
+    if (removeBtn) {
+        selectedEditBloodPacks.splice(parseInt(removeBtn.dataset.index, 10), 1);
+        renderEditSelectedTable();
+    }
+}
+function renderEditSelectedTable() {
+    const tbody = document.querySelector(
+        "#edit-blood-pack-selected-table tbody",
+    );
+    if (!tbody) return;
+
+    tbody.innerHTML =
+        selectedEditBloodPacks.length === 0
+            ? `<tr><td colspan="4" class="text-center text-muted">No blood pack selected</td></tr>`
+            : "";
+
+    selectedEditBloodPacks.forEach((pack, index) => {
+        const isReleased =
+            pack.blood_release_status === true ||
+            pack.blood_release_status === 1;
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td class="text-start">
+                ${pack.component_text || "-"} (${pack.component_id || "-"})
+                ${pack.public_id ? '<i class="ti ti-square-rounded-check text-success"></i>' : ""}
+                ${isReleased ? '<span class="badge bg-danger ms-1">Sudah Dikeluarkan</span>' : ""}
+            </td>
+            <td class="text-end">
+                <button 
+                    class="btn btn-sm btn-danger remove-edit-blood-component" 
+                    type="button" 
+                    data-index="${index}"
+                    ${isReleased ? "disabled title='Darah sudah dikeluarkan, tidak dapat dihapus'" : ""}
+                >
+                    <i class="ti ti-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// ---------- Named handler untuk save blood pack ----------
+async function handleSaveBloodPack() {
+    if (selectedEditBloodPacks.length === 0) {
+        notyf.error({ message: "Satu jenis darah wajib dimiliki!" });
+        return;
+    }
+
+    const btn = document.getElementById("btn-save-edit-blood-pack");
+    const originalText = btn.innerHTML;
+    btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm" role="status"></span> Menyimpan...';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(
+            `/blood-transfusion/${currentEditTransfusionId}/update-blood-packs`,
+            {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document
+                        .querySelector('meta[name="csrf-token"]')
+                        .getAttribute("content"),
+                },
+                body: JSON.stringify({
+                    blood_packs: selectedEditBloodPacks,
+                }),
+            },
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            notyf.error({
+                message: result.message || "Gagal menyimpan perubahan!",
+            });
+            return;
+        }
+
+        notyf.success({
+            message: result.message || "Jenis darah berhasil disimpan!",
+        });
+
+        const modalEl = document.getElementById("edit_blood_pack_modal");
+        bootstrap.Modal.getInstance(modalEl)?.hide();
+
+        if ($.fn.DataTable.isDataTable("#list-bag-request-table")) {
+            $("#list-bag-request-table").DataTable().ajax.reload(null, false);
+        }
+    } catch (error) {
+        console.error(error);
+        notyf.error({ message: "An error occurred while saving." });
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
 
 // ---------- Export: dipanggil dari index.js ----------
 export function initFormEdit() {
@@ -85,7 +198,6 @@ export function initFormEdit() {
     function toggleDctValue(checked) {
         if (dctWrapper) dctWrapper.style.display = checked ? "" : "none";
     }
-
     if (dctCheckbox) {
         dctCheckbox.addEventListener("change", function () {
             toggleDctValue(this.checked);
@@ -97,13 +209,13 @@ export function initFormEdit() {
         "#" + FormEditSelector,
         {
             insurance_id: {
-                validators: { notEmpty: { message: "Insurance is required" } },
+                validators: { notEmpty: { message: "Asuransi wajib diisi!" } },
             },
             room_id: {
-                validators: { notEmpty: { message: "Room is required" } },
+                validators: { notEmpty: { message: "Ruangan wajib diisi!" } },
             },
             doctor_id: {
-                validators: { notEmpty: { message: "Doctor is required" } },
+                validators: { notEmpty: { message: "Dokter wajib diisi!" } },
             },
         },
     );
@@ -281,7 +393,6 @@ export function initFormEdit() {
         UrlFetchData: (id) => `${DeleteURLBloodTransfusion}/${id}`,
         ModalConfirmID: ModalDeleteSelector,
     });
-
     document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
@@ -289,7 +400,6 @@ export function initFormEdit() {
             `${data.patient_name} with ID ${data.id}`;
         document.querySelector(ConfirmDeleteSelector).dataset.id = data.id;
     });
-
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
     if (confirmBtn) {
         confirmBtn.addEventListener("click", async function () {
@@ -342,40 +452,11 @@ export function initFormEdit() {
         });
     }
 
-    // ---------- Edit Blood Pack Modal ----------
-    function renderEditSelectedTable() {
-        const tbody = document.querySelector(
-            "#edit-blood-pack-selected-table tbody",
-        );
-        if (!tbody) return;
-
-        tbody.innerHTML =
-            selectedEditBloodPacks.length === 0
-                ? `<tr><td colspan="4" class="text-center text-muted">No blood pack selected</td></tr>`
-                : "";
-
-        selectedEditBloodPacks.forEach((pack, index) => {
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td class="text-start">
-                    ${pack.component_text || "-"} (${pack.component_id || "-"})
-                    ${pack.public_id !== "undefined" ? '<i class="ti ti-square-rounded-check text-success"></i>' : ""}
-                </td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-danger remove-edit-blood-component" type="button" data-index="${index}">
-                        <i class="ti ti-trash"></i>
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
     document
         .getElementById("btn-edit-blood-pack")
         ?.addEventListener("click", async function () {
             if (!window.currentTransfusionPublicId) {
-                notyf.error({ message: "Please select a patient row first!" });
+                notyf.error({ message: "Harap pilih pasien terlebih dahulu!" });
                 return;
             }
 
@@ -391,9 +472,11 @@ export function initFormEdit() {
                 if (result.data?.length > 0) {
                     selectedEditBloodPacks = result.data
                         .map((row) => ({
-                            public_id: row.public_id,
-                            component_id: row.component_id,
-                            component_text: row.component_text,
+                            public_id: row.row_data?.public_id,
+                            component_id: row.row_data?.component_id,
+                            component_text: row.row_data?.component_text,
+                            blood_release_status:
+                                row.row_data?.blood_release_status ?? false,
                         }))
                         .filter((p) => p.component_id);
                 }
@@ -405,90 +488,13 @@ export function initFormEdit() {
             DatatableBloodPackModal();
         });
 
-    document.addEventListener("click", function (e) {
-        const btn = e.target.closest(".select-edit-blood-component");
-        if (btn) {
-            selectedEditBloodPacks.push({
-                public_id: btn.dataset.publicId,
-                component_id: btn.dataset.id,
-                component_text: btn.dataset.text,
-            });
-            renderEditSelectedTable();
-            notyf.success({ message: "Blood pack added!" });
-        }
+    document.removeEventListener("click", handleBloodPackClick);
+    document.addEventListener("click", handleBloodPackClick);
 
-        const removeBtn = e.target.closest(".remove-edit-blood-component");
-        if (removeBtn) {
-            selectedEditBloodPacks.splice(
-                parseInt(removeBtn.dataset.index, 10),
-                1,
-            );
-            renderEditSelectedTable();
-        }
-    });
-
-    document
-        .getElementById("btn-save-edit-blood-pack")
-        ?.addEventListener("click", async function () {
-            if (selectedEditBloodPacks.length === 0) {
-                notyf.error({
-                    message: "Please select at least one blood pack!",
-                });
-                return;
-            }
-
-            const originalText = this.innerHTML;
-            this.innerHTML =
-                '<span class="spinner-border spinner-border-sm" role="status"></span> Saving...';
-            this.disabled = true;
-
-            try {
-                const response = await fetch(
-                    `/blood-transfusion/${currentEditTransfusionId}/update-blood-packs`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                        body: JSON.stringify({
-                            blood_packs: selectedEditBloodPacks,
-                        }),
-                    },
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message: result.message || "Failed to save!",
-                    });
-                    return;
-                }
-
-                notyf.success({
-                    message:
-                        result.message || "Blood packs saved successfully!",
-                });
-
-                const modalEl = document.getElementById(
-                    "edit_blood_pack_modal",
-                );
-                bootstrap.Modal.getInstance(modalEl)?.hide();
-
-                if ($.fn.DataTable.isDataTable("#list-bag-request-table")) {
-                    $("#list-bag-request-table")
-                        .DataTable()
-                        .ajax.reload(null, false);
-                }
-            } catch (error) {
-                console.error(error);
-                notyf.error({ message: "An error occurred while saving." });
-            } finally {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }
-        });
+    // ---------- Register save blood pack handler (remove dulu agar tidak dobel) ----------
+    const saveBtnEl = document.getElementById("btn-save-edit-blood-pack");
+    if (saveBtnEl) {
+        saveBtnEl.removeEventListener("click", handleSaveBloodPack);
+        saveBtnEl.addEventListener("click", handleSaveBloodPack);
+    }
 }

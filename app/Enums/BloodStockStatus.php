@@ -42,7 +42,7 @@ enum BloodStockStatus: string
             self::USED => 'Sudah Pernah Digunakan',
 
             self::HOLD => 'Sedang Di Tahan',
-            
+
             self::ALREADY_TAKEN => 'Sudah Ada Pemilik',
             self::TAKEN_OUT => 'Dikeluarkan',
             self::EXPIRED => 'Expire',

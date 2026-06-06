@@ -4,7 +4,6 @@ namespace App\Services;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -29,80 +28,38 @@ class UtilityService
       abort(404, "Invalid select configuration [$select]");
     }
 
-    // ---------- Caching Method ----------
-    $ttl = $modules['cache_ttl'] ?? 10;
-    $cacheKey = "select:{$select}:" . md5($search);
+    $modelClass = $modules['model'];
+    $with = $this->normalizeWith($modules['with'] ?? []);
+    $labelField = $modules['label'];
 
-    return Cache::remember($cacheKey, now()->addMinutes($ttl), function () use ($request, $select, $search, $modules) {
-      $modelClass = $modules['model'];
-      $with = $this->normalizeWith($modules['with'] ?? []);
-      $labelField = $modules['label'];
+    $query = $modelClass::query()->with($with);
 
-      $query = $modelClass::query()->with($with);
+    if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
+      $query->where('is_active', true);
+    }
 
-      if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
-        $query->where('is_active', true);
-      }
+    if (!empty($modules['conditions'])) {
+      $this->applyConditions($query, $modules['conditions']);
+    }
 
-      if (!empty($modules['conditions'])) {
-        $this->applyConditions($query, $modules['conditions']);
-      }
+    if (!empty($search)) {
+      $this->applySearch($query, $labelField, $search);
+    }
 
-      if (!empty($search)) {
-        $this->applySearch($query, $labelField, $search);
-      }
+    $data = $query->get();
 
-      $data = $query->limit(100)->get();
+    return [
+      'results' => $data->map(function ($item) use ($modules, $labelField) {
+        $text = isset($modules['label_callback'])
+          ? call_user_func($modules['label_callback'], $item)
+          : data_get($item, $labelField);
 
-      return [
-        'results' => $data->map(function ($item) use ($modules, $labelField) {
-          $text = isset($modules['label_callback'])
-            ? call_user_func($modules['label_callback'], $item)
-            : data_get($item, $labelField);
-
-          return [
-            'id'   => $item->public_id ?? $item->id,
-            'text' => $text,
-          ];
-        })->values(),
-      ];
-    });
-
-    // ---------- Native Method ----------
-    // $modelClass = $modules['model'];
-    // $with = $this->normalizeWith($modules['with'] ?? []);
-    // $labelField = $modules['label'];
-
-    // // ---------- Ambil data dari model ----------
-    // $query = $modelClass::query()->with($with);
-
-    // if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
-    //   $query->where('is_active', true);
-    // }
-
-    // if (!empty($modules['conditions'])) {
-    //   $this->applyConditions($query, $modules['conditions']);
-    // }
-
-    // // ---------- Handle search field ----------
-    // if (!empty($search)) {
-    //   $this->applySearch($query, $labelField, $search);
-    // }
-
-    // $data = $query->limit(100)->get();
-
-    // return [
-    //   'results' => $data->map(function ($item) use ($modules, $labelField) {
-    //     $text = isset($modules['label_callback'])
-    //       ? call_user_func($modules['label_callback'], $item)
-    //       : data_get($item, $labelField);
-
-    //     return [
-    //       'id' => $item->public_id ?? $item->id,
-    //       'text' => $text,
-    //     ];
-    //   })->values(),
-    // ];
+        return [
+          'id'   => $item->public_id ?? $item->id,
+          'text' => $text,
+        ];
+      })->values(),
+    ];
   }
   // ---------- Fungsi mengambil data untuk dropdown select :end ----------
 
@@ -125,80 +82,38 @@ class UtilityService
       abort(404, "Invalid select configuration [$select]");
     }
 
-    // ---------- Caching Method ----------
-    $ttl = $modules['cache_ttl'] ?? 10;
-    $cacheKey = "select-special:{$select}:{$id}:" . md5($search);
+    $modelClass = $modules['model'];
+    $with = $this->normalizeWith($modules['with'] ?? []);
+    $labelField = $modules['label'];
 
-    return Cache::remember($cacheKey, now()->addMinutes($ttl), function () use ($request, $select, $id, $search, $modules) {
-      $modelClass = $modules['model'];
-      $with = $this->normalizeWith($modules['with'] ?? []);
-      $labelField = $modules['label'];
+    $query = $modelClass::query()->with($with);
 
-      $query = $modelClass::query()->with($with);
+    if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
+      $query->where('is_active', true);
+    }
 
-      if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
-        $query->where('is_active', true);
-      }
+    if (!empty($modules['conditions'])) {
+      $this->applyConditionsSpecial($query, $modules['conditions'], $id);
+    }
 
-      if (!empty($modules['conditions'])) {
-        $this->applyConditionsSpecial($query, $modules['conditions'], $id);
-      }
+    if (!empty($search)) {
+      $this->applySearch($query, $labelField, $search);
+    }
 
-      if (!empty($search)) {
-        $this->applySearch($query, $labelField, $search);
-      }
+    $data = $query->orderBy('id', 'asc')->get();
 
-      $data = $query->limit(100)->orderBy('id', 'asc')->get();
+    return [
+      'results' => $data->map(function ($item) use ($modules, $labelField) {
+        $text = isset($modules['label_callback'])
+          ? call_user_func($modules['label_callback'], $item)
+          : data_get($item, $labelField);
 
-      return [
-        'results' => $data->map(function ($item) use ($modules, $labelField) {
-          $text = isset($modules['label_callback'])
-            ? call_user_func($modules['label_callback'], $item)
-            : data_get($item, $labelField);
-
-          return [
-            'id'   => $item->public_id ?? $item->id,
-            'text' => $text,
-          ];
-        })->values(),
-      ];
-    });
-
-    // ---------- Native Method ----------
-    // $modelClass  = $modules['model'];
-    // $with = $this->normalizeWith($modules['with'] ?? []);
-    // $labelField = $modules['label'];
-
-    // // ---------- Ambil data dari model ----------
-    // $query = $modelClass::query()->with($with);
-
-    // if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
-    //   $query->where('is_active', true);
-    // }
-
-    // if (!empty($modules['conditions'])) {
-    //   $this->applyConditionsSpecial($query, $modules['conditions'], $id);
-    // }
-
-    // // ---------- Handle search field ----------
-    // if (!empty($search)) {
-    //   $this->applySearch($query, $labelField, $search);
-    // }
-
-    // $data = $query->limit(100)->orderBy('id', 'asc')->get();
-
-    // return [
-    //   'results' => $data->map(function ($item) use ($modules, $labelField) {
-    //     $text = isset($modules['label_callback'])
-    //       ? call_user_func($modules['label_callback'], $item)
-    //       : data_get($item, $labelField);
-
-    //     return [
-    //       'id' => $item->public_id ?? $item->id,
-    //       'text' => $text,
-    //     ];
-    //   })->values(),
-    // ];
+        return [
+          'id'   => $item->public_id ?? $item->id,
+          'text' => $text,
+        ];
+      })->values(),
+    ];
   }
   // ---------- Fungsi mengambil data untuk dropdown select dengan case special :end ----------
 

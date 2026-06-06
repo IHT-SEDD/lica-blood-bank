@@ -57,7 +57,7 @@ function SelectBagNumber() {
             preload: false,
             maxItems: 9999,
             plugins: ["clear_button"],
-            noResultsText: "Bag Number not found",
+            noResultsText: "No. labu tidak ditemukan",
             blurOnItemAdd: false,
             closeAfterSelect: false,
             load: function (query, callback) {
