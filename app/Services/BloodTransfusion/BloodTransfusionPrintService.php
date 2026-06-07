@@ -63,6 +63,7 @@ class BloodTransfusionPrintService
 
       $this->validatePrintTemplate($print);
       $printData = $this->queryTransfusionData($transfusionPublicID, null);
+      // dd($printData->toArray());
       $response = $this->generatePdfResponse($print, $printData, paperSize: [0, 0, 683.4, 791.6]);
 
       DB::commit();
@@ -227,6 +228,10 @@ class BloodTransfusionPrintService
             'component',
             'crossmatch_result',
             'is_print_incompatible_letter',
+            'blood_release_status',
+            'blood_released_at',
+            'blood_released_by_user_id',
+            'blood_received_by',
           ]);
           if ($btDetailID) {
             $query->where('public_id', $btDetailID);
@@ -238,6 +243,7 @@ class BloodTransfusionPrintService
         'details.bloodStock:id,public_id,bag_number',
         'details.bloodTransfusionDetailTests:id,public_id,bt_detail_id,test_id,result',
         'details.bloodTransfusionDetailTests.test:id,public_id,name',
+        'details.bloodReleasedByUser:id,public_id,name',
       ])
       ->firstOrFail();
   }

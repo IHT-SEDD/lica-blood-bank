@@ -7,6 +7,7 @@ import {
     GlobalEditData,
     GlobalAdvanceTomselect,
 } from "../../../app";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
 
@@ -72,18 +73,18 @@ function reloadTable() {
 function HistoryOrderTable() {
     // ---------- Init kolom pada tabel ----------
     const HistoryOrderTableColumns = [
-        { data: "po_number", title: "PO Number" },
+        { data: "po_number", title: "No. PO" },
         {
             data: "vendor_id",
-            title: "Vendor",
+            title: "PMI",
             render: (data, type, row) => {
                 return `<span class="badge badge-label badge-soft-primary">${row.vendors.name}</span>`;
             },
         },
-        { data: "total_quantity", title: "Total Qty" },
+        { data: "total_quantity", title: "Jumlah Permintaan" },
         {
             data: null,
-            title: "Blood Group",
+            title: "Detail",
             render: (data, type, row) => {
                 const orderBloodDetail = row.order_blood_details || [];
                 if (!orderBloodDetail.length) return "-";
@@ -124,21 +125,21 @@ function HistoryOrderTable() {
         },
         {
             data: "created_at",
-            title: "Created At",
+            title: "Tgl. Dibuat",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "deleted_at",
-            title: "Deleted At",
+            title: "Tgl. Dihapus",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -151,19 +152,19 @@ function HistoryOrderTable() {
                             <button id="see-data-${row.public_id}" class="dropdown-item fw-medium btn-see-history-order ${isDeleted ? "disabled" : ""}" 
                             data-see-id="${row.public_id}" type="button">
                             <i class="ti ti-file-search align-middle me-2 fs-4"></i>
-                            See More
+                            Lihat Detail
                             </button>
                         </li>
                         <li>
                             <button id="restore-data-${row.public_id}" class="dropdown-item fw-medium btn-restore-history-order ${isDeleted ? "enabled text-info" : "disabled"}" data-restore-id="${row.public_id}" type="button">
                             <i class="ti ti-recycle align-middle me-2 fs-4"></i>
-                            Restore
+                            Pulihkan
                             </button>
                         </li>
                         <li>
                             <button id="delete-data-${row.public_id}" class="dropdown-item fw-medium btn-delete-history-order ${isDeleted ? "disabled text-muted" : "text-danger"}" data-delete-id="${row.public_id}" type="button">
                             <i class="ti ti-trash align-middle me-2 fs-4"></i>
-                            Delete
+                            Hapus
                             </button>
                         </li>
                     </ul>
@@ -173,7 +174,7 @@ function HistoryOrderTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    historyOrderTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
+    historyOrderTableInstance = new GlobalAdvanceYajraDatatable(DatatableSelector, {
         ajax: {
             url: DataURL,
             data: function (d) {

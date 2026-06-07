@@ -1,7 +1,7 @@
-<x-static-modal-layout id="delete_data_{{ $id ?? 'unknown' }}_modal" size=""
- title="Konfirmasi Hapus Data {{ $title ?? 'Unknown' }}">
+<x-static-modal-layout id="delete_data_blood_modal" size=""
+ title="Konfirmasi Hapus Data Darah">
  <h4 class="fw-semibold">Apakah kamu yakin ingin menghapus data ini?</h4>
- <p>Data yang kamu ingin hapus: <span id="deleted_data" class="text-capitalize fw-semibold text-muted"></span></p>
+ 
  <p class="m-0">Klik <span class="badge badge-label badge-soft-danger">Hapus</span> jika kamu ingin menghapus dan klik
   <span class="badge badge-label badge-soft-info">Batalkan</span> jika kamu ingin membatalkannya
  </p>

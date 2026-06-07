@@ -196,7 +196,7 @@
       <tr>
         <td width="100%" align="center">
           <div class="heading-2">{{ __('SURAT TANDA PERMINTAAN DARAH') }}</div>
-          <div class="heading-2" style="margin-bottom: 15px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
+          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
         </td>
       </tr>
     </table>
@@ -206,7 +206,7 @@
       <!--- Nama --->
       <tr>
         <td width="30%">
-          <div class="paragraph" style="margin-top: 12px;">{{ __('Nama') }}</div>
+          <div class="paragraph">{{ __('Nama') }}</div>
         </td>
         <td width="3%">
           <div class="paragraph">:</div>
@@ -303,6 +303,38 @@
           @endif
         </td>
       </tr>
+      <!--- Jumlah Permintaan Labu --->
+      <tr>
+        <td width="30%">
+          <div class="paragraph">{{ __('Jumlah Permintaan Labu') }}</div>
+        </td>
+        <td width="3%">
+          <div class="paragraph">:</div>
+        </td>
+      </tr>
+    </table>
+
+    {{-- Tabel Jumlah Permintaan Labu --}}
+    <table class="table-incompatible" width="100%">
+      <thead>
+        <tr>
+          <th class="text-center" style="width: 3%;">{{ __('No.') }}</th>
+          <th class="text-center" style="width: 12%;">{{ __('Tanggal & Jam') }}</th>
+          <th class="text-center" style="width: 19%;">{{ __('Penyerah') }}</th>
+          <th class="text-center" style="width: 19%;">{{ __('Penerima') }}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @foreach ($data->details as $detail)
+        <tr>
+          <td class="text-center">{{ $loop->iteration }}</td>
+          <td class="text-center">{{ $detail->blood_released_at }}</td>
+          <td class="text-center">{{ $detail->bloodReleasedByUser?->name }}</td>
+          <td class="text-center">{{ $detail->blood_received_by }}</td>
+        </tr>
+        @endforeach
+      </tbody>
     </table>
 
     {{-- Pengantar detail darah --}}
@@ -310,7 +342,7 @@
       <tr>
         <td width="100%" align="left">
           <div class="paragraph">
-            {{ __('Bawa kembali surat ini ke Bank Darah Rumah Sakit Indramayu, ketika pengambilan darah') }}
+            {{ __('Bawa kembali surat ini ke Bank Darah Rumah Sakit Indramayu, ketika pengambilan darah.') }}
           </div>
         </td>
       </tr>

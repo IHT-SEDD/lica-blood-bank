@@ -53,6 +53,7 @@ const toolbarContext = {
         currentOrderData = data;
     },
     fetchDataDetailOrder,
+    refreshPageContent,
 };
 // ---------- State global :end ----------
 
@@ -214,7 +215,7 @@ async function fetchDataDetailOrder() {
         currentOrderData = data;
         return data;
     } catch (err) {
-        notyf.error({ message: "Failed to fetch order data!" });
+        notyf.error({ message: "Gagal mengambil detail data!" });
         console.error(err);
     } finally {
         hidePageLoading();
@@ -305,13 +306,13 @@ function HandleSubmitChanges() {
             const noteEl = row.querySelector(`textarea[name*="note"]`);
 
             const bloodPackId = bloodPackEl?.tomselect?.getValue();
-            console.log(bloodPackId)
+            console.log(bloodPackId);
             const quantity = quantityEl?.value?.trim();
 
             if (!bloodPackId || !quantity) {
                 valid = false;
                 notyf.error({
-                    message: `Row ${idx + 1}: Blood pack and quantity are required!`,
+                    message: `Baris ${idx + 1}: Detail Darah dan Jumlah Wajib Diisi!`,
                 });
                 return;
             }
@@ -344,7 +345,10 @@ function HandleSubmitChanges() {
 
         // ---------- Tidak ada yang berubah ----------
         if (Object.keys(payload).length === 0) {
-            notyf.open({ type: "info", message: "No changes detected." });
+            notyf.open({
+                type: "info",
+                message: "Tidak ada perubahan yang dilakukan.",
+            });
             return;
         }
 
@@ -370,12 +374,14 @@ function HandleSubmitChanges() {
                 );
             }
 
-            notyf.success({ message: "Order data updated successfully!" });
+            notyf.success({
+                message: "Data Permintaan Berhasil Diperbaharui!",
+            });
 
             await refreshPageContent();
         } catch (err) {
             notyf.error({
-                message: err.message ?? "Failed to update order data!",
+                message: err.message ?? "Data Permintaan Gagal Diperbaharui!",
             });
             console.error(err);
         } finally {
@@ -392,6 +398,7 @@ function GenerateTimeline(logs = []) {
         wrapper: TimelineContainerSelector,
         locale: "en-GB",
         statusConfig: OrderLogConfigTL,
+        iconLibrary: "tabler",
     });
 
     orderTimeline.render(logs);

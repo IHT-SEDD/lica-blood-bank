@@ -31,7 +31,7 @@ class BloodStockAddService
 
    // ---------- Validasi bag_numbers tidak kosong ----------
    if (empty($bagNumberItems)) {
-    return response()->json(['message' => 'Bag number list cannot be empty!'], 422);
+    return response()->json(['message' => 'Nomor labu/kantong tidak boleh kosong!'], 422);
    }
 
    // ---------- Validasi & klasifikasi tiap bag number ----------
@@ -39,14 +39,14 @@ class BloodStockAddService
 
    if (!empty($notFoundBags)) {
     return response()->json([
-     'message' => 'Some bag numbers are not found or not ready!',
+     'message' => 'Beberapa nomor labu/kantong tidak tersedia atau tidak ditemukan!',
      'invalid_bags' => $notFoundBags,
     ], 422);
    }
 
    if (!empty($alreadyInStockBags)) {
     return response()->json([
-     'message' => 'Some bag numbers are already in blood stock!',
+     'message' => 'Beberapa nomor labu/kantong sudah ada di sistem!',
      'duplicate_bags' => $alreadyInStockBags,
     ], 422);
    }
@@ -70,7 +70,7 @@ class BloodStockAddService
     'inserted_by' => $user->id,
    ], 200, 'newbloodstock');
    return response()->json([
-    'message' => 'New blood stock added successfully!',
+    'message' => 'Stok darah berhasil ditambahkan!',
     'total' => count($insertedStocks),
     'data' => collect($insertedStocks)->pluck('stock'),
    ]);
@@ -83,7 +83,7 @@ class BloodStockAddService
     'inserted_by' => Auth::id(),
    ], 500, 'newbloodstock');
    return response()->json([
-    'message' => 'New blood stock failed to insert!',
+    'message' => 'Stok darah gagal ditambahkan!',
     'error' => $e->getMessage(),
    ], 500);
   }
@@ -109,7 +109,7 @@ class BloodStockAddService
 
    // ---------- Validasi bag_numbers tidak kosong ----------
    if (empty($bagNumberItems)) {
-    return response()->json(['message' => 'Bag number list cannot be empty!'], 422);
+    return response()->json(['message' => 'Nomor labu/kantong tidak boleh kosong!'], 422);
    }
 
    // ---------- Validasi duplikat di sisi backend (safety net) ----------
@@ -121,7 +121,7 @@ class BloodStockAddService
 
    if (!empty($duplicateBags)) {
     return response()->json([
-     'message' => 'Bag number list contains duplicates!',
+     'message' => 'Terdapat nomor labu/kantong yang sama, harap diperbaiki!',
      'duplicate_bags' => $duplicateBags,
     ], 422);
    }
@@ -131,14 +131,14 @@ class BloodStockAddService
 
    if (!empty($notFoundBags)) {
     return response()->json([
-     'message' => 'Some bag numbers are not found or not ready!',
+     'message' => 'Beberapa nomor labu/kantong tidak tersedia atau tidak ditemukan!',
      'invalid_bags' => $notFoundBags,
     ], 422);
    }
 
    if (!empty($alreadyInStockBags)) {
     return response()->json([
-     'message' => 'Some bag numbers are already in blood stock!',
+     'message' => 'Beberapa nomor labu/kantong sudah ada di sistem!',
      'duplicate_bags' => $alreadyInStockBags,
     ], 422);
    }
@@ -162,7 +162,7 @@ class BloodStockAddService
     'inserted_by' => $user->id,
    ], 200, 'newbloodstock');
    return response()->json([
-    'message' => 'New blood stock added successfully!',
+    'message' => 'Stok darah berhasil ditambahkan!',
     'total' => count($insertedStocks),
     'data' => collect($insertedStocks)->pluck('stock'),
    ]);
@@ -175,7 +175,7 @@ class BloodStockAddService
     'inserted_by' => Auth::id(),
    ], 500, 'newbloodstock');
    return response()->json([
-    'message' => 'New blood stock failed to insert!',
+    'message' => 'Stok darah gagal ditambahkan!',
     'error' => $e->getMessage(),
    ], 500);
   }

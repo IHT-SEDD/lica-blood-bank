@@ -6,8 +6,17 @@ export const datatableLanguage = {
         next: '<i class="ti ti-chevron-right"></i>',
         last: '<i class="ti ti-chevrons-right"></i>',
     },
-    lengthMenu: "_MENU_ Entries per page",
-    info: `Showing <span class="fw-semibold">_START_</span> to <span class="fw-semibold">_END_</span> of <span class="fw-semibold">_TOTAL_</span> Entries`,
+    search: "",
+    searchPlaceholder: "Search data...",
+    lengthMenu: `_MENU_ <span style="font-size: 12px;">Jumlah data per halaman</span>`,
+    info: `<span style="font-size: 12px;">
+            Menampilkan <span class="fw-semibold">_START_</span> - <span class="fw-semibold">_END_</span> dari <span class="fw-semibold">_TOTAL_</span> Data
+        </span>`,
+    infoEmpty: `<span style="font-size: 12px;">
+            Menampilkan <span class="fw-semibold">0</span> - <span class="fw-semibold">0</span> dari <span class="fw-semibold">0</span> Data
+        </span>`,
+    zeroRecords: `<span class="fw-semibold" style="font-size: 13px;">Data tidak ditemukan</span>`,
+    emptyTable: `<span class="fw-medium" style="font-size: 13px;">Tidak ada yang tersedia</span>`,
 };
 
 // ---- Dom builder ----

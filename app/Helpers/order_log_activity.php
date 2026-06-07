@@ -4,15 +4,11 @@
 
 use App\Enums\OrderLogActivityStatus;
 
-function generateOrderLogDescription(
- OrderLogActivityStatus $status,
- string $poNumber,
- ?string $userId,
-): string {
+function generateOrderLogDescription(OrderLogActivityStatus $status, mixed ...$params): string
+{
  return $status->label() . ' ' . sprintf(
   $status->template(),
-  $poNumber,
-  $userId
+  ...$params
  );
 }
 // ---------- Fungsi generate description untuk order log activity :begin ----------

@@ -1,11 +1,11 @@
 // ---------- Import Libraries ----------
 import {
-    GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
 } from "../../../app";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -56,22 +56,20 @@ function reloadTable() {
 function BloodStockTable() {
     // ---------- Init kolom pada tabel ----------
     const BloodStockTableColumns = [
-        // {
-        //     data: null,
-        //     defaultContent: "",
-        //     title: "",
-        //     orderable: false,
-        // },
         {
             data: null,
-            title: "No",
+            title: "No.",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
         },
         {
             data: null,
-            title: "Blood Pack",
+            title: "Detail",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row) => {
                 const bloodGroup = row.blood_group || "";
                 const bloodRhesus = row.blood_rhesus || "";
@@ -86,42 +84,21 @@ function BloodStockTable() {
         },
         {
             data: "total_blood_data",
-            title: "Quantity",
+            title: "Jumlah",
             render: (data) => {
-                return `<span class="fw-semibold fs-5">${data} Bags</span>`;
-            },
-        },
-        {
-            data: null,
-            title: "Status",
-            render: (data, type, row) => {
-                const total = Number(row.total_blood_data);
-                const danger = Number(row.danger_quantity);
-                const warning = Number(row.warning_quantity);
-
-                const isDanger = total <= danger;
-                const isWarning = total <= warning && total > danger;
-
-                if (isDanger) {
-                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-danger">Stock in Danger</span>`;
-                }
-                if (isWarning) {
-                    return `<span class="badge badge-label fs-5 fw-semibold badge-soft-warning">Stock Qty Warning</span>`;
-                }
-
-                return `<span class="badge badge-label fs-5 fw-semibold badge-soft-success">Stock Safe</span>`;
+                return `<span class="fw-semibold fs-5">${data} Kantong</span>`;
             },
         },
         {
             data: "updated_at",
-            title: "Updated At",
+            title: "Tgl. Diperbaharui",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
                 data-bs-auto-close="true" type="button">
@@ -141,29 +118,31 @@ function BloodStockTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    bloodStockTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
-        ajax: {
-            url: DataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    bloodStockTableInstance = new GlobalAdvanceYajraDatatable(
+        DatatableSelector,
+        {
+            ajax: {
+                url: DataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: BloodStockTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                {
+                    targets: -1,
+                    responsivePriority: 1,
+                },
+                {
+                    targets: 1,
+                    responsivePriority: 2,
+                },
+            ],
         },
-        columns: BloodStockTableColumns,
-        useHideColumn: true,
-        // checkBoxSelect: { selector: "td:first-child" },
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 1,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master storage :end ----------
 

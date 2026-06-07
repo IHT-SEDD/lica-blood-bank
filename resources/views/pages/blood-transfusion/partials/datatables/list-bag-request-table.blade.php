@@ -2,12 +2,12 @@
   id="list-bag-request-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th>{{ __('No. Bag') }}</th>
-      <th>{{ __('Status') }}</th>
-      <th>{{ __('Detail') }}</th>
-      <th>{{ __('Expiry') }}</th>
-      <th>{{ __('Result') }}</th>
-      <th>{{ __('Action') }}</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
 </table>

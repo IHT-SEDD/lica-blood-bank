@@ -1,5 +1,6 @@
-import { GlobalAdvanceDatatable } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { GlobalAdvanceTomselect } from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let listStockTableInstance;
@@ -31,21 +32,47 @@ export function setBloodFilter(bloodGroup, bloodRhesus) {
     reloadTable();
 }
 
+function getFilters() {
+    const status = document.querySelector("#filter-status-darah")?.value || "";
+    return { status };
+}
+function FilterStatus() {
+    const filterStatus = new GlobalAdvanceTomselect("#filter-status-darah", {
+        valueField: "id",
+        preload: true,
+        load: function (query, callback) {
+            fetch(
+                `/utility/select/blood-stock-status?q=${encodeURIComponent(query)}`,
+            )
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+        onChange: function () {
+            reloadTable();
+        },
+    });
+}
+
 // ---------- Datatable Blood Stock ----------
 function ListStockTable() {
     // ---------- Init kolom pada tabel ----------
     const ListStockTableColumns = [
         {
             data: null,
-            title: "No",
+            title: "No.",
+            defaultContent: "",
+            orderable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
         },
-        { data: "bag_number", title: "Bag Number" },
+        { data: "bag_number", title: "No. Kantong" },
         {
             data: null,
-            title: "Blood Pack",
+            defaultContent: "",
+            orderable: false,
+            title: "Detail",
             render: (data, type, row) => {
                 const bloodPacks = row.blood_packs;
                 const bloodGroup = bloodPacks.blood_group || "";
@@ -61,31 +88,33 @@ function ListStockTable() {
         },
         {
             data: null,
+            defaultContent: "",
+            orderable: false,
             title: "Status",
             render: (data, type, row) => {
                 switch (row.blood_status) {
                     case "expired":
                         return `<span class="badge badge-label fw-semibold badge-soft-danger">
                             <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
-                            Expired!
+                            Expire!
                         </span>`;
                         break;
                     case "in_use":
                         return `<span class="badge badge-label fw-semibold badge-soft-info">
                             <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
-                            In Use
+                            Sedang Digunakan
                         </span>`;
                         break;
                     case "available":
                         return `<span class="badge badge-label fw-semibold badge-soft-success">
                             <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
-                            Available
+                            Tersedia
                         </span>`;
                         break;
                     case "destroyed":
                         return `<span class="badge badge-label fw-semibold badge-soft-danger">
                             <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
-                            Destroyed
+                            Dimusnahkan
                         </span>`;
                         break;
 
@@ -98,23 +127,24 @@ function ListStockTable() {
                 }
             },
         },
+        { data: "patient_name", title: "Nama Pasien" },
         {
             data: "created_at",
-            title: "Received Date",
+            title: "Tgl. Diterima",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "expiry_date",
-            title: "Expiry Date",
+            title: "Tgl. Expire",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: null,
-            title: "Expiry Countdown",
+            title: "Sisa Umur",
             render: (data, type, row) => {
                 const now = new Date();
                 const expiry = new Date(row.expiry_date);
@@ -162,14 +192,14 @@ function ListStockTable() {
         },
         {
             data: "updated_at",
-            title: "Updated At",
+            title: "Tgl. Update",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
@@ -189,14 +219,16 @@ function ListStockTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    listStockTableInstance = new GlobalAdvanceDatatable(
+    listStockTableInstance = new GlobalAdvanceYajraDatatable(
         ListStockTableSelector,
         {
             ajax: {
                 url: ListStockTableDataURL,
                 data: (d) => {
+                    const filters = getFilters();
                     d.blood_group = activeBloodGroup;
                     d.blood_rhesus = activeBloodRhesus;
+                    d.status = filters.status;
                     return d;
                 },
             },
@@ -223,4 +255,4 @@ function SeeDetailBloodStockAction() {
     });
 }
 
-export { ListStockTable, SeeDetailBloodStockAction };
+export { ListStockTable, SeeDetailBloodStockAction, FilterStatus };

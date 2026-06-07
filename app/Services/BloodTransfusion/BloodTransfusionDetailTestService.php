@@ -9,6 +9,7 @@ use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
 use App\Models\BloodTransfusionLogActivity;
 use App\Models\CrossMatchHistory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -120,7 +121,7 @@ class BloodTransfusionDetailTestService
                 ->with(['bloodStock'])
                 ->first();
             if (!$detail) {
-                return ['success' => false, 'message' => 'Detail record not found.'];
+                return ['success' => false, 'message' => 'Data detail transaksi tidak ditemukan'];
             }
 
             // Ambil semua test untuk detail ini
@@ -128,7 +129,7 @@ class BloodTransfusionDetailTestService
                 ->where('bt_detail_id', $detail->id)
                 ->get();
             if ($tests->isEmpty()) {
-                return ['success' => false, 'message' => 'No tests found for this bag.'];
+                return ['success' => false, 'message' => 'Tidak ada pemeriksaan untuk labu darah ini'];
             }
 
             $requiredTests = $tests->reject(function ($t) use ($detail) {
@@ -144,7 +145,7 @@ class BloodTransfusionDetailTestService
             if ($missingResult->isNotEmpty()) {
                 return [
                     'success' => false,
-                    'message' => 'All tests must have a result before completing.',
+                    'message' => 'Terdapat pemeriksaan yang belum dikerjakan',
                 ];
             }
 
@@ -192,8 +193,9 @@ class BloodTransfusionDetailTestService
                 'status' => BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
                 'description' => generateBloodTransfusionLogDescription(
                     BloodTransfusionLogActivityStatus::CROSSMATCH_FINISH,
-                    'for bag number ' . $detail->bloodStock->bag_number,
-                    Auth::user()->id
+                    $this->generateDescription($detail->bloodTransfusion),
+                    $detail->bloodStock->bag_number,
+                    Auth::user()->username
                 ),
                 'created_by_user_name' => Auth::user()->name,
                 'timestamp' => now(),
@@ -207,7 +209,7 @@ class BloodTransfusionDetailTestService
             ], 200, 'donebloodtransfusion');
             return [
                 'success' => true,
-                'message' => "Test completed. Result: {$transfusionResult}.",
+                'message' => "Pemeriksaan crossmatch berhasil diselesaikan dengan hasil: {$transfusionResult}.",
                 'crossmatch_result' => $transfusionResult,
             ];
         } catch (\Throwable $th) {
@@ -218,15 +220,14 @@ class BloodTransfusionDetailTestService
             ], 500, 'donebloodtransfusion');
             return [
                 'success' => false,
-                'message' => 'Failed to complete test.' . $th->getMessage(),
+                'message' => 'Pemeriksaan crossmatch gagal diselesaikan',
+                'error' => $th->getMessage()
             ];
         }
     }
 
-    private function insertCrossMatchHistory($detail, $transfusionResult)
+    private function insertCrossMatchHistory($detail, ?string $transfusionResult)
     {
-        // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-
         if (is_null($detail)) return false;
 
         $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
@@ -236,20 +237,20 @@ class BloodTransfusionDetailTestService
                 'blood_stock_id' => $detail->blood_stock_id,
                 'updated_at' => now()
             ]);
-        } else {
-            $history = CrossMatchHistory::create([
-                'blood_transfusion_detail_id' => $detail->id,
-                'blood_stock_id' => $detail->blood_stock_id,
-                'result' => $transfusionResult,
-            ]);
         }
+
+        CrossMatchHistory::create([
+            'blood_transfusion_detail_id' => $detail->id,
+            'blood_stock_id' => $detail->blood_stock_id,
+            'result' => $transfusionResult,
+        ]);
     }
     private function generateDescription(BloodTransfusion $transfusion): string
     {
         return match (true) {
-            !empty($transfusion->order_number) => 'for order number ' . $transfusion->order_number,
-            !empty($transfusion->lab_number) => 'for lab number ' . $transfusion->lab_number,
-            default => 'for patient medrec ' . $transfusion->patient->medrec,
+            !empty($transfusion->order_number) => 'dengan no. order ' . $transfusion->order_number,
+            !empty($transfusion->lab_number) => 'dengan no. lab ' . $transfusion->lab_number,
+            default => 'dengan medrec pasien ' . $transfusion->patient->medrec,
         };
     }
 }

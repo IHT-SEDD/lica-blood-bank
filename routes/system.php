@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\TestingController;
+use App\Http\Controllers\DevPlaygroundController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
@@ -20,10 +20,14 @@ Route::middleware('auth')->group(function () {
  })->name('language.switch');
 
  // --------------------------------------------------------------------------
- // Testing Route Group
+ // Dev Playground Route Group
  // --------------------------------------------------------------------------
- Route::prefix('testing')->name('testing.')->controller(TestingController::class)->group(function () {
+ Route::prefix('playground')->name('playground.')->controller(DevPlaygroundController::class)->group(function () {
   Route::get('/', 'index')->name('index');
-  Route::get('preview/{print}', 'printPreview')->name('preview');
+
+  Route::prefix('print')->name('print.')->group(function () {
+   Route::get('/', 'printTestIndex')->name('index');
+   Route::get('{print}', 'printPreview')->name('preview');
+  });
  });
 });

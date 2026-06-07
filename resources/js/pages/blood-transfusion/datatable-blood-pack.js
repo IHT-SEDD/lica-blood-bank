@@ -1,4 +1,3 @@
-import { data } from "jquery";
 import { GlobalAdvanceDatatable } from "../../app";
 import { initAvailableBloodComponentsTable } from "./analytic/datatables-helper";
 

@@ -33,9 +33,7 @@ class HistoryOrderController extends Controller
     // ---------- Fungsi untuk mengambil data order agar ditampilkan di datatable ----------
     public function historyOrderTable(Request $request)
     {
-        return response()->json(
-            $this->dataService->historyOrderTable($request)
-        );
+        return $this->dataService->historyOrderTable($request);
     }
 
     // ---------- Fungsi untuk menambahkan data order ke database ----------
@@ -52,9 +50,9 @@ class HistoryOrderController extends Controller
             $result = $this->writeService->updateDataOrder($request, $id);
             return $result;
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to update order data!'], 500);
+            return response()->json(['message' => 'Gagal memperbaharui data permintaan darah!'], 500);
         }
     }
 
@@ -72,9 +70,9 @@ class HistoryOrderController extends Controller
             $result = $this->writeService->generatePoFile($poNumber);
             return $result;
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to generate PO File!'], 500);
+            return response()->json(['message' => 'Gagal membuat dan mendownload file PO!'], 500);
         }
     }
 
@@ -84,10 +82,10 @@ class HistoryOrderController extends Controller
         try {
             return $this->dataService->previewPoFile($poNumber);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
             return response()->json([
-                'message' => 'Failed to preview PO File!',
+                'message' => 'Gagal menampilkan file PO!',
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile(),
@@ -101,9 +99,9 @@ class HistoryOrderController extends Controller
         try {
             return $this->writeService->downloadPoFile($poNumber);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to download PO File!'], 500);
+            return response()->json(['message' => 'Gagal mendownload file PO!'], 500);
         }
     }
 
@@ -113,9 +111,9 @@ class HistoryOrderController extends Controller
         try {
             return $this->writeService->printPoFile($poNumber);
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print PO File!'], 500);
+            return response()->json(['message' => 'Gagal mencetak file PO!'], 500);
         }
     }
 
@@ -124,14 +122,11 @@ class HistoryOrderController extends Controller
     {
         try {
             $data = $this->dataService->getDataOrderAndLogById($id);
-            dd($data);
 
-            return response()->json($data)
-                ->setEtag(md5(json_encode($data)))
-                ->header('Cache-Control', 'public, max-age=600');
+            return response()->json($data);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Data not found!'
+                'message' => 'Data tidak ditemukan!'
             ], 404);
         }
     }
@@ -142,12 +137,10 @@ class HistoryOrderController extends Controller
         try {
             $data = $this->dataService->getDataOrderByPO($poNumber);
 
-            return response()->json($data)
-                ->setEtag(md5(json_encode($data)))
-                ->header('Cache-Control', 'public, max-age=600');
+            return response()->json($data);
         } catch (ModelNotFoundException $e) {
             return response()->json([
-                'message' => 'Data not found!'
+                'message' => 'Data tidak ditemukan!'
             ], 404);
         }
     }
@@ -159,13 +152,13 @@ class HistoryOrderController extends Controller
         // Lempar data not found
         if (!$data) {
             return response()->json([
-                'message' => 'Data not found'
+                'message' => 'Data tidak ditemukan'
             ], 404);
         }
 
         // Lempar data ke frontend
         return response()->json([
-            'message' => 'Data fetched succesfully!',
+            'message' => 'Data permintaan darah berhasil diambil!',
             'data' => $data
         ]);
     }
@@ -177,9 +170,9 @@ class HistoryOrderController extends Controller
             $result = $this->writeService->setOrderDone($poNumber);
             return $result;
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to set order to done!'], 500);
+            return response()->json(['message' => 'Gagal menyelesaikan permintaan darah!'], 500);
         }
     }
 
@@ -190,9 +183,9 @@ class HistoryOrderController extends Controller
             $result = $this->writeService->deleteOrder($id);
             return $result;
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to delete order!'], 500);
+            return response()->json(['message' => 'Gagal menghapus permintaan darah!'], 500);
         }
     }
 
@@ -203,9 +196,9 @@ class HistoryOrderController extends Controller
             $result = $this->writeService->restoreOrder($id);
             return $result;
         } catch (ModelNotFoundException $e) {
-            return response()->json(['message' => 'Order not found!'], 404);
+            return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to restore order!'], 500);
+            return response()->json(['message' => 'Gagal memulihkan permintaan darah!'], 500);
         }
     }
 

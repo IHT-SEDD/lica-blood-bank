@@ -1,23 +1,8 @@
-{{-- Full Screen Loading Overlay :begin --}}
-<div id="fullscreen_loading_overlay" style="
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(2px);
-    " class="d-flex align-items-center justify-content-center d-none">
-  <div class="text-center text-white">
-    <div class="spinner-border avatar-lg text-primary mb-2" role="status"></div>
-    <p class="fw-semibold fs-5 mb-0">{{ __('Processing') }}...</p>
-  </div>
-</div>
-{{-- Full Screen Loading Overlay :end --}}
-
 {{-- Form Add New Order :begin --}}
 <form class="row g-2" id="add_new_order" autocomplete="off">
   {{-- Order Data Detail --}}
   <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-    <h4>{{ __('Order Data') }} {{ __('Details') }}</h4>
+    <h4>{{ __('Detail Permintaan') }}</h4>
   </div>
 
   {{-- Order Data Inputs :begin --}}
@@ -26,21 +11,21 @@
     <div class="col-lg-6 col-12 mb-1">
       {{-- PO Number --}}
       <div class="col-12">
-        <label class="form-label" for="po_number">{{ __('PO Number') }}
+        <label class="form-label" for="po_number">{{ __('No. PO') }}
           <span class="text-danger">*</span>
         </label>
         <input autocomplete="off" class="form-control" id="po_number" name="po_number" type="text"
-          placeholder="PO Number" readonly />
+          placeholder="Nomor PO" readonly />
         <small class="form-text text-muted">
-          {{ __('Click inputs to generate po number') }}.
+          {{ __('Klik untuk membuat nomor PO') }}.
         </small>
       </div>
 
       {{-- Description --}}
       <div class="col-12">
-        <label class="form-label" for="description">{{ __('Description') }}</label>
+        <label class="form-label" for="description">{{ __('Catatan') }}</label>
         <textarea autocomplete="off" class="form-control" id="description" name="description" rows="5"
-          placeholder="Order description"></textarea>
+          placeholder="Catatan Permintaan"></textarea>
       </div>
     </div>
     {{-- Left Side :begin --}}
@@ -51,29 +36,29 @@
       <div class="row mb-1">
         {{-- Vendor --}}
         <div class="col-lg-6 col-12">
-          <label class="form-label" for="select-vendor">{{ __('Vendor') }}
+          <label class="form-label" for="select-vendor">{{ __('PMI') }}
             <span class="text-danger">*</span>
           </label>
-          <select class="form-control" id="select-vendor" name="vendor_id" placeholder="Choose vendor..."></select>
+          <select class="form-control" id="select-vendor" name="vendor_id" placeholder="Pilih PMI..."></select>
         </div>
 
         {{-- Vendor Name --}}
         <div class="col-lg-6 col-12">
-          <label class="form-label" for="vendor-name">{{ __('Vendor') }} {{ __('Name') }}</label>
-          <input autocomplete="off" class="form-control" id="vendor-name" type="text" placeholder="Vendor name"
+          <label class="form-label" for="vendor-name">{{ __('Nama PMI') }}</label>
+          <input autocomplete="off" class="form-control" id="vendor-name" type="text" placeholder="Nama PMI"
             readonly />
           <small class="form-text text-muted">
-            {{ __('Vendor name fill automatic based on vendor you choose') }}.
+            {{ __('Nama PMI otomatis muncul berdasarkan pilihan anda.') }}.
           </small>
         </div>
 
         {{-- Vendor Address --}}
         <div class="col-12">
-          <label class="form-label" for="vendor-address">{{ __('Vendor') }} {{ __('Address') }}</label>
-          <textarea autocomplete="off" class="form-control" id="vendor-address" rows="5" placeholder="Vendor address"
+          <label class="form-label" for="vendor-address">{{ __('Alamat PMI') }}</label>
+          <textarea autocomplete="off" class="form-control" id="vendor-address" rows="5" placeholder="Alamat PMI"
             readonly></textarea>
           <small class="form-text text-muted">
-            {{ __('Vendor address fill automatic based on vendor you choose') }}.
+            {{ __('Alamat PMI otomatis muncul berdasarkan pilihan anda') }}.
           </small>
         </div>
       </div>
@@ -91,10 +76,10 @@
     <div class="w-xxl-25 w-lg-50 w-100 mb-2">
       <div class="input-group">
         <input aria-label="Count Table Row" class="form-control" type="number" min="1" id="add_row_blood_data_count"
-          placeholder="Count row" />
+          placeholder="Jumlah darah yang ditambah" />
         <button class="btn btn-dark add_row_blood_data" type="button" id="add_row_blood_data">
           <i class="ti ti-plus fs-4 me-2"></i>
-          Add Row
+          Tambah Darah
         </button>
       </div>
     </div>
@@ -104,10 +89,10 @@
       <table class="table table-sm table-striped align-middle mb-0" id="table_blood_data">
         <thead class="bg-light align-middle bg-opacity-25 thead-sm">
           <tr class="text-uppercase fs-xxs">
-            <th>Blood Pack <span class="text-danger">*</span></th>
-            <th>Quantity <span class="text-danger">*</span></th>
-            <th>Note</th>
-            <th>Action</th>
+            <th>Detail <span class="text-danger">*</span></th>
+            <th>Jumlah <span class="text-danger">*</span></th>
+            <th>Catatan</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody id="blood_data_row">
@@ -124,9 +109,9 @@
   <div class="mt-6 d-flex align-items-center justify-content-end gap-2">
     <div class="form-check form-check-info">
       <input class="form-check-input" id="save_as_draft" name="draft" type="checkbox" />
-      <label class="form-check-label fw-semibold" for="save_as_draft">Save as draft?</label>
+      <label class="form-check-label fw-semibold" for="save_as_draft">Simpan Sebagai Draft?</label>
     </div>
-    <button class="btn btn-success" type="submit">Add New Order</button>
+    <button class="btn btn-success" type="submit">Buat Permintaan</button>
   </div>
 </form>
 {{-- Form Add New Order :end --}}

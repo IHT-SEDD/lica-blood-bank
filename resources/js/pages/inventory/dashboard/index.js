@@ -3,6 +3,7 @@ import {
     setBloodFilter,
     ListStockTable,
     SeeDetailBloodStockAction,
+    FilterStatus,
 } from "./datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -93,7 +94,7 @@ async function PopulateBloodStat() {
             if (!totalEl) return;
 
             const count = data[key] ?? 0;
-            totalEl.innerHTML = `${count} <span class="fw-bold my-0 text-muted fs-4">Bags</span>`;
+            totalEl.innerHTML = `${count} <span class="fw-bold my-0 text-muted fs-4">Kantong</span>`;
 
             if (spinnerEl) spinnerEl.classList.add("d-none");
             totalEl.classList.remove("d-none");
@@ -108,7 +109,7 @@ async function PopulateBloodStat() {
 
 // ---------- Fungsi render / update Blood Stat Pie Chart :begin ----------
 function BloodStatChart(data) {
-    const labels = ["Type A", "Type B", "Type O", "Type AB"];
+    const labels = ["Goldar A", "Goldar B", "Goldar O", "Goldar AB"];
     const values = [
         data.blood_a_count ?? 0,
         data.blood_b_count ?? 0,
@@ -164,7 +165,7 @@ function BloodStatChart(data) {
                             enabled: true,
                             callbacks: {
                                 label: function (ctx) {
-                                    return `${ctx.label}: ${ctx.parsed} Bags`;
+                                    return `${ctx.label}: ${ctx.parsed} Kantong`;
                                 },
                             },
                         },
@@ -210,4 +211,5 @@ document.addEventListener("DOMContentLoaded", function () {
     SeeDetailBloodStockAction();
     InitCardSelection();
     PopulateBloodStat();
+    FilterStatus();
 });

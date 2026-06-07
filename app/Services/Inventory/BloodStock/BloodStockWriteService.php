@@ -32,13 +32,13 @@ class BloodStockWriteService
    $stock = BloodStock::where('public_id', $id)->first();
    if (!$stock) {
     DB::rollBack();
-    return response()->json(['message' => 'Data not found!'], 404);
+    return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
    }
 
    $storageRackId = StorageRack::where('public_id', $request->storage_rack_id)->value('id');
    if (!$storageRackId) {
     DB::rollBack();
-    return response()->json(['message' => 'Data storage rack not found!'], 404);
+    return response()->json(['message' => 'Data rak penyimpanan tidak ditemukan!'], 404);
    }
 
    StorageRackBlood::create([
@@ -61,7 +61,7 @@ class BloodStockWriteService
     'description' => generateBloodStockLogDescription(
      BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED,
      $stock->bag_number,
-     $user->id
+     $user->username
     ),
     'created_by_user_name' => $user->name,
     'timestamp' => now(),
@@ -74,7 +74,7 @@ class BloodStockWriteService
     'updated_by' => $user->id,
    ], 200, 'editbloodstock');
    return response()->json([
-    'message' => 'Blood stock updated successfully!',
+    'message' => 'Data stok darah berhasil diperbaharui!',
     'data' => $stock,
    ]);
   } catch (\Throwable $e) {
@@ -86,7 +86,7 @@ class BloodStockWriteService
     'updated_by' => Auth::id(),
    ], 500, 'editbloodstock');
    return response()->json([
-    'message' => 'Blood stock failed to update!',
+    'message' => 'Data stok darah gagal diperbaharui!',
     'error' => $e->getMessage(),
    ], 500);
   }
@@ -104,7 +104,7 @@ class BloodStockWriteService
    $stock = BloodStock::where('public_id', $id)->whereIn('blood_status', $deleteableStatus)->first();
    if (!$stock) {
     DB::rollBack();
-    return response()->json(['message' => 'Data blood stock not found!'], 404);
+    return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
    }
 
    $storageRackBlood = StorageRackBlood::where('blood_stock_id', $stock->id)->first();
@@ -125,7 +125,7 @@ class BloodStockWriteService
     'description' => generateBloodStockLogDescription(
      BloodStockLogActivityStatus::BLOOD_STOCK_DELETED,
      $stock->bag_number,
-     $user->id
+     $user->username
     ),
     'created_by_user_name' => $user->name,
     'timestamp' => now(),
@@ -138,7 +138,7 @@ class BloodStockWriteService
     'deleted_by' => $user->id,
    ], 200, 'deletebloodstock');
    return response()->json([
-    'message' => 'Blood stock deleted successfully!',
+    'message' => 'Data stok darah berhasil dihapus!',
     'data' => $stock,
    ]);
   } catch (\Throwable $e) {
@@ -150,7 +150,7 @@ class BloodStockWriteService
     'deleted_by' => Auth::id(),
    ], 500, 'deletebloodstock');
    return response()->json([
-    'message' => 'Blood stock failed to delete!',
+    'message' => 'Data stok darah gagal dihapus!',
     'error' => $e->getMessage(),
    ], 500);
   }
@@ -166,13 +166,13 @@ class BloodStockWriteService
    $stock = BloodStock::onlyTrashed()->where('public_id', $id)->where('blood_status', 'deleted')->whereNotNull('deleted_at')->first();
    if (!$stock) {
     DB::rollBack();
-    return response()->json(['message' => 'Data blood stock not found!'], 404);
+    return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
    }
 
    $storageRackBlood = StorageRackBlood::onlyTrashed()->where('blood_stock_id', $stock->id)->first();
    if (!$storageRackBlood) {
     DB::rollBack();
-    return response()->json(['message' => 'Data storage rack blood not found!'], 404);
+    return response()->json(['message' => 'Data rak penyimpanan tidak ditemukan!'], 404);
    }
 
    // ---------- Delete ----------
@@ -186,7 +186,7 @@ class BloodStockWriteService
     'description' => generateBloodStockLogDescription(
      BloodStockLogActivityStatus::BLOOD_STOCK_PERMANENT_DELETED,
      $stock->bag_number,
-     $user->id
+     $user->username
     ),
     'created_by_user_name' => $user->name,
     'timestamp' => now(),
@@ -199,7 +199,7 @@ class BloodStockWriteService
     'deleted_by' => $user->id,
    ], 200, 'deletebloodstock');
    return response()->json([
-    'message' => 'Blood stock permanent deleted successfully!',
+    'message' => 'Data stok darah berhasil dihapus secara permanen!',
     'data' => $stock,
    ]);
   } catch (\Throwable $e) {
@@ -211,7 +211,7 @@ class BloodStockWriteService
     'deleted_by' => Auth::id(),
    ], 500, 'deletebloodstock');
    return response()->json([
-    'message' => 'Blood stock failed to permanent delete!',
+    'message' => 'Data stok darah gagal dihapus secara permanen!',
     'error' => $e->getMessage(),
    ], 500);
   }
@@ -227,7 +227,7 @@ class BloodStockWriteService
    $stock = BloodStock::onlyTrashed()->where('public_id', $id)->where('blood_status', BloodStockStatus::DELETED)->whereNotNull('deleted_at')->first();
    if (!$stock) {
     DB::rollBack();
-    return response()->json(['message' => 'Data blood stock not found!'], 404);
+    return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
    }
 
    $storageRackBlood = StorageRackBlood::where('blood_stock_id', $stock->id)->first();
@@ -248,7 +248,7 @@ class BloodStockWriteService
     'description' => generateBloodStockLogDescription(
      BloodStockLogActivityStatus::BLOOD_STOCK_RESTORED,
      $stock->bag_number,
-     $user->id
+     $user->username
     ),
     'created_by_user_name' => $user->name,
     'timestamp' => now(),
@@ -261,7 +261,7 @@ class BloodStockWriteService
     'restored_by' => $user->id,
    ], 200, 'restorebloodstock');
    return response()->json([
-    'message' => 'Blood stock restored successfully!',
+    'message' => 'Data stok darah berhasil dipulihkan!',
     'data' => $stock,
    ]);
   } catch (\Throwable $e) {
@@ -273,7 +273,7 @@ class BloodStockWriteService
     'restored_by' => Auth::id(),
    ], 500, 'restorebloodstock');
    return response()->json([
-    'message' => 'Blood stock failed to restore!',
+    'message' => 'Data stok darah gagal dipulihkan!',
     'error' => $e->getMessage(),
    ], 500);
   }

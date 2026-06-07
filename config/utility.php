@@ -50,6 +50,9 @@ return [
     'blood-stock-status' => [
         'type' => 'enum',
     ],
+    'blood-transfusion-status' => [
+        'type' => 'enum',
+    ],
 
     // ---------- D ----------
     'doctor' => [
