@@ -1,6 +1,6 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
-import { TextFormatter } from "../../../utility/ui";
+import { setHidden, TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- GLOBAL VARIABLES ----------
@@ -688,38 +688,25 @@ export function updateDoneButtonState() {
     const btn = document.getElementById("btn-test-done");
     if (!btn) return;
 
-    // If no bag selected or already completed, disable
-    if (!window.currentBagDetailPublicId) {
-        btn.disabled = true;
-        return;
-    }
-
-    // If this bag already has a transfusion result, keep Done disabled
-    if (
-        window.currentBagCrossmatchResult &&
-        window.currentBagCrossmatchResult.toString().trim() !== ""
-    ) {
-        btn.disabled = true;
-        return;
-    }
-
-    // Check all visible test rows in the table
     const table = document.querySelector(TABLE.test);
-    if (!table) {
-        btn.disabled = true;
+    const rows = table?.querySelectorAll("tbody tr") ?? [];
+
+    // Sembunyikan jika salah satu kondisi early-exit terpenuhi
+    const shouldHide =
+        !window.currentBagDetailPublicId ||
+        (window.currentBagCrossmatchResult &&
+            window.currentBagCrossmatchResult.toString().trim() !== "") ||
+        !table ||
+        rows.length === 0;
+
+    if (shouldHide) {
+        setHidden(btn, true);
         return;
     }
 
-    const rows = table.querySelectorAll("tbody tr");
-    if (rows.length === 0) {
-        btn.disabled = true;
-        return;
-    }
-
+    // Cek semua baris sudah punya hasil
     let allComplete = true;
-
     rows.forEach((row) => {
-        // Check result select — must have a non-empty value
         const resultSelect = row.querySelector(".select-test-result");
         if (!resultSelect) {
             allComplete = false;
@@ -730,9 +717,7 @@ export function updateDoneButtonState() {
             resultSelect.dataset.component?.toLowerCase() === "tc";
         if (!isOptional && !resultSelect.value?.trim()) {
             allComplete = false;
-            return;
         }
-
         // // Check verified checkbox
         // const verifiedCb = row.querySelector(
         //     '.checkbox-update[data-field="verified"]',
@@ -752,7 +737,7 @@ export function updateDoneButtonState() {
         // }
     });
 
-    btn.disabled = !allComplete;
+    setHidden(btn, !allComplete);
 }
 export async function completeTest() {
     const detailPublicId = window.currentBagDetailPublicId;
@@ -786,15 +771,13 @@ export async function completeTest() {
         if (!response.ok) {
             throw new Error(res.message);
         }
-
         notyf.success({ message: res.message });
 
         // Mark bag as completed so Done button stays disabled
         window.currentBagCrossmatchResult = res.crossmatch_result;
-
-        // Disable Done button after success
-        btn.disabled = true;
         btn.innerHTML = originalText;
+        btn.disabled = false;
+        setHidden(btn, true);
 
         // Reload test table
         if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
@@ -856,6 +839,7 @@ export async function completeTest() {
                     if (btnPrintResult) {
                         btnPrintResult.disabled = !allHaveCrossmatch;
                     }
+                    updateDoneButtonState();
                 }, false);
         }
     } catch (error) {

@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Playground;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class TestingDataService
+class PrintTestService
 {
     protected array $printMap = [
         'incompatible-letter' => 'pdf.blood_transfusion.incompatible-letter',
         'crossmatch-result' => 'pdf.blood_transfusion.crossmatch-result',
         'blood-patient-card' => 'pdf.blood_transfusion.blood_card_patient',
+        'nota-transaction' => 'pdf.blood_transfusion.nota',
     ];
 
     public function resolveprint(string $print): \Symfony\Component\HttpFoundation\BinaryFileResponse
@@ -49,6 +50,10 @@ class TestingDataService
             ],
             'blood-patient-card' => [
                 'title' => 'Blood Patient Card',
+                'companyName' => config('app.name'),
+            ],
+            'nota-transaction' => [
+                'title' => 'Transaction Nota',
                 'companyName' => config('app.name'),
             ],
             default => [],

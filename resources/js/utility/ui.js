@@ -87,8 +87,13 @@ export class TextFormatter {
 }
 
 // ---------- Global Set Hidden Element Function ----------
-export function setHidden(id, hidden) {
-    const el = document.getElementById(id);
+export function setHidden(target, hidden) {
+    const el =
+        typeof target === "string"
+            ? document.getElementById(target)
+            : target instanceof HTMLElement
+              ? target
+              : null;
     if (!el) return;
     hidden ? el.classList.add("d-none") : el.classList.remove("d-none");
 }

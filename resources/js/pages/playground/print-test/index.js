@@ -32,7 +32,7 @@ function initPrintPreview() {
             return template.replace(":print", encodeURIComponent(printSlug));
         }
 
-        return `/testing/preview/${encodeURIComponent(printSlug)}`;
+        return `/print/${encodeURIComponent(printSlug)}`;
     }
 
     async function validateAndOpen(btn) {

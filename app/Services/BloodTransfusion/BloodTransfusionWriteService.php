@@ -188,17 +188,35 @@ class BloodTransfusionWriteService
     }
 
     // ---------- Fungsi Release Blood Pack ----------
-    public function releaseBloodPack(string $detailPublicId): void
+    public function releaseBloodPack(Request $request, string $detailPublicId): void
     {
         try {
-            DB::transaction(function () use ($detailPublicId) {
+            DB::transaction(function () use ($detailPublicId, $request) {
                 $detail = $this->getLockedDetail($detailPublicId, [
                     ['blood_release_status', false],
                 ]);
                 if (!$detail->blood_stock_id) {
-                    throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
+                    throw new \Exception('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
-                $detail->update(['blood_release_status' => true]);
+                if (!$request->blood_received_by) {
+                    throw new \Exception('Harap masukan penerima darah terlebih dahulu!');
+                }
+                if (!$request->blood_number) {
+                    throw new \Exception('Harap masukan nomor darah terlebih dahulu!');
+                }
+                $bloodStock = $detail->bloodStock;
+                if (!$bloodStock) {
+                    throw new \Exception('Data stok darah tidak ditemukan!');
+                }
+                if (strtolower(trim($bloodStock->bag_number)) !== strtolower(trim($request->blood_number))) {
+                    throw new \Exception('Nomor darah tidak sesuai dengan labu darah pasien ini!');
+                }
+                $detail->update([
+                    'blood_release_status' => true,
+                    'blood_released_by_user_id' => Auth::user()->id,
+                    'blood_received_by' => $request->blood_received_by,
+                    'blood_released_at' => now(),
+                ]);
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::TAKEN_OUT);
 
                 BloodTransfusionLogActivity::create([

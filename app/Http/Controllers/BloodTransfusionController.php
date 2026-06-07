@@ -300,16 +300,75 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Release Blood Pack ----------
-    public function releaseBloodPack(string $detailPublicId)
+    public function releaseBloodPack(Request $request, string $detailPublicId)
     {
+        $request->validate([
+            'blood_received_by' => 'required|string|max:255',
+            'blood_number' => 'required|string|max:255',
+        ]);
+
         try {
-            $this->writeService->releaseBloodPack($detailPublicId);
-            return response()->json(['message' => 'Blood pack has been released.']);
+            $this->writeService->releaseBloodPack($request, $detailPublicId);
+            return response()->json(['message' => 'Darah berhasil dikeluarkan.']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to release blood pack.',
+                'message' => 'Darah gagal dikeluarkan.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Release All Blood Pack ----------
+    public function releaseAllBloodPack(Request $request, string $transfusionPublicID)
+    {
+        $request->validate([
+            'blood_received_by' => 'required|string|max:255',
+            'blood_numbers' => 'required|array|min:1',
+            'blood_numbers.*' => 'required|string|max:255',
+        ]);
+
+        try {
+            $bloodTransfusionId = BloodTransfusion::where('public_id', $transfusionPublicID)->value('id');
+            $details = BloodTransfusionDetail::with(['bloodTransfusion'])
+                ->where('blood_transfusion_id', $bloodTransfusionId)
+                ->where('blood_release_status', false)
+                ->get();
+            foreach ($details as $detail) {
+                $matchedNumber = collect($request->blood_numbers)
+                    ->first(
+                        fn($num) =>
+                        strtolower(trim($num)) === strtolower(trim($detail->bloodStock?->bag_number ?? ''))
+                    );
+                if (!$matchedNumber) {
+                    throw new \RuntimeException(
+                        "Nomor darah untuk labu {$detail->bloodStock?->bag_number} tidak ditemukan!"
+                    );
+                }
+
+                $perDetailRequest = new \Illuminate\Http\Request();
+                $perDetailRequest->replace([
+                    'blood_received_by' => $request->blood_received_by,
+                    'blood_number' => $matchedNumber,
+                ]);
+
+                $this->writeService->releaseBloodPack($perDetailRequest, $detail->public_id);
+            }
+            return response()->json([
+                'message' => 'Semua labu darah berhasil dikeluarkan',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Semua labu darah gagal dikeluarkan',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -326,31 +385,6 @@ class BloodTransfusionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Gagal menghapus darah',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    // ---------- Release All Blood Pack ----------
-    public function releaseAllBloodPack(string $transfusionPublicID)
-    {
-        try {
-            $bloodTransfusionId = BloodTransfusion::where('public_id', $transfusionPublicID)->value('id');
-            $btDetailPublicIds = BloodTransfusionDetail::query()
-                ->with(['bloodTransfusion'])
-                ->where('blood_transfusion_id', $bloodTransfusionId)
-                ->pluck('public_id');
-            foreach ($btDetailPublicIds as $detailPublicId) {
-                $this->writeService->releaseBloodPack($detailPublicId);
-            }
-            return response()->json([
-                'message' => 'Semua labu darah berhasil dikeluarkan',
-            ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
-            return response()->json(['message' => 'Detail not found.'], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Semua labu darah gagal dikeluarkan',
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -409,8 +443,13 @@ class BloodTransfusionController extends Controller
             return $this->printService->nota($transfusionPublicID, $print);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mencetak nota',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print nota file!'], 500);
+            return response()->json(['message' => 'Failed to print nota file!', 'error' => $e->getMessage()], 500);
         }
     }
 

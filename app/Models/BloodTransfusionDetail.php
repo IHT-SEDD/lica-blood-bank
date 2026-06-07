@@ -26,6 +26,9 @@ class BloodTransfusionDetail extends Model
         'is_print_incompatible_letter',
         'is_approval_incompatible',
         'blood_release_status',
+        'blood_released_by_user_id',
+        'blood_received_by',
+        'blood_released_at',
         'deleted_at'
     ];
 
@@ -55,6 +58,11 @@ class BloodTransfusionDetail extends Model
     public function bloodPack(): BelongsTo
     {
         return $this->belongsTo(BloodPack::class, 'blood_pack_id');
+    }
+
+    public function bloodReleasedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'blood_released_by_user_id');
     }
 
     public function bloodTransfusionDetailTest()
