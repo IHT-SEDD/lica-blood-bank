@@ -14,10 +14,20 @@ import {
     completeTest,
     updateDoneButtonState,
 } from "./analytic/datatables-helper";
-import { GlobalRenderTimelineItem, TextFormatter } from "../../utility/ui";
+import {
+    GlobalRenderTimelineItem,
+    setHidden,
+    TextFormatter,
+} from "../../utility/ui";
 import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-config";
 import { initFormEdit } from "./form/edit";
 import { QzManager } from "../../utility/config/qz";
+import {
+    validateBloodNumber,
+    updateConfirmButtonState,
+    initReleaseBloodPack,
+    initReleaseAllBloodPack,
+} from "./helper/action-helper";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 // TIMELINE
@@ -30,7 +40,7 @@ const PRINT_URL = "/blood-transfusion/detail/print";
 const LogDataURL = "/blood-transfusion/detail/log";
 
 const SelectorBtnCheckin = "btn-checkin-lab";
-const SelectorBtnDone = "btn-test-done";
+const SelectorBtnCrossmatchSelesai = "btn-test-done";
 const SelectorBtnPrintNota = "btn-print-nota";
 const SelectorBtnPrintResult = "btn-print-result";
 const SelectorBtnComplete = "btn-complete-transaction";
@@ -50,10 +60,11 @@ const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
 
 const getCheckinBtn = () => document.getElementById(SelectorBtnCheckin);
 const getCompleteBtn = () => document.getElementById(SelectorBtnComplete);
-const getFinishBtn = () => document.getElementById(SelectorBtnDone);
+const getCrossmatchSelesaiBtn = () =>
+    document.getElementById(SelectorBtnCrossmatchSelesai);
 const getPrintNotaBtn = () => document.getElementById(SelectorBtnPrintNota);
 
-// ---------- Named handler untuk delete:open (di luar fungsi agar removeEventListener bekerja) ----------
+// ---------- Named handler untuk delete:open ----------
 function handleDeleteOpen(e) {
     const { data } = e.detail;
     if (!data) return;
@@ -523,14 +534,14 @@ function CompleteTransaction() {
 
 // ---------- Handle Done Button ----------
 function initDoneButton() {
-    const BTN_FINISH = getFinishBtn();
+    const BTN_FINISH = getCrossmatchSelesaiBtn();
     if (!BTN_FINISH) return;
 
     const newBtn = BTN_FINISH.cloneNode(true);
     BTN_FINISH.parentNode.replaceChild(newBtn, BTN_FINISH);
 
-    // Initially disabled
-    newBtn.disabled = true;
+    // Gunakan string ID, bukan elemen
+    setHidden("btn-test-done", true);
 
     newBtn.addEventListener("click", function () {
         completeTest();
@@ -641,19 +652,23 @@ function initBagRequestActionButtons() {
     const doAction = async ({
         url,
         method = "POST",
+        body = null,
         successMessage = "Action successful!",
         errorMessage = "Action failed!",
         onSuccess = null,
     }) => {
         try {
-            const response = await fetch(url, {
+            const fetchOptions = {
                 method,
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken,
                 },
-            });
+            };
 
+            if (body) fetchOptions.body = JSON.stringify(body);
+
+            const response = await fetch(url, fetchOptions);
             const result = await response.json();
 
             if (!response.ok) {
@@ -792,15 +807,18 @@ function initBagRequestActionButtons() {
         });
 
     // Release Blood
-    $(document)
-        .off("click", "#" + SelectorBtnRelease)
-        .on("click", "#" + SelectorBtnRelease, function (e) {
-            e.preventDefault();
-            if (!window.currentBagDetailPublicId) return;
-            doAction({
-                url: `/blood-transfusion/detail/${window.currentBagDetailPublicId}/release`,
-            });
-        });
+    initReleaseBloodPack({ doAction, SelectorBtnRelease });
+
+    // Release All Blood
+    initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll });
+    // $(document)
+    //     .off("click", "#" + SelectorBtnReleaseAll)
+    //     .on("click", "#" + SelectorBtnReleaseAll, function (e) {
+    //         e.preventDefault();
+    //         doAction({
+    //             url: `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
+    //         });
+    //     });
 
     // Unrelease
     $(document)
@@ -821,16 +839,6 @@ function initBagRequestActionButtons() {
             handlePrint(
                 `${PRINT_URL}/incompatible-letter/${window.currentTransfusionPublicId}`,
             );
-        });
-
-    // Release All Blood
-    $(document)
-        .off("click", "#" + SelectorBtnReleaseAll)
-        .on("click", "#" + SelectorBtnReleaseAll, function (e) {
-            e.preventDefault();
-            doAction({
-                url: `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
-            });
         });
 
     // Print Result

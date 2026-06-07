@@ -80,7 +80,7 @@ class BloodTransfusionDataService
             return DataTables::of(collect())->toJson();
         }
 
-        $query = BloodTransfusionDetail::with('bloodPack')
+        $query = BloodTransfusionDetail::with(['bloodPack', 'bloodStock'])
             ->where('blood_transfusion_id', $transfusion->id);
 
         return DataTables::eloquent($query)
@@ -291,6 +291,8 @@ class BloodTransfusionDataService
             'has_available_stock' => $availableStocks->isNotEmpty(),
             'available_stocks' => $options,
             'selected_stock_id' => $detail->blood_stock_id,
+            'selected_bag_number' => $detail->bloodStock?->bag_number ?? null,
+            'bag_number' => $detail->bloodStock?->bag_number ?? null,
             'component_id' => $detail->component,
             'component_text' => BloodComponent::getById($detail->component),
             'crossmatch_result' => $detail->crossmatch_result,

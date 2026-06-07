@@ -172,7 +172,7 @@
 
         <div class="d-flex justify-content-center align-items-center gap-2">
           {{-- Finish blood request button --}}
-          <button data-id="" class="btn btn-sm btn-soft-success fw-medium" style="font-size: 11.9px;" id="btn-test-done"
+          <button data-id="" class="btn btn-sm btn-soft-success fw-medium d-none" style="font-size: 11.9px;" id="btn-test-done"
             data-bs-title="Selesaikan Pemeriksaan Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-circle-check fs-4 me-1"></i> Selesai Crossmatch
           </button>
@@ -260,6 +260,8 @@
 @include('pages.blood-transfusion.partials.edit-blood-pack-modal')
 @include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
 @include('pages.blood-transfusion.partials.delete-blood-modal')
+@include('pages.blood-transfusion.partials.blood-release-modal')
+@include('pages.blood-transfusion.partials.blood-release-all-modal')
 @endsection
 
 @section('scripts')

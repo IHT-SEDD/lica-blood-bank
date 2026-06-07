@@ -2,23 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\TestingDataService;
+use App\Services\Playground\PrintTestService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
-class TestingController extends Controller
+class DevPlaygroundController extends Controller
 {
-    public function __construct(protected TestingDataService $testingDataService) {}
+    public function __construct(protected PrintTestService $printTestServie) {}
 
     public function index()
     {
-        return view('pages.testing.index');
+        return view('pages.playground.index');
+    }
+    public function printTestIndex()
+    {
+        return view('pages.playground.print-test.index');
     }
 
     public function printPreview(string $print)
     {
         try {
-            return $this->testingDataService->resolvePrint($print);
+            return $this->printTestServie->resolvePrint($print);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Throwable $e) {
