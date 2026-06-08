@@ -21,6 +21,6 @@ Route::prefix('v1')->name('v1.')->group(function () {
         // ---------- Insert New Request ----------
         Route::post('/', 'newRequest')->name('New Request');
         // ----------- Send Result ----------------
-        Route::post('/send-result', 'sendResult')->name('Send Result');
+        Route::post('/send-result/{orderNumber}', 'sendResult')->name('Send Result');
     });
 });

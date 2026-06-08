@@ -44,6 +44,8 @@
    <div class="card-body">
     <form action="{{ url('api/v1/blood-transfusion/send-result') }}" method="post">
      @csrf
+     <label class="form-label mb-2" for="order-number">{{ __('Order Number') }}</label>
+     <input autocomplete="off" class="form-control mb-2" id="order-number" name="order_number" type="text" placeholder="Order Number" />
      <button class="btn btn-primary w-100" type="submit">Send Result</button>
     </form>
    </div>

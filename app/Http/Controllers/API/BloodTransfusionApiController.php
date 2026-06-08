@@ -86,7 +86,7 @@ class BloodTransfusionApiController extends Controller
 
             if (!$transfusion) {
                 return $this->apiUtilityService->errorResponse(
-                    'Blood transfusion order not found.'
+                    'Transaksi permintaan darah tidak ditemukan.'
                 );
             }
 
@@ -95,14 +95,14 @@ class BloodTransfusionApiController extends Controller
 
             if (!$isFinished) {
                 return $this->apiUtilityService->errorResponse(
-                    'Blood transfusion order not yet finished.'
+                    'Transaksi permintaan darah ini belum selesai!'
                 );
             }
 
             $result = $this->apiDataService->sendResult($orderNumber);
 
             return $this->apiUtilityService->successResponse(
-                'Blood transfusion result sent to SIMRS successfully.',
+                'Hasil permintaan darah sukses terkirim ke SIMRS',
                 $result
             );
         } catch (\Throwable $e) {

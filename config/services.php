@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'SIMRS_API' => [
+        'url' => env('SIMRS_API_URL'),
+        'api_key' => env('SIMRS_API_API_KEY'),
+        'key_value' => env('SIMRS_API_KEY_VALUE'),
+        'key_ws' => env('SIMRS_API_KEY_WS'),
+        'timeout' => env('SIMRS_API_TIMEOUT'),
+    ],
 ];
