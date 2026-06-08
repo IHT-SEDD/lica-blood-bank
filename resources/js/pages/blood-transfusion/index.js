@@ -297,7 +297,10 @@ export function updatePatientDetailUI(data) {
                         const btnComplete =
                             document.getElementById(SelectorBtnComplete);
                         if (btnComplete) {
-                            btnComplete.disabled = !allHaveCrossmatch;
+                            btnComplete.disabled =
+                                !allHaveCrossmatch ||
+                                !bloodReleased ||
+                                hasUnapprovedIncompatible;
                         }
 
                         const btnReleaseAll = document.getElementById(

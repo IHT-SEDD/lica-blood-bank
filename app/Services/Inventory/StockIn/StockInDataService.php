@@ -12,6 +12,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Yajra\DataTables\Facades\DataTables;
 
 class StockInDataService
 {
@@ -48,33 +49,30 @@ class StockInDataService
 
     $this->applyDateFilter($query, $request);
 
-    if ($request->filled('vendor')) {
-      $query->whereHas('orderBloods.vendors', function ($q) use ($request) {
-        $q->where('public_id', $request->vendor);
-      });
-    }
-
-    if ($request->filled('status')) {
-      $query->where('status', $request->status);
-    }
-
-    if ($request->filled('search')) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('po_number', 'like', "%{$search}%")
-          ->orWhereHas('orderBloods.vendors', function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%");
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('po_number', 'like', "%{$search}%")
+              ->orWhereHas('orderBloods.vendors', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%");
+              });
           });
-      });
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    } else {
-      $query->latest();
-    }
-
-    return $query->paginate($request->get('per_page', 10));
+        }
+        if ($request->filled('status')) {
+          $query->where('status', $request->status);
+        }
+        if ($request->filled('vendor')) {
+          $query->whereHas('orderBloods.vendors', function ($q) use ($request) {
+            $q->where('public_id', $request->vendor);
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $query->orderBy('created_at', 'asc');
+      })
+      ->toJson();
   }
 
   // ---------- Fungsi untuk mengambil data berdasarkan id :begin ----------

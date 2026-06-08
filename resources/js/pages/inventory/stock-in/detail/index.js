@@ -1,6 +1,5 @@
 import { getDataFromURL } from "../../../../utility/application";
 import {
-    GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
@@ -8,6 +7,7 @@ import {
     GlobalAdvanceTomselect,
 } from "../../../../app";
 import { DateTimeFormatter } from "../../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Datatable
@@ -47,10 +47,10 @@ function reloadTableOrderBlood() {
 function IncomingBloodTable() {
     // ---------- Init kolom pada tabel ----------
     const IncomingBloodTableColumns = [
-        { data: "bag_number", title: "Bag Number" },
+        { data: "bag_number", title: "No. Kantong" },
         {
             data: null,
-            title: "Blood Pack",
+            title: "Detail",
             render: (data, row) => {
                 const bloodPacks = data.blood_packs;
                 return `${bloodPacks.blood_group}${bloodPacks.blood_rhesus} ${bloodPacks.blood_component}`;
@@ -59,35 +59,35 @@ function IncomingBloodTable() {
         { data: "blood_volume", title: "Volume" },
         {
             data: "aftap_date",
-            title: "Aftap",
+            title: "Tgl. Aftap",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "expiry_date",
-            title: "Expiry",
+            title: "Tgl. Expire",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "process_date",
-            title: "Process",
+            title: "Tgl. Proses",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "ready_at",
-            title: "Ready",
+            title: "Tgl. Tersedia",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
             data: "created_at",
-            title: "Registered",
+            title: "Tgl. Didaftarkan",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
@@ -95,7 +95,7 @@ function IncomingBloodTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    incomingBloodTableInstance = new GlobalAdvanceDatatable(
+    incomingBloodTableInstance = new GlobalAdvanceYajraDatatable(
         IncomingBloodTableSelector,
         {
             ajax: { url: URLIncomingBloodTable + `/${id}` },
@@ -119,18 +119,18 @@ function OrderBloodTable() {
     const OrderBloodTableColumns = [
         {
             data: null,
-            title: "Blood",
+            title: "Detail",
             render: (data, row) => {
                 const bloodPacks = data.blood_packs;
                 return `${bloodPacks.blood_group}${bloodPacks.blood_rhesus} ${bloodPacks.blood_component}`;
             },
         },
         { data: "quantity", title: "Qty" },
-        { data: "note", title: "Note" },
-        { data: "order_bloods.users.name", title: "Order By" },
+        { data: "note", title: "Catatan" },
+        { data: "order_bloods.users.name", title: "Dibuat Oleh" },
         {
             data: "created_at",
-            title: "Order At",
+            title: "Tgl. Dibuat",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
@@ -138,7 +138,7 @@ function OrderBloodTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    orderBloodTableInstance = new GlobalAdvanceDatatable(
+    orderBloodTableInstance = new GlobalAdvanceYajraDatatable(
         OrderBloodTableSelector,
         {
             ajax: { url: URLOrderBloodTable + `/${id}` },
