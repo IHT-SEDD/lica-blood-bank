@@ -29,6 +29,26 @@
    </div>
   </div>
  </div>
+ {{-- Halaman Uji Coba API --}}
+ <div class="col-xxl-3 col-md-4 col-6">
+  <div class="card">
+   {{-- Card Header --}}
+   <div class="card-header justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Testing API (Send Result)</h5>
+    <div class="card-action d-flex align-items-center gap-2">
+     <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
+    </div>
+   </div>
+
+   {{-- Card Body --}}
+   <div class="card-body">
+    <form action="{{ url('api/v1/blood-transfusion/send-result') }}" method="post">
+     @csrf
+     <button class="btn btn-primary w-100" type="submit">Send Result</button>
+    </form>
+   </div>
+  </div>
+ </div>
 </div>
 @endsection
 
