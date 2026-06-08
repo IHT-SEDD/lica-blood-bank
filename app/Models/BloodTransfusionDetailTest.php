@@ -18,6 +18,7 @@ class BloodTransfusionDetailTest extends Model
         'package_id',
         'type',
         'result_status',
+        'general_code',
         'result',
         'result_by_user_id',
         'verified_at',

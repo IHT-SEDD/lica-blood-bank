@@ -29,6 +29,7 @@ class BloodTransfusionDetail extends Model
         'blood_released_by_user_id',
         'blood_received_by',
         'blood_released_at',
+        'general_code',
         'deleted_at'
     ];
 

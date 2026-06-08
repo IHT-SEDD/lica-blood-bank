@@ -179,8 +179,8 @@ export const BloodTransfusionLogConfigTL = {
     blood_transfusion_finished: {
         icon: "droplet-check",
         colorClass: "text-success fill-success",
-        title: "Crossmatch Selesai",
-        tooltipTitle: "Pemeriksaan crossmatch berhasil diselesaikan",
+        title: "Transaksi Selesai",
+        tooltipTitle: "Transaksi pasien ini berhasil diselesaikan",
     },
     crossmatch_finished: {
         icon: "droplet-check",
@@ -191,7 +191,7 @@ export const BloodTransfusionLogConfigTL = {
     blood_transfusion_completed: {
         icon: "shield-check",
         colorClass: "text-success fill-success",
-         title: "Transaksi Selesai",
+        title: "Transaksi Selesai",
         tooltipTitle: "Transaksi berhasil diselesaikan",
     },
     blood_transfusion_checked_in: {

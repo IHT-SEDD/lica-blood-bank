@@ -36,25 +36,19 @@ class StockInController extends Controller
     // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable ----------
     public function stockinTable(Request $request)
     {
-        return response()->json(
-            $this->dataService->stockinTable($request)
-        );
+        return $this->dataService->stockinTable($request);
     }
 
     // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable incoming blood detail ----------
     public function incomingBloodTable(Request $request, string $id)
     {
-        return response()->json(
-            $this->serviceDetail->incomingStockTable($request, $id)
-        );
+        return $this->serviceDetail->incomingStockTable($request, $id);
     }
 
     // ---------- Fungsi untuk mengambil data agar ditampilkan di datatable order blood detail ----------
     public function orderBloodTable(Request $request, string $id)
     {
-        return response()->json(
-            $this->serviceDetail->orderDataTable($request, $id)
-        );
+        return $this->serviceDetail->orderDataTable($request, $id);
     }
 
     // ---------- Fungsi untuk menambahkan data incoming stock ke database ----------
