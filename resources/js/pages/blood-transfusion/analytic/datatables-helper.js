@@ -259,15 +259,24 @@ export function DatatableListBagRequest() {
                     message =
                         "Tidak ada labu darah yang tersedia untuk pasien ini!";
                 }
-
                 if (message) {
                     return `<span class="text-danger fw-semibold">${message}</span>`;
                 }
-                const isDisabled =
+
+                // ---------- Kondisi disabled ----------
+                const noLabNumber =
                     !window.currentTransfusionLabNumber ||
-                    window.currentTransfusionLabNumber === "-"
+                    window.currentTransfusionLabNumber === "-";
+                const isCrossmatchResult =
+                    row.crossmatch_result !== "" && row.crossmatch_result;
+                const isReleasedOrNotInUse =
+                    rowData.blood_release_status === true ||
+                    row.blood_stock?.blood_status !== "in_use";
+                const isDisabledBloodNumber =
+                    noLabNumber || isCrossmatchResult || isReleasedOrNotInUse
                         ? "disabled"
                         : "";
+
                 const options = rowData.available_stocks
                     .map(
                         (stock) => `
@@ -284,7 +293,7 @@ export function DatatableListBagRequest() {
                     options;
                 return `
                             <select class="select-bag-number fs-6 fw-semibold" placeholder="Choose Bag Number"
-                                data-id="${row.public_id}" ${isDisabled}>
+                                data-id="${row.public_id}" ${isDisabledBloodNumber}>
                                 ${optionsHtml}
                             </select>
                         `;

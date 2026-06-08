@@ -814,14 +814,6 @@ function initBagRequestActionButtons() {
 
     // Release All Blood
     initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll });
-    // $(document)
-    //     .off("click", "#" + SelectorBtnReleaseAll)
-    //     .on("click", "#" + SelectorBtnReleaseAll, function (e) {
-    //         e.preventDefault();
-    //         doAction({
-    //             url: `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
-    //         });
-    //     });
 
     // Unrelease
     $(document)
