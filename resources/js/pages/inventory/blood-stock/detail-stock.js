@@ -156,6 +156,12 @@ function BloodStockDataTable() {
                             Dimusnahkan
                         </span>`;
                         break;
+                    case "taken_out":
+                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                            <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
+                            Dikeluarkan
+                        </span>`;
+                        break;
 
                     default:
                         return `<span class="badge badge-label fw-semibold badge-soft-primary">

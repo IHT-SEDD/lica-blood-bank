@@ -133,7 +133,7 @@ export function DatatableRequestBlood() {
                         </span>`;
                         break;
                     case "Blood Transfusion Finished":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Crossmatch Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
                             <i class="ti ti-droplet-check"></i>
                         </span>`;
                         break;

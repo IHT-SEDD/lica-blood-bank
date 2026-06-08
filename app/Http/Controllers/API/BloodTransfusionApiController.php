@@ -48,13 +48,13 @@ class BloodTransfusionApiController extends Controller
 
                 if ($isFinished) {
                     return $this->apiUtilityService->errorResponse(
-                        'Blood transfusion order has already been finished and cannot be updated.'
+                        'Transaksi permintaan darah ini tidak bisa diperbaharui karena sudah selesai!'
                     );
                 }
                 $result = $this->apiUpdateService->updateData($existing, $validated);
 
                 return $this->apiUtilityService->successResponse(
-                    'Blood transfusion request updated successfully',
+                    'Transaksi permintaan darah sukses diperbaharui',
                     $result
                 );
             }
@@ -62,7 +62,7 @@ class BloodTransfusionApiController extends Controller
             // ---- Jika transaksi belum ada, maka create data
             $result = $this->apiAddService->insertNewData($request->validated());
             return $this->apiUtilityService->successResponse(
-                'Blood transfusion request created successfully',
+                'Transaksi permintaan darah berhasil ditambahkan',
                 $result
             );
         } catch (\Throwable $e) {

@@ -1,12 +1,12 @@
 // ---------- Import Libraries ----------
 import {
-    GlobalAdvanceDatatable,
     GlobalAdvanceFlatpickr,
     GlobalDeleteDataConfirmation,
     GlobalRestoreDataConfirmation,
     GlobalEditData,
     GlobalAdvanceTomselect,
 } from "../../../app";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -74,19 +74,19 @@ function reloadTable() {
 function StockInTable() {
     // ---------- Init kolom pada tabel ----------
     const StockInTableColumns = [
-        { data: "po_number", title: "PO Number" },
+        { data: "po_number", title: "No. PO" },
         {
             data: null,
-            title: "Vendor",
+            title: "PMI",
             render: (data, type, row) => {
                 return `<span class="badge badge-label badge-soft-primary">${row.order_bloods.vendors.name}</span>`;
             },
         },
-        { data: "batch_number", title: "Batch Number" },
-        { data: "total_blood_data", title: "Total Bloods" },
+        { data: "batch_number", title: "No. Batch" },
+        { data: "total_blood_data", title: "Total Darah" },
         {
             data: null,
-            title: "Blood Packs",
+            title: "Detail",
             render: (data, type, row) => {
                 const incomingBloodGroup = row.incoming_blood_groups;
                 if (!incomingBloodGroup.length) return "-";
@@ -100,29 +100,64 @@ function StockInTable() {
             render: (data, type, row) => {
                 const isDeleted = row.deleted_at !== null;
                 if (isDeleted) {
-                    return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
-                } else {
-                    return `<span class="badge badge-label badge-soft-secondary">${data}</span>`;
+                    return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                        <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                        Dihapus
+                    </span>`;
+                }
+
+                switch (data.value || data) {
+                    case "stock_ready":
+                        return `<span class="badge badge-label fw-semibold bg-success">
+                            <i class="ti ti-check align-middle me-2 fs-4"></i>
+                            Semua Darah Ready
+                        </span>`;
+                        break;
+                    case "stock_registered":
+                        return `<span class="badge badge-label fw-semibold badge-soft-info">
+                            <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
+                            Semua Darah Terdaftar
+                        </span>`;
+                        break;
+                    case "incoming_stock_cancelled":
+                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                            <i class="ti ti-x align-middle me-2 fs-4"></i>
+                            Dibatalkan
+                        </span>`;
+                        break;
+                    case "incoming_stock_deleted":
+                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                            <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                            Dihapus
+                        </span>`;
+                        break;
+
+                    default:
+                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                            <i class="ti ti-droplet align-middle me-2 fs-4"></i>
+                            ${data.value || data}
+                        </span>`;
+                        break;
                 }
             },
         },
         {
             data: "created_at",
-            title: "Created At",
+            title: "Tgl. Didaftarkan",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "deleted_at",
-            title: "Deleted At",
+            title: "Tgl. Dihapus",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -156,8 +191,7 @@ function StockInTable() {
         },
     ];
 
-    // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    stockInTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
+    stockInTableInstance = new GlobalAdvanceYajraDatatable(DatatableSelector, {
         ajax: {
             url: DataURL,
             data: function (d) {
