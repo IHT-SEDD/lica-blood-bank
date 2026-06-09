@@ -1,16 +1,11 @@
 // Ganti ukuran font aktif (f = jenis font, size = ukuran dot)
 const font = (size, f = 0) => `^CF${f},${size}`;
-
-// Cetak teks pada posisi (x, y)
 const field = (x, y, text) => `^FO${x},${y}^FD${text}^FS`;
-
 const fieldFH = (x, y, text) => `^FO${x},${y}^FH^FD${text}^FS`;
-
 const zplEncode = (char) =>
     [...new TextEncoder().encode(char)]
         .map((b) => `_${b.toString(16).toUpperCase().padStart(2, "0")}`)
         .join("");
-
 const DEGREE = zplEncode("°");
 
 // Gambar garis horizontal; ubah w untuk lebar, t untuk ketebalan
@@ -33,15 +28,9 @@ const row = (
     field(colonX, y, ":") +
     font(valueSize) +
     field(valueX, y, value);
-
-// Row untuk info kantong darah — anchor: label=50, titik dua=230, nilai=250
 const bloodInfoRow = (y, label, value) => row(50, 230, 250, y, label, value);
-
-// Row untuk info pasien — anchor: label=50, titik dua=260, nilai=280
 const patientRow = (y, label, value, labelSize = 25, valueSize = 26) =>
     row(50, 260, 280, y, label, value, labelSize, valueSize);
-
-// Header label darah (kantong)
 const bloodHeader = () =>
     font(35) +
     field(65, 40, "INSTALASI PELAYANAN DARAH RUMAH SAKIT") +
@@ -151,7 +140,6 @@ export function buildZplBarcodeBlood(item) {
         "^XZ",
     ].join("");
 }
-
 export function buildZplDefault(item, padleft) {
     const { patient_name, no_lab, medrec, birth_date, gender } = item;
     const barcodeX = Math.floor((padleft - 200) / 2);
@@ -167,4 +155,38 @@ export function buildZplDefault(item, padleft) {
         field(0, 135, `${medrec.substring(0, 20)} / ${birth_date} / ${gender}`),
         "^XZ",
     ].join("");
+}
+export function buildZplBarcodeRelease(item) {
+    const { bag_number, received_by, released_by, released_at } = item;
+    const label = (lines) =>
+        ["^XA", "^CI28", "^LH0,0", "^CF0,20", ...lines, "^XZ"].join("\n");
+    const colonX = 163;
+    const valueX = 175;
+    const centerY = 70;
+    const labelBagNumber = label([
+        `^FO50,${centerY}^FDNomor Labu^FS`,
+        `^FO${colonX},${centerY}^FD:^FS`,
+        `^FO${valueX},${centerY}^FD${bag_number}^FS`,
+    ]);
+    const labelReceivedBy = label([
+        `^FO30,${centerY}^FDNama Penerima^FS`,
+        `^FO${colonX},${centerY}^FD:^FS`,
+        `^FO${valueX},${centerY}^FD${received_by}^FS`,
+    ]);
+    const labelReleasedBy = label([
+        `^FO30,${centerY}^FDNama Penyerah^FS`,
+        `^FO${colonX},${centerY}^FD:^FS`,
+        `^FO${valueX},${centerY}^FD${released_by}^FS`,
+    ]);
+    const labelReleasedAt = label([
+        `^FO55,${centerY}^FDTanggal/Jam^FS`,
+        `^FO${colonX},${centerY}^FD:^FS`,
+        `^FO${valueX},${centerY}^FD${released_at}^FS`,
+    ]);
+    return [
+        labelBagNumber,
+        labelReceivedBy,
+        labelReleasedBy,
+        labelReleasedAt,
+    ].join("\n");
 }

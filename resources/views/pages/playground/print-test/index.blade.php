@@ -16,11 +16,11 @@
  </div>
 
  {{-- Incompatible Letter --}}
- <div class="col-xxl-3 col-md-4 col-6">
+ <div class="col-xxl-2 col-md-3 col-6">
   <div class="card">
    {{-- Card Header --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title mb-0">Incompatible Letter Preview</h5>
+    <h5 class="card-title mb-0">Incompatible Letter</h5>
     <div class="card-action d-flex align-items-center gap-2">
      <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
     </div>
@@ -37,11 +37,11 @@
  </div>
 
  {{-- Crossmatch Result --}}
- <div class="col-xxl-3 col-md-4 col-6">
+ <div class="col-xxl-2 col-md-3 col-6">
   <div class="card">
    {{-- Card Header --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title mb-0">Crossmatch Result Preview</h5>
+    <h5 class="card-title mb-0">Crossmatch Result</h5>
     <div class="card-action d-flex align-items-center gap-2">
      <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
     </div>
@@ -58,11 +58,11 @@
  </div>
 
  {{-- Blood Patient Card --}}
- <div class="col-xxl-3 col-md-4 col-6">
+ <div class="col-xxl-2 col-md-3 col-6">
   <div class="card">
    {{-- Card Header --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title mb-0">Blood Patient Card Preview</h5>
+    <h5 class="card-title mb-0">Blood Patient Card</h5>
     <div class="card-action d-flex align-items-center gap-2">
      <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
     </div>
@@ -79,7 +79,7 @@
  </div>
 
  {{-- Nota --}}
- <div class="col-xxl-3 col-md-4 col-6">
+ <div class="col-xxl-2 col-md-3 col-6">
   <div class="card">
    {{-- Card Header --}}
    <div class="card-header justify-content-between align-items-center">
@@ -95,6 +95,33 @@
      data-preview-url="{{ route('playground.print.preview', ':print') }}">
      Print Preview
     </button>
+   </div>
+  </div>
+ </div>
+
+ {{-- PO File --}}
+ <div class="col-xxl-2 col-md-3 col-6">
+  <div class="card">
+   {{-- Card Header --}}
+   <div class="card-header justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Purchase Order</h5>
+    <div class="card-action d-flex align-items-center gap-2">
+     <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
+    </div>
+   </div>
+
+   {{-- Card Body --}}
+   <div class="card-body">
+    <div class="d-flex align-items-center justify-content-center gap-1">
+     <button class="btn btn-soft-secondary" type="button" id="print_preview_btn" data-print="purchase-order"
+      data-preview-url="{{ route('playground.print.preview', ':print') }}">
+      Print
+     </button>
+     <button class="btn btn-soft-secondary" type="button" id="download_pdf_btn" data-pdf="purchase-order"
+      data-pdf-url="{{ route('playground.print.pdf', ':print') }}">
+      PDF
+     </button>
+    </div>
    </div>
   </div>
  </div>

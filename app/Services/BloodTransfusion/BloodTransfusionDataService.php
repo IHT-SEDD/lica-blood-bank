@@ -9,6 +9,7 @@ use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionLogActivity;
+use App\Models\CrossmatchHistory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -262,9 +263,26 @@ class BloodTransfusionDataService
     private function mapBagRequestRow(BloodTransfusionDetail $detail, BloodTransfusion $transfusion): array
     {
         $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)
-            ->where('blood_status', BloodStockStatus::AVAILABLE->value)
+            ->whereIn('blood_status', [
+                BloodStockStatus::AVAILABLE,
+                BloodStockStatus::USED,
+            ])
             ->where('expiry_date', '>', $transfusion->blood_request_at)
             ->get();
+
+        $patientId = $transfusion->patient_id;
+        $availableStocks = $availableStocks->filter(function ($stock) use ($patientId, $detail) {
+            $isIncompatible = CrossmatchHistory::where('blood_stock_id', $stock->id)
+                ->whereHas('bloodTransfusionDetail.bloodTransfusion', function ($query) use ($patientId) {
+                    $query->where('patient_id', $patientId);
+                })
+                ->where('result', 'Incompatible')
+                ->exists();
+            if ($isIncompatible) {
+                return $stock->id === $detail->blood_stock_id;
+            }
+            return true;
+        })->values();
 
         if ($detail->blood_stock_id) {
             $selectedStock = BloodStock::find($detail->blood_stock_id);

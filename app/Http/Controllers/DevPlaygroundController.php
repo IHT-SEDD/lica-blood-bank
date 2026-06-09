@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class DevPlaygroundController extends Controller
 {
-    public function __construct(protected PrintTestService $printTestServie) {}
+    public function __construct(protected PrintTestService $printTestService) {}
 
     public function index()
     {
@@ -22,11 +22,22 @@ class DevPlaygroundController extends Controller
     public function printPreview(string $print)
     {
         try {
-            return $this->printTestServie->resolvePrint($print);
+            return $this->printTestService->print($print);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print preview File!'], 500);
+            return response()->json(['message' => 'Failed to print preview File!', 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function downloadPDF(string $print)
+    {
+        try {
+            return $this->printTestService->downloadPDF($print);
+        } catch (ModelNotFoundException $e) {
+            return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Failed to download File!', 'error' => $e->getMessage()], 500);
         }
     }
 }

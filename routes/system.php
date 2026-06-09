@@ -27,7 +27,8 @@ Route::middleware('auth')->group(function () {
 
   Route::prefix('print')->name('print.')->group(function () {
    Route::get('/', 'printTestIndex')->name('index');
-   Route::get('{print}', 'printPreview')->name('preview');
+   Route::get('preview/{print}', 'printPreview')->name('preview');
+   Route::get('pdf/{print}', 'downloadPDF')->name('pdf');
   });
  });
 });

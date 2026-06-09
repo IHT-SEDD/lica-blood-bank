@@ -29,7 +29,9 @@
   </div>
  </div>
 
- <p class="m-0">Klik
+ <p class="m-0 fw-medium">Klik
+  <span class="badge badge-label badge-soft-dark">Print Barcode</span>
+  lalu klik
   <span class="badge badge-label badge-soft-success">Keluarkan</span>
   jika kamu ingin mengeluarkan dan klik
   <span class="badge badge-label badge-soft-danger">Batalkan</span>
@@ -42,6 +44,10 @@
   {{-- Cancel Button --}}
   <div>
    <button class="btn btn-danger" data-bs-dismiss="modal" type="button">Batalkan</button>
+  </div>
+  {{-- Print Barcode Button --}}
+  <div>
+   <button class="btn btn-dark" id="print_barcode_release_btn" type="button">Print Barcode</button>
   </div>
   {{-- Confirm Button --}}
   <div>

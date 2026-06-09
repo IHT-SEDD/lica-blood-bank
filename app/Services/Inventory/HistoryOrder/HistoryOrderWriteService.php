@@ -376,10 +376,14 @@ class HistoryOrderWriteService
         try {
             $user = Auth::user();
             $order = $this->queryOrderData($poNumber);
-            [$storagePath, $fileName] = $this->generatePdfResponse($order, $poNumber);
+            [$storagePath, $absolutePath, $fileName] = $this->generatePdfResponse($order, $poNumber);
 
             // ---------- Increment download count ----------
-            $order->increment('po_file_download_count');
+            $order->update([
+                'po_file_path' => $storagePath,
+                'po_file_name' => $fileName,
+                'po_file_download_count' => ($order->po_file_download_count ?? 0) + 1,
+            ]);
 
             // ---------- Insert data to log ----------
             OrderLogActivity::create([
@@ -425,6 +429,7 @@ class HistoryOrderWriteService
             ], 500, 'downloadpofile');
             return response()->json([
                 'message' => 'File PO Gagal Didownload!',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -436,7 +441,6 @@ class HistoryOrderWriteService
         try {
             $user = Auth::user();
             $order = $this->queryOrderData($poNumber);
-            [$storagePath, $absolutePath, $fileName] = $this->generatePdfResponse($order, $poNumber);
 
             // ---------- Update model OrderBlood ----------
             $order->increment('po_file_print_count');
@@ -455,21 +459,21 @@ class HistoryOrderWriteService
                     $user->username
                 ),
                 'timestamp' => now(),
-                'po_file_path' => $storagePath,
-                'po_file_name' => $fileName,
             ]);
 
             DB::commit();
 
+            $html = view('print.history_order.po_file', [
+                'order' => $order,
+                'details' => $order->orderBloodDetails,
+                'vendor' => $order->vendors,
+            ])->render();
+
             globalLogger('info', 'PO File printed (re-generated) successfully!', [
                 'po_number' => $poNumber,
-                'file_path' => $storagePath,
                 'print_count' => $order->po_file_print_count,
             ], 200, 'printpofile');
-            return response()->download($absolutePath, $fileName, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            ]);
+            return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
         } catch (\Throwable $e) {
             // ---------- Batalkan transaksi database jika ada error ----------
             DB::rollBack();
@@ -479,10 +483,9 @@ class HistoryOrderWriteService
                 'po_number' => $poNumber,
                 'error' => $e->getMessage(),
             ], 500, 'printpofile');
-
-            // ---------- Lempar error respon ke frontend ----------
             return response()->json([
                 'message' => 'File PO Gagal Dicetak!',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

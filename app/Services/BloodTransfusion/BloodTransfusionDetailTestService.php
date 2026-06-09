@@ -118,7 +118,7 @@ class BloodTransfusionDetailTestService
             DB::beginTransaction();
 
             $detail = BloodTransfusionDetail::withoutTrashed()->where('public_id', $detailPublicId)
-                ->with(['bloodStock'])
+                ->with(['bloodStock', 'bloodTransfusion', 'bloodTransfusion.patient'])
                 ->first();
             if (!$detail) {
                 return ['success' => false, 'message' => 'Data detail transaksi tidak ditemukan'];
@@ -175,11 +175,9 @@ class BloodTransfusionDetailTestService
             $allCompatible = $requiredTests->every(
                 fn($t) => $t->result === ResultTest::COMPATIBLE->value
             );
-
             $transfusionResult = $allCompatible
                 ? 'Compatible'
                 : 'Incompatible';
-
             $detail->update([
                 'crossmatch_result' => $transfusionResult,
                 'crossmatch_finish_at' => now(),
@@ -228,22 +226,33 @@ class BloodTransfusionDetailTestService
 
     private function insertCrossMatchHistory($detail, ?string $transfusionResult)
     {
-        if (is_null($detail)) return false;
+        try {
+            DB::beginTransaction();
+            if (is_null($detail)) return false;
+            $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
+            if ($history) {
+                $history->update([
+                    'result' => $transfusionResult,
+                    'blood_stock_id' => $detail->blood_stock_id,
+                    'updated_at' => now()
+                ]);
+            }
 
-        $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
-        if ($history) {
-            $history->update([
-                'result' => $transfusionResult,
+            $newlyCreated = CrossMatchHistory::create([
+                'blood_transfusion_detail_id' => $detail->id,
                 'blood_stock_id' => $detail->blood_stock_id,
-                'updated_at' => now()
+                'result' => $transfusionResult,
+                'patient_name' => $detail->bloodTransfusion->patient->name
             ]);
+            DB::commit();
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return [
+                'success' => false,
+                'message' => 'Gagal update crossmatch_histories',
+                'error' => $th->getMessage()
+            ];
         }
-
-        CrossMatchHistory::create([
-            'blood_transfusion_detail_id' => $detail->id,
-            'blood_stock_id' => $detail->blood_stock_id,
-            'result' => $transfusionResult,
-        ]);
     }
     private function generateDescription(BloodTransfusion $transfusion): string
     {

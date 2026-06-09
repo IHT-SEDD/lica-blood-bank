@@ -4,17 +4,11 @@ namespace App\Enums;
 
 enum DCTValue: string
 {
+    case POS_1 = '1+';
+    case POS_2 = '2+';
+    case POS_3 = '3+';
+    case POS_4 = '4+';
     case NEG = 'Negative';
-    case NEG_1P = 'Negative 1+';
-    case NEG_2P = 'Negative 2+';
-    case NEG_3P = 'Negative 3+';
-    case NEG_4P = 'Negative 4+';
-
-    case POS = 'Positive';
-    case POS_1P = 'Positive 1+';
-    case POS_2P = 'Positive 2+';
-    case POS_3P = 'Positive 3+';
-    case POS_4P = 'Positive 4+';
 
     public function label(): string
     {

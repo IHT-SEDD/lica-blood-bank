@@ -113,7 +113,7 @@ class HistoryOrderController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Gagal mencetak file PO!'], 500);
+            return response()->json(['message' => 'Gagal mencetak file PO!', 'error' => $e->getMessage()], 500);
         }
     }
 

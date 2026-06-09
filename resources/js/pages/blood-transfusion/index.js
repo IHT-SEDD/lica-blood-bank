@@ -810,7 +810,11 @@ function initBagRequestActionButtons() {
         });
 
     // Release Blood
-    initReleaseBloodPack({ doAction, SelectorBtnRelease });
+    initReleaseBloodPack({
+        doAction,
+        SelectorBtnRelease,
+        qzManager: QzManager,
+    });
 
     // Release All Blood
     initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll });

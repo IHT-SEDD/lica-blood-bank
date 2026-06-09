@@ -1,12 +1,14 @@
-import { buildZplBarcodeBlood, buildZplDefault } from "./barcode";
+import { buildZplBarcodeBlood, buildZplBarcodeRelease, buildZplDefault } from "./barcode";
 
 export const QzManager = (() => {
     const PRINTER_PRIORITIES = ["BarcodeBDRS"];
     const PRINTER_SIZES = {
         BarcodeBDRS: 800,
+        BarcodeBDRS2: 600,
     };
 
     let _connecting = false;
+    let _securityReady = false;
     function setupSecurity() {
         qz.security.setCertificatePromise((resolve, reject) => {
             fetch("/vendor/qz/override.crt", {
@@ -28,14 +30,12 @@ export const QzManager = (() => {
         });
     }
 
-    let _securityReady = false;
     async function connect() {
         if (qz.websocket.isActive()) return;
         if (_connecting) {
             console.warn("Sedang mencoba konek ke QZ Tray, harap tunggu...");
             return;
         }
-
         if (!_securityReady) {
             setupSecurity();
             _securityReady = true;
@@ -61,7 +61,13 @@ export const QzManager = (() => {
         }
     }
 
-    async function findFirstAvailablePrinter(priorities = PRINTER_PRIORITIES) {
+    async function findFirstAvailablePrinter(
+        overrideName = null,
+        priorities = PRINTER_PRIORITIES,
+    ) {
+        const searchList = overrideName
+            ? [overrideName, ...priorities]
+            : priorities;
         for (const name of priorities) {
             try {
                 const printer = await qz.printers.find(name);
@@ -80,9 +86,8 @@ export const QzManager = (() => {
         return PRINTER_SIZES[printerName] ?? null;
     }
 
-    async function sendZpl(data = [], print = null) {
+    async function sendZpl(data = [], print = null, printerName = null) {
         const items = resolvePrintData(data, print);
-
         if (!Array.isArray(items) || items.length === 0) return;
 
         try {
@@ -96,25 +101,22 @@ export const QzManager = (() => {
             return;
         }
 
-        const printerName = await findFirstAvailablePrinter();
-        if (!printerName) {
-            notyf.error({
-                message: "Tidak ada printer yang tersedia.",
-            });
+        const resolvedPrinter = await findFirstAvailablePrinter(printerName);
+        if (!resolvedPrinter) {
+            notyf.error({ message: "Tidak ada printer yang tersedia." });
             return;
         }
 
-        const padleft = getPaperWidth(printerName);
+        const padleft = getPaperWidth(resolvedPrinter);
         if (!padleft) {
             console.error(
                 "Ukuran kertas tidak dikenali untuk printer:",
-                printerName,
+                resolvedPrinter,
             );
             return;
         }
 
         const config = qz.configs.create(printerName);
-
         for (const item of items) {
             const zpl = buildZPL(item, padleft, print);
             console.log(item, zpl);
@@ -122,15 +124,13 @@ export const QzManager = (() => {
 
             try {
                 await qz.print(config, result);
-                console.log(`Cetak berhasil di ${printerName}`);
+                console.log(`Cetak berhasil di ${resolvedPrinter}`);
                 notyf.success({
-                    message: `Cetak berhasil di ${printerName}`,
+                    message: `Cetak berhasil di ${resolvedPrinter}`,
                 });
             } catch (err) {
-                console.error(`Gagal cetak di ${printerName}:`, err);
-                notyf.error({
-                    message: `Gagal cetak di ${printerName}:`,
-                });
+                console.error(`Gagal cetak di ${resolvedPrinter}:`, err);
+                notyf.error({ message: `Gagal cetak di ${resolvedPrinter}` });
             }
         }
     }
@@ -142,11 +142,12 @@ function buildZPL(item, padleft, printType) {
     switch (printType) {
         case "barcode-blood":
             return buildZplBarcodeBlood(item);
+        case "barcode-release":
+            return buildZplBarcodeRelease(item);
         default:
             return buildZplDefault(item, padleft);
     }
 }
-
 function resolvePrintData(data, printType) {
     switch (printType) {
         case "barcode-blood":
@@ -175,7 +176,8 @@ function resolvePrintData(data, printType) {
                 released_at: detail.released_at,
                 clia: detail.clia,
             }));
-
+        case "barcode-release":
+            return Array.isArray(data) ? data : [data];
         default:
             return Array.isArray(data) ? data : [data];
     }

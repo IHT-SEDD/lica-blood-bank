@@ -185,9 +185,60 @@ function SelectVendor(order) {
 
 // ---------- Populate order detail form ----------
 function populateOrderDetailForm(order) {
+    const statusEl = document.getElementById("status_badge");
     const poNumberEl = document.getElementById("po_number");
     const descriptionEl = document.getElementById("description");
     const poNumberTitleEl = document.getElementById("po_number_title");
+
+    if (statusEl) {
+        const statusMap = {
+            draft: {
+                text: "DRAFT",
+                className: "text-bg-warning",
+            },
+            draft_cancelled: {
+                text: "DRAFT DIBATALKAN",
+                className: "text-bg-error",
+            },
+            order_cancelled: {
+                text: "PERMINTAAN DIBATALKAN",
+                className: "text-bg-error",
+            },
+            order_created: {
+                text: "PERMINTAAN DIBUAT",
+                className: "text-bg-info",
+            },
+            order_deleted: {
+                text: "PERMINTAAN DIHAPUS",
+                className: "text-bg-error",
+            },
+            some_order_stock_registered: {
+                text: "BEBERAPA STOK TERDAFTAR",
+                className: "text-bg-info",
+            },
+            all_order_stock_registered: {
+                text: "SEMUA STOK TERDAFTAR",
+                className: "text-bg-info",
+            },
+            done: {
+                text: "PERMINTAAN SELESAI",
+                className: "text-bg-success",
+            },
+        };
+        const status = statusMap[order.status];
+        statusEl.classList.remove(
+            "text-bg-warning",
+            "text-bg-error",
+            "text-bg-info",
+            "text-bg-success",
+        );
+        if (status) {
+            statusEl.textContent = status.text;
+            statusEl.classList.add(status.className);
+        } else {
+            statusEl.textContent = order.status ?? "-";
+        }
+    }
 
     if (poNumberEl) poNumberEl.value = order.po_number ?? "";
     if (descriptionEl) descriptionEl.value = order.description ?? "";
@@ -428,7 +479,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     HandleEditOrderBtn();
     HandleSubmitChanges();
 
-    ToolbarHandler.GeneratePoFile(toolbarContext);
     ToolbarHandler.PreviewPoFile(toolbarContext);
     ToolbarHandler.DownloadPoFile(toolbarContext);
     ToolbarHandler.PrintPoFile(toolbarContext);

@@ -430,12 +430,12 @@ class BloodTransfusionWriteService
                             ->orderBy('expiry_date', 'asc')
                             ->first();
                         $bloodTransfusionDetail->update([
-                            'blood_stock_id' => $availableStock?->id,
+                            // 'blood_stock_id' => $availableStock?->id,
                             'blood_pack_id' => $bloodPack?->id,
                         ]);
-                        if ($availableStock) {
-                            $availableStock->update(['blood_status' => BloodStockStatus::IN_USE]);
-                        }
+                        // if ($availableStock) {
+                        //     $availableStock->update(['blood_status' => BloodStockStatus::IN_USE]);
+                        // }
                     }
                 }
             }
@@ -637,10 +637,10 @@ class BloodTransfusionWriteService
                     // ---------- Buat detail baru ----------
                     $transfusionDetail = BloodTransfusionDetail::create([
                         'blood_transfusion_id' => $transfusion->id,
-                        'component'            => $component['component_id'],
-                        'blood_stock_id'       => null,
-                        'blood_pack_id'        => null,
-                        'crossmatch_result'    => null,
+                        'component' => $component['component_id'],
+                        'blood_stock_id' => null,
+                        'blood_pack_id' => null,
+                        'crossmatch_result' => null,
                     ]);
 
                     // ---------- Auto-assign stok darah jika pasien punya golongan darah ----------
@@ -657,28 +657,28 @@ class BloodTransfusionWriteService
                             ->first();
 
                         $transfusionDetail->update([
-                            'blood_pack_id'  => $bloodPack?->id,
-                            'blood_stock_id' => $availableStock?->id,
+                            'blood_pack_id' => $bloodPack?->id,
+                            // 'blood_stock_id' => $availableStock?->id,
                         ]);
 
-                        if ($availableStock) {
-                            $availableStock->update([
-                                'blood_status' => BloodStockStatus::IN_USE,
-                                'used_at'      => now(),
-                            ]);
-                        }
+                        // if ($availableStock) {
+                        //     $availableStock->update([
+                        //         'blood_status' => BloodStockStatus::IN_USE,
+                        //         'used_at'      => now(),
+                        //     ]);
+                        // }
                     }
 
                     // ---------- Buat test records ----------
                     foreach ($package->package_tests as $test) {
-                        $lookupKey    = $component['public_id'] . '-' . $test->test_id;
+                        $lookupKey = $component['public_id'] . '-' . $test->test_id;
                         $existingTest = $existingTests[$lookupKey] ?? null;
 
                         BloodTransfusionDetailTest::create([
-                            'bt_detail_id'      => $transfusionDetail->id,
-                            'test_id'           => $test->test_id,
-                            'type'              => 'package',
-                            'result'            => $existingTest['result'] ?? null,
+                            'bt_detail_id' => $transfusionDetail->id,
+                            'test_id' => $test->test_id,
+                            'type' => 'package',
+                            'result' => $existingTest['result'] ?? null,
                             'result_by_user_id' => $existingTest['result_by_user_id'] ?? null,
                         ]);
                     }
@@ -687,15 +687,15 @@ class BloodTransfusionWriteService
                 // ---------- Log aktivitas transfusi (di dalam transaksi) ----------
                 BloodTransfusionLogActivity::create([
                     'blood_transfusion_public_id' => $transfusion->public_id,
-                    'payload'                     => $transfusion->fresh(['patient', 'insurance', 'room', 'doctor', 'details']),
-                    'status'                      => BloodTransfusionLogActivityStatus::UPDATED,
-                    'description'                 => generateBloodTransfusionLogDescription(
+                    'payload' => $transfusion->fresh(['patient', 'insurance', 'room', 'doctor', 'details']),
+                    'status' => BloodTransfusionLogActivityStatus::UPDATED,
+                    'description' => generateBloodTransfusionLogDescription(
                         BloodTransfusionLogActivityStatus::UPDATED,
                         $this->generateDescription($transfusion),
                         Auth::user()->username
                     ),
-                    'created_by_user_name'        => Auth::user()->name,
-                    'timestamp'                   => now(),
+                    'created_by_user_name' => Auth::user()->name,
+                    'timestamp' => now(),
                 ]);
             });
 
