@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\UtilityController;
+use App\Http\Controllers\IntegrationController;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
@@ -105,6 +106,17 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             // ---------- Page ----------
             Route::get('{report}', 'index')->name('index');
+        });
+        
+    // --------------------------------------------------------------------------
+    // Report Group Routes -> report.*
+    // --------------------------------------------------------------------------
+    Route::prefix('integration')->name('integration.')->controller(IntegrationController::class)
+        ->group(function () {
+            // ---------- Page ----------
+            Route::get('{integration}', 'index')->name('index');
+            // ---------- Datatable ----------
+            Route::get('{integration}/data', 'datatable')->name('datatable');
         });
 
     // --------------------------------------------------------------------------

@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
             InsuranceSeeder::class,
             DoctorSeeder::class,
             TestSeeder::class,
+            LogIntegrationSeeder::class,
         ]);
     }
 }

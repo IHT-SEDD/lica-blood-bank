@@ -12,7 +12,7 @@ use App\Models\Package;
 use App\Models\Patient;
 use App\Models\Room;
 use App\Models\Test;
-use App\Services\API\ApiUtilityService;
+use App\Services\Integrations\LogIntegrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +20,10 @@ class BloodTransfusionApiAddService
 {
     const CROSSMATCH_CODE = '2454';
     const CROSSMATCH_PATTERN = '/crossmatch|uji\s*silang/i';
+
+    public function __construct(
+        private LogIntegrationService $logIntegrationService,
+    ) {}
 
     // ---------- Fungsi add data ----------
     public function insertNewData(array $payload): array
@@ -92,6 +96,13 @@ class BloodTransfusionApiAddService
                     }
                 }
             }
+
+            $this->logIntegrationService->insertData(
+                'new_request',
+                'success',
+                'Transaksi permintaan darah sukses ditambahkan',
+                $payload
+            );
 
             return [
                 'transfusion_public_id' => $transfusion->public_id,
