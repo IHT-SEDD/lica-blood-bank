@@ -274,7 +274,6 @@ function showSuggestionView() {
     document.getElementById("blood_suggestion_wrapper").style.display = "block";
     document.getElementById("blood_summary_wrapper").style.display = "none";
 }
-
 // ---------- TAMPILKAN SUMMARY VIEW ----------
 function showSummaryView() {
     document.getElementById("blood_suggestion_wrapper").style.display = "none";

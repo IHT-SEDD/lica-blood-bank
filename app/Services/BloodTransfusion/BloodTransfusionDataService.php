@@ -73,6 +73,42 @@ class BloodTransfusionDataService
             ->toJson();
     }
 
+    // ---------- Fungsi Tabel Blood Request Archive ----------
+    public function bloodRequestTableArchive(Request $request): JsonResponse
+    {
+        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
+            ->withoutTrashed()->whereNotNull('archived_at');
+        $this->applyDateRangeFilter($query, $request->input('date_range'));
+
+        return DataTables::eloquent($query)
+            ->filter(function ($query) use ($request) {
+                $search = trim($request->input('search.value', ''));
+                if (!empty($search)) {
+                    $this->applySearchFilter($query, $search);
+                }
+            })
+            ->order(function ($query) use ($request) {
+                $columns = [
+                    0 => 'lab_number',
+                    1 => 'patient_id',
+                    2 => 'doctor_id',
+                    3 => 'room_id',
+                    4 => 'created_at',
+                ];
+                $order = $request->input('order.0.column');
+                $dir = $request->input('order.0.dir', 'asc');
+                if (isset($columns[$order])) {
+                    $query->orderBy($columns[$order], $dir);
+                } else {
+                    $query->orderBy('lab_number', 'asc');
+                }
+            })
+            ->addColumn('row_data', function ($item) {
+                return $this->mapBloodRequestRow($item);
+            })
+            ->toJson();
+    }
+
     // ---------- Fungsi Tabel List Bag Request ----------
     public function listBagRequestTable(Request $request, string $id): JsonResponse
     {

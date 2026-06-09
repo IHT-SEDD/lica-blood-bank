@@ -46,6 +46,10 @@ class BloodTransfusionController extends Controller
     {
         return view('pages.blood-transfusion.index');
     }
+    public function arhiveIndex()
+    {
+        return view('pages.blood-transfusion.archive-index');
+    }
 
     // ---------- Datatable Blood Pack ----------
     public function datatableBloodPack(Request $request)
@@ -57,6 +61,11 @@ class BloodTransfusionController extends Controller
     public function datatableBloodRequest(Request $request)
     {
         return $this->dataService->bloodRequestTable($request);
+    }
+    // ---------- Datatable Blood Request Archive ----------
+    public function datatableBloodRequestArchive(Request $request)
+    {
+        return $this->dataService->bloodRequestTableArchive($request);
     }
 
     // ---------- List Bag Request Datatable ----------

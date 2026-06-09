@@ -350,6 +350,19 @@ function EditStorageRack() {
         },
     });
 }
+function EditBloodStatus() {
+    new GlobalAdvanceTomselect("#edit_data_blood_stock_status", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Status darah tidak ditemukan",
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-status?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
     const logData = await fetchDataBloodStockLog();
@@ -360,6 +373,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Select function
     FilterBloodStatus();
     EditStorageRack();
+    EditBloodStatus();
 
     // Date range picker
     DateRangeFilter();

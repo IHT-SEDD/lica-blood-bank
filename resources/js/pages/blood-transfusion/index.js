@@ -13,7 +13,7 @@ import {
     listTestTableInstance,
     completeTest,
     updateDoneButtonState,
-} from "./analytic/datatables-helper";
+} from "./datatable/datatables-helper";
 import {
     GlobalRenderTimelineItem,
     setHidden,
