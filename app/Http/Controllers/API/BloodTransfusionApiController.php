@@ -15,6 +15,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Dedoc\Scramble\Attributes\SchemaName;
+use App\Services\Integrations\LogIntegrationService;
 
 
 #[Group('Blood Transfusion API')]
@@ -26,6 +27,7 @@ class BloodTransfusionApiController extends Controller
         protected BloodTransfusionApiDataService $apiDataService,
         protected BloodTransfusionApiUpdateService $apiUpdateService,
         protected ApiUtilityService $apiUtilityService,
+        protected LogIntegrationService $logIntegrationService
     ) {}
 
     // ---------- Insert New Request ----------
@@ -66,6 +68,14 @@ class BloodTransfusionApiController extends Controller
                 $result
             );
         } catch (\Throwable $e) {
+
+            $this->logIntegrationService->insertData(
+                'new_request',
+                'failed',
+                $e->getMessage(),
+                $request->validated()
+            );
+
             return $this->apiUtilityService->errorResponse(
                 $e->getMessage(),
             );
@@ -101,11 +111,25 @@ class BloodTransfusionApiController extends Controller
 
             $result = $this->apiDataService->sendResult($orderNumber);
 
+            $this->logIntegrationService->insertData(
+                'send_result',
+                'success',
+                'Hasil permintaan darah sukses terkirim ke SIMRS',
+                $result
+            );
+
             return $this->apiUtilityService->successResponse(
                 'Hasil permintaan darah sukses terkirim ke SIMRS',
                 $result
             );
         } catch (\Throwable $e) {
+            $this->logIntegrationService->insertData(
+                'send_result',
+                'failed',
+                $e->getMessage(),
+                ['order_number' => $orderNumber]
+            );
+
             return $this->apiUtilityService->errorResponse($e->getMessage());
         }
     }
