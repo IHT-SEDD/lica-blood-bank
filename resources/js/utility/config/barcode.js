@@ -159,28 +159,20 @@ export function buildZplDefault(item, padleft) {
 export function buildZplBarcodeRelease(item) {
     const { bag_number, received_by, released_by, released_at } = item;
     const label = (lines) =>
-        ["^XA", "^CI28", "^LH0,0", "^CF0,20", ...lines, "^XZ"].join("\n");
+        ["^XA", "^CI28", "^LH0,0", "^CF0,50", ...lines, "^XZ"].join("\n");
     const colonX = 163;
-    const valueX = 175;
-    const centerY = 70;
+    const valueX = 90;
+    const centerY = 60;
     const labelBagNumber = label([
-        `^FO50,${centerY}^FDNomor Labu^FS`,
-        `^FO${colonX},${centerY}^FD:^FS`,
         `^FO${valueX},${centerY}^FD${bag_number}^FS`,
     ]);
     const labelReceivedBy = label([
-        `^FO30,${centerY}^FDNama Penerima^FS`,
-        `^FO${colonX},${centerY}^FD:^FS`,
         `^FO${valueX},${centerY}^FD${received_by}^FS`,
     ]);
     const labelReleasedBy = label([
-        `^FO30,${centerY}^FDNama Penyerah^FS`,
-        `^FO${colonX},${centerY}^FD:^FS`,
         `^FO${valueX},${centerY}^FD${released_by}^FS`,
     ]);
     const labelReleasedAt = label([
-        `^FO55,${centerY}^FDTanggal/Jam^FS`,
-        `^FO${colonX},${centerY}^FD:^FS`,
         `^FO${valueX},${centerY}^FD${released_at}^FS`,
     ]);
     return [
