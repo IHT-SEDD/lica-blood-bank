@@ -158,37 +158,20 @@ export function buildZplDefault(item, padleft) {
 }
 export function buildZplBarcodeRelease(item) {
     const { bag_number, received_by, released_by, released_at } = item;
-    const label = (lines, fontSize = 50) =>
-        [
-            "^XA",
-            "^CI28",
-            "^LH0,0",
-            `^CF0,${fontSize}^FB350,1,0,C`,
-            ...lines,
-            "^XZ",
-        ].join("\n");
-    const valueX = 40;
-    const valueXReleasedAt = 25;
-    const centerY = 60;
-    const labelBagNumber = label([
-        `^FO${valueX},${centerY}^FD${bag_number}^FS`,
-    ]);
-    const labelReceivedBy = label(
-        [`^FO${valueX},${centerY}^FD${received_by.substring(0, 10)}^FS`],
-        45,
-    );
-    const labelReleasedBy = label(
-        [`^FO${valueX},${centerY}^FD${released_by.substring(0, 10)}^FS`],
-        45,
-    );
-    const labelReleasedAt = label(
-        [`^FO${valueXReleasedAt},${centerY}^FD${released_at}^FS`],
-        40,
-    );
+    const truncate = (text, length = 10) => text?.substring(0, length) ?? "-";
     return [
-        labelBagNumber,
-        labelReceivedBy,
-        labelReleasedBy,
-        labelReleasedAt,
+        "^XA",
+        "^CI28",
+        "^LH0,0",
+        `^CF0,30^FB350,1,0,C`,
+        `^FO40,20^FD${bag_number}^FS`,
+        `^CF0,23^FB350,1,0,C`,
+        `^FO40,65^FD${truncate(received_by)}^FS`,
+        `^CF0,23^FB350,1,0,C`,
+        `^FO40,95^FD${truncate(released_by)}^FS`,
+        `^CF0,23^FB350,1,0,C`,
+        `^FO40,125^FD${released_at}^FS`,
+
+        "^XZ",
     ].join("\n");
 }

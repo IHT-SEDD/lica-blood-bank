@@ -1000,7 +1000,7 @@ function GenerateTimeline(logs = []) {
     bloodTransfusionTimeline.render(logs);
 }
 
-// ---------- Handle Print Barcode ----------
+// ---------- Handle Print Nota ----------
 function PrintNota() {
     const BTN_PRINT_NOTA = getPrintNotaBtn();
     if (!BTN_PRINT_NOTA) return;
@@ -1029,20 +1029,18 @@ function PrintNota() {
                 return;
             }
 
-            const blob = await res.blob();
+            let htmlText = await res.text();
+            // const blob = await res.blob();
+            const blob = new Blob([htmlText], { type: "text/html" });
             const blobUrl = URL.createObjectURL(blob);
 
-            let iframe = document.getElementById("__print_preview_iframe__");
-
+            let iframe = document.getElementById("__print_nota_iframe__");
             if (iframe) iframe.remove();
 
             iframe = document.createElement("iframe");
-
-            iframe.id = "__print_preview_iframe__";
-
+            iframe.id = "__print_nota_iframe__";
             iframe.style.cssText =
-                "position:fixed;top:0;left:0;width:100%;height:100%;border:none;opacity:0;pointer-events:none;z-index:-1;";
-
+                "position:fixed;top:0;left:0;width:0;height:0;border:none;opacity:0;pointer-events:none;";
             iframe.src = blobUrl;
 
             iframe.onload = () => {
@@ -1050,23 +1048,20 @@ function PrintNota() {
                     iframe.contentWindow.focus();
                     iframe.contentWindow.print();
                 } catch (printErr) {
-                    console.error(printErr);
-
                     notyf.error({
-                        message: "Failed to open print dialog.",
+                        message:
+                            "Gagal membuka print browser! Silakan coba mendownload file nya",
                     });
+                    console.error(printErr);
                 } finally {
                     hidePageLoading();
-
                     reloadBagRequestTable();
-
-                    setTimeout(() => {
-                        URL.revokeObjectURL(blobUrl);
-                        iframe.remove();
-                    }, 30000);
+                    setTimeout(
+                        () => window.URL.revokeObjectURL(blobUrl),
+                        10_000,
+                    );
                 }
             };
-
             document.body.appendChild(iframe);
         } catch (err) {
             console.error("[Print] Network error:", err);
