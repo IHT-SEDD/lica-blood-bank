@@ -1,7 +1,11 @@
-import { buildZplBarcodeBlood, buildZplBarcodeRelease, buildZplDefault } from "./barcode";
+import {
+    buildZplBarcodeBlood,
+    buildZplBarcodeRelease,
+    buildZplDefault,
+} from "./barcode";
 
 export const QzManager = (() => {
-    const PRINTER_PRIORITIES = ["BarcodeBDRS"];
+    const PRINTER_PRIORITIES = ["BarcodeBDRS", "BarcodeBDRS2"];
     const PRINTER_SIZES = {
         BarcodeBDRS: 800,
         BarcodeBDRS2: 600,
