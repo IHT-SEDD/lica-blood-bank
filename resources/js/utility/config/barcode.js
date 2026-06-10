@@ -168,19 +168,23 @@ export function buildZplBarcodeRelease(item) {
             "^XZ",
         ].join("\n");
     const valueX = 40;
+    const valueXReleasedAt = 25;
     const centerY = 60;
     const labelBagNumber = label([
         `^FO${valueX},${centerY}^FD${bag_number}^FS`,
     ]);
-    const labelReceivedBy = label([
-        `^FO${valueX},${centerY}^FD${received_by.substring(0, 10)}^FS`,
-    ]);
-    const labelReleasedBy = label([
-        `^FO${valueX},${centerY}^FD${released_by.substring(0, 10)}^FS`,
-    ]);
-    const labelReleasedAt = label([
-        `^FO${valueX},${centerY}^FD${released_at}^FS`,
-    ]);
+    const labelReceivedBy = label(
+        [`^FO${valueX},${centerY}^FD${received_by.substring(0, 10)}^FS`],
+        45,
+    );
+    const labelReleasedBy = label(
+        [`^FO${valueX},${centerY}^FD${released_by.substring(0, 10)}^FS`],
+        45,
+    );
+    const labelReleasedAt = label(
+        [`^FO${valueXReleasedAt},${centerY}^FD${released_at}^FS`],
+        40,
+    );
     return [
         labelBagNumber,
         labelReceivedBy,
