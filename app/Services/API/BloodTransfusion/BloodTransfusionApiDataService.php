@@ -24,11 +24,11 @@ class BloodTransfusionApiDataService
 
         $payload = $this->buildPayload($transfusion);
 
-        $url     = SimrsConfig::getValue('hasil_insert_url');
-        $apiKey  = SimrsConfig::getValue('hasil_insert_api_key');
-        $keyVal  = SimrsConfig::getValue('hasil_insert_api_key_value');
-        $keyWs   = SimrsConfig::getValue('hasil_insert_key_ws');
-        $timeout = (int) SimrsConfig::getValue('hasil_insert_timeout');
+        $url     = config('services.SIMRS_API.url');
+        $apiKey  = config('services.SIMRS_API.api_key');
+        $keyVal  = config('services.SIMRS_API.key_value');
+        $keyWs   = config('services.SIMRS_API.key_ws');
+        $timeout = (int) config('services.SIMRS_API.timeout');
 
         $response = Http::timeout($timeout)
             ->withHeaders([
@@ -66,12 +66,14 @@ class BloodTransfusionApiDataService
                 $hasil[] = [
                     'test_id' => $detailTest->test_id,
                     'test_name' => $detailTest->test->name ?? null,
-                    'component' => $detail->component,
+                    'kode_jenis_tes' => $detailTest->generalCode ?? null,
                     'result' => $detailTest->result ?? null,
                     'result_status' => $detailTest->result_status ?? null,
-                    'unit' => $detailTest->unit ?? null,
-                    'normal_value'  => $detailTest->normal_value ?? null,
+                    'unit' =>  null,
+                    'normal_value'  =>  null,
                     'notes' => $detailTest->notes ?? null,
+                    'flag' => null,
+                    'group_test' => null,
                     'package_id' => $detailTest->package_id ?? null,
                 ];
             }
@@ -80,13 +82,6 @@ class BloodTransfusionApiDataService
         return [
             'no_ref' => $transfusion->order_number,
             'tgl_kirim' => now()->toDateTimeString(),
-            'pasien' => [
-                'nama' => $transfusion->patient->name ?? null,
-                'no_rkm' => $transfusion->patient->medrec ?? null,
-                'tgl_lahir' => $transfusion->patient->birthdate ?? null,
-            ],
-            'dokter' => $transfusion->doctor->name ?? null,
-            'ruangan' => $transfusion->room->name ?? null,
             'hasil' => $hasil,
         ];
     }
