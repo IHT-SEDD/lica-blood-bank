@@ -1,3 +1,5 @@
+import { DateTimeFormatter } from "../../../utility/ui";
+
 // ---------- Validasi visual nomor darah ----------
 export function validateBloodNumber(inputVal, expectedBagNumber) {
     const bloodNumberInput = document.getElementById("blood_number");
@@ -344,13 +346,7 @@ function initReleaseModal({
                 document.getElementById("blood_received_by")?.value.trim() ||
                 "-";
             const releasedBy = window.currentUserName ?? "-";
-            const now = new Date().toLocaleDateString("id-ID", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
+            const now = DateTimeFormatter.datetime24(new Date());
             await qzManager.sendZpl(
                 {
                     bag_number: bagNumber,
