@@ -9,11 +9,12 @@
   <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-1 mb-2">
     {{-- Button Back to Stock In List --}}
     <a href="{{ route('inventory.stock-in.index') }}" class="btn btn-soft-primary">
-      {{ __('Back To') }} {{ __('Stock In') }}
+      <i class="ti ti-arrow-left-dashed fs-lg align-middle flex-shrink-0 me-1"></i>
+      {{ __('Keluar') }}
     </a>
 
     {{-- Title --}}
-    <h1 class="fw-bold mb-0">{{ __('Detail') }} {{ __('Incoming Stock') }} <span id="po_number_title"></span></h1>
+    <h1 class="fw-bold mb-0">{{ __('Detail Darah Terdaftar') }} <span id="po_number_title"></span></h1>
   </div>
   {{-- Header :end --}}
 
@@ -25,7 +26,7 @@
         <div class="card">
           {{-- Card Header --}}
           <div class="card-header justify-content-between align-items-center">
-            <h5 class="card-title text-capitalize mb-0">{{ __('Incoming Data') }}</h5>
+            <h5 class="card-title text-capitalize mb-0">{{ __('List Data') }}</h5>
             <div class="card-action">
               <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
             </div>
@@ -38,14 +39,14 @@
               <div class="col-xxl-6 col-12">
                 {{-- PO Number --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PO Number') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('No. PO') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="incoming_data" data-order="po_number">
                   </div>
                 </div>
 
                 {{-- Batch --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Batch Number') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('No. Batch') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="incoming_data" data-order="batch_number">
                   </div>
                 </div>
@@ -58,7 +59,7 @@
 
                 {{-- Registered By --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Registered By') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Didaftarkan Oleh') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="incoming_data"
                     data-order="registered_by">
                   </div>
@@ -70,28 +71,28 @@
               <div class="col-xxl-6 col-12">
                 {{-- Received By --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Stock Received By') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Darah Diterima Oleh') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail"
                     data-patient-detail="stock_received_by"></div>
                 </div>
 
                 {{-- Received At --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Stock Received At') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Tgl. Darah Diterima') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail"
                     data-patient-detail="stock_received_at"></div>
                 </div>
 
                 {{-- Stock Ready At --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Stock Ready At') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Tgl. Darah Tersedia') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail"
                     data-patient-detail="stock_ready_at"></div>
                 </div>
 
                 {{-- Registered At --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Registered At') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Tgl. Darah Didaftarkan') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="incoming_data"
                     data-order="registered_at">
                   </div>
@@ -109,7 +110,7 @@
         <div class="card">
           {{-- Card Header --}}
           <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="card-title text-capitalize mb-0">{{ __('Incoming Stock Detail') }}</h5>
+            <h5 class="card-title text-capitalize mb-0">{{ __('Detail Darah') }}</h5>
             <div class="card-action">
               <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
             </div>
@@ -121,14 +122,14 @@
               id="incoming-blood-detail-table">
               <thead class="thead-sm text-uppercase fs-xxs">
                 <tr>
-                  <th>{{ __('Bag Number') }}</th>
-                  <th>{{ __('Blood Pack') }}</th>
-                  <th>{{ __('Volume') }}</th>
-                  <th>{{ __('Aftap') }}</th>
-                  <th>{{ __('Expiry') }}</th>
-                  <th>{{ __('Process') }}</th>
-                  <th>{{ __('Ready At') }}</th>
-                  <th>{{ __('Created At') }}</th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
                 </tr>
               </thead>
             </table>
@@ -148,7 +149,7 @@
         <div class="card">
           {{-- Card Header --}}
           <div class="card-header justify-content-between align-items-center">
-            <h5 class="card-title text-capitalize mb-0">{{ __('Order Data') }}</h5>
+            <h5 class="card-title text-capitalize mb-0">{{ __('Detail Permintaan') }}</h5>
             <div class="card-action">
               <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
             </div>
@@ -161,13 +162,13 @@
               <div class="col-xxl-6 col-12">
                 {{-- PO Number --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PO Number') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('No. PO') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="po_number"></div>
                 </div>
 
                 {{-- Vendor Name --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Vendor Name') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PMI') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="vendor_name">
                   </div>
                 </div>
@@ -184,21 +185,21 @@
               <div class="col-xxl-6 col-12">
                 {{-- Ordered By --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Ordered By') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Dibuat Oleh') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="ordered_by">
                   </div>
                 </div>
 
                 {{-- Ordered At --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Ordered At') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('Tgl. Dibuat') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="ordered_at">
                   </div>
                 </div>
 
                 {{-- PO File --}}
                 <div class="row mb-2">
-                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('PO File') }}</div>
+                  <div class="col-4 text-capitalize fs-6 text-muted my-0">{{ __('File PO') }}</div>
                   <div class="col-8 text-capitalize fs-5 fw-semibold my-0" id="patient_detail"
                     data-patient-detail="po_file"></div>
                 </div>
@@ -209,8 +210,9 @@
             <div class="row">
               {{-- Description --}}
               <div class="row mb-2">
-                <div class="col-xxl-2 col-4 text-capitalize fs-6 text-muted my-0">{{ __('Description') }}</div>
-                <div class="col-xxl-10 col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data" data-order="description">
+                <div class="col-xxl-2 col-4 text-capitalize fs-6 text-muted my-0">{{ __('Catatan') }}</div>
+                <div class="col-xxl-10 col-8 text-capitalize fs-5 fw-semibold my-0" id="order_data"
+                  data-order="description">
                 </div>
               </div>
             </div>
@@ -224,7 +226,7 @@
         <div class="card">
           {{-- Card Header --}}
           <div class="card-header justify-content-between align-items-center">
-            <h5 class="card-title text-capitalize mb-0">{{ __('Order Blood Data') }}</h5>
+            <h5 class="card-title text-capitalize mb-0">{{ __('Detail Darah') }}</h5>
             <div class="card-action">
               <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
             </div>
@@ -237,11 +239,11 @@
               id="order-blood-table">
               <thead class="thead-sm text-uppercase fs-xxs">
                 <tr>
-                  <th>{{ __('Blood') }}</th>
-                  <th>{{ __('Qty') }}</th>
-                  <th>{{ __('Note') }}</th>
-                  <th>{{ __('Order By') }}</th>
-                  <th>{{ __('Order At') }}</th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
+                  <th></th>
                 </tr>
               </thead>
             </table>

@@ -7,6 +7,7 @@ use App\Enums\BloodStockStatus;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
+use App\Models\BloodTransfusionDetail;
 use App\Models\OrderBlood;
 use App\Models\StorageRack;
 use App\Models\StorageRackBlood;
@@ -35,21 +36,31 @@ class BloodStockWriteService
     return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
    }
 
-   $storageRackId = StorageRack::where('public_id', $request->storage_rack_id)->value('id');
-   if (!$storageRackId) {
-    DB::rollBack();
-    return response()->json(['message' => 'Data rak penyimpanan tidak ditemukan!'], 404);
+   if ($request->storage_rack_id) {
+    $storageRackId = StorageRack::where('public_id', $request->storage_rack_id)->value('id');
+
+    if (!$storageRackId) {
+     DB::rollBack();
+     return response()->json(['message' => 'Data rak penyimpanan tidak ditemukan!'], 404);
+    }
+
+    StorageRackBlood::create([
+     'storage_rack_id' => $storageRackId,
+     'blood_stock_id' => $stock->id,
+    ]);
    }
 
-   StorageRackBlood::create([
-    'storage_rack_id' => $storageRackId,
-    'blood_stock_id' => $stock->id,
-   ]);
+   $isCurrentlyUse = BloodTransfusionDetail::withoutTrashed()->where('blood_stock_id', $stock->id)->exists();
+   if ($isCurrentlyUse) {
+    DB::rollBack();
+    return response()->json(['message' => 'Darah tidak bisa diubah statusnya karena sedang digunakan oleh pasien!'], 500);
+   }
 
    // ---------- Update ----------
    $stock->update([
     'blood_volume' => $request->volume,
-    'storage_rack_id' => $storageRackId,
+    'blood_status' => $request->status,
+    'storage_rack_id' => $request->storage_rack_id ? $storageRackId : null,
     'is_expired' => $request->boolean('is_expired'),
    ]);
    $stock->refresh();

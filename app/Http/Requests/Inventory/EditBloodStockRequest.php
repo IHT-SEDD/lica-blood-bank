@@ -23,7 +23,8 @@ class EditBloodStockRequest extends FormRequest
     {
         return [
             'volume' => ['required', 'int'],
-            'storage_rack_id' => ['required', 'string', 'exists:storage_racks,public_id'],
+            'status' => ['required', 'string'],
+            'storage_rack_id' => ['nullable', 'string', 'exists:storage_racks,public_id'],
         ];
     }
 
@@ -31,8 +32,7 @@ class EditBloodStockRequest extends FormRequest
     {
         return [
             'volume.required' => 'Volume wajib diisi.',
-
-            'storage_rack_id.required' => 'Storage rack wajib dipilih.',
+            'status.required' => 'Status wajib diisi.',
             'storage_rack_id.exists' => 'Storage rack tidak tersedia',
         ];
     }

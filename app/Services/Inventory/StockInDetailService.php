@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Yajra\DataTables\Facades\DataTables;
 
 class StockInDetailService
 {
@@ -38,20 +39,19 @@ class StockInDetailService
       ])
       ->where('incoming_blood_id', $incomingBloodId);
 
-    if ($request->filled('search')) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('bag_number', 'like', "%{$search}%");
-      });
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    } else {
-      $query->latest();
-    }
-
-    return $query->paginate($request->filled('per_page', 10));
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('bag_number', 'like', "%{$search}%");
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $query->orderBy('created_at', 'asc');
+      })
+      ->toJson();
   }
   // ---------- Fungsi untuk menampilkan data incoming blood ke tabel incoming blood detail :end ----------
 
@@ -79,20 +79,19 @@ class StockInDetailService
 
     $this->applyDateFilter($query, $request);
 
-    if ($request->filled('search')) {
-      $search = $request->search;
-      $query->where(function ($q) use ($search) {
-        $q->where('po_number', 'like', "%{$search}%");
-      });
-    }
-
-    if ($request->filled('sort_by')) {
-      $query->orderBy($request->sort_by, $request->sort_dir ?? 'asc');
-    } else {
-      $query->latest();
-    }
-
-    return $query->paginate($request->filled('per_page', 10));
+    return DataTables::eloquent($query)
+      ->filter(function ($query) use ($request) {
+        if ($request->filled('search.value')) {
+          $search = $request->input('search.value');
+          $query->where(function ($q) use ($search) {
+            $q->where('po_number', 'like', "%{$search}%");
+          });
+        }
+      })
+      ->order(function ($query) use ($request) {
+        $query->orderBy('created_at', 'asc');
+      })
+      ->toJson();
   }
   // ---------- Fungsi untuk menampilkan data order ke tabel order blood detail :end ----------
 

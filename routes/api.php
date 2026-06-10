@@ -20,5 +20,7 @@ Route::prefix('v1')->name('v1.')->group(function () {
     Route::prefix('blood-transfusion')->name('Blood Transfusion.')->controller(BloodTransfusionApiController::class)->group(function () {
         // ---------- Insert New Request ----------
         Route::post('/', 'newRequest')->name('New Request');
+        // ----------- Send Result ----------------
+        Route::post('/send-result/{orderNumber}', 'sendResult')->name('Send Result');
     });
 });

@@ -8,6 +8,7 @@ use App\Http\Controllers\MasterController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Report\ReportController;
 use App\Http\Controllers\UtilityController;
+use App\Http\Controllers\IntegrationController;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,7 @@ Route::middleware('auth')->group(function () {
             Route::prefix('datatable')->name('datatable.')->group(function () {
                 Route::get('blood-pack', 'datatableBloodPack')->name('blood-pack');
                 Route::get('blood-request', 'datatableBloodRequest')->name('blood-request');
+                Route::get('blood-request-archive', 'datatableBloodRequestArchive')->name('blood-request-archive');
                 Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
             });
 
@@ -105,6 +107,17 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             // ---------- Page ----------
             Route::get('{report}', 'index')->name('index');
+        });
+        
+    // --------------------------------------------------------------------------
+    // Report Group Routes -> report.*
+    // --------------------------------------------------------------------------
+    Route::prefix('integration')->name('integration.')->controller(IntegrationController::class)
+        ->group(function () {
+            // ---------- Page ----------
+            Route::get('{integration}', 'index')->name('index');
+            // ---------- Datatable ----------
+            Route::get('{integration}/data', 'datatable')->name('datatable');
         });
 
     // --------------------------------------------------------------------------

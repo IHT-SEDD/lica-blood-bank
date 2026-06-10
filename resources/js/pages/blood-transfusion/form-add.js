@@ -15,7 +15,7 @@ import {
     initSelectDoctor,
     initSelectBloodPack,
 } from "./form-add/select";
-import { listRequestTableInstance } from "./analytic/datatables-helper";
+import { listRequestTableInstance } from "./datatable/datatables-helper";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Form

@@ -54,10 +54,18 @@ export function updateConfirmButtonState(confirmBtnId = "confirm_release") {
     const bloodNumberInput = document.getElementById("blood_number");
     const confirmBtn = document.getElementById(confirmBtnId);
     if (!confirmBtn) return;
+    const printBarcodeBtn = document.getElementById(
+        "print_barcode_release_btn",
+    );
+    if (!printBarcodeBtn) return;
+
+    const modalEl = document.getElementById("blood_release_modal");
+    const barcodePrinted = modalEl?._barcodePrinted ?? true;
 
     const receivedByOk = receivedByInput?.value.trim().length > 0;
     const bloodNumberOk = bloodNumberInput?.classList.contains("is-valid");
     confirmBtn.disabled = !(receivedByOk && bloodNumberOk);
+    printBarcodeBtn.disabled = !(receivedByOk && bloodNumberOk);
 }
 
 // ---------- Reset field modal ----------
@@ -84,6 +92,10 @@ function resetModal(confirmBtnId) {
 
     const confirmBtn = document.getElementById(confirmBtnId);
     if (confirmBtn) confirmBtn.disabled = true;
+    const printBarcodeBtn = document.getElementById(
+        "print_barcode_release_btn",
+    );
+    if (printBarcodeBtn) printBarcodeBtn.disabled = true;
 }
 // ---------- Reset field modal release-all ----------
 function resetModalAll() {
@@ -296,6 +308,7 @@ function initReleaseModal({
     confirmBtnId,
     modalId,
     getUrl,
+    qzManager = null,
 }) {
     // Buka modal
     $(document)
@@ -303,23 +316,69 @@ function initReleaseModal({
         .on("click", "#" + btnOpenSelector, function (e) {
             e.preventDefault();
             if (!window.currentTransfusionPublicId) return;
-
             resetModal(confirmBtnId);
+
+            // ---------- Reset flag barcode ----------
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) modalEl._barcodePrinted = false;
+            // ---------- Disable confirm sampai barcode dicetak ----------
+            const confirmBtn = document.getElementById(confirmBtnId);
+            if (confirmBtn) confirmBtn.disabled = true;
 
             const expectedBagNumber =
                 window.currentBagData?.row_data?.bag_number ?? null;
-
             attachModalListeners(expectedBagNumber, confirmBtnId);
-
-            const modalEl = document.getElementById(modalId);
             if (modalEl) bootstrap.Modal.getOrCreateInstance(modalEl).show();
         });
-
+    // Print barcode
+    $(document)
+        .off("click", "#print_barcode_release_btn")
+        .on("click", "#print_barcode_release_btn", async function () {
+            if (!qzManager) {
+                console.warn("QzManager tidak tersedia.");
+                return;
+            }
+            const bagNumber =
+                window.currentBagData?.row_data?.bag_number ?? "-";
+            const receivedBy =
+                document.getElementById("blood_received_by")?.value.trim() ||
+                "-";
+            const releasedBy = window.currentUserName ?? "-";
+            const now = new Date().toLocaleDateString("id-ID", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+            });
+            await qzManager.sendZpl(
+                {
+                    bag_number: bagNumber,
+                    received_by: receivedBy,
+                    released_by: releasedBy,
+                    released_at: now,
+                },
+                "barcode-release",
+                "BarcodeBDRS2",
+            );
+            // ---------- Set flag & update confirm button ----------
+            const modalEl = document.getElementById(modalId);
+            if (modalEl) modalEl._barcodePrinted = true;
+            updateConfirmButtonState(confirmBtnId);
+        });
     // Konfirmasi
     $(document)
         .off("click", "#" + confirmBtnId)
         .on("click", "#" + confirmBtnId, async function (e) {
             e.preventDefault();
+            // ---------- Guard: barcode wajib dicetak dulu ----------
+            const modalEl = document.getElementById(modalId);
+            if (!modalEl?._barcodePrinted) {
+                notyf.error({
+                    message: "Harap cetak barcode terlebih dahulu!",
+                });
+                return;
+            }
 
             if (!validateReleaseForm()) return;
 
@@ -432,7 +491,11 @@ function initReleaseAllModal({
 }
 
 // ---------- Export: release satu labu ----------
-export function initReleaseBloodPack({ doAction, SelectorBtnRelease }) {
+export function initReleaseBloodPack({
+    doAction,
+    SelectorBtnRelease,
+    qzManager,
+}) {
     initReleaseModal({
         doAction,
         btnOpenSelector: SelectorBtnRelease,
@@ -440,6 +503,7 @@ export function initReleaseBloodPack({ doAction, SelectorBtnRelease }) {
         modalId: "blood_release_modal",
         getUrl: () =>
             `/blood-transfusion/detail/${window.currentBagDetailPublicId}/release`,
+        qzManager,
     });
 }
 

@@ -1,0 +1,83 @@
+{
+    "order": {
+        "po_number": "PO/BDRS/2025/06/0001",
+        "total_quantity": 10,
+        "description": "Permintaan darah rutin untuk stok bulan Juni 2025.",
+        "users": {
+            "name": "dr. Budi Santoso, Sp.PK",
+            "roles": [
+                {
+                    "name": "Dokter Spesialis Patologi Klinik"
+                }
+            ]
+        }
+    },
+    "vendor": {
+        "name": "UTD PMI Kabupaten Indramayu"
+    },
+    "details": [
+        {
+            "quantity": 2,
+            "note": "Segera",
+            "bloodPacks": {
+                "blood_component": { "value": "WB" },
+                "blood_group": { "value": "A" },
+                "blood_rhesus": "+"
+            }
+        },
+        {
+            "quantity": 1,
+            "note": "-",
+            "bloodPacks": {
+                "blood_component": { "value": "WB" },
+                "blood_group": { "value": "O" },
+                "blood_rhesus": "+"
+            }
+        },
+        {
+            "quantity": 3,
+            "note": "Stok rutin",
+            "bloodPacks": {
+                "blood_component": { "value": "PRC" },
+                "blood_group": { "value": "B" },
+                "blood_rhesus": "+"
+            }
+        },
+        {
+            "quantity": 1,
+            "note": "-",
+            "bloodPacks": {
+                "blood_component": { "value": "PRC" },
+                "blood_group": { "value": "AB" },
+                "blood_rhesus": "-"
+            }
+        },
+        {
+            "quantity": 1,
+            "note": "Untuk pasien thalasemia",
+            "bloodPacks": {
+                "blood_component": { "value": "FFP" },
+                "blood_group": { "value": "A" },
+                "blood_rhesus": "+"
+            }
+        },
+        {
+            "quantity": 1,
+            "note": "-",
+            "bloodPacks": {
+                "blood_component": { "value": "TC" },
+                "blood_group": { "value": "O" },
+                "blood_rhesus": "+"
+            }
+        },
+        {
+            "quantity": 1,
+            "note": "Prioritas tinggi",
+            "bloodPacks": {
+                "blood_component": { "value": "CRYO" },
+                "blood_group": { "value": "B" },
+                "blood_rhesus": "+"
+            }
+        }
+    ]
+}

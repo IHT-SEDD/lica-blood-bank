@@ -15,6 +15,7 @@ use Dedoc\Scramble\Attributes\Group;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Dedoc\Scramble\Attributes\SchemaName;
+use App\Services\Integrations\LogIntegrationService;
 
 
 #[Group('Blood Transfusion API')]
@@ -26,6 +27,7 @@ class BloodTransfusionApiController extends Controller
         protected BloodTransfusionApiDataService $apiDataService,
         protected BloodTransfusionApiUpdateService $apiUpdateService,
         protected ApiUtilityService $apiUtilityService,
+        protected LogIntegrationService $logIntegrationService
     ) {}
 
     // ---------- Insert New Request ----------
@@ -48,13 +50,13 @@ class BloodTransfusionApiController extends Controller
 
                 if ($isFinished) {
                     return $this->apiUtilityService->errorResponse(
-                        'Blood transfusion order has already been finished and cannot be updated.'
+                        'Transaksi permintaan darah ini tidak bisa diperbaharui karena sudah selesai!'
                     );
                 }
                 $result = $this->apiUpdateService->updateData($existing, $validated);
 
                 return $this->apiUtilityService->successResponse(
-                    'Blood transfusion request updated successfully',
+                    'Transaksi permintaan darah sukses diperbaharui',
                     $result
                 );
             }
@@ -62,10 +64,18 @@ class BloodTransfusionApiController extends Controller
             // ---- Jika transaksi belum ada, maka create data
             $result = $this->apiAddService->insertNewData($request->validated());
             return $this->apiUtilityService->successResponse(
-                'Blood transfusion request created successfully',
+                'Transaksi permintaan darah berhasil ditambahkan',
                 $result
             );
         } catch (\Throwable $e) {
+
+            $this->logIntegrationService->insertData(
+                'new_request',
+                'failed',
+                $e->getMessage(),
+                $request->validated()
+            );
+
             return $this->apiUtilityService->errorResponse(
                 $e->getMessage(),
             );
@@ -86,7 +96,7 @@ class BloodTransfusionApiController extends Controller
 
             if (!$transfusion) {
                 return $this->apiUtilityService->errorResponse(
-                    'Blood transfusion order not found.'
+                    'Transaksi permintaan darah tidak ditemukan.'
                 );
             }
 
@@ -95,17 +105,31 @@ class BloodTransfusionApiController extends Controller
 
             if (!$isFinished) {
                 return $this->apiUtilityService->errorResponse(
-                    'Blood transfusion order not yet finished.'
+                    'Transaksi permintaan darah ini belum selesai!'
                 );
             }
 
             $result = $this->apiDataService->sendResult($orderNumber);
 
+            $this->logIntegrationService->insertData(
+                'send_result',
+                'success',
+                'Hasil permintaan darah sukses terkirim ke SIMRS',
+                $result
+            );
+
             return $this->apiUtilityService->successResponse(
-                'Blood transfusion result sent to SIMRS successfully.',
+                'Hasil permintaan darah sukses terkirim ke SIMRS',
                 $result
             );
         } catch (\Throwable $e) {
+            $this->logIntegrationService->insertData(
+                'send_result',
+                'failed',
+                $e->getMessage(),
+                ['order_number' => $orderNumber]
+            );
+
             return $this->apiUtilityService->errorResponse($e->getMessage());
         }
     }

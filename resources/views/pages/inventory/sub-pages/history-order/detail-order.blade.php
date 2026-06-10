@@ -28,17 +28,10 @@
             data-bs-title="{{ __('Print File PO') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-printer fs-4 me-2"></i>{{ __('Print PO') }}
           </button>
-
           <button class="btn btn-sm btn-info fw-medium mb-0" id="download_po_btn"
             data-bs-title="{{ __('Download File PO') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-download fs-4 me-2"></i>{{ __('Download PO') }}
+            <i class="ti ti-pdf fs-4 me-2"></i>{{ __('Download PO') }}
           </button>
-
-          <button class="btn btn-sm btn-primary fw-medium mb-0" id="generate_po_btn"
-            data-bs-title="{{ __('Buat File PO') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
-            <i class="ti ti-file-spark fs-4 me-2"></i>{{ __('Buat PO') }}
-          </button>
-
           @role('superadmin')
           <button class="btn btn-sm btn-secondary fw-medium mb-0" id="preview_po_btn"
             data-bs-title="{{ __('Lihat File PO') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
@@ -50,7 +43,8 @@
         {{-- CENTER --}}
         <div class="col-12 col-lg-4 d-flex flex-wrap gap-2 justify-content-center">
           <button class="btn btn-sm btn-success fw-medium mb-0" id="update_to_done_btn"
-            data-bs-title="{{ __('Ubah Permintaan Menjadi Selesai') }}" data-bs-toggle="tooltip" data-bs-trigger="hover">
+            data-bs-title="{{ __('Ubah Permintaan Menjadi Selesai') }}" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
             <i class="ti ti-check fs-4 me-2"></i>{{ __('Permintaan Selesai') }}
           </button>
         </div>
@@ -60,11 +54,9 @@
           <button class="btn btn-sm btn-soft-dark fw-medium mb-0" id="edit_order_btn">
             <i class="ti ti-file-pencil fs-4 me-2"></i>{{ __('Edit Data') }}
           </button>
-
           <button class="btn btn-sm btn-soft-danger fw-medium mb-0" id="cancel_edit_order_btn">
             <i class="ti ti-x fs-4 me-2"></i>{{ __('Batal Edit') }}
           </button>
-
           <button class="btn btn-sm btn-success fw-medium mb-0" id="submit_order_btn">
             <i class="ti ti-check fs-4 me-2"></i>{{ __('Perbaharui Data') }}
           </button>
@@ -124,9 +116,12 @@
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">{{ __('Data Permintaan') }}</h5>
+        <h5 class="card-title text-capitalize">{{ __('Data Permintaan') }}</h5>
 
         <div class="card-action">
+          <span class="fw-semibold"> Status :
+            <span class="badge badge-label" id="status_badge"></span>
+          </span>
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>
@@ -137,10 +132,8 @@
           {{-- PO Number --}}
           <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="po_number">{{ __('No. PO') }}</label>
-            <input autocomplete="off" class="form-control" id="po_number" type="text" placeholder="Nomor PO"
-              disabled />
+            <input autocomplete="off" class="form-control" id="po_number" type="text" placeholder="Nomor PO" disabled />
           </div>
-
           {{-- Vendor --}}
           <div class="col-xxl-6 col-md-12 col-12">
             <label class="form-label" for="select-vendor">{{ __('PMI') }}
@@ -148,7 +141,6 @@
             </label>
             <select class="form-control" id="select-vendor" name="vendor_id" placeholder="Pilih PMI"></select>
           </div>
-
           {{-- Description --}}
           <div class="col-12">
             <label class="form-label" for="description">{{ __('Catatan') }}</label>

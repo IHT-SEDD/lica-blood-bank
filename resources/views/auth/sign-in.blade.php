@@ -28,7 +28,9 @@
                             </a>
 
                             {{-- Login Subtitle --}}
-                            <p class="text-muted w-lg-75 mt-3">{{ __('Enter your username and password to continue.') }}</p>
+                            <p class="text-muted w-lg-75 mt-3">{{ __('Masukkan username dan password anda untuk
+                                melanjutkan.') }}
+                            </p>
                         </div>
                         {{-- Header Login :end --}}
 
@@ -41,7 +43,7 @@
                                 </label>
                                 <div class="input-group">
                                     <input autocomplete="off" class="form-control" id="username" name="username"
-                                        placeholder="Your {{ __('Username') }}" type="text" />
+                                        placeholder="{{ __('Username akun anda') }}" type="text" />
                                 </div>
                             </div>
 
@@ -66,7 +68,7 @@
                                     <input class="form-check-input form-check-input-light fs-14" id="remember_me"
                                         type="checkbox" name="remember" />
                                     <label class="form-check-label" for="remember_me">
-                                        {{ __('Keep me signed in') }}
+                                        {{ __('Biarkan tetap masuk') }}
                                     </label>
                                 </div>
 
@@ -74,7 +76,7 @@
                                 {{-- Forgot Password --}}
                                 {{-- @if (Route::has('password.request'))
                                 <a class="text-decoration-underline link-offset-3 text-muted"
-                                    href="{{ route('password.request') }}" >
+                                    href="{{ route('password.request') }}">
                                     {{ __('Forgot Password') }}?
                                 </a>
                                 @endif --}}
@@ -83,7 +85,7 @@
                             {{-- Submit Button --}}
                             <div class="d-grid">
                                 <button class="btn btn-primary fw-semibold py-2" type="submit">
-                                    {{ __('Sign In') }}
+                                    {{ __('Masuk') }}
                                 </button>
                             </div>
                         </form>
@@ -92,7 +94,7 @@
                         {{-- <p class="text-muted text-center mt-4 mb-0">
                             {{ __('New Here') }}?
                             <a class="text-decoration-underline link-offset-3 fw-semibold"
-                                href="{{ route('register') }}" >
+                                href="{{ route('register') }}">
                                 {{ __('Create an Account') }}
                             </a>
                         </p> --}}

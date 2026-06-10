@@ -12,7 +12,7 @@ use App\Models\Package;
 use App\Models\Patient;
 use App\Models\Room;
 use App\Models\Test;
-use App\Services\API\ApiUtilityService;
+use App\Services\Integrations\LogIntegrationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -20,6 +20,10 @@ class BloodTransfusionApiAddService
 {
     const CROSSMATCH_CODE = '2454';
     const CROSSMATCH_PATTERN = '/crossmatch|uji\s*silang/i';
+
+    public function __construct(
+        private LogIntegrationService $logIntegrationService,
+    ) {}
 
     // ---------- Fungsi add data ----------
     public function insertNewData(array $payload): array
@@ -30,6 +34,7 @@ class BloodTransfusionApiAddService
             $tests = $payload['tes'];
             $type = $this->generateType($transaksi['jenis']);
             $filteredTests = $this->resolveTests($tests);
+
             // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
             $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
 
@@ -55,17 +60,22 @@ class BloodTransfusionApiAddService
             ]);
 
             // ---------- Create BloodTransfusionDetail & DetailTest ----------
+            $crossmatchCode = self::CROSSMATCH_CODE;
             $createdDetailTests = [];
 
             foreach ($bloodData['blood_components'] as $bloodComponent) {
-                $package = Package::with(['package_tests'])->where('is_active', 1)
+                $package = Package::with(['package_tests'])
+                    ->where('is_active', 1)
                     ->where('blood_component', $bloodComponent['component'])
                     ->first();
 
                 for ($i = 0; $i < $bloodComponent['quantity']; $i++) {
+                    $detailGeneralCode = $bloodComponent['general_codes'][$i] ?? null;
+
                     $btDetail = BloodTransfusionDetail::create([
                         'blood_transfusion_id' => $transfusion->id,
                         'component' => $bloodComponent['component'],
+                        'general_code' => $detailGeneralCode,
                     ]);
 
                     foreach ($package->package_tests as $pkgTest) {
@@ -74,6 +84,7 @@ class BloodTransfusionApiAddService
                             'test_id' => $pkgTest->test_id,
                             'package_id' => $pkgTest->package_id,
                             'type' => 'package',
+                            'general_code' => $crossmatchCode,
                         ]);
                         $createdDetailTests[] = [
                             'blood_transfusion_detail' => $btDetail->toArray(),
@@ -85,6 +96,13 @@ class BloodTransfusionApiAddService
                     }
                 }
             }
+
+            $this->logIntegrationService->insertData(
+                'new_request',
+                'success',
+                'Transaksi permintaan darah sukses ditambahkan',
+                $payload
+            );
 
             return [
                 'transfusion_public_id' => $transfusion->public_id,
@@ -202,7 +220,7 @@ class BloodTransfusionApiAddService
     public function resolveBloodComponentAndQuantity(array $filteredTests): array
     {
         $componentConfig = config('api.blood-component');
-        $componentCounts = [];
+        $componentMap = [];
         $totalQuantity = 0;
 
         foreach ($filteredTests as $tes) {
@@ -227,16 +245,20 @@ class BloodTransfusionApiAddService
             }
 
             if ($matched) {
-                $componentCounts[$matched] = ($componentCounts[$matched] ?? 0) + 1;
+                if (!isset($componentMap[$matched])) {
+                    $componentMap[$matched] = ['general_codes' => []];
+                }
+                $componentMap[$matched]['general_codes'][] = $kode ?: null;
                 $totalQuantity++;
             }
         }
 
         $bloodComponents = [];
-        foreach ($componentCounts as $component => $quantity) {
+        foreach ($componentMap as $component => $data) {
             $bloodComponents[] = [
                 'component' => $component,
-                'quantity' => $quantity,
+                'quantity' => count($data['general_codes']),
+                'general_codes' => $data['general_codes'],
             ];
         }
 
