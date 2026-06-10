@@ -25,7 +25,8 @@ class BloodTransfusionPrintService
 {
   protected array $printMap = [
     'incompatible-letter' => 'pdf.blood_transfusion.incompatible-letter',
-    'nota' => 'pdf.blood_transfusion.nota',
+    // 'nota' => 'pdf.blood_transfusion.nota',
+    'nota' => 'print.blood_transfusion.nota',
     'crossmatch-result' => 'pdf.blood_transfusion.crossmatch-result',
     'blood-patient-card' => 'pdf.blood_transfusion.blood_card_patient',
   ];
@@ -56,21 +57,32 @@ class BloodTransfusionPrintService
   }
 
   // ---------- Fungsi Print Nota ----------
-  public function nota(string $transfusionPublicID, string $print): BinaryFileResponse
+  public function nota(string $transfusionPublicID, string $print)
   {
     try {
       DB::beginTransaction();
 
       $this->validatePrintTemplate($print);
       $printData = $this->queryTransfusionData($transfusionPublicID, null);
-      $response = $this->generatePdfResponse($print, $printData, paperSize: [0, 0, 683.4, 791.6]);
+      // $response = $this->generatePdfResponse($print, $printData, paperSize: [0, 0, 683.4, 791.6]);
+
+      $html = view($this->printMap[$print], [
+        'data' => $printData,
+      ])->render();
+
+      $baseUrl = url('/');
+      $html = str_replace('<head>', "<head><base href=\"{$baseUrl}\">", $html);
 
       DB::commit();
 
-      return $response;
-    } catch (Throwable $th) {
+      // return $response;
+      return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
+    } catch (\Throwable $e) {
       DB::rollBack();
-      throw $th;
+      return response()->json([
+        'message' => 'File nota Gagal Dicetak!',
+        'error' => $e->getMessage()
+      ], 500);
     }
   }
 
