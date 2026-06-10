@@ -374,7 +374,7 @@
 
       @php
       function formatResult(?string $result): string {
-      if (!$result) return '-';
+      if (!$result) return 'TIDAK DILAKUKAN';
       return strtoupper(str_replace('_', ' ', $result));
       }
       @endphp
