@@ -294,12 +294,12 @@
           <div class="paragraph">:</div>
         </td>
         <td width="67%">
-          @if (!empty($data->patients?->gender))
+          @if (!empty($data->patient->gender))
           <div class="paragraph">
-            {{ $data->patients?->gender == 'M' ? 'Laki-Laki' : 'Perempuan' }}
+            {{ $data->patient->gender == 'M' ? 'Laki-Laki' : 'Perempuan' }}
           </div>
           @else
-          <div class="paragraph">Laki-laki</div>
+          <div class="paragraph">-</div>
           @endif
         </td>
       </tr>
