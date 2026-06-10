@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
             Route::prefix('datatable')->name('datatable.')->group(function () {
                 Route::get('blood-pack', 'datatableBloodPack')->name('blood-pack');
                 Route::get('blood-request', 'datatableBloodRequest')->name('blood-request');
+                Route::get('blood-request-archive', 'datatableBloodRequestArchive')->name('blood-request-archive');
                 Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
             });
 

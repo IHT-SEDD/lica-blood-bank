@@ -15,7 +15,7 @@ class CrossmatchHistory extends Model
     protected $fillable = [
         'public_id',
         'blood_stock_id',
-        'blood_transfusion_id',
+        'blood_transfusion_detail_id',
         'patient_name',
         'result',
     ];
@@ -41,8 +41,8 @@ class CrossmatchHistory extends Model
     }
 
     // Relation to blood_transfusion
-    public function bloodPacks(): BelongsTo
+    public function bloodTransfusionDetail(): BelongsTo
     {
-        return $this->belongsTo(BloodTransfusion::class, 'blood_transfusion_id');
+        return $this->belongsTo(BloodTransfusionDetail::class, 'blood_transfusion_detail_id');
     }
 }

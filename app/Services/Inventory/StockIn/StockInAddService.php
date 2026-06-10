@@ -487,18 +487,18 @@ class StockInAddService
           : null;
         $expiry = Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->startOfDay();
 
-        // if ($aftap->gte($today)) return "Aftap date at row {$row} must be before today";
-        // if ($process->gte($today)) return "Process date at row {$row} must be before today";
-        if ($process && $process->lt($aftap)) {
-          return "Process date at row {$row} cannot be before aftap date";
-        }
-        if ($expiry->lte($today)) return "Expiry date at row {$row} must be greater than today";
-        if ($expiry->lt($aftap)) return "Expiry date at row {$row} cannot be before aftap date";
+        // if ($aftap->gte($today)) return "Tanggal aftap pada baris {$row} harus sebelum tanggal sekarang";
+        // if ($process->gte($today)) return "Tanggal proses pada baris {$row} harus sebelum tanggal sekarang";
+        // if ($process && $process->lt($aftap)) {
+        //   return "Tanggal proses pada baris {$row} harus setelah tanggal aftap";
+        // }
+        // if ($expiry->lte($today)) return "Tanggal expire pada baris {$row} harus setelah tanggal sekarang";
+        if ($expiry->lt($aftap)) return "Tanggal expire pada baris {$row} harus setelah tanggal aftap";
         if ($process && $expiry->lt($process)) {
-          return "Expiry date at row {$row} cannot be before process date";
+          return "Tanggal expire pada baris {$row} harus setelah tanggal proses";
         }
       } catch (\Exception) {
-        return "Invalid date format at row {$row}";
+        return "Format tanggal tidak sesuai pada baris {$row}";
       }
     }
 

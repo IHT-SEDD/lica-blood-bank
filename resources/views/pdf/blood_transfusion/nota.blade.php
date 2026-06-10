@@ -195,7 +195,7 @@
     <table>
       <tr>
         <td width="100%" align="center">
-          <div class="heading-2">{{ __('SURAT TANDA PERMINTAAN DARAH') }}</div>
+          <div class="heading-2">{{ __('SURAT TANDA PENERIMAAN DARAH') }}</div>
           <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
         </td>
       </tr>
@@ -319,19 +319,31 @@
       <thead>
         <tr>
           <th class="text-center" style="width: 3%;">{{ __('No.') }}</th>
-          <th class="text-center" style="width: 12%;">{{ __('Tanggal & Jam') }}</th>
-          <th class="text-center" style="width: 19%;">{{ __('Penyerah') }}</th>
-          <th class="text-center" style="width: 19%;">{{ __('Penerima') }}</th>
+          <th class="text-center" style="width: 20%;">{{ __('No. Labu') }}</th>
+          <th class="text-center" style="width: 20%;">{{ __('Tanggal & Jam') }}</th>
+          <th class="text-center" style="width: 28%;">{{ __('Penyerah') }}</th>
+          <th class="text-center" style="width: 28%;">{{ __('Penerima') }}</th>
         </tr>
       </thead>
 
       <tbody>
-        @foreach ($data->details as $detail)
+        {{-- @foreach ($data->details as $detail)
         <tr>
           <td class="text-center">{{ $loop->iteration }}</td>
+          <td class="text-center">{{ $detail->bloodStock->bag_number }}</td>
           <td class="text-center">{{ $detail->blood_released_at }}</td>
           <td class="text-center">{{ $detail->bloodReleasedByUser?->name }}</td>
           <td class="text-center">{{ $detail->blood_received_by }}</td>
+        </tr>
+        @endforeach --}}
+
+        @foreach ($data->details as $i => $__)
+        <tr>
+          <td class="text-center">{{ $loop->iteration }}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
         </tr>
         @endforeach
       </tbody>

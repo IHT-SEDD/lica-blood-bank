@@ -1,13 +1,11 @@
 import { OrderStatus } from "../../../../utility/config/status-config";
 import { setHidden } from "../../../../utility/ui";
 
-// ---------- Global variable untuk memudahkan penyesuaian :begin ----------
-// Toolbar button IDs
+// ---------- Global variable untuk memudahkan penyesuaian ----------
 export const ToolbarWrapper = "toolbar_wrapper";
 
 const BtnPrintPO = "print_po_btn";
 const BtnDownloadPO = "download_po_btn";
-const BtnGeneratePO = "generate_po_btn";
 const BtnPreviewPO = "preview_po_btn";
 const BtnDone = "update_to_done_btn";
 const BtnEditOrder = "edit_order_btn";
@@ -15,35 +13,28 @@ const BtnCancelEditOrder = "cancel_edit_order_btn";
 const BtnSubmitChanges = "submit_order_btn";
 
 // URLS
-const UrlGeneratePO = "/inventory/history-order/po-file/generate";
 const UrlPreviewPO = "/inventory/history-order/po-file/preview";
 const UrlDownloadPO = "/inventory/history-order/po-file/download";
 const UrlPrintPO = "/inventory/history-order/po-file/print";
 const UrlSetOrderToDone = "/inventory/history-order/detail/set-done";
 
-// ---------- Global variable untuk memudahkan penyesuaian :end ----------
-
-// ---------- Global Scope :begin ----------
+// ---------- Global Scope ----------
 // Export URLS
 export const ToolbarButtonUrls = {
-    UrlGeneratePO,
     UrlPreviewPO,
     UrlDownloadPO,
     UrlPrintPO,
 };
-
 // Export Buttons
 export const ToolbarButtons = {
     BtnPrintPO,
     BtnDownloadPO,
-    BtnGeneratePO,
     BtnPreviewPO,
     BtnDone,
     BtnEditOrder,
     BtnCancelEditOrder,
     BtnSubmitChanges,
 };
-// ---------- Global Scope :begin ----------
 
 // ---------- Handler tombol-tombol pada toolbar ----------
 export function ToolbarState(order) {
@@ -53,16 +44,11 @@ export function ToolbarState(order) {
     const isOrderCreated = OrderStatus.isOrderCreated(order?.status);
     const isDeleted = !!order?.deleted_at;
 
-    // Print & Download PO: tampil kalau ada file PO
-    setHidden(BtnPrintPO, !hasPOFile);
-    setHidden(BtnDownloadPO, !hasPOFile);
-
-    // Generate PO: tampil kalau BELUM ada file PO
-    setHidden(BtnGeneratePO, hasPOFile);
-    const generateBtn = document.getElementById(BtnGeneratePO);
-    if (generateBtn) generateBtn.disabled = isDraft;
-
-    // Done: sembunyikan kalau status sudah done
+    // Print menghilang jika order dihapus
+    setHidden(BtnPrintPO, isDeleted);
+    // Download PDF PO menghilang jika order dihapus
+    setHidden(BtnDownloadPO, isDeleted);
+    // Done menghilang jika order sudah done
     setHidden(BtnDone, isDone);
 
     // Edit Order: hanya aktif jika draft / order_created dan tidak deleted
@@ -98,72 +84,6 @@ export function ToolbarState(order) {
 }
 
 export const ToolbarHandler = {
-    // ---------- Handler tombol Generate PO File ----------
-    GeneratePoFile(context) {
-        const generateBtn = document.getElementById(BtnGeneratePO);
-        if (!generateBtn) return;
-
-        generateBtn.addEventListener("click", async () => {
-            const currentOrderData = context.getCurrentOrderData();
-
-            if (!currentOrderData?.order?.po_number) {
-                notyf.error({ message: "Nomor PO tidak boleh kosong!" });
-                return;
-            }
-
-            const poNumber = currentOrderData.order.po_number;
-            generateBtn.disabled = true;
-            showPageLoading();
-
-            try {
-                const res = await fetch(`${UrlGeneratePO}/${poNumber}`, {
-                    method: "POST",
-                    headers: {
-                        "X-CSRF-TOKEN": document
-                            .querySelector('meta[name="csrf-token"]')
-                            ?.getAttribute("content"),
-                    },
-                });
-
-                if (!res.ok) {
-                    const err = await res.json().catch(() => ({}));
-                    throw new Error(
-                        err?.message ?? `HTTP error! status: ${res.status}`,
-                    );
-                }
-
-                const blob = await res.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `PO_FILE-${poNumber}.pdf`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                window.URL.revokeObjectURL(url);
-
-                notyf.success({
-                    message: "File PO berhasil dibuat dan didownload!",
-                });
-
-                // Refresh data agar toolbar update
-                const data = await context.fetchDataDetailOrder();
-                context.setCurrentOrderData(data);
-                await context.refreshPageContent();
-                ToolbarState(data?.order);
-            } catch (err) {
-                notyf.error({
-                    message:
-                        err.message ?? "File PO gagal dibuat dan didownload!",
-                });
-                console.error(err);
-            } finally {
-                hidePageLoading();
-                generateBtn.disabled = false;
-            }
-        });
-    },
-
     // ---------- Handler tombol Preview PO File ----------
     PreviewPoFile(context) {
         const previewBtn = document.getElementById(BtnPreviewPO);
@@ -189,17 +109,7 @@ export const ToolbarHandler = {
 
         downloadBtn.addEventListener("click", async () => {
             const currentOrderData = context.getCurrentOrderData();
-            const poFilePath = currentOrderData?.order?.po_file_path;
             const poNumber = currentOrderData?.order?.po_number;
-
-            if (!poFilePath) {
-                notyf.error({
-                    message:
-                        "File PO tidak ditemukan! Harap membuat file PO terlebih dahulu",
-                });
-                return;
-            }
-
             if (!poNumber) {
                 notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
@@ -212,7 +122,6 @@ export const ToolbarHandler = {
                 const res = await fetch(`${UrlDownloadPO}/${poNumber}`, {
                     method: "GET",
                 });
-
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
                     throw new Error(
@@ -251,17 +160,7 @@ export const ToolbarHandler = {
 
         printBtn.addEventListener("click", async () => {
             const currentOrderData = context.getCurrentOrderData();
-            const poFilePath = currentOrderData?.order?.po_file_path;
             const poNumber = currentOrderData?.order?.po_number;
-
-            if (!poFilePath) {
-                notyf.error({
-                    message:
-                        "File PO tidak ditemukan! Harap membuat file PO terlebih dahulu",
-                });
-                return;
-            }
-
             if (!poNumber) {
                 notyf.error({ message: "Nomor PO tidak boleh kosong!" });
                 return;
@@ -274,7 +173,6 @@ export const ToolbarHandler = {
                 const res = await fetch(`${UrlPrintPO}/${poNumber}`, {
                     method: "GET",
                 });
-
                 if (!res.ok) {
                     const err = await res.json().catch(() => ({}));
                     throw new Error(
@@ -282,7 +180,8 @@ export const ToolbarHandler = {
                     );
                 }
 
-                const blob = await res.blob();
+                let htmlText = await res.text();
+                const blob = new Blob([htmlText], { type: "text/html" });
                 const blobUrl = window.URL.createObjectURL(blob);
 
                 let iframe = document.getElementById("__print_po_iframe__");
@@ -370,7 +269,8 @@ export const ToolbarHandler = {
                 ToolbarState(data?.order);
             } catch (err) {
                 notyf.error({
-                    message: err.message ?? "Permintaan darah gagal diselesaikan!",
+                    message:
+                        err.message ?? "Permintaan darah gagal diselesaikan!",
                 });
                 console.error(err);
             } finally {

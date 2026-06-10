@@ -8,6 +8,8 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     body {
@@ -39,13 +41,13 @@
     }
 
     .logo {
-      height: 9%;
+      height: 90px;
       width: auto;
       object-fit: contain;
     }
 
     .barcode-signature {
-      height: 10.5%;
+      height: 105px;
       width: auto;
       object-fit: contain;
     }
@@ -170,16 +172,17 @@
   $roleName = $userRole?->name ?? '-';
   $barcodeUser = strtolower(str_replace(' ', '', $userName));
   @endphp
+
   <div class="page">
     {{-- Header --}}
     <div class="header">
       <table>
         <tr>
-          <td width="10%" align="left">
-            <img class="logo" src="{{ public_path('assets/images/logos/logo_rsud_indramayu.png') }}"
+          <td width="100px" align="left">
+            <img class="logo" src="{{ asset('assets/images/logos/logo_rsud_indramayu.png') }}"
               alt="Logo RSUD Indramayu - Full Color">
           </td>
-          <td width="90%" align="center">
+          <td width="900px" align="center">
             <div class="heading">{{ __('PEMERINTAH KABUPATEN INDRAMAYU') }}</div>
             <div class="heading">{{ __('DINAS KESEHATAN') }}</div>
             <div class="heading-2">{{ __('UPTD RUMAH SAKIT UMUM DAERAH KABUPATEN INDRAMAYU') }}
@@ -199,14 +202,14 @@
     {{-- Title --}}
     <table>
       <tr>
-        <td width="100%" align="center">
+        <td width="1000px" align="center">
           <div class="heading-2">{{ __('SURAT PERMINTAAN DARAH') }}</div>
         </td>
       </tr>
     </table>
 
     {{-- Detail User --}}
-    <table width="100%">
+    <table width="1000px">
       <tr>
         <td colspan="3">
           <div class="paragraph">
@@ -345,7 +348,7 @@
       <tr>
         <td width="100%" align="left">
           <div class="paragraph">{{ __('Untuk keperluan bulan ') }}<strong>{{ now()->format('F Y') }}</strong>
-            {{ __(' pada sub bagian') }}<strong>{{ __('Bank Darah Rumah Sakit (BDRS)') }}</strong>
+            {{ __(' pada sub bagian ') }}<strong>{{ __('Bank Darah Rumah Sakit (BDRS)') }}</strong>
           </div>
           <div class="paragraph">
             {{ __('Demikian surat permohonan ini kami ajukan untuk dapat direalisasikan ') }}
@@ -378,7 +381,7 @@
           <br>
           @switch($barcodeUser)
           @case('superadmin')
-          <img class="barcode-signature" src="{{ public_path('assets/images/barcode/ttd_superadmin_barcode.png') }}"
+          <img class="barcode-signature" src="{{ asset('assets/images/barcode/ttd_superadmin_barcode.png') }}"
             alt="Barcode Signature of Super Admin">
           @break
           @case(2)

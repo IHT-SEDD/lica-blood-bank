@@ -13,7 +13,7 @@ import {
     listTestTableInstance,
     completeTest,
     updateDoneButtonState,
-} from "./analytic/datatables-helper";
+} from "./datatable/datatables-helper";
 import {
     GlobalRenderTimelineItem,
     setHidden,
@@ -810,18 +810,14 @@ function initBagRequestActionButtons() {
         });
 
     // Release Blood
-    initReleaseBloodPack({ doAction, SelectorBtnRelease });
+    initReleaseBloodPack({
+        doAction,
+        SelectorBtnRelease,
+        qzManager: QzManager,
+    });
 
     // Release All Blood
     initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll });
-    // $(document)
-    //     .off("click", "#" + SelectorBtnReleaseAll)
-    //     .on("click", "#" + SelectorBtnReleaseAll, function (e) {
-    //         e.preventDefault();
-    //         doAction({
-    //             url: `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
-    //         });
-    //     });
 
     // Unrelease
     $(document)

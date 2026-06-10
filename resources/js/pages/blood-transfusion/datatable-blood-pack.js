@@ -1,5 +1,5 @@
 import { GlobalAdvanceDatatable } from "../../app";
-import { initAvailableBloodComponentsTable } from "./analytic/datatables-helper";
+import { initAvailableBloodComponentsTable } from "./datatable/datatables-helper";
 
 // ---------- Blood Pack Datatable :begin ----------
 

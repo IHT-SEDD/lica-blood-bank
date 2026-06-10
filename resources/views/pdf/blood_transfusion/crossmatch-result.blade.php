@@ -367,7 +367,7 @@
 
       @php
       function formatResult(?string $result): string {
-      if (!$result) return '-';
+      if (!$result) return 'TIDAK DILAKUKAN';
       return strtoupper(str_replace('_', ' ', $result));
       }
       @endphp
@@ -419,7 +419,9 @@
 
     {{-- Signature --}}
     @php
-    $username = strtolower($printBy ?? '');
+    $firstDetail = $data->details->first();
+    $resultBy = $firstDetail?->bloodTransfusionDetailTests?->first()?->resultByUser?->name;
+    $username = strtolower($resultBy ?? '');
     $barcodePath = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
     @endphp
     <table style="margin-top: 18px;">
@@ -437,7 +439,7 @@
           <br><br><br>
           @endif
           <div class="heading-3">
-            <strong>{{ $printBy ?? '_______________' }}</strong>
+            <strong>{{ $resultBy ?? '_______________' }}</strong>
           </div>
         </td>
       </tr>

@@ -72,6 +72,235 @@ const initTomSelect = (selector, options = {}) => {
 };
 const isTableInitialized = (selector) => $.fn.DataTable.isDataTable(selector);
 
+// ---------- RENDER BAG NUMBER COLUMN ----------
+function renderBagNumber(row) {
+    const rowData = row.row_data;
+    const bloodRhesusEmpty = rowData.blood_rhesus === "-";
+    const bloodGroupEmpty = rowData.blood_group === "-";
+    const stockNotAvailable = rowData.has_available_stock === null;
+
+    // ---------- Validasi data pasien ----------
+    let message = null;
+    if (bloodRhesusEmpty && bloodGroupEmpty) {
+        message = "Pasien belum mempunyai golongan darah & rhesus!";
+    } else if (bloodRhesusEmpty) {
+        message = "Pasien belum mempunyai rhesus!";
+    } else if (bloodGroupEmpty) {
+        message = "Pasien belum mempunyai golongan darah!";
+    } else if (stockNotAvailable) {
+        message = "Tidak ada labu darah yang tersedia untuk pasien ini!";
+    }
+    if (message) {
+        return `<span class="text-danger fw-semibold">${message}</span>`;
+    }
+
+    // ---------- Jika sudah ada bag number → tampilkan teks langsung ----------
+    if (rowData.selected_bag_number) {
+        return `<span class="fs-6 fw-semibold text-dark">${rowData.selected_bag_number}</span>`;
+    }
+
+    // ---------- Kondisi disabled ----------
+    const noLabNumber =
+        !window.currentTransfusionLabNumber ||
+        window.currentTransfusionLabNumber === "-";
+    const isCrossmatchResult =
+        row.crossmatch_result !== "" && row.crossmatch_result;
+    const isReleased = rowData.blood_release_status === true;
+    const isDisabled =
+        noLabNumber || isCrossmatchResult || isReleased ? "disabled" : "";
+
+    return `<div class="bag_number_input_wrapper">
+        <div class="input-group">
+            <input
+                autocomplete="off"
+                class="form-control form-control-sm"
+                id="bag_number"
+                name="bag_number"
+                type="text"
+                data-id="${row.public_id}"
+                data-available-stocks='${JSON.stringify(rowData.available_stocks ?? [])}'
+                ${isDisabled}
+                placeholder="Scan labu"
+            />
+            <button
+                class="btn btn-sm btn-soft-dark"
+                type="submit"
+                id="update_bag_blood_btn"
+                ${isDisabled}>
+                <i class="ti ti-plus fs-6"></i>
+            </button>
+        </div>
+        <div class="invalid-feedback fw-semibold" style="display:none;"></div>
+    </div>`;
+}
+// ---------- VALIDASI BAG NUMBER ----------
+async function validateBagNumber(inputEl) {
+    const bagNumber = inputEl.value.trim();
+    const wrapper = inputEl.closest(".bag_number_input_wrapper");
+    const feedback = wrapper?.querySelector(".invalid-feedback");
+    const availableStocks = JSON.parse(inputEl.dataset.availableStocks || "[]");
+
+    // ---------- Reset state ----------
+    inputEl.classList.remove("is-invalid");
+    if (feedback) feedback.style.display = "none";
+    if (!bagNumber) return;
+
+    // ---------- Cek apakah bag number ada di available stocks ----------
+    const matched = availableStocks.find(
+        (stock) =>
+            String(stock.id) === bagNumber || stock.text?.includes(bagNumber),
+    );
+    if (!matched) {
+        inputEl.classList.add("is-invalid");
+        if (feedback) {
+            feedback.textContent = "Labu darah tidak tersedia";
+            feedback.style.display = "block";
+        }
+        return;
+    }
+
+    // ---------- Jalankan patch jika ditemukan ----------
+    const res = await patchRequest(
+        `${BASE_URL}/detail/${inputEl.dataset.id}/update-stock`,
+        { blood_stock_id: matched.id },
+        "Bag number sukses diperbaharui!",
+    );
+
+    // ---------- Jika sukses, ganti input group menjadi teks biasa ----------
+    if (res) {
+        const selectedBagNumber = res?.selected_bag_number ?? bagNumber;
+        const inputGroup = wrapper?.querySelector(".input-group");
+        if (inputGroup) {
+            inputGroup.outerHTML = `<span class="fs-6 fw-semibold text-dark">${selectedBagNumber}</span>`;
+        }
+        if (feedback) feedback.style.display = "none";
+    }
+
+    // ---------- Reload tabel setelah update ----------
+    if (
+        listBagRequestTableInstance &&
+        $.fn.DataTable.isDataTable(TABLE.bagRequest)
+    ) {
+        $(TABLE.bagRequest).DataTable().ajax.reload(null, false);
+    }
+}
+// ---------- OPEN MODAL UPDATE BLOOD ----------
+async function openUpdateBloodModal(btn) {
+    const inputEl = btn.closest(".input-group")?.querySelector("#bag_number");
+    if (!inputEl) return;
+
+    const bagNumber = inputEl.value.trim();
+    const availableStocks = JSON.parse(inputEl.dataset.availableStocks || "[]");
+    const feedback = inputEl
+        .closest(".bag_number_input_wrapper")
+        ?.querySelector(".invalid-feedback");
+
+    // ---------- Reset state ----------
+    inputEl.classList.remove("is-invalid");
+    if (feedback) feedback.style.display = "none";
+    if (!bagNumber) return;
+
+    // ---------- Cek apakah bag number ada di available stocks ----------
+    const matched = availableStocks.find(
+        (stock) =>
+            String(stock.id) === bagNumber || stock.text?.includes(bagNumber),
+    );
+    if (!matched) {
+        inputEl.classList.add("is-invalid");
+        if (feedback) {
+            feedback.textContent = "Labu darah tidak tersedia";
+            feedback.style.display = "block";
+        }
+        return;
+    }
+
+    // ---------- Cek rekomendasi: stok lain yang expiry lebih dekat ----------
+    const matchedExpiry = matched.expiry ? new Date(matched.expiry) : null;
+    const recommendation = matchedExpiry
+        ? (availableStocks
+              .filter((stock) => {
+                  if (
+                      String(stock.id) === bagNumber ||
+                      stock.text?.includes(bagNumber)
+                  )
+                      return false;
+                  if (!stock.expiry) return false;
+                  return new Date(stock.expiry) < matchedExpiry;
+              })
+              .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+              .at(0) ?? null)
+        : null;
+
+    // ---------- Simpan state ke modal ----------
+    const modal = document.getElementById("update_blood_modal");
+    modal._inputEl = inputEl;
+    modal._matched = matched;
+    modal._recommendation = recommendation;
+
+    // ---------- Render konten modal ----------
+    renderUpdateBloodModal(matched, recommendation);
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+}
+// ---------- RENDER KONTEN MODAL UPDATE BLOOD ----------
+function renderUpdateBloodModal(matched, recommendation) {
+    const elBloodSummary = document.getElementById("blood_summary");
+    if (elBloodSummary) elBloodSummary.textContent = matched.text ?? matched.id;
+
+    if (recommendation) {
+        const elBloodSuggestion = document.getElementById("blood_suggestion");
+        const elSuggestionExpiry = document.getElementById(
+            "blood_sugestion_expiry_date",
+        );
+        const formattedExpiry = new Date(
+            recommendation.expiry,
+        ).toLocaleDateString("id-ID", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+        });
+
+        if (elBloodSuggestion)
+            elBloodSuggestion.textContent =
+                recommendation.text ?? recommendation.id;
+        if (elSuggestionExpiry)
+            elSuggestionExpiry.textContent = formattedExpiry;
+        showSuggestionView();
+    } else {
+        showSummaryView();
+    }
+}
+// ---------- TAMPILKAN SUGGESTION VIEW ----------
+function showSuggestionView() {
+    document.getElementById("blood_suggestion_wrapper").style.display = "block";
+    document.getElementById("blood_summary_wrapper").style.display = "none";
+}
+// ---------- TAMPILKAN SUMMARY VIEW ----------
+function showSummaryView() {
+    document.getElementById("blood_suggestion_wrapper").style.display = "none";
+    document.getElementById("blood_summary_wrapper").style.display = "block";
+}
+// ---------- KONFIRMASI GUNAKAN LABU YANG DIINPUT ----------
+async function handleConfirmUseBlood() {
+    const modal = document.getElementById("update_blood_modal");
+    const inputEl = modal._inputEl;
+    const matched = modal._matched;
+    if (!inputEl || !matched) return;
+
+    bootstrap.Modal.getInstance(modal)?.hide();
+    await validateBagNumber(inputEl, matched);
+}
+// ---------- KONFIRMASI GUNAKAN LABU REKOMENDASI ----------
+async function handleConfirmUseRecommendation() {
+    const modal = document.getElementById("update_blood_modal");
+    const inputEl = modal._inputEl;
+    const recommendation = modal._recommendation;
+    if (!inputEl || !recommendation) return;
+
+    inputEl.value = recommendation.id;
+    bootstrap.Modal.getInstance(modal)?.hide();
+    await validateBagNumber(inputEl, recommendation);
+}
+
 // ---------- BLOOD REQUEST TABLE ----------
 export function DatatableRequestBlood() {
     if (isTableInitialized(TABLE.request)) return;
@@ -242,53 +471,7 @@ export function DatatableListBagRequest() {
             title: "No. Labu",
             orderable: false,
             searchable: false,
-            render: (_, __, row) => {
-                const rowData = row.row_data;
-                const bloodRhesusEmpty = rowData.blood_rhesus === "-";
-                const bloodGroupEmpty = rowData.blood_group === "-";
-                const stockNotAvailable = rowData.has_available_stock === null;
-
-                let message = null;
-                if (bloodRhesusEmpty && bloodGroupEmpty) {
-                    message = "Pasien belum mempunyai golongan darah & rhesus!";
-                } else if (bloodRhesusEmpty) {
-                    message = "Pasien belum mempunyai rhesus!";
-                } else if (bloodGroupEmpty) {
-                    message = "Pasien belum mempunyai golongan darah!";
-                } else if (stockNotAvailable) {
-                    message =
-                        "Tidak ada labu darah yang tersedia untuk pasien ini!";
-                }
-
-                if (message) {
-                    return `<span class="text-danger fw-semibold">${message}</span>`;
-                }
-                const isDisabled =
-                    !window.currentTransfusionLabNumber ||
-                    window.currentTransfusionLabNumber === "-"
-                        ? "disabled"
-                        : "";
-                const options = rowData.available_stocks
-                    .map(
-                        (stock) => `
-                                    <option value="${stock.id}"
-                                        ${rowData.selected_stock_id == stock.id ? "selected" : ""}>
-                                        ${stock.text}
-                                    </option>
-                                `,
-                    )
-                    .join("");
-
-                let optionsHtml =
-                    '<option value="" selected disabled>Pilih no. labu</option>' +
-                    options;
-                return `
-                            <select class="select-bag-number fs-6 fw-semibold" placeholder="Choose Bag Number"
-                                data-id="${row.public_id}" ${isDisabled}>
-                                ${optionsHtml}
-                            </select>
-                        `;
-            },
+            render: (_, __, row) => renderBagNumber(row),
         },
         {
             data: null,
@@ -448,7 +631,7 @@ export function DatatableListBagRequest() {
                     width: "200px",
                 },
             ],
-            drawCallback: () => initTomSelect(".select-bag-number"),
+            // drawCallback: () => initTomSelect(".select-bag-number"),
         },
     );
 }
@@ -851,17 +1034,15 @@ export async function completeTest() {
 }
 
 // ---------- EVENTS ----------
+document.addEventListener("click", async function (e) {
+    if (e.target.closest("#update_bag_blood_btn"))
+        await openUpdateBloodModal(e.target.closest("#update_bag_blood_btn"));
+    if (e.target.closest("#confirm_use_blood")) await handleConfirmUseBlood();
+    if (e.target.closest("#confirm_use_blood_recomendation"))
+        await handleConfirmUseRecommendation();
+    if (e.target.closest("#cancel_use_blood_recomendation")) showSummaryView();
+});
 document.addEventListener("change", async function (e) {
-    // Update Bag Number
-    if (e.target.matches(".select-bag-number")) {
-        await patchRequest(
-            `${BASE_URL}/detail/${e.target.dataset.id}/update-stock`,
-            {
-                blood_stock_id: e.target.value,
-            },
-            "Bag number updated!",
-        );
-    }
     // Update Test Result
     if (e.target.matches(".select-test-result")) {
         await patchRequest(

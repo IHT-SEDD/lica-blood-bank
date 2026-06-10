@@ -7,7 +7,7 @@ import {
     GlobalDeleteDataConfirmation,
     GlobalAdvanceTomselect,
 } from "../../../app";
-import { DatatableBloodPackModal } from "../analytic/datatables-helper";
+import { DatatableBloodPackModal } from "../datatable/datatables-helper";
 
 // ---------- Global variables ----------
 const FormEditSelector = "edit_data_blood_transfusion";

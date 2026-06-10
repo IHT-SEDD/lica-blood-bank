@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class HistoryOrderWriteService
 {
@@ -310,57 +311,15 @@ class HistoryOrderWriteService
         DB::beginTransaction();
         try {
             $user = Auth::user();
-            // ---------- Ambil data order ----------
-            $order = OrderBlood::where('po_number', $poNumber)
-                ->with([
-                    'vendors:id,public_id,name,address',
-                    'users:id,public_id,name',
-                    'users.roles',
-                    'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity,note',
-                    'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
-                ])
-                ->firstOrFail();
-
-            $fileName = "PO_FILE-{$poNumber}.pdf";
-            $directory = "history_order/po_file";
-            $filePath = "{$directory}/{$fileName}";
-
-            // ---------- Jika sudah ada, langsung download ----------
-            if ($order->po_file_path && Storage::disk('public')->exists($order->po_file_path)) {
-                $order->increment('po_file_download_count');
-
-                $absolutePath = Storage::disk('public')->path($order->po_file_path);
-
-                return response()->download($absolutePath, $fileName, [
-                    'Content-Type' => 'application/pdf',
-                    'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-                ]);
-            }
-
-            // ---------- Pastikan direktori ada ----------
-            Storage::disk('public')->makeDirectory($directory);
-
-            // ---------- Generate PDF dari blade ----------
-            $pdf = Pdf::loadView('pdf.history_order.po_file', [
-                'order' => $order,
-                'details' => $order->orderBloodDetails,
-                'vendor' => $order->vendors,
-            ])->setPaper('a4', 'portrait');
-
-            $pdfContent = $pdf->output();
-
-            // ---------- Simpan file ke storage ----------
-            Storage::disk('public')->put($filePath, $pdfContent);
+            $order = $this->queryOrderData($poNumber);
+            [$storagePath, $fileName] = $this->generatePdfResponse($order, $poNumber);
 
             // ---------- Update model OrderBlood ----------
             $order->update([
-                'po_file_path' => $filePath,
+                'po_file_path' => $storagePath,
                 'po_file_name' => $fileName,
-                'po_file_download_count' => 1,
+                'po_file_download_count' => ($order->po_file_download_count ?? 0) + 1,
             ]);
-
-            // ---------- Clear cache agar data terbaru ----------
-            $this->clearOrderCache($order->public_id, $poNumber);
 
             // ---------- Insert data to log ----------
             OrderLogActivity::create([
@@ -376,7 +335,7 @@ class HistoryOrderWriteService
                     $user->id
                 ),
                 'timestamp' => now(),
-                'po_file_path' => $filePath,
+                'po_file_path' => $storagePath,
                 'po_file_name' => $fileName,
             ]);
 
@@ -385,12 +344,10 @@ class HistoryOrderWriteService
             // ---------- Log sukses ----------
             globalLogger('info', 'PO File generated successfully!', [
                 'po_number' => $poNumber,
-                'file_path' => $filePath,
+                'file_path' => $storagePath,
             ], 200, 'generatepofile');
-
-            // ---------- Return sebagai download ----------
             return response()->download(
-                Storage::disk('public')->path($filePath),
+                Storage::disk('public')->path($storagePath),
                 $fileName,
                 [
                     'Content-Type' => 'application/pdf',
@@ -406,8 +363,6 @@ class HistoryOrderWriteService
                 'po_number' => $poNumber,
                 'error' => $e->getMessage(),
             ], 500, 'generatepofile');
-
-            // ---------- Lempar error respon ke frontend ----------
             return response()->json([
                 'message' => 'New order data failed to insert!',
             ], 500);
@@ -420,30 +375,15 @@ class HistoryOrderWriteService
         DB::beginTransaction();
         try {
             $user = Auth::user();
-
-            // ---------- Ambil data order ----------
-            $order = OrderBlood::where('po_number', $poNumber)
-                ->with([
-                    'vendors:id,public_id,name,address',
-                    'users:id,public_id,name',
-                    'users.roles',
-                    'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity,note',
-                    'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
-                ])
-                ->firstOrFail();
-
-            // ---------- Validasi: file harus sudah pernah di-generate ----------
-            if (!$order->po_file_path || !Storage::disk('public')->exists($order->po_file_path)) {
-                return response()->json([
-                    'message' => 'File PO tidak ditemukan! Harap buat file PO terlebih dahulu.',
-                ], 404);
-            }
-
-            $fileName = $order->po_file_name ?? "PO_FILE-{$poNumber}.pdf";
-            $absolutePath = Storage::disk('public')->path($order->po_file_path);
+            $order = $this->queryOrderData($poNumber);
+            [$storagePath, $absolutePath, $fileName] = $this->generatePdfResponse($order, $poNumber);
 
             // ---------- Increment download count ----------
-            $order->increment('po_file_download_count');
+            $order->update([
+                'po_file_path' => $storagePath,
+                'po_file_name' => $fileName,
+                'po_file_download_count' => ($order->po_file_download_count ?? 0) + 1,
+            ]);
 
             // ---------- Insert data to log ----------
             OrderLogActivity::create([
@@ -470,11 +410,14 @@ class HistoryOrderWriteService
                 'file_path' => $order->po_file_path,
                 'download_count' => $order->po_file_download_count,
             ], 200, 'downloadpofile');
-
-            return response()->download($absolutePath, $fileName, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            ]);
+            return response()->download(
+                Storage::disk('public')->path($storagePath),
+                $fileName,
+                [
+                    'Content-Type' => 'application/pdf',
+                    'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+                ]
+            );
         } catch (\Throwable $e) {
             // ---------- Batalkan transaksi database jika ada error ----------
             DB::rollBack();
@@ -484,10 +427,9 @@ class HistoryOrderWriteService
                 'po_number' => $poNumber,
                 'error' => $e->getMessage(),
             ], 500, 'downloadpofile');
-
-            // ---------- Lempar error respon ke frontend ----------
             return response()->json([
                 'message' => 'File PO Gagal Didownload!',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -498,29 +440,9 @@ class HistoryOrderWriteService
         DB::beginTransaction();
         try {
             $user = Auth::user();
+            $order = $this->queryOrderData($poNumber);
 
-            // ---------- Ambil data order ----------
-            $order = OrderBlood::where('po_number', $poNumber)
-                ->with([
-                    'vendors:id,public_id,name,address',
-                    'users:id,public_id,name',
-                    'users.roles',
-                    'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity,note',
-                    'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
-                ])
-                ->firstOrFail();
-
-            // ---------- Validasi: file harus sudah pernah di-generate ----------
-            if (!$order->po_file_path || !Storage::disk('public')->exists($order->po_file_path)) {
-                return response()->json([
-                    'message' => 'File PO tidak ditemukan! Harap buat file PO terlebih dahulu.',
-                ], 404);
-            }
-
-            $fileName = $order->po_file_name ?? "PO_FILE-{$poNumber}.pdf";
-            $absolutePath = Storage::disk('public')->path($order->po_file_path);
-
-            // ---------- Increment print count ----------
+            // ---------- Update model OrderBlood ----------
             $order->increment('po_file_print_count');
 
             // ---------- Insert data to log ----------
@@ -537,22 +459,21 @@ class HistoryOrderWriteService
                     $user->username
                 ),
                 'timestamp' => now(),
-                'po_file_path' => $order->po_file_path,
-                'po_file_name' => $fileName,
             ]);
 
             DB::commit();
-            // ---------- Log aktivitas download ----------
-            globalLogger('info', 'PO File printed successfully!', [
+
+            $html = view('print.history_order.po_file', [
+                'order' => $order,
+                'details' => $order->orderBloodDetails,
+                'vendor' => $order->vendors,
+            ])->render();
+
+            globalLogger('info', 'PO File printed (re-generated) successfully!', [
                 'po_number' => $poNumber,
-                'file_path' => $order->po_file_path,
                 'print_count' => $order->po_file_print_count,
             ], 200, 'printpofile');
-
-            return response()->download($absolutePath, $fileName, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
-            ]);
+            return response($html, 200)->header('Content-Type', 'text/html; charset=UTF-8');
         } catch (\Throwable $e) {
             // ---------- Batalkan transaksi database jika ada error ----------
             DB::rollBack();
@@ -562,10 +483,9 @@ class HistoryOrderWriteService
                 'po_number' => $poNumber,
                 'error' => $e->getMessage(),
             ], 500, 'printpofile');
-
-            // ---------- Lempar error respon ke frontend ----------
             return response()->json([
                 'message' => 'File PO Gagal Dicetak!',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -806,5 +726,39 @@ class HistoryOrderWriteService
     {
         Cache::forget(self::CACHE_ORDER_BY_ID_KEY . ":{$id}");
         Cache::forget(self::CACHE_ORDER_BY_PO_KEY . ":{$poNumber}");
+    }
+
+    // ---------- Helpers ----------
+    private function queryOrderData(string $poNumber): OrderBlood
+    {
+        return OrderBlood::where('po_number', $poNumber)
+            ->with([
+                'vendors:id,public_id,name,address',
+                'users:id,public_id,name',
+                'users.roles',
+                'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity,note',
+                'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',
+            ])
+            ->firstOrFail();
+    }
+    private function generatePdfResponse(OrderBlood $printData, string $poNumber, ?array $paperSize = null): array
+    {
+        $fileName = "PO_FILE-{$poNumber}.pdf";
+        $directory = "history_order/po_file";
+        $storagePath = "{$directory}/{$fileName}";
+
+        $pdf = Pdf::loadView('pdf.history_order.po_file', [
+            'order' => $printData,
+            'details' => $printData->orderBloodDetails,
+            'vendor' => $printData->vendors,
+        ]);
+
+        if ($paperSize) {
+            $pdf->setPaper($paperSize, 'portrait');
+        }
+
+        Storage::disk('public')->put($storagePath, $pdf->output());
+        $absolutePath = Storage::disk('public')->path($storagePath);
+        return [$storagePath, $absolutePath, $fileName];
     }
 }

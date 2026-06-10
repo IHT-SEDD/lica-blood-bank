@@ -211,6 +211,19 @@ export class TableActionHandler {
                 }
             }
 
+            // ---------- Blood Status (TomSelect) ----------
+            const selectBloodStatus = document.querySelector(
+                "#edit_data_blood_stock_status",
+            );
+            if (selectBloodStatus?.tomselect) {
+                selectBloodStatus.tomselect.clear();
+                if (data.blood_status) {
+                    selectBloodStatus.tomselect.setValue(
+                        data.blood_status,
+                    );
+                }
+            }
+
             // ---------- Checkbox: Is Expired ----------
             document.querySelector(
                 "#edit_data_blood_stock_is_expired",
@@ -231,10 +244,10 @@ export class TableActionHandler {
                         },
                     },
                 },
-                storage_rack_id: {
+                status: {
                     validators: {
                         notEmpty: {
-                            message: "Storage rack is required",
+                            message: "Status is required",
                         },
                     },
                 },
