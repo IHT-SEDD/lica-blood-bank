@@ -72,7 +72,7 @@ export const QzManager = (() => {
         const searchList = overrideName
             ? [overrideName, ...priorities]
             : priorities;
-        for (const name of priorities) {
+        for (const name of searchList) {
             try {
                 const printer = await qz.printers.find(name);
                 if (printer) {
@@ -120,7 +120,7 @@ export const QzManager = (() => {
             return;
         }
 
-        const config = qz.configs.create(printerName);
+        const config = qz.configs.create(resolvedPrinter);
         for (const item of items) {
             const zpl = buildZPL(item, padleft, print);
             console.log(item, zpl);
