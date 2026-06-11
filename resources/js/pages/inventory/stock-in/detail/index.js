@@ -58,15 +58,15 @@ function IncomingBloodTable() {
         },
         { data: "blood_volume", title: "Volume" },
         {
-            data: "aftap_date",
-            title: "Tgl. Aftap",
+            data: "expiry_date",
+            title: "Expire",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
-            data: "expiry_date",
-            title: "Tgl. Expire",
+            data: "created_at",
+            title: "Didaftarkan",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
@@ -79,15 +79,15 @@ function IncomingBloodTable() {
             },
         },
         {
-            data: "ready_at",
-            title: "Tgl. Tersedia",
+            data: "aftap_date",
+            title: "Aftap",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
         },
         {
-            data: "created_at",
-            title: "Tgl. Didaftarkan",
+            data: "ready_at",
+            title: "Tersedia",
             render: (data) => {
                 return DateTimeFormatter.dateOnly(data);
             },
@@ -240,7 +240,7 @@ function PopulateDetailData(incoming, order) {
         "#patient_detail",
         "data-patient-detail",
         "stock_received_by",
-        incoming.received_by.name ?? "-",
+        incoming.received_by ? incoming.received_by.name : "-",
     );
     fill(
         "#patient_detail",
