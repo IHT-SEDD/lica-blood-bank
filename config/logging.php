@@ -263,6 +263,11 @@ return [
             'path' => storage_path('logs/blood-transfusion/update-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
+        'deletebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/delete-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
         'donebloodtransfusion' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-transfusion/done-blood-transfusion-data.log'),

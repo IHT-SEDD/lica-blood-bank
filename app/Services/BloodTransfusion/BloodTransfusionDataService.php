@@ -204,7 +204,34 @@ class BloodTransfusionDataService
         return $bloodTransfusionLog;
     }
 
-    // ---------- Private Fungsi: Filter tanggal & Search untuk datatable ----------
+    // ---------- Fungsi untuk mengambil data berdasarkan id ----------
+    public function getDataById(string $public_id)
+    {
+        $data = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor'])
+            ->where('public_id', $public_id)
+            ->first();
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'id' => $data->public_id,
+                'insurance_public_id' => $data->insurance->public_id,
+                'room_public_id' => $data->room->public_id,
+                'doctor_public_id' => $data->doctor->public_id,
+                'relation_name' => $data->relation_name,
+                'relation_type' => $data->relation_type,
+                'blood_request_at' => $data->blood_request_at,
+                'diagnosis' => $data->diagnosis,
+                'is_dct' => $data->is_dct,
+                'patient_public_id' => $data->patient->public_id,
+                'patient_name' => $data->patient->name,
+                'patient_blood_group' => $data->patient->blood_group,
+                'patient_blood_rhesus' => $data->patient->blood_rhesus,
+                'blood_transfusion' => $data
+            ],
+        ]);
+    }
+
+    // ---------- HELPERS ----------
     private function applyDateRangeFilter(Builder $query, ?string $dateRange): void
     {
         if (empty($dateRange)) {
@@ -237,18 +264,16 @@ class BloodTransfusionDataService
                 ->orWhereHas(
                     'patient',
                     fn($q) => $q
-                        ->where('name', 'like', "{$searchValue}%")
-                        ->orWhere('medrec', 'like', "{$searchValue}%")
+                        ->where('name', 'like', "%{$searchValue}%")
+                        ->orWhere('medrec', 'like', "%{$searchValue}%")
                 )
                 ->orWhereHas(
                     'room',
                     fn($q) => $q
-                        ->where('name', 'like', "{$searchValue}%")
+                        ->where('name', 'like', "%{$searchValue}%")
                 );
         });
     }
-
-    // ---------- Private Fungsi: Mapping Blood Request, untuk list blood request table ----------
     private function mapBloodRequestRow($item): array
     {
         return [
@@ -294,8 +319,6 @@ class BloodTransfusionDataService
             ],
         ];
     }
-
-    // ---------- Private Fungsi: Mapping Bag Request, untuk list bag request table ----------
     private function mapBagRequestRow(BloodTransfusionDetail $detail, BloodTransfusion $transfusion): array
     {
         $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)

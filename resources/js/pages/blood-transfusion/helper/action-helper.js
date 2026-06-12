@@ -1,4 +1,7 @@
+import { GlobalDeleteDataConfirmation } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
+
+let _deleteTransactionInitialized = false;
 
 // ---------- Validasi visual nomor darah ----------
 export function validateBloodNumber(inputVal, expectedBagNumber) {
@@ -512,5 +515,88 @@ export function initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll }) {
         modalId: "blood_release_all_modal",
         getUrl: () =>
             `/blood-transfusion/detail/${window.currentTransfusionPublicId}/release-all`,
+    });
+}
+
+// ---------- Export: Delete Transaction ----------
+export function initDeleteTransaction({
+    reloadTable,
+    ActionDeleteSelector,
+    AttributeDelete,
+    ModalDeleteSelector,
+    ConfirmDeleteSelector,
+    StockBloodDataURL,
+}) {
+    if (_deleteTransactionInitialized) return;
+    _deleteTransactionInitialized = true;
+
+    const getCsrfToken = () =>
+        document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
+
+    new GlobalDeleteDataConfirmation({
+        ButtonSelector: ActionDeleteSelector,
+        DataAttributeID: AttributeDelete,
+        UrlFetchData: (id) => `/blood-transfusion/${id}/`,
+        ModalConfirmID: ModalDeleteSelector,
+    });
+
+    const handleDeleteOpen = (e) => {
+        const { data } = e.detail;
+        if (!data) return;
+        const deletedDataEl = document.querySelector("#deleted_data");
+        if (deletedDataEl) {
+            deletedDataEl.textContent = `${data.blood_transfusion.lab_number ?? "-"} dengan nama ${data.patient_name}`;
+        }
+        const confirmBtn = document.querySelector(ConfirmDeleteSelector);
+        if (confirmBtn) confirmBtn.dataset.id = data.blood_transfusion.public_id;
+    };
+
+    // ---------- Remove dulu sebelum pasang baru — cegah duplikasi ----------
+    document.removeEventListener("delete:open", handleDeleteOpen);
+    document.addEventListener("delete:open", handleDeleteOpen);
+
+    const confirmBtn = document.querySelector(ConfirmDeleteSelector);
+    if (!confirmBtn) return;
+
+    // ---------- Clone button untuk bersihkan listener lama ----------
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+
+    newConfirmBtn.addEventListener("click", async () => {
+        const id = newConfirmBtn.dataset.id;
+        if (!id) return;
+
+        try {
+            const response = await fetch(`/blood-transfusion/${id}/`, {
+                method: "DELETE",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                },
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || "Failed to delete data!",
+                });
+                return;
+            }
+            notyf.success({
+                message: result.message || "Data deleted successfully!",
+            });
+
+            const modalEl = document.getElementById(ModalDeleteSelector);
+            if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+
+            newConfirmBtn.dataset.id = "";
+            reloadTable();
+        } catch (error) {
+            console.error(error);
+            notyf.error({ message: "Failed to delete data!" });
+        }
     });
 }

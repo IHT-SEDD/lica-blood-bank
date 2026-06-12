@@ -24,6 +24,11 @@ return [
             ],
         ],
     ],
+    'blood-transfusion-detail' => [
+        'model' => App\Models\BloodTransfusionDetail::class,
+        'label' => '',
+        'with' => ['bloodTransfusion', 'bloodTransfusionDetailTests'],
+    ],
     'bag-number-by-po' => [
         'model' => App\Models\IncomingBloodDetail::class,
         'label' => 'bag_number',

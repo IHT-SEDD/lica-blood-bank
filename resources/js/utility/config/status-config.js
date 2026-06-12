@@ -59,3 +59,40 @@ export function BloodStatus(status) {
             </span>`;
     }
 }
+
+// ---------- TRANSACTION ORDER STATUS ----------
+export function TransactionOrderStatus(status) {
+    const value = status?.value || status;
+
+    switch (value) {
+        case "Blood Transfusion Checked In":
+            return `<span style="font-size: 20px;" class="text-success" data-bs-title="Checked In" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-user-check"></i>
+            </span>`;
+            break;
+        case "Blood Transfusion Finished":
+            return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-droplet-check"></i>
+            </span>`;
+            break;
+        case "Blood Transfusion Completed":
+            return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-shield-check"></i>
+            </span>`;
+            break;
+        case "Blood Transfusion Registered":
+            return `<span style="font-size: 20px;" class="text-info" data-bs-title="Terdaftar" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-circle-dashed-check"></i>
+            </span>`;
+            break;
+        case "Blood Transfusion Deleted":
+            return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dihapus" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-trash"></i>
+            </span>`;
+            break;
+        default:
+            return `<span class="fs-6 fw-semibold uppercase">
+                ${value ?? "-"}
+            </span>`;
+    }
+}

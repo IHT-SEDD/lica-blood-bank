@@ -90,26 +90,7 @@ class BloodTransfusionController extends Controller
     // ---------- Get Data By Id ----------
     public function getDataById(string $public_id)
     {
-        $data = BloodTransfusion::with(['patient', 'insurance', 'room', 'doctor'])->where('public_id', $public_id)->first();
-
-        return response()->json([
-            'status' => 'success',
-            'data'   => [
-                'id'                       => $data->public_id,
-                'insurance_public_id'     => $data->insurance->public_id,
-                'room_public_id'          => $data->room->public_id,
-                'doctor_public_id'        => $data->doctor->public_id,
-                'relation_name'           => $data->relation_name,
-                'relation_type'           => $data->relation_type,
-                'blood_request_at'        => $data->blood_request_at,
-                'diagnosis'               => $data->diagnosis,
-                'is_dct'               => $data->is_dct,
-                'patient_public_id'       => $data->patient->public_id,
-                'patient_name'            => $data->patient->name,
-                'patient_blood_group'     => $data->patient->blood_group,
-                'patient_blood_rhesus'    => $data->patient->blood_rhesus,
-            ],
-        ]);
+        return $this->dataService->getDataById($public_id);
     }
 
     // ---------- Update Blood Request ----------
@@ -120,23 +101,9 @@ class BloodTransfusionController extends Controller
     }
 
     // ---------- Delete Blood Request ----------
-    public function destroy(string $id)
+    public function deleteBloodTransfusion(string $id)
     {
-        try {
-            $transfusion = BloodTransfusion::where('public_id', $id)->first();
-            // Anda bisa tambahkan validasi status di sini (misal hanya status REGISTERED yang boleh dihapus)
-
-            $transfusion->delete(); // Soft delete
-
-            return response()->json([
-                'message' => 'Blood request successfully deleted.',
-            ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete blood request.',
-                'error'   => $e->getMessage(),
-            ], 500);
-        }
+        return $this->writeService->deleteBloodTransfusionData($id);
     }
 
     // ---------- Check In Blood Request ----------
