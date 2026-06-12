@@ -21,3 +21,41 @@ export const OrderStatus = {
         return status?.toLowerCase() === this.ORDER_CREATED;
     },
 };
+
+// ---------- BLOOD STATUS ----------
+export function BloodStatus(status) {
+    const value = status?.value || status;
+
+    switch (value) {
+        case "expired":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
+                Expired!
+            </span>`;
+        case "in_use":
+            return `<span class="badge badge-label fw-semibold badge-soft-info">
+                <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
+                Sedang Digunakan
+            </span>`;
+        case "available":
+            return `<span class="badge badge-label fw-semibold badge-soft-success">
+                <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
+                Tersedia
+            </span>`;
+        case "destroyed":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
+                Dimusnahkan
+            </span>`;
+        case "taken_out":
+            return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
+                Dikeluarkan
+            </span>`;
+        default:
+            return `<span class="badge badge-label fw-semibold badge-soft-secondary">
+                <i class="ti ti-droplet align-middle me-2 fs-4"></i>
+                ${value ?? "-"}
+            </span>`;
+    }
+}

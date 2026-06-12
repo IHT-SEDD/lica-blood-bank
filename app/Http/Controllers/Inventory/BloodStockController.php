@@ -153,4 +153,10 @@ class BloodStockController extends Controller
     {
         return $this->dataService->exportToExcel($request);
     }
+
+    // ---------- Fungsi untuk mengembalikan blood stock ----------
+    public function returnBloodStockData(Request $request, string $id)
+    {
+        return $this->writeService->returnBloodStockData($request, $id);
+    }
 }

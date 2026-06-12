@@ -229,6 +229,11 @@ return [
             'path' => storage_path('logs/blood-stock/restore-blood-stock-data.log'),
             'level' => 'debug',
         ],
+        'returnbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/return-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
 
         // Blood Destroy Loggings
         'newblooddestroy' => [

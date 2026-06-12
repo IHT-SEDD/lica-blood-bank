@@ -131,6 +131,7 @@ Route::middleware('auth')->group(function () {
             Route::delete('data/{id}/permanent', 'permanentDeleteBloodStockData')->name('permanent-delete')->middleware('prevent.bruteforce:100');
             Route::patch('data/{id}', 'editBloodStockData')->name('edit')->middleware('prevent.bruteforce:100');
             Route::patch('data/{id}/restore', 'restoreBloodStockData')->name('restore')->middleware('prevent.bruteforce:100');
+            Route::patch('data/{id}/return', 'returnBloodStockData')->name('return')->middleware('prevent.bruteforce:100');
          });
 
          // ---------- Export ----------

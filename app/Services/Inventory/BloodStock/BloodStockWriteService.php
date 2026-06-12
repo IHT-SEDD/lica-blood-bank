@@ -7,6 +7,7 @@ use App\Enums\BloodStockStatus;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
+use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\OrderBlood;
 use App\Models\StorageRack;
@@ -342,6 +343,114 @@ class BloodStockWriteService
    $filename,
    ['Content-Type' => 'image/png']
   );
+ }
+
+ // ---------- Return data blood stock ----------
+ public function returnBloodStockData(Request $request, string $id)
+ {
+  DB::beginTransaction();
+  try {
+   $user = Auth::user();
+
+   $oldBloodStock = BloodStock::where('public_id', $id)->first();
+   if (!$oldBloodStock) {
+    DB::rollBack();
+    return response()->json(['message' => 'Data darah yang akan dikembalikan tidak ditemukan!'], 404);
+   }
+   $bloodTransfusionID = BloodTransfusion::where('public_id', $request->blood_transfusion_id)->value('id');
+   if (!$bloodTransfusionID) {
+    DB::rollBack();
+    return response()->json(['message' => 'Data ID permintaan darah tidak ditemukan!'], 404);
+   }
+   $bloodTransfusionDetailData = BloodTransfusionDetail::where('blood_transfusion_id', $bloodTransfusionID)
+    ->with(['bloodTransfusion', 'bloodTransfusion.patient'])
+    ->get();
+   if (!$bloodTransfusionDetailData) {
+    DB::rollBack();
+    return response()->json(['message' => 'Data detail permintaan darah tidak ditemukan!'], 404);
+   }
+   $newBloodStock = BloodStock::where('public_id', $request->new_blood_stock_id)->with(['bloodPacks'])->first();
+   if (!$newBloodStock) {
+    DB::rollBack();
+    return response()->json(['message' => 'Data darah yang baru tidak ditemukan!'], 404);
+   }
+
+   $oldUsedAt = $oldBloodStock->used_at;
+   $firstDetail = $bloodTransfusionDetailData->first();
+   $patientName = $firstDetail?->bloodTransfusion?->patient?->name ?? null;
+
+   $oldBloodStock->update([
+    'blood_status' => BloodStockStatus::AVAILABLE,
+    'used_at' => null,
+   ]);
+
+   $bloodTransfusionDetailData->each(function ($detail) use ($newBloodStock) {
+    $detail->update([
+     'blood_stock_id' => $newBloodStock->id,
+     'component' => $newBloodStock->bloodPacks->blood_component ?? $detail->component,
+    ]);
+   });
+
+   $newBloodStock->update([
+    'blood_status' => BloodStockStatus::TAKEN_OUT,
+    'used_at' => $oldUsedAt,
+   ]);
+
+   BloodStockLogActivity::create([
+    'blood_stock_public_id'  => $oldBloodStock->public_id,
+    'payload' => json_encode($oldBloodStock->fresh()->toArray()),
+    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+    'description' => generateBloodStockLogDescription(
+     BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+     $oldBloodStock->bag_number,
+     $user->username
+    ),
+    'created_by_user_name' => $user->name,
+    'timestamp' => now(),
+   ]);
+   BloodStockLogActivity::create([
+    'blood_stock_public_id'  => $newBloodStock->public_id,
+    'payload' => json_encode($newBloodStock->fresh()->toArray()),
+    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
+    'description' => generateBloodStockLogDescription(
+     BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
+     $newBloodStock->bag_number,
+     $user->username,
+     $patientName
+    ),
+    'created_by_user_name' => $user->name,
+    'timestamp' => now(),
+   ]);
+
+   DB::commit();
+
+   globalLogger('info', 'Blood stock returned to stock successfully!', [
+    'old_blood_stock' => $oldBloodStock->public_id,
+    'new_blood_stock' => $newBloodStock->public_id,
+    'returned_by' => $user->id,
+   ], 200, 'returnbloodstock');
+
+   return response()->json([
+    'message' => 'Data stok darah berhasil dikembalikan ke stock!',
+    'data' => [
+     'old_blood_stock' => $oldBloodStock->fresh(),
+     'new_blood_stock' => $newBloodStock->fresh(),
+    ],
+   ]);
+  } catch (\Throwable $e) {
+   DB::rollBack();
+
+   globalLogger('error', 'Blood stock failed to return!', [
+    'blood_stock_id' => $id,
+    'error' => $e->getMessage(),
+    'returned_by' => Auth::id(),
+   ], 500, 'returnbloodstock');
+
+   return response()->json([
+    'message' => 'Data stok darah gagal dikembalikan ke stock!',
+    'error' => $e->getMessage(),
+   ], 500);
+  }
  }
 
  // ---------- Fungsi untuk generate & simpan barcode, return path ----------

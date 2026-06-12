@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class UtilityService
 {
-  // ---------- Fungsi mengambil data untuk dropdown select :begin ----------
+  // ---------- Fungsi mengambil data untuk dropdown select ----------
   public function getSelectData(Request $request, string $select): array
   {
     $select = Str::kebab($select);
@@ -37,17 +37,14 @@ class UtilityService
     if (Schema::hasColumn((new $modelClass)->getTable(), 'is_active')) {
       $query->where('is_active', true);
     }
-
     if (!empty($modules['conditions'])) {
       $this->applyConditions($query, $modules['conditions']);
     }
-
     if (!empty($search)) {
       $this->applySearch($query, $labelField, $search);
     }
 
     $data = $query->get();
-
     return [
       'results' => $data->map(function ($item) use ($modules, $labelField) {
         $text = isset($modules['label_callback'])
@@ -61,9 +58,8 @@ class UtilityService
       })->values(),
     ];
   }
-  // ---------- Fungsi mengambil data untuk dropdown select :end ----------
 
-  // ---------- Fungsi mengambil data untuk dropdown select dengan case special :begin ----------
+  // ---------- Fungsi mengambil data untuk dropdown select dengan case special ----------
   public function getSelectDataSpecial(Request $request, string $select, string $id): array
   {
     $select = Str::kebab($select);
@@ -115,18 +111,51 @@ class UtilityService
       })->values(),
     ];
   }
-  // ---------- Fungsi mengambil data untuk dropdown select dengan case special :end ----------
 
-  // ---------- Helper untuk memformat relasi model :begin ----------
+  // ---------- Fungsi untuk mengambil data berdasarkan model & id ----------
+  public function getDataById(Request $request, string $data, string $id): array
+  {
+    $key = Str::kebab($data);
+
+    // ---------- Ambil config utility ----------
+    $modules = $this->getUtilityConfig($key);
+
+    // ---------- Lempar error jika config tidak valid ----------
+    if (!$modules || empty($modules['model'])) {
+      abort(404, "Invalid data configuration [$key]");
+    }
+
+    $modelClass = $modules['model'];
+    $with = $this->normalizeWith($modules['with'] ?? []);
+
+    // ---------- Cari data berdasarkan public_id atau id ----------
+    $item = $modelClass::with($with)
+      ->when(Str::isUuid($id), function ($query) use ($id) {
+        $query->where('public_id', $id);
+      }, function ($query) use ($id) {
+        $query->where('id', $id);
+      })
+      ->when(
+        Schema::hasColumn((new $modelClass)->getTable(), 'is_active'),
+        fn($query) => $query->where('is_active', true)
+      );
+
+    if (!empty($modules['conditions'])) {
+      $this->applyConditions($item, $modules['conditions']);
+    }
+
+    $item = $item->first();
+
+    return $item->toArray();
+  }
+
+  // ---------- HELPERS ----------
   private function normalizeWith(array $with): array
   {
     if (empty($with)) return [];
 
     return is_array($with) ? $with : [$with];
   }
-  // ---------- Helper untuk memformat relasi model :end ----------
-
-  // ---------- Helper untuk menerapkan search data :begin ----------
   private function applySearch(Builder $query, string $field, string $search): void
   {
     if (Str::contains($field, '.')) {
@@ -139,9 +168,6 @@ class UtilityService
       $query->where($field, 'like', "%{$search}%");
     }
   }
-  // ---------- Helper untuk menerapkan search data :end ----------
-
-  // ---------- Helper: mengambil data config utility.php :begin ----------
   private function getUtilityConfig($utility = null)
   {
     // ---------- Ambil data config utility.php ----------
@@ -156,9 +182,6 @@ class UtilityService
     // ---------- Kembalikan semua isi config ----------
     return $modules;
   }
-  // ---------- Helper: mengambil data config utility.php :end ----------
-
-  // ---------- Helper: mengambil data statis :begin ----------
   private function getStaticSelectData(Request $request, string $select): array
   {
     $search = strtolower($request->filled('q', ''));
@@ -220,9 +243,6 @@ class UtilityService
       'results' => $data->values(),
     ];
   }
-  // ---------- Helper: mengambil data statis :end ----------
-
-  // ---------- Helper: mengambil data condition dari config :begin ----------
   private function applyConditions(Builder $query, array $conditions): void
   {
     foreach ($conditions as $cond) {
@@ -243,9 +263,6 @@ class UtilityService
       $query->where($field, $operator, $value);
     }
   }
-  // ---------- Helper: mengambil data condition dari config :end ----------
-
-  // ---------- Helper: apply conditions untuk select-special (dengan $id dari URL) :begin ----------
   private function applyConditionsSpecial(Builder $query, array $conditions, string $id): void
   {
     foreach ($conditions as $cond) {
@@ -307,43 +324,5 @@ class UtilityService
       $query->where($field, $operator, $value);
       // ---------- Handle kondisi biasa :end ----------
     }
-  }
-  // ---------- Helper: apply conditions untuk select-special (dengan $id dari URL) :end ----------
-
-  // ---------- Fungsi untuk mengambil data berdasarkan model & id :begin ----------
-  public function getDataById(Request $request, string $data, string $id): array
-  {
-    $key = Str::kebab($data);
-
-    // ---------- Ambil config utility ----------
-    $modules = $this->getUtilityConfig($key);
-
-    // ---------- Lempar error jika config tidak valid ----------
-    if (!$modules || empty($modules['model'])) {
-      abort(404, "Invalid data configuration [$key]");
-    }
-
-    $modelClass = $modules['model'];
-    $with = $this->normalizeWith($modules['with'] ?? []);
-
-    // ---------- Cari data berdasarkan public_id atau id ----------
-    $item = $modelClass::with($with)
-      ->when(Str::isUuid($id), function ($query) use ($id) {
-        $query->where('public_id', $id);
-      }, function ($query) use ($id) {
-        $query->where('id', $id);
-      })
-      ->when(
-        Schema::hasColumn((new $modelClass)->getTable(), 'is_active'),
-        fn($query) => $query->where('is_active', true)
-      );
-
-    if (!empty($modules['conditions'])) {
-      $this->applyConditions($item, $modules['conditions']);
-    }
-
-    $item = $item->first();
-
-    return $item->toArray();
   }
 }
