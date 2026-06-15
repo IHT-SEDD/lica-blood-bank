@@ -107,7 +107,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('report')->name('report.')->controller(ReportController::class)
         ->group(function () {
             // ---------- Page ----------
-            Route::get('{report}', 'index')->name('index');
+            Route::get('{report}', 'index')->where('report', implode('|', array_keys(config('report'))))->name('index');
+            Route::get('{report}/data', 'datatable')->where('report', implode('|', array_keys(config('report'))))->name('datatable');
         });
 
     // --------------------------------------------------------------------------
