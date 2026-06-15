@@ -95,9 +95,9 @@ class BloodTransfusionAddService
             }
 
             $description = match (true) {
-                !empty($transfusion->order_number) => 'for order number ' . $transfusion->order_number,
-                !empty($transfusion->lab_number) => 'for lab number ' . $transfusion->lab_number,
-                default => 'for patient medrec ' . $transfusion->patient->medrec,
+                !empty($transfusion->order_number) => 'dengan nomor order ' . $transfusion->order_number,
+                !empty($transfusion->lab_number) => 'dengan nomor BDRS ' . $transfusion->lab_number,
+                default => 'dengan nomor rekam medis ' . $transfusion->patient->medrec,
             };
 
             // ---------- Insert Log Activity ----------

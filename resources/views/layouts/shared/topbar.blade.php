@@ -36,14 +36,14 @@
 
             {{-- Topbar app version --}}
             <div class="topbar-item d-none d-lg-flex">
-                <a href="" class="topbar-link btn shadow-none btn-link px-2 disabled">v1.0.0</a>
+                <a href="" class="topbar-link btn shadow-none btn-link px-2 disabled">v1.0.0 - Beta.2</a>
             </div>
 
             {{-- Blood Transfusion Menu --}}
             @if (!request()->is('blood-transfusion*'))
             <div class="topbar-item d-none d-lg-flex">
                 <a href="{{ route('blood-transfusion.index') }}" class="topbar-link btn shadow-none btn-link px-2">
-                    {{ __('Blood Transfusion') }}
+                    {{ __('Tranfusi Darah') }}
                 </a>
             </div>
             @endif
@@ -52,19 +52,19 @@
             @if (!request()->is('inventory*'))
             <div class="topbar-item d-none d-lg-flex">
                 <a href="{{ route('inventory.index') }}" class="topbar-link btn shadow-none btn-link px-2">
-                    {{ __('Inventory') }}
+                    {{ __('Inventaris') }}
                 </a>
             </div>
             @endif
 
             {{-- Donor Menu --}}
-            @if (!request()->is('donor*'))
+            {{-- @if (!request()->is('donor*'))
             <div class="topbar-item d-none d-lg-flex">
                 <a href="#!" class="topbar-link btn shadow-none btn-link px-2">
                     {{ __('Donor') }}
                 </a>
             </div>
-            @endif
+            @endif --}}
 
             {{-- Master Menu --}}
             @if (!request()->is('master*') && auth()->user()->hasRole('superadmin'))
@@ -84,7 +84,7 @@
                         <li>
                             <a class="dropdown-item {{ request()->is('master/'.$key.'*') ? 'active' : '' }}"
                                 href="{{ route('master.index', $key) }}">
-                                {{ Str::headline($key) }}
+                                {{ Str::headline($item['label']) }}
                             </a>
                         </li>
                         @endforeach
@@ -103,7 +103,7 @@
                     <button class="topbar-link btn shadow-none btn-link px-2 dropdown-toggle drop-arrow-none"
                         data-bs-auto-close="true" data-bs-toggle="dropdown" data-bs-offset="0,13" type="button"
                         aria-haspopup="false" aria-expanded="false">
-                        Report <i class="ti ti-chevron-down ms-1"></i>
+                        Laporan <i class="ti ti-chevron-down ms-1"></i>
                     </button>
 
                     {{-- Dropdown Menu :begin --}}
@@ -112,7 +112,7 @@
                         <li>
                             <a class="dropdown-item {{ request()->is('report/'.$key.'*') ? 'active' : '' }}"
                                 href="{{ route('report.index', $key) }}">
-                                {{ Str::headline($key) }}
+                                {{ Str::headline($item['label']) }}
                             </a>
                         </li>
                         @endforeach
@@ -130,7 +130,7 @@
                     <button class="topbar-link btn shadow-none btn-link px-2 dropdown-toggle drop-arrow-none"
                         data-bs-auto-close="true" data-bs-toggle="dropdown" data-bs-offset="0,13" type="button"
                         aria-haspopup="false" aria-expanded="false">
-                        Integration <i class="ti ti-chevron-down ms-1"></i>
+                        Integrasi <i class="ti ti-chevron-down ms-1"></i>
                     </button>
 
                     {{-- Dropdown Menu :begin --}}
@@ -139,7 +139,7 @@
                         <li>
                             <a class="dropdown-item {{ request()->is('integration/'.$key.'*') ? 'active' : '' }}"
                                 href="{{ route('integration.index', $key) }}">
-                                {{ Str::headline($key) }}
+                                {{ Str::headline($item['label']) }}
                             </a>
                         </li>
                         @endforeach
@@ -153,7 +153,7 @@
 
         <div class="d-flex align-items-center gap-2">
             <!-- Language Button -->
-            <div class="topbar-item">
+            {{-- <div class="topbar-item">
                 <div class="dropdown">
                     <button class="topbar-link fw-semibold" data-bs-toggle="dropdown" data-bs-offset="0,19"
                         type="button" aria-haspopup="false" aria-expanded="false">
@@ -176,7 +176,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
             <!-- Light/Dark Mode Button -->
             <div class="topbar-item d-none d-sm-flex">
@@ -206,14 +206,15 @@
 
                         {{-- Header --}}
                         <div class="dropdown-header noti-title">
-                            <h6 class="text-overflow m-0">{{ __('Welcome Back') }}!</h6>
+                            <h6 class="text-overflow m-0">{{ __('Selamat Datang Kembali!') }}</h6>
                         </div>
 
                         {{-- User Info --}}
                         <div class="dropdown-item fw-semibold mb-0">
-                            <h5 class="mb-1">{{ $user->username ?? __('Please set your username'). '!' }}</h5>
-                            <h6 class="mb-0">{{ __('Role') }}: {{ $role ?? __('Please set your role'). '!' }}</h6>
-
+                            <h5 class="mb-1">{{ $user->username ?? __('Mohon tambahkan username anda'). '!' }}</h5>
+                            <h6 class="mb-0">
+                                {{ __('Role') }}: {{ $role ?? __('Mohon tambahkan jabatan anda'). '!' }}
+                            </h6>
                         </div>
 
                         <div class="dropdown-divider"></div>
@@ -224,7 +225,7 @@
                             <button href="{{ route('lock') }}" class="dropdown-item"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                 <i class=" ti ti-lock me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">{{ __('Lock Screen') }}</span>
+                                <span class="align-middle">{{ __('Kunci Layar') }}</span>
                             </button>
                         </form>
 
@@ -235,7 +236,7 @@
                                 onclick="event.preventDefault(); this.closest('form').submit();"
                                 class="dropdown-item text-danger fw-semibold">
                                 <i class="ti ti-logout-2 me-2 fs-17 align-middle"></i>
-                                <span class="align-middle">{{ __('Log Out') }}</span>
+                                <span class="align-middle">{{ __('Keluar') }}</span>
                             </button>
                         </form>
                         @endauth
@@ -244,19 +245,19 @@
                         @guest
                         {{-- Header --}}
                         <div class="dropdown-header noti-title">
-                            <h6 class="text-overflow m-0">{{ __('Please Sign In First') }}</h6>
+                            <h6 class="text-overflow m-0">{{ __('Mohon masuk terlebih dahulu') }}</h6>
                         </div>
 
                         {{-- Login --}}
                         <a href="{{ route('login') }}" class="dropdown-item">
                             <i class="ti ti-login me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">{{ __('Login') }}</span>
+                            <span class="align-middle">{{ __('Masuk') }}</span>
                         </a>
 
                         {{-- Register --}}
                         <a href="{{ route('register') }}" class="dropdown-item">
                             <i class="ti ti-user-plus me-2 fs-17 align-middle"></i>
-                            <span class="align-middle">{{ __('Register') }}</span>
+                            <span class="align-middle">{{ __('Daftar') }}</span>
                         </a>
                         @endguest
                     </div>

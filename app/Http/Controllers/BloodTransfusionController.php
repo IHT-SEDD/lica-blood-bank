@@ -406,8 +406,13 @@ class BloodTransfusionController extends Controller
             return $this->printService->incompatibleLetter($transfusionPublicID, $print);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mencetak surat incompatible',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print incompatible letter file!'], 500);
+            return response()->json(['message' => 'Gagal mencetak file surat incompatible!', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -425,7 +430,7 @@ class BloodTransfusionController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print nota file!', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Gagal mencetak file nota!', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -437,8 +442,13 @@ class BloodTransfusionController extends Controller
             return $this->printService->crossmatchResult($transfusionPublicID, $btDetailID, $print);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal mencetak hasil crossmatch',
+                'error' => $e->getMessage(),
+            ], 500);
         } catch (\Throwable $e) {
-            return response()->json(['message' => 'Failed to print crossmatch result file!'], 500);
+            return response()->json(['message' => 'Gagal mencetak file hasil crossmatch!', 'error' => $e->getMessage()], 500);
         }
     }
 
