@@ -102,6 +102,7 @@ export function applyButtonState(tableID, data, options = {}) {
  * @returns {Array} konfigurasi buttons untuk applyButtonState
  */
 export function getPatientDetailButtonConfig(hasLabNumber, isCompleted) {
+    console.log(hasLabNumber, isCompleted);
     return [
         // btn-checkin-lab: tampil jika belum ada lab number
         {
@@ -114,6 +115,11 @@ export function getPatientDetailButtonConfig(hasLabNumber, isCompleted) {
             selector: SelectorBtnComplete,
             action: "hide",
             conditions: () => !isCompleted || !hasLabNumber,
+        },
+        {
+            selector: SelectorBtnComplete,
+            action: "show",
+            conditions: () => !isCompleted && hasLabNumber,
         },
         // btn-print-nota: tampil & enable jika sudah ada lab number
         {

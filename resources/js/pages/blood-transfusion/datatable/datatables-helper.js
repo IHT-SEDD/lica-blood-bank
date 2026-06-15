@@ -1,5 +1,8 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
-import { TransactionOrderStatus } from "../../../utility/config/status-config";
+import {
+    TransactionOrderStatus,
+    TransfusionBloodStatus,
+} from "../../../utility/config/status-config";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
@@ -18,6 +21,7 @@ const TABLE = {
     bagRequest: "#list-bag-request-table",
     test: "#list-test-table",
     bloodPack: "#edit-blood-pack-available-table",
+    historyTest: "#list-history-test-table",
 };
 
 // ---------- INSTANCES ----------
@@ -25,6 +29,7 @@ export let listRequestTableInstance;
 export let listBagRequestTableInstance;
 export let listTestTableInstance;
 export let availableBloodComponentsInstance;
+export let listHistoryTestTableInstance;
 
 // ---------- HELPERS ----------
 const csrfToken = () =>
@@ -456,32 +461,7 @@ export function DatatableListBagRequest() {
             title: "Status",
             render: function (_, data, row) {
                 const rowData = row.row_data;
-                const status = TextFormatter.format(rowData.blood_stock_status);
-                switch (status) {
-                    case "In Use":
-                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heartbeat fs-4"></i> Sedang Digunakan
-                            </span>`;
-                        break;
-                    case "Used":
-                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-x fs-4"></i> Tidak Dikeluarkan
-                            </span>`;
-                        break;
-                    case "Taken Out":
-                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-up fs-4"></i> Dikeluarkan
-                            </span>`;
-                        break;
-                    case "Hold":
-                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
-                                <i class="ti ti-heart-pause fs-4"></i> Ditahan
-                            </span>`;
-                        break;
-                    default:
-                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">${status}</span>`;
-                        break;
-                }
+                return TransfusionBloodStatus(rowData.blood_stock_status);
             },
         },
         {
@@ -844,6 +824,97 @@ export function initAvailableBloodComponentsTable() {
                 },
             ],
             order: [[0, "asc"]],
+        },
+    );
+}
+
+// ---------- HISTORY TEST TABLE ----------
+export function DatatableHistoryTestTable() {
+    if (isTableInitialized(TABLE.historyTest)) return;
+    const HISTORYTESTCOLUMNS = [
+        {
+            data: "blood_request_at",
+            title: "Tgl. Permintaan",
+            render: (data) => {
+                const bloodRequestAt = DateTimeFormatter.shortDateTime(data);
+                return `<span class="fs-6 fw-semibold">${bloodRequestAt}</span>`;
+            },
+        },
+        {
+            data: "lab_number",
+            title: "No. BDRS",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data}</span>`;
+            },
+        },
+        {
+            data: "order_number",
+            title: "No. Order",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
+            },
+        },
+        {
+            data: "bag_number",
+            title: "No. Labu",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
+            },
+        },
+        {
+            data: "crossmatch_result",
+            title: "Hasil",
+            render: (data) => {
+                return renderCrossmatchResult(data);
+            },
+        },
+        {
+            data: "blood_release_status",
+            title: "Status",
+            render: (data) => {
+                const isReleased = data === 1;
+                if (isReleased) {
+                    return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                        <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
+                        Dikeluarkan
+                    </span>`;
+                }
+                return `<span class="badge badge-label fw-semibold badge-soft-info">
+                    <i class="ti ti-heart-x align-middle me-2 fs-4"></i>
+                    Tidak Dikeluarkan
+                </span>`;
+            },
+        },
+    ];
+
+    listHistoryTestTableInstance = new GlobalAdvanceYajraDatatable(
+        TABLE.historyTest,
+        {
+            removeSearch: true,
+            removePageInfo: true,
+            removePagination: true,
+            ajax: (data, callback) => {
+                if (!window.currentTransfusionPatientId) {
+                    return callback(emptyCallback(data.draw));
+                }
+                $.get(
+                    `${DATATABLE_URL}/${window.currentTransfusionPatientId}/history-test`,
+                    data,
+                )
+                    .done(callback)
+                    .fail(() => callback(emptyCallback(data.draw)));
+            },
+            columns: HISTORYTESTCOLUMNS,
+            columnDefs: [
+                {
+                    targets: -1,
+                    responsivePriority: 1,
+                },
+                {
+                    targets: 0,
+                    responsivePriority: 2,
+                },
+            ],
         },
     );
 }

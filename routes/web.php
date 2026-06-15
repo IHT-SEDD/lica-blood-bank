@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('blood-request', 'datatableBloodRequest')->name('blood-request');
                 Route::get('blood-request-archive', 'datatableBloodRequestArchive')->name('blood-request-archive');
                 Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+                Route::get('{patientId}/history-test', 'datatableListHistoryTest')->name('datatable-history-test');
             });
 
             // ---------- Detail group routes ----------

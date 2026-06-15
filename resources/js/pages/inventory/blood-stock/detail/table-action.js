@@ -8,7 +8,7 @@ import {
     GlobalSubmitForm,
     GlobalDataConfirmation,
 } from "../../../../app";
-import { BloodStatus } from "../../../../utility/config/status-config";
+import { BloodStockStatus } from "../../../../utility/config/status-config";
 
 // ---------- Global variable :begin ----------
 const StockBloodDataURL = "/inventory/blood-stock/detail/data";
@@ -586,7 +586,7 @@ export class TableActionHandler {
                 beforeTable.querySelector("#bag_number").textContent =
                     data.bag_number ?? "-";
                 beforeTable.querySelector("#blood_status").innerHTML =
-                    BloodStatus(data.blood_status);
+                    BloodStockStatus(data.blood_status);
                 beforeTable.querySelector("#bdrs_no").textContent =
                     transfusionDetail?.blood_transfusion?.lab_number ?? "-";
                 beforeTable.querySelector("#patient_name").textContent =
@@ -681,7 +681,7 @@ export class TableActionHandler {
                             return;
                         }
 
-                        statusCell.innerHTML = BloodStatus(result.blood_status);
+                        statusCell.innerHTML = BloodStockStatus(result.blood_status);
 
                         if (confirmBtn) {
                             confirmBtn.disabled = false;
