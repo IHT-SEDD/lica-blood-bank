@@ -2,6 +2,7 @@
 
 namespace App\Services\Inventory\BloodStock;
 
+use App\Enums\IncomingBloodStatus;
 use App\Exports\Inventory\BloodStock\BloodStockExport;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
@@ -30,8 +31,8 @@ class BloodStockDataService
         'po_number',
       ])
       ->whereIn('status', ['all_order_stock_registered', 'some_order_stock_registered'])
-      ->whereDoesntHave('incomingBloods', function ($q) {
-        $q->where('status', 'stock_ready');
+      ->whereHas('incomingBloods', function ($q) {
+        $q->where('status', '!=', IncomingBloodStatus::STOCK_READY);
       });
 
     // ---------- Handle search field ----------

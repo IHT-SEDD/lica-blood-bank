@@ -8,8 +8,13 @@ import {
     DatatableListTest,
     listTestTableInstance,
     completeTest,
+    updateDoneButtonState,
 } from "./datatable/datatables-helper";
-import { GlobalRenderTimelineItem } from "../../utility/ui";
+import {
+    GlobalRenderTimelineItem,
+    setHidden,
+    TextFormatter,
+} from "../../utility/ui";
 import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-config";
 import { initFormEdit } from "./form/edit";
 import { QzManager } from "../../utility/config/qz";
@@ -20,37 +25,9 @@ import {
     initReleaseAllBloodPack,
     initDeleteTransaction,
 } from "./helper/action-helper";
-import {
-    initPrintIncompatibleLetter,
-    initPrintNota,
-    initPrintCrossmatchResult,
-    initPrintCrossmatchResultPerBlood,
-} from "./helper/print-helper";
-import {
-    applyButtonState,
-    getPatientDetailButtonConfig,
-    evaluateBagListState,
-    applyBagListButtonState,
-    updateWorkflowButtonsState,
-    getCheckinBtn,
-    getCompleteBtn,
-    getCrossmatchSelesaiBtn,
-    getPrintNotaBtn,
-    SelectorBtnHold,
-    SelectorBtnRelease,
-    SelectorBtnUnrelease,
-    SelectorBtnReleaseAll,
-    SelectorBtnAccept,
-    SelectorBtnConfirm,
-    SelectorBtnConfimDelete,
-    SelectorBtnPrintIncompLetter,
-    SelectorBtnPrintResult,
-    SelectorBtnPrintResultPerBlood,
-    SelectorBtnPrintBarcodePerBlood,
-    SelectorBtnDeletePerBlood,
-} from "./helper/button-state";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
+// TIMELINE
 const BloodTransfusionLogContainerSelector =
     ".blood-transfusion-log-data-container";
 const TimelineContainerSelector = ".timeline-blood-transfusion-log";
@@ -65,9 +42,75 @@ const ModalDeleteTransactionSelector = "delete_data_blood_transfusion_modal";
 const ActionDeleteTransactionSelector = ".btn-delete-blood-transfusion";
 const AttributeDeleteTransaction = "deleteId";
 const ConfirmDeleteTransactionSelector = "#confirm_delete";
-const csrfToken = document
-    .querySelector('meta[name="csrf-token"]')
-    .getAttribute("content");
+
+const SelectorBtnCheckin = "btn-checkin-lab";
+const SelectorBtnCrossmatchSelesai = "btn-test-done";
+const SelectorBtnPrintNota = "btn-print-nota";
+const SelectorBtnPrintResult = "btn-print-result";
+const SelectorBtnComplete = "btn-complete-transaction";
+const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
+const SelectorBtnPrintBarcodePerBlood = "btn-print-barcode-per-blood";
+const SelectorBtnDeletePerBlood = "btn-delete-per-blood";
+const SelectorBtnPrintIncompLetter = "btn-print-incompletter";
+
+const SelectorBtnRelease = "btn-release-blood-pack";
+const SelectorBtnUnrelease = "btn-unrelease-blood-pack";
+const SelectorBtnReleaseAll = "btn-release-all-blood-pack";
+const SelectorBtnAccept = "btn-accept-blood-pack";
+const SelectorBtnConfirm = "confirm_action";
+const SelectorBtnConfimDelete = "confirm_delete_blood_pack";
+const SelectorBtnHold = "btn-hold-blood-pack";
+const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
+
+const getCheckinBtn = () => document.getElementById(SelectorBtnCheckin);
+const getCompleteBtn = () => document.getElementById(SelectorBtnComplete);
+const getCrossmatchSelesaiBtn = () =>
+    document.getElementById(SelectorBtnCrossmatchSelesai);
+const getPrintNotaBtn = () => document.getElementById(SelectorBtnPrintNota);
+
+// ---------- Handle Button State ----------
+window.HandlingButtonState = function (tableID, data, options = {}) {
+    const { buttons = [], onReady = null, ...restOptions } = options;
+    if (!data) return;
+
+    buttons.forEach(({ selector, conditions, action = "show", className }) => {
+        const el =
+            document.getElementById(selector) ??
+            document.querySelector(selector);
+        if (!el) return;
+
+        const conditionMet =
+            typeof conditions === "function"
+                ? conditions(data, { tableID, ...restOptions })
+                : true;
+
+        switch (action) {
+            case "show":
+                conditionMet
+                    ? el.classList.remove("d-none")
+                    : el.classList.add("d-none");
+                break;
+            case "hide":
+                conditionMet
+                    ? el.classList.add("d-none")
+                    : el.classList.remove("d-none");
+                break;
+            case "enable":
+                el.disabled = !conditionMet;
+                break;
+            case "disable":
+                el.disabled = conditionMet;
+                break;
+            case "toggle":
+                el.classList.toggle(className ?? "d-none", !conditionMet);
+                break;
+        }
+    });
+
+    if (typeof onReady === "function") {
+        onReady(data, { tableID, ...restOptions });
+    }
+};
 
 // ---------- Filter tanggal dari flatpickr untuk data di tabel ----------
 function DateRangeFilter() {
@@ -141,14 +184,59 @@ export function updatePatientDetailUI(data) {
     const isCompleted =
         data.status && data.status === "blood_transfusion_finished";
 
-    applyButtonState("#list-request-table", data, {
-        buttons: getPatientDetailButtonConfig(hasLabNumber, isCompleted),
+    window.HandlingButtonState("#list-request-table", data, {
+        buttons: [
+            // btn-checkin-lab: tampil jika belum ada lab number
+            {
+                selector: SelectorBtnCheckin,
+                action: "show",
+                conditions: (d) => !hasLabNumber,
+            },
+            {
+                selector: SelectorBtnComplete,
+                action: "show",
+                conditions: (d) => !isCompleted && hasLabNumber,
+            },
+            // btn-print-note: tampil & enable jika sudah ada lab number
+            {
+                selector: SelectorBtnPrintNota,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnPrintNota,
+                action: "enable",
+                conditions: (d) => hasLabNumber,
+            },
+            // btn-edit-blood-pack: tampil & enable jika sudah ada lab number
+            {
+                selector: SelectorBtnEditBloodPack,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnEditBloodPack,
+                action: "enable",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnReleaseAll,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+            {
+                selector: SelectorBtnPrintResult,
+                action: "show",
+                conditions: (d) => hasLabNumber,
+            },
+        ],
         onReady: (d) => {
             // Set dataset.id pada checkin button jika belum ada lab number
             if (!hasLabNumber) {
                 const BTN_CHECKIN = getCheckinBtn();
                 if (BTN_CHECKIN) BTN_CHECKIN.dataset.id = d.public_id;
             }
+
             if (hasLabNumber) {
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
@@ -169,8 +257,58 @@ export function updatePatientDetailUI(data) {
                 $("#list-bag-request-table")
                     .DataTable()
                     .ajax.reload(function (json) {
-                        const state = evaluateBagListState(json.data ?? []);
-                        applyBagListButtonState(state);
+                        const allHaveCrossmatch =
+                            json.data &&
+                            json.data.length > 0 &&
+                            json.data.every(
+                                (bag) =>
+                                    bag.crossmatch_result &&
+                                    bag.crossmatch_result.toString().trim() !==
+                                        "",
+                            );
+                        const bloodReleased =
+                            json.data &&
+                            json.data.length > 0 &&
+                            json.data.every(
+                                (bag) =>
+                                    bag.blood_release_status &&
+                                    bag.blood_release_status === 1,
+                            );
+                        const hasUnapprovedIncompatible =
+                            json.data &&
+                            json.data.some(
+                                (bag) =>
+                                    bag.crossmatch_result
+                                        ?.toString()
+                                        .toLowerCase() === "incompatible" &&
+                                    Number(bag.is_approval_incompatible) !== 1,
+                            );
+
+                        const btnComplete =
+                            document.getElementById(SelectorBtnComplete);
+                        if (btnComplete) {
+                            btnComplete.disabled =
+                                !allHaveCrossmatch ||
+                                !bloodReleased ||
+                                hasUnapprovedIncompatible;
+                        }
+
+                        const btnReleaseAll = document.getElementById(
+                            SelectorBtnReleaseAll,
+                        );
+                        if (btnReleaseAll) {
+                            btnReleaseAll.disabled =
+                                !allHaveCrossmatch ||
+                                bloodReleased ||
+                                hasUnapprovedIncompatible;
+                        }
+
+                        const btnPrintResult = document.getElementById(
+                            SelectorBtnPrintResult,
+                        );
+                        if (btnPrintResult) {
+                            btnPrintResult.disabled = !allHaveCrossmatch;
+                        }
 
                         if (window.currentBagDetailPublicId && json.data) {
                             const updatedBag = json.data.find(
@@ -181,11 +319,18 @@ export function updatePatientDetailUI(data) {
 
                             if (updatedBag) {
                                 window.currentBagData = updatedBag;
-                                updateWorkflowButtonsState(updatedBag);
+
+                                if (
+                                    typeof window.updateWorkflowButtonsState ===
+                                    "function"
+                                ) {
+                                    window.updateWorkflowButtonsState();
+                                }
                             }
                         }
                     }, false);
             }
+
             if (
                 listTestTableInstance &&
                 $.fn.DataTable.isDataTable("#list-test-table")
@@ -242,7 +387,9 @@ function initBagRequestRowClick() {
             window.currentBagData = data;
 
             // Update workflow buttons
-            updateWorkflowButtonsState(window.currentBagData);
+            if (typeof window.updateWorkflowButtonsState === "function") {
+                window.updateWorkflowButtonsState();
+            }
 
             if (
                 listTestTableInstance &&
@@ -386,16 +533,86 @@ function initDoneButton() {
     const newBtn = BTN_FINISH.cloneNode(true);
     BTN_FINISH.parentNode.replaceChild(newBtn, BTN_FINISH);
 
-    // Sembunyikan tombol secara default
-    newBtn.classList.add("d-none");
+    // Gunakan string ID, bukan elemen
+    setHidden("btn-test-done", true);
 
     newBtn.addEventListener("click", function () {
         completeTest();
     });
 }
 
+window.updateWorkflowButtonsState = function () {
+    const btnHold = document.getElementById(SelectorBtnHold);
+    const btnRelease = document.getElementById(SelectorBtnRelease);
+    const btnUnrelease = document.getElementById(SelectorBtnUnrelease);
+    const btnAccept = document.getElementById(SelectorBtnAccept);
+    const btnPrintIncomp = document.getElementById(
+        SelectorBtnPrintIncompLetter,
+    );
+
+    const showButtons = (...btns) =>
+        btns.forEach((btn) => btn?.classList.remove("d-none"));
+    const hideButtons = (...btns) =>
+        btns.forEach((btn) => btn?.classList.add("d-none"));
+
+    hideButtons(btnHold, btnRelease, btnUnrelease, btnAccept);
+
+    const data = window.currentBagData;
+    const {
+        crossmatch_result,
+        blood_stock_status,
+        is_print_incompatible_letter,
+        is_approval_incompatible,
+    } = data.row_data;
+    if (!data || !data.crossmatch_result) return;
+
+    if (crossmatch_result === "Incompatible") {
+        if (blood_stock_status === "in_use") {
+            // Sudah print incompatible letter tetapi belum approve incompatible
+            if (is_print_incompatible_letter && !is_approval_incompatible) {
+                showButtons(btnAccept);
+            }
+            // Sudah approve incompatible
+            if (is_approval_incompatible) {
+                showButtons(btnRelease);
+            }
+
+            showButtons(btnHold, btnUnrelease);
+        }
+
+        if (blood_stock_status === "hold") {
+            hideButtons(btnHold);
+            showButtons(btnPrintIncomp, btnUnrelease);
+
+            // Sudah print incompatible letter
+            if (is_print_incompatible_letter) {
+                showButtons(btnAccept, btnUnrelease);
+            }
+
+            // Sudah approve incompatible
+            if (is_approval_incompatible) {
+                showButtons(btnUnrelease, btnRelease);
+                hideButtons(btnAccept);
+            }
+        }
+    } else if (crossmatch_result === "Compatible") {
+        if (blood_stock_status === "in_use") {
+            showButtons(btnHold, btnRelease, btnUnrelease);
+        }
+
+        if (blood_stock_status === "hold") {
+            hideButtons(btnHold);
+            showButtons(btnRelease, btnUnrelease);
+        }
+    }
+};
+
 // ---------- Handle Bag Request Action Buttons ----------
 function initBagRequestActionButtons() {
+    const csrfToken = document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+
     // ---------- Helpers ----------
     const reloadBagRequestTable = () => {
         if (
@@ -413,7 +630,13 @@ function initBagRequestActionButtons() {
 
                         if (updatedBag) {
                             window.currentBagData = updatedBag;
-                            updateWorkflowButtonsState(updatedBag);
+
+                            if (
+                                typeof window.updateWorkflowButtonsState ===
+                                "function"
+                            ) {
+                                window.updateWorkflowButtonsState();
+                            }
                         }
                     }
                 }, false);
@@ -598,31 +821,35 @@ function initBagRequestActionButtons() {
         });
 
     // Print Incompatible Letter
-    initPrintIncompatibleLetter({
-        PRINT_URL,
-        onDone: () => {
-            reloadBagRequestTable();
-        },
-        printType: "incompatible_letter",
-    });
+    $(document)
+        .off("click", "#" + SelectorBtnPrintIncompLetter)
+        .on("click", "#" + SelectorBtnPrintIncompLetter, function (e) {
+            e.preventDefault();
+            handlePrint(
+                `${PRINT_URL}/incompatible-letter/${window.currentTransfusionPublicId}`,
+            );
+        });
 
     // Print Result
-    initPrintCrossmatchResult({
-        PRINT_URL,
-        onDone: () => {
-            reloadBagRequestTable();
-        },
-        printType: "crossmatch_result",
-    });
+    $(document)
+        .off("click", "#" + SelectorBtnPrintResult)
+        .on("click", "#" + SelectorBtnPrintResult, function (e) {
+            e.preventDefault();
+            handlePrint(
+                `${PRINT_URL}/crossmatch-result/${window.currentTransfusionPublicId}`,
+            );
+        });
+    $(document)
+        .off("click", "." + SelectorBtnPrintResultPerBlood)
+        .on("click", "." + SelectorBtnPrintResultPerBlood, function (e) {
+            e.preventDefault();
+            const detailId = $(this).data("public-id");
+            if (!detailId) return;
 
-    // Print Result Per Blood
-    initPrintCrossmatchResultPerBlood({
-        PRINT_URL,
-        onDone: () => {
-            reloadBagRequestTable();
-        },
-        printType: "crossmatch_result_per_blood",
-    });
+            handlePrint(
+                `${PRINT_URL}/crossmatch-result/${window.currentTransfusionPublicId}/${detailId}`,
+            );
+        });
 
     // Print Barcode
     $(document)
@@ -763,6 +990,80 @@ function GenerateTimeline(logs = []) {
     bloodTransfusionTimeline.render(logs);
 }
 
+// ---------- Handle Print Nota ----------
+function PrintNota() {
+    const BTN_PRINT_NOTA = getPrintNotaBtn();
+    if (!BTN_PRINT_NOTA) return;
+
+    const newBtn = BTN_PRINT_NOTA.cloneNode(true);
+    BTN_PRINT_NOTA.parentNode.replaceChild(newBtn, BTN_PRINT_NOTA);
+
+    newBtn.addEventListener("click", async function () {
+        const id = this.dataset.id;
+        if (!id) return;
+
+        showPageLoading();
+
+        try {
+            const res = await fetch(
+                `/blood-transfusion/detail/print/nota/${id}`,
+            );
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                notyf.error({
+                    message:
+                        err?.message ?? `HTTP error! status: ${res.status}`,
+                });
+                hidePageLoading();
+                return;
+            }
+
+            let htmlText = await res.text();
+            // const blob = await res.blob();
+            const blob = new Blob([htmlText], { type: "text/html" });
+            const blobUrl = URL.createObjectURL(blob);
+
+            let iframe = document.getElementById("__print_nota_iframe__");
+            if (iframe) iframe.remove();
+
+            iframe = document.createElement("iframe");
+            iframe.id = "__print_nota_iframe__";
+            iframe.style.cssText =
+                "position:fixed;top:0;left:0;width:0;height:0;border:none;opacity:0;pointer-events:none;";
+            iframe.src = blobUrl;
+
+            iframe.onload = () => {
+                try {
+                    iframe.contentWindow.focus();
+                    iframe.contentWindow.print();
+                } catch (printErr) {
+                    notyf.error({
+                        message:
+                            "Gagal membuka print browser! Silakan coba mendownload file nya",
+                    });
+                    console.error(printErr);
+                } finally {
+                    hidePageLoading();
+                    reloadBagRequestTable();
+                    setTimeout(
+                        () => window.URL.revokeObjectURL(blobUrl),
+                        10_000,
+                    );
+                }
+            };
+            document.body.appendChild(iframe);
+        } catch (err) {
+            console.error("[Print] Network error:", err);
+            notyf.error({
+                message: "Network error, failed to load print file.",
+            });
+
+            hidePageLoading();
+        }
+    });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
@@ -779,20 +1080,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Action buttons
     CheckInLabNumber();
-    initPrintNota({
-        PRINT_URL,
-        onDone: () => {
-            if (
-                listBagRequestTableInstance &&
-                $.fn.DataTable.isDataTable("#list-bag-request-table")
-            ) {
-                $("#list-bag-request-table")
-                    .DataTable()
-                    .ajax.reload(null, false);
-            }
-        },
-        printType: "nota",
-    });
+    PrintNota();
     CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();

@@ -52,7 +52,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::CROSSMATCH_FINISH => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',
 
             self::BLOOD_HOLD => 'Transaksi %s: Darah dengan no. labu %s, status nya diubah menjadi ditahan oleh user dengan username %s',
-            self::BLOOD_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, telah dikeluarkan oleh user dengan username %s',
+            self::BLOOD_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, telah dikeluarkan oleh user dengan username %s, dan penerima labu darah bernama %s',
             self::BLOOD_DELETED => 'Transaksi %s: Darah dengan no. labu %s, telah dihapus oleh user dengan username %s',
             self::BLOOD_DONT_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, tidak dikeluarkan oleh user dengan username %s',
             self::APPROVE_INCOMPATIBLE => 'Transaksi %s: Hasil incompatible disetujui oleh user dengan username %s, untuk darah dengan no. labu %s',

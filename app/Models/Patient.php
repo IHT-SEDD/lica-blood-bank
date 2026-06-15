@@ -6,6 +6,7 @@ use App\Traits\InvalidateSelectCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class Patient extends Model
@@ -29,10 +30,12 @@ class Patient extends Model
     protected $hidden = [
         'id',
     ];
-
     protected $casts = [
         'is_active' => 'boolean',
         'birthdate' => 'date',
+    ];
+    protected $appends = [
+        'patient_age',
     ];
 
     protected static function booted()
@@ -43,7 +46,7 @@ class Patient extends Model
             }
         });
 
-         static::created(function ($patient) {
+        static::created(function ($patient) {
             if (empty($patient->medrec)) {
                 $patient->updateQuietly([
                     'medrec' => date('y') . str_pad($patient->id, 5, '0', STR_PAD_LEFT)
@@ -76,5 +79,17 @@ class Patient extends Model
                 'is_active' => 'sometimes|boolean',
             ],
         };
+    }
+
+    public function getPatientAgeAttribute()
+    {
+        if (!$this->birthdate) {
+            return null;
+        }
+
+        $birthdate = Carbon::parse($this->birthdate);
+        $now = now();
+        $diff = $birthdate->diff($now);
+        return "{$diff->y} Tahun {$diff->m} Bulan {$diff->d} Hari";
     }
 }
