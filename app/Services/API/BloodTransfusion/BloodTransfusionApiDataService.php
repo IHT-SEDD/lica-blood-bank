@@ -17,7 +17,7 @@ class BloodTransfusionApiDataService
             'doctor',
             'room',
             'insurance',
-            'blood_transfusion_details.blood_transfusion_detail_tests.test',
+            'blood_transfusion_details.bloodTransfusionDetailTests.test',
         ])
             ->where('order_number', $orderNumber)
             ->firstOrFail();
@@ -62,7 +62,7 @@ class BloodTransfusionApiDataService
         $hasil = [];
 
         foreach ($transfusion->blood_transfusion_details as $detail) {
-            foreach ($detail->blood_transfusion_detail_tests as $detailTest) {
+            foreach ($detail->bloodTransfusionDetailTests as $detailTest) {
                 $hasil[] = [
                     'test_id' => $detailTest->test_id,
                     'test_name' => $detailTest->test->name ?? null,
