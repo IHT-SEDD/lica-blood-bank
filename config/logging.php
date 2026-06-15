@@ -229,6 +229,11 @@ return [
             'path' => storage_path('logs/blood-stock/restore-blood-stock-data.log'),
             'level' => 'debug',
         ],
+        'returnbloodstock' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-stock/return-blood-stock-data.log'),
+            'level' => 'debug',
+        ],
 
         // Blood Destroy Loggings
         'newblooddestroy' => [
@@ -256,6 +261,11 @@ return [
         'updatebloodtransfusion' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-transfusion/update-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'deletebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/delete-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
         'donebloodtransfusion' => [

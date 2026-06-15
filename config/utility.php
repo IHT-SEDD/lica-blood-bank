@@ -13,6 +13,22 @@ return [
         'label' => 'bag_number',
         'with' => [],
     ],
+    'blood-stock' => [
+        'model' => App\Models\BloodStock::class,
+        'label' => 'bag_number',
+        'with' => [],
+        'conditions' => [
+            [
+                'field' => 'blood_status',
+                'value' => 'available',
+            ],
+        ],
+    ],
+    'blood-transfusion-detail' => [
+        'model' => App\Models\BloodTransfusionDetail::class,
+        'label' => '',
+        'with' => ['bloodTransfusion', 'bloodTransfusionDetailTests'],
+    ],
     'bag-number-by-po' => [
         'model' => App\Models\IncomingBloodDetail::class,
         'label' => 'bag_number',

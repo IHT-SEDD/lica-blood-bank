@@ -59,10 +59,10 @@
 
         {{-- Select Status --}}
         <div>
-          <select class="form-control form-control-sm tomselect-sm" id="filter-status-transaction" name="filter-status-transaction"
-            placeholder="Filter status transaksi"></select>
+          <select class="form-control form-control-sm tomselect-sm" id="filter-status-transaction"
+            name="filter-status-transaction" placeholder="Filter status transaksi"></select>
         </div>
-        
+
         <div class="card-action d-flex align-items-center gap-2">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
@@ -172,8 +172,9 @@
 
         <div class="d-flex justify-content-center align-items-center gap-2">
           {{-- Finish blood request button --}}
-          <button data-id="" class="btn btn-sm btn-soft-success fw-medium d-none" style="font-size: 11.9px;" id="btn-test-done"
-            data-bs-title="Selesaikan Pemeriksaan Crossmatch" data-bs-toggle="tooltip" data-bs-trigger="hover">
+          <button data-id="" class="btn btn-sm btn-soft-success fw-medium d-none" style="font-size: 11.9px;"
+            id="btn-test-done" data-bs-title="Selesaikan Pemeriksaan Crossmatch" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
             <i class="ti ti-circle-check fs-4 me-1"></i> Selesai Crossmatch
           </button>
 
@@ -259,7 +260,7 @@
 @include('pages.blood-transfusion.partials.edit-data-blood-request-modal')
 @include('pages.blood-transfusion.partials.edit-blood-pack-modal')
 @include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
-@include('pages.blood-transfusion.partials.delete-blood-modal')
+@include('utils.delete-data-modal', ['id'=> 'blood_transfusion', 'title' => 'Permintaan Darah'])
 @include('pages.blood-transfusion.partials.blood-release-modal')
 @include('pages.blood-transfusion.partials.blood-release-all-modal')
 @include('pages.blood-transfusion.partials.update-blood-modal')

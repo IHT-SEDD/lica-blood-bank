@@ -6,7 +6,9 @@ import {
     GlobalAdvanceTomselect,
     GlobalFormValidation,
     GlobalSubmitForm,
+    GlobalDataConfirmation,
 } from "../../../../app";
+import { BloodStatus } from "../../../../utility/config/status-config";
 
 // ---------- Global variable :begin ----------
 const StockBloodDataURL = "/inventory/blood-stock/detail/data";
@@ -30,6 +32,11 @@ const FormEditSelector = "edit_data_stock_blood";
 const ModalEditSelector = "edit_data_stock_blood_modal";
 const ActionEditSelector = ".btn-edit-stock-blood";
 const AttributeEdit = "editId";
+
+const ModalReturnSelector = "return_data_stock_blood_modal";
+const ActionReturnSelector = ".btn-return-stock-blood";
+const AttributeReturn = "returnId";
+const ConfirmReturnSelector = "#confirm_return";
 
 const ModalRestoreSelector = "restore_data_stock_blood_modal";
 const ActionRestoreSelector = ".btn-restore-stock-blood";
@@ -218,9 +225,7 @@ export class TableActionHandler {
             if (selectBloodStatus?.tomselect) {
                 selectBloodStatus.tomselect.clear();
                 if (data.blood_status) {
-                    selectBloodStatus.tomselect.setValue(
-                        data.blood_status,
-                    );
+                    selectBloodStatus.tomselect.setValue(data.blood_status);
                 }
             }
 
@@ -556,11 +561,211 @@ export class TableActionHandler {
         });
     }
 
+    ReturnStockBloodActionModal() {
+        new GlobalDataConfirmation({
+            ButtonSelector: ActionReturnSelector,
+            DataAttributeID: AttributeReturn,
+            UrlFetchData: (id) => StockBloodDataGetDataURL + `/${id}`,
+            ModalConfirmID: ModalReturnSelector,
+        });
+
+        document.addEventListener("confirmation:open", (e) => {
+            const { data } = e.detail;
+            if (!data) return;
+
+            const transfusionDetail = data.blood_transfusion_details?.[0];
+            const patient = transfusionDetail?.blood_transfusion?.patient;
+            const releasedBy = transfusionDetail?.blood_released_by_user;
+            const genderMap = { M: "Laki-laki", F: "Perempuan" };
+
+            // ---------- Tabel: patient_blood_before ----------
+            const beforeTable = document.querySelector(
+                '[data-table="patient_blood_before"]',
+            );
+            if (beforeTable) {
+                beforeTable.querySelector("#bag_number").textContent =
+                    data.bag_number ?? "-";
+                beforeTable.querySelector("#blood_status").innerHTML =
+                    BloodStatus(data.blood_status);
+                beforeTable.querySelector("#bdrs_no").textContent =
+                    transfusionDetail?.blood_transfusion?.lab_number ?? "-";
+                beforeTable.querySelector("#patient_name").textContent =
+                    patient?.name ?? "-";
+                beforeTable.querySelector("#gender").textContent =
+                    genderMap[patient?.gender] ?? patient?.gender ?? "-";
+                beforeTable.querySelector("#released_at").textContent =
+                    transfusionDetail?.blood_released_at ?? "-";
+                beforeTable.querySelector("#released_by").textContent =
+                    releasedBy?.name ?? "-";
+            }
+
+            // ---------- Tabel: patient_blood_new ----------
+            const newTable = document.querySelector(
+                '[data-table="patient_blood_new"]',
+            );
+            if (newTable) {
+                newTable.querySelector("#blood_status").innerHTML = "-";
+                newTable.querySelector("#bdrs_no").textContent =
+                    transfusionDetail?.blood_transfusion?.lab_number ?? "-";
+                newTable.querySelector("#patient_name").textContent =
+                    patient?.name ?? "-";
+                newTable.querySelector("#gender").textContent =
+                    genderMap[patient?.gender] ?? patient?.gender ?? "-";
+            }
+
+            const confirmBtn = document.querySelector(ConfirmReturnSelector);
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.dataset.id = data.public_id;
+
+                // ---------- Simpan blood_transfusion_id ke dataset confirm button ----------
+                confirmBtn.dataset.bloodTransfusionId =
+                    transfusionDetail?.blood_transfusion?.public_id ?? "";
+
+                // ---------- Reset selected blood stock setiap modal dibuka ----------
+                confirmBtn.dataset.selectedBloodStockId = "";
+            }
+
+            // ---------- Reset TomSelect setiap modal dibuka ----------
+            const selectEl = document.querySelector("#return_data_blood_stock");
+            if (selectEl?.tomselect) {
+                selectEl.tomselect.clear();
+            }
+        });
+
+        // ---------- Listener TomSelect: update blood_status saat bag dipilih ----------
+        const selectEl = document.querySelector("#return_data_blood_stock");
+        if (selectEl) {
+            const attachTomSelectListener = () => {
+                const ts = selectEl.tomselect;
+                if (!ts) return;
+
+                ts.on("change", async (value) => {
+                    const confirmBtn = document.querySelector(
+                        ConfirmReturnSelector,
+                    );
+                    const newTable = document.querySelector(
+                        '[data-table="patient_blood_new"]',
+                    );
+                    const statusCell = newTable?.querySelector("#blood_status");
+                    if (!statusCell) return;
+
+                    if (!value) {
+                        statusCell.innerHTML = "-";
+                        if (confirmBtn) {
+                            confirmBtn.disabled = true;
+                            confirmBtn.dataset.selectedBloodStockId = "";
+                        }
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(
+                            `/utility/get/blood-stock/${value}`,
+                            {
+                                method: "GET",
+                                headers: {
+                                    "X-CSRF-TOKEN": this.#getCsrfToken(),
+                                    Accept: "application/json",
+                                },
+                            },
+                        );
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            statusCell.innerHTML = "-";
+                            if (confirmBtn) {
+                                confirmBtn.disabled = true;
+                                confirmBtn.dataset.selectedBloodStockId = "";
+                            }
+                            return;
+                        }
+
+                        statusCell.innerHTML = BloodStatus(result.blood_status);
+
+                        if (confirmBtn) {
+                            confirmBtn.disabled = false;
+                            // ---------- Simpan public_id bag yang dipilih ----------
+                            confirmBtn.dataset.selectedBloodStockId =
+                                result.public_id ?? value;
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        statusCell.innerHTML = "-";
+                        if (confirmBtn) {
+                            confirmBtn.disabled = true;
+                            confirmBtn.dataset.selectedBloodStockId = "";
+                        }
+                    }
+                });
+            };
+            if (selectEl.tomselect) {
+                attachTomSelectListener();
+            } else {
+                const observer = new MutationObserver(() => {
+                    if (selectEl.tomselect) {
+                        observer.disconnect();
+                        attachTomSelectListener();
+                    }
+                });
+                observer.observe(selectEl, {
+                    attributes: true,
+                    attributeFilter: ["class"],
+                });
+            }
+        }
+
+        const confirmBtn = document.querySelector(ConfirmReturnSelector);
+        if (!confirmBtn) return;
+        confirmBtn.addEventListener("click", async () => {
+            const id = confirmBtn.dataset.id;
+            const bloodTransfusionId = confirmBtn.dataset.bloodTransfusionId;
+            const selectedBloodStockId =
+                confirmBtn.dataset.selectedBloodStockId;
+            if (!id) return;
+            try {
+                const response = await fetch(
+                    StockBloodDataURL + `/${id}/return`,
+                    {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": this.#getCsrfToken(),
+                        },
+                        body: JSON.stringify({
+                            blood_transfusion_id: bloodTransfusionId,
+                            new_blood_stock_id: selectedBloodStockId,
+                        }),
+                    },
+                );
+                const result = await response.json();
+                if (!response.ok) {
+                    notyf.error({
+                        message: result.message || "Gagal mengembalikan darah!",
+                    });
+                    return;
+                }
+                notyf.success({
+                    message:
+                        result.message ||
+                        "Darah berhasil dikembalikan ke stock!",
+                });
+                this.#getModalInstance(ModalReturnSelector)?.hide();
+                confirmBtn.dataset.id = "";
+                this.reloadTable();
+            } catch (error) {
+                console.error(error);
+                notyf.error({ message: "Gagal mengembalikan darah!" });
+            }
+        });
+    }
+
     init() {
         this.DeleteDataStockBloodActionModal();
         this.PermanentDeleteDataStockBloodActionModal();
         this.EditDataStockBloodActionModal();
         this.RestoreDataStockBloodActionModal();
+        this.ReturnStockBloodActionModal();
         this.PrintBarcodeLicaStockBloodAction();
         this.DownloadBarcodeLicaStockBloodAction();
     }

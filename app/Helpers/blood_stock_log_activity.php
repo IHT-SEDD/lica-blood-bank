@@ -4,15 +4,11 @@
 
 use App\Enums\BloodStockLogActivityStatus;
 
-function generateBloodStockLogDescription(
- BloodStockLogActivityStatus $status,
- string $bagNumber,
- string $userId
-): string {
+function generateBloodStockLogDescription(BloodStockLogActivityStatus $status, mixed ...$params): string
+{
  return $status->label() . ' ' . sprintf(
   $status->template(),
-  $bagNumber,
-  $userId
+  ...$params
  );
 }
 // ---------- Fungsi generate description untuk blood stock log activity :begin ----------

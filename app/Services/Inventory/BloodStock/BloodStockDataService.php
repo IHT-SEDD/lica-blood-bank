@@ -114,7 +114,7 @@ class BloodStockDataService
   // ---------- Fungsi untuk menampilkan data ke tabel stock blood detail ----------
   public function detailStockBloodDataTable(Request $request, string $id)
   {
-    $bloodStatus = $request->string('blood_status')->toString() ?: null;
+    $bloodStatus = $request->string('status')->toString() ?: null;
     $bloodPackId = BloodPack::where('public_id', $id)->value('id');
 
     $query = BloodStock::withTrashed()
@@ -189,7 +189,11 @@ class BloodStockDataService
       ->with([
         'incomingBloodDetails',
         'bloodPacks',
-        'storageRacks:id,public_id,blood_group,rack_type,name'
+        'storageRacks:id,public_id,blood_group,rack_type,name',
+        'bloodTransfusionDetails',
+        'bloodTransfusionDetails.bloodReleasedByUser',
+        'bloodTransfusionDetails.bloodTransfusion',
+        'bloodTransfusionDetails.bloodTransfusion.patient',
       ])
       ->first();
     return $stockBloodData;
