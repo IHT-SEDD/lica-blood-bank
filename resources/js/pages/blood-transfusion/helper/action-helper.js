@@ -550,7 +550,8 @@ export function initDeleteTransaction({
             deletedDataEl.textContent = `${data.blood_transfusion.lab_number ?? "-"} dengan nama ${data.patient_name}`;
         }
         const confirmBtn = document.querySelector(ConfirmDeleteSelector);
-        if (confirmBtn) confirmBtn.dataset.id = data.blood_transfusion.public_id;
+        if (confirmBtn)
+            confirmBtn.dataset.id = data.blood_transfusion.public_id;
     };
 
     // ---------- Remove dulu sebelum pasang baru — cegah duplikasi ----------
