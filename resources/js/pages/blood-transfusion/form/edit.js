@@ -13,12 +13,6 @@ import { DatatableBloodPackModal } from "../datatable/datatables-helper";
 const FormEditSelector = "edit_data_blood_transfusion";
 const FormEditURL = "/blood-transfusion";
 
-const ModalDeleteSelector = "delete_data_blood_request_modal";
-const ActionDeleteSelector = ".btn-delete-blood-transfusion";
-const AttributeDelete = "publicId";
-const ConfirmDeleteSelector = "#confirm_delete";
-const DeleteURLBloodTransfusion = "/blood-transfusion";
-
 let selectedEditBloodPacks = [];
 let currentEditTransfusionId = null;
 
@@ -383,72 +377,6 @@ export function initFormEdit() {
                 });
                 console.error(err);
             },
-        });
-    }
-
-    // ---------- Handle Delete ----------
-    new GlobalDeleteDataConfirmation({
-        ButtonSelector: ActionDeleteSelector,
-        DataAttributeID: AttributeDelete,
-        UrlFetchData: (id) => `${DeleteURLBloodTransfusion}/${id}`,
-        ModalConfirmID: ModalDeleteSelector,
-    });
-    document.addEventListener("delete:open", function (e) {
-        const { data } = e.detail;
-        if (!data) return;
-        document.querySelector("#deleted_data").textContent =
-            `${data.patient_name} with ID ${data.id}`;
-        document.querySelector(ConfirmDeleteSelector).dataset.id = data.id;
-    });
-    const confirmBtn = document.querySelector(ConfirmDeleteSelector);
-    if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function () {
-            const id = this.dataset.id;
-            if (!id) return;
-
-            try {
-                const response = await fetch(
-                    `${DeleteURLBloodTransfusion}/${id}`,
-                    {
-                        method: "DELETE",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-CSRF-TOKEN": document
-                                .querySelector('meta[name="csrf-token"]')
-                                .getAttribute("content"),
-                        },
-                    },
-                );
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    notyf.error({
-                        message: result.message || "Failed to delete data!",
-                    });
-                    return;
-                }
-
-                notyf.success({
-                    message: result.message || "Data deleted successfully!",
-                });
-
-                const modalEl = document.getElementById(ModalDeleteSelector);
-                (
-                    bootstrap.Modal.getInstance(modalEl) ??
-                    new bootstrap.Modal(modalEl)
-                ).hide();
-                this.dataset.id = "";
-
-                if ($.fn.DataTable.isDataTable("#list-request-table")) {
-                    $("#list-request-table")
-                        .DataTable()
-                        .ajax.reload(null, false);
-                }
-            } catch (error) {
-                console.error(error);
-                notyf.error({ message: "Failed to delete data!" });
-            }
         });
     }
 

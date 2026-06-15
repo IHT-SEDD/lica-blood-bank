@@ -49,7 +49,7 @@ enum BloodStockLogActivityStatus: string
             self::BLOOD_STOCK_RETURNED => 'Stok Darah %s: Sukses dikembalikan ke kulkas oleh user dengan username %s.',
 
             self::BLOOD_STOCK_IN_USE => 'Stok Darah %s: Darah sedang digunakan pada pasien dengan nama %s.',
-            self::BLOOD_STOCK_TAKEN_OUT => 'Stok Darah %s: Taken out, %s. Successfully logged by User ID %s.',
+            self::BLOOD_STOCK_TAKEN_OUT => 'Stok Darah %s: Darah berhasil dikeluarkan oleh user dengan username %s untuk pasien dengan nama %s.',
             self::BLOOD_STOCK_EXPIRED => 'Stok Darah %s: Darah sudah expire/kadaluarsa, sukses dicatat oleh user dengan username %s.',
             self::BLOOD_STOCK_DESTROYED => 'Stok Darah %s: Darah sudah dimusnahkan oleh user dengan username %s.',
             self::BLOOD_STOCK_UNDESTROYED => 'Stok Darah %s: Darah berhasil dibatalkan pemusnahan oleh user dengan username %s.',

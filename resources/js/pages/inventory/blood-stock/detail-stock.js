@@ -14,6 +14,7 @@ import {
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 import { TableActionHandler } from "./detail/table-action";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { BloodStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Filter datatable
@@ -130,46 +131,7 @@ function BloodStockDataTable() {
                         Dihapus
                     </span>`;
                 }
-
-                switch (row.blood_status.value || row.blood_status) {
-                    case "expired":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
-                            Expired!
-                        </span>`;
-                        break;
-                    case "in_use":
-                        return `<span class="badge badge-label fw-semibold badge-soft-info">
-                            <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
-                            Sedang Digunakan
-                        </span>`;
-                        break;
-                    case "available":
-                        return `<span class="badge badge-label fw-semibold badge-soft-success">
-                            <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
-                            Tersedia
-                        </span>`;
-                        break;
-                    case "destroyed":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
-                            Dimusnahkan
-                        </span>`;
-                        break;
-                    case "taken_out":
-                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                            <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
-                            Dikeluarkan
-                        </span>`;
-                        break;
-
-                    default:
-                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                            <i class="ti ti-droplet align-middle me-2 fs-4"></i>
-                            ${row.blood_status.value || row.blood_status}
-                        </span>`;
-                        break;
-                }
+                return BloodStatus(row.blood_status);
             },
         },
         {
@@ -221,6 +183,8 @@ function BloodStockDataTable() {
             orderable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
+                const isTakenOut = row.blood_status === "taken_out";
+                const canReturn = !isDeleted && isTakenOut;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                   <i class="ti ti-dots align-middle"></i>
                  </button>
@@ -241,6 +205,12 @@ function BloodStockDataTable() {
                          <button id="edit-data-${row.public_id}" class="dropdown-item fw-medium btn-edit-stock-blood ${isDeleted ? "disabled text-muted" : "text-info"}" data-edit-id="${row.public_id}" type="button">
                          <i class="ti ti-pencil align-middle me-2 fs-4"></i>
                          Edit
+                         </button>
+                     </li>
+                     <li>
+                         <button id="return-data-${row.public_id}" class="dropdown-item fw-medium btn-return-stock-blood ${canReturn ? "text-info" : "disabled text-muted"}" data-return-id="${row.public_id}" type="button">
+                         <i class="ti ti-restore align-middle me-2 fs-4"></i>
+                         Kembalikan Ke Stock
                          </button>
                      </li>
                      <li>
@@ -355,8 +325,29 @@ function EditBloodStatus() {
         valueField: "id",
         preload: true,
         noResultsText: "Status darah tidak ditemukan",
+        blurOnItemAdd: false,
+        closeAfterSelect: false,
         load: function (query, callback) {
-            fetch(`/utility/select/blood-status?q=${encodeURIComponent(query)}`)
+            fetch(
+                `/utility/select/blood-stock-status?q=${encodeURIComponent(query)}`,
+            )
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+}
+
+// ---------- Select tom-select untuk data di modal return ----------
+function ReturnBloodStock() {
+    new GlobalAdvanceTomselect("#return_data_blood_stock", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "No. labu tidak ditemukan",
+        blurOnItemAdd: false,
+        closeAfterSelect: false,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-stock?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
@@ -374,6 +365,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     FilterBloodStatus();
     EditStorageRack();
     EditBloodStatus();
+    ReturnBloodStock();
 
     // Date range picker
     DateRangeFilter();

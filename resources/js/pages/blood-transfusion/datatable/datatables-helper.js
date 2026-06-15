@@ -1,4 +1,5 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
+import { TransactionOrderStatus } from "../../../utility/config/status-config";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { setHidden, TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
@@ -355,36 +356,7 @@ export function DatatableRequestBlood() {
             searchable: false,
             render: (row, data) => {
                 const status = TextFormatter.format(row.status);
-                switch (status) {
-                    case "Blood Transfusion Checked In":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Checked In" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                            <i class="ti ti-user-check"></i>
-                        </span>`;
-                        break;
-                    case "Blood Transfusion Finished":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                            <i class="ti ti-droplet-check"></i>
-                        </span>`;
-                        break;
-                    case "Blood Transfusion Completed":
-                        return `<span style="font-size: 20px;" class="text-success" data-bs-title="Transaksi Selesai" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                            <i class="ti ti-shield-check"></i>
-                        </span>`;
-                        break;
-                    case "Blood Transfusion Registered":
-                        return `<span style="font-size: 20px;" class="text-info" data-bs-title="Terdaftar" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                                <i class="ti ti-circle-dashed-check"></i>
-                            </span>`;
-                        break;
-                    case "Blood Transfusion Deleted":
-                        return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dihapus" data-bs-toggle="tooltip" data-bs-trigger="hover">
-                                <i class="ti ti-trash"></i>
-                            </span>`;
-                        break;
-                    default:
-                        return `<span class="fs-6 fw-semibold uppercase">-</span>`;
-                        break;
-                }
+                return TransactionOrderStatus(status);
             },
         },
         {
@@ -395,7 +367,8 @@ export function DatatableRequestBlood() {
             render: (data, type, row) => {
                 const hasLabNumber = row.lab_number !== null;
                 const isDeleted = row.deleted_at !== null;
-
+                const isComplete = row.finish_at !== null;
+                const canDelete = !isDeleted && !isComplete;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
                     <i class="ti ti-dots align-middle"></i>
                     </button>
@@ -413,7 +386,8 @@ export function DatatableRequestBlood() {
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion ${isDeleted ? "disabled text-muted" : "text-danger"}" type="button">
+                            <button id="delete-data-${data.public_id}" data-delete-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion 
+                            ${canDelete ? "text-danger" : "disabled text-muted"}" type="button">
                             <i class="ti ti-trash align-middle me-1 fs-4"></i>
                                 Hapus
                             </button>

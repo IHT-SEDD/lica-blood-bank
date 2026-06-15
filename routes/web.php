@@ -76,7 +76,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('/', 'getDataById')->name('get-data');
                 Route::get('log', 'bloodTransfusionLogData')->name('log');
                 Route::patch('/', 'update')->name('update');
-                Route::delete('/', 'destroy')->name('destroy');
+                Route::delete('/', 'deleteBloodTransfusion')->name('delete-transfusion');
 
                 Route::post('checkin', 'checkin')->name('checkin');
                 Route::post('complete', 'completeTransaction')->name('complete');
@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
             // ---------- Page ----------
             Route::get('{report}', 'index')->name('index');
         });
-        
+
     // --------------------------------------------------------------------------
     // Report Group Routes -> report.*
     // --------------------------------------------------------------------------

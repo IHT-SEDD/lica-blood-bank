@@ -28,89 +28,109 @@ class BloodTransfusionApiAddService
     // ---------- Fungsi add data ----------
     public function insertNewData(array $payload): array
     {
-        return DB::transaction(function () use ($payload) {
-            $demografi = $payload['demografi'];
-            $transaksi = $payload['transaksi'];
-            $tests = $payload['tes'];
-            $type = $this->generateType($transaksi['jenis']);
-            $filteredTests = $this->resolveTests($tests);
+        try {
+            return DB::transaction(function () use ($payload) {
+                $demografi = $payload['demografi'];
+                $transaksi = $payload['transaksi'];
+                $tests = $payload['tes'];
+                $type = $this->generateType($transaksi['jenis']);
+                $filteredTests = $this->resolveTests($tests);
 
-            // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
-            $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
+                // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
+                $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
 
-            // ---------- Prepare demografi----------
-            $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
-            $patient = $demographic['patient'];
-            $doctor = $demographic['doctor'];
-            $room = $demographic['room'];
-            $insurance = $demographic['insurance'];
+                // ---------- Prepare demografi----------
+                $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
+                $patient = $demographic['patient'];
+                $doctor = $demographic['doctor'];
+                $room = $demographic['room'];
+                $insurance = $demographic['insurance'];
 
-            // ---------- Create Blood Transfusion ----------
-            $bloodRequestAt = $transaksi['tgl_permintaan'] . ' ' . $transaksi['jam_permintaan'];
-            $transfusion = BloodTransfusion::create([
-                'patient_id' => $patient->id,
-                'insurance_id' => $insurance->id,
-                'room_id' => $room->id,
-                'doctor_id' => $doctor->id,
-                'order_number' => $transaksi['no_order'],
-                'blood_request_at' => $bloodRequestAt,
-                'diagnosis' => $transaksi['diagnosis'] ?? null,
-                'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_REGISTERED,
-                'blood_quantity' => $bloodData['total_quantity'],
-            ]);
+                // ---------- Create Blood Transfusion ----------
+                $bloodRequestAt = $transaksi['tgl_permintaan'] . ' ' . $transaksi['jam_permintaan'];
+                $transfusion = BloodTransfusion::create([
+                    'patient_id' => $patient->id,
+                    'insurance_id' => $insurance->id,
+                    'room_id' => $room->id,
+                    'doctor_id' => $doctor->id,
+                    'order_number' => $transaksi['no_order'],
+                    'blood_request_at' => $bloodRequestAt,
+                    'diagnosis' => $transaksi['diagnosis'] ?? null,
+                    'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_REGISTERED,
+                    'blood_quantity' => $bloodData['total_quantity'],
+                ]);
 
-            // ---------- Create BloodTransfusionDetail & DetailTest ----------
-            $crossmatchCode = self::CROSSMATCH_CODE;
-            $createdDetailTests = [];
+                // ---------- Create BloodTransfusionDetail & DetailTest ----------
+                $crossmatchCode = self::CROSSMATCH_CODE;
+                $createdDetailTests = [];
 
-            foreach ($bloodData['blood_components'] as $bloodComponent) {
-                $package = Package::with(['package_tests'])
-                    ->where('is_active', 1)
-                    ->where('blood_component', $bloodComponent['component'])
-                    ->first();
+                foreach ($bloodData['blood_components'] as $bloodComponent) {
+                    $package = Package::with(['package_tests'])
+                        ->where('is_active', 1)
+                        ->where('blood_component', $bloodComponent['component'])
+                        ->first();
 
-                for ($i = 0; $i < $bloodComponent['quantity']; $i++) {
-                    $detailGeneralCode = $bloodComponent['general_codes'][$i] ?? null;
+                    for ($i = 0; $i < $bloodComponent['quantity']; $i++) {
+                        $detailGeneralCode = $bloodComponent['general_codes'][$i] ?? null;
 
-                    $btDetail = BloodTransfusionDetail::create([
-                        'blood_transfusion_id' => $transfusion->id,
-                        'component' => $bloodComponent['component'],
-                        'general_code' => $detailGeneralCode,
-                    ]);
-
-                    foreach ($package->package_tests as $pkgTest) {
-                        $btDetailTest = BloodTransfusionDetailTest::create([
-                            'bt_detail_id' => $btDetail->id,
-                            'test_id' => $pkgTest->test_id,
-                            'package_id' => $pkgTest->package_id,
-                            'type' => 'package',
-                            'general_code' => $crossmatchCode,
+                        $btDetail = BloodTransfusionDetail::create([
+                            'blood_transfusion_id' => $transfusion->id,
+                            'component' => $bloodComponent['component'],
+                            'general_code' => $detailGeneralCode,
                         ]);
-                        $createdDetailTests[] = [
-                            'blood_transfusion_detail' => $btDetail->toArray(),
-                            'blood_transfusion_detail_test' => $btDetailTest->toArray(),
-                            'detail_public_id' => $btDetail->public_id,
-                            'detail_test_id' => $btDetailTest->id,
-                            'test_id' => $pkgTest->test_id,
-                        ];
+
+                        foreach ($package->package_tests as $pkgTest) {
+                            $btDetailTest = BloodTransfusionDetailTest::create([
+                                'bt_detail_id' => $btDetail->id,
+                                'test_id' => $pkgTest->test_id,
+                                'package_id' => $pkgTest->package_id,
+                                'type' => 'package',
+                                'general_code' => $crossmatchCode,
+                            ]);
+                            $createdDetailTests[] = [
+                                'blood_transfusion_detail' => $btDetail->toArray(),
+                                'blood_transfusion_detail_test' => $btDetailTest->toArray(),
+                                'detail_public_id' => $btDetail->public_id,
+                                'detail_test_id' => $btDetailTest->id,
+                                'test_id' => $pkgTest->test_id,
+                            ];
+                        }
                     }
                 }
-            }
 
+                $this->logIntegrationService->insertData(
+                    'new_request',
+                    'success',
+                    'Transaksi permintaan darah sukses ditambahkan',
+                    $payload
+                );
+
+                globalLogger('info', '(API) New blood transfusion request inserted succesfully!', [
+                    'id' => $transfusion->id,
+                    'payload' => $transfusion,
+                ], 200, 'newbloodtransfusion');
+
+                return [
+                    'transfusion_public_id' => $transfusion->public_id,
+                    'order_number' => $transfusion->order_number,
+                    'patient' => $patient->name,
+                    'detail_tests_created' => count($createdDetailTests),
+                ];
+            });
+        } catch (\Throwable $e) {
             $this->logIntegrationService->insertData(
                 'new_request',
-                'success',
-                'Transaksi permintaan darah sukses ditambahkan',
+                'failed',
+                'Transaksi permintaan darah gagal ditambahkan: ' . $e->getMessage(),
                 $payload
             );
-
-            return [
-                'transfusion_public_id' => $transfusion->public_id,
-                'order_number' => $transfusion->order_number,
-                'patient' => $patient->name,
-                'detail_tests_created' => count($createdDetailTests),
-            ];
-        });
+            globalLogger('error', '(API) New blood transfusion request failed to insert!', [
+                'payload' => $payload,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500, 'newbloodtransfusion');
+            throw $e;
+        }
     }
 
     // ---------- Helpers----------

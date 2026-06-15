@@ -1,9 +1,5 @@
 // ---------- Import Libraries ----------
-import {
-    GlobalAdvanceFlatpickr,
-    GlobalAdvanceTomselect,
-    GlobalDeleteDataConfirmation,
-} from "../../app";
+import { GlobalAdvanceFlatpickr, GlobalAdvanceTomselect } from "../../app";
 import {
     DatatableRequestBlood,
     listRequestTableInstance,
@@ -27,6 +23,7 @@ import {
     updateConfirmButtonState,
     initReleaseBloodPack,
     initReleaseAllBloodPack,
+    initDeleteTransaction,
 } from "./helper/action-helper";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
@@ -38,6 +35,13 @@ const TimelineContainerSelector = ".timeline-blood-transfusion-log";
 const DateFilterSelector = ".blood-transfusion-date-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
 const LogDataURL = "/blood-transfusion/detail/log";
+
+const DeleteTransactionURL = "/blood-transfusion/detail/data";
+const DeleteTransactionGetDataURL = "/blood-transfusion/detail/get-data";
+const ModalDeleteTransactionSelector = "delete_data_blood_transfusion_modal";
+const ActionDeleteTransactionSelector = ".btn-delete-blood-transfusion";
+const AttributeDeleteTransaction = "deleteId";
+const ConfirmDeleteTransactionSelector = "#confirm_delete";
 
 const SelectorBtnCheckin = "btn-checkin-lab";
 const SelectorBtnCrossmatchSelesai = "btn-test-done";
@@ -54,7 +58,7 @@ const SelectorBtnUnrelease = "btn-unrelease-blood-pack";
 const SelectorBtnReleaseAll = "btn-release-all-blood-pack";
 const SelectorBtnAccept = "btn-accept-blood-pack";
 const SelectorBtnConfirm = "confirm_action";
-const SelectorBtnConfimDelete = "confirm_delete";
+const SelectorBtnConfimDelete = "confirm_delete_blood_pack";
 const SelectorBtnHold = "btn-hold-blood-pack";
 const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
 
@@ -63,20 +67,6 @@ const getCompleteBtn = () => document.getElementById(SelectorBtnComplete);
 const getCrossmatchSelesaiBtn = () =>
     document.getElementById(SelectorBtnCrossmatchSelesai);
 const getPrintNotaBtn = () => document.getElementById(SelectorBtnPrintNota);
-
-// ---------- Named handler untuk delete:open ----------
-function handleDeleteOpen(e) {
-    const { data } = e.detail;
-    if (!data) return;
-
-    const confirmBtn = document.getElementById("confirm_delete");
-    if (confirmBtn) confirmBtn.dataset.detailId = data.public_id;
-
-    const deletedDataEl = document.querySelector("#deleted_data");
-    if (deletedDataEl) {
-        deletedDataEl.textContent = `${data.component ?? "-"} with ID ${data.public_id}`;
-    }
-}
 
 // ---------- Handle Button State ----------
 window.HandlingButtonState = function (tableID, data, options = {}) {
@@ -1094,6 +1084,20 @@ document.addEventListener("DOMContentLoaded", function () {
     CompleteTransaction();
     initDoneButton();
     initBagRequestActionButtons();
+    initDeleteTransaction({
+        reloadTable: () => {
+            if (
+                listRequestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-request-table")
+            ) {
+                listRequestTableInstance.instance.ajax.reload(null, false);
+            }
+        },
+        ActionDeleteSelector: ActionDeleteTransactionSelector,
+        AttributeDelete: AttributeDeleteTransaction,
+        ModalDeleteSelector: ModalDeleteTransactionSelector,
+        ConfirmDeleteSelector: ConfirmDeleteTransactionSelector,
+    });
 
     // Form edit
     initFormEdit();

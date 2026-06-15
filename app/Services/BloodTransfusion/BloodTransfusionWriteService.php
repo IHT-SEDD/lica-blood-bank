@@ -725,6 +725,114 @@ class BloodTransfusionWriteService
         }
     }
 
+    // ---------- Delete data blood transfusion ----------
+    public function deleteBloodTransfusionData(string $id)
+    {
+        DB::beginTransaction();
+        try {
+            $user = Auth::user();
+            $deleteableStatus = ['blood_transfusion_checked_in', 'blood_transfusion_registered'];
+
+            $transfusion = BloodTransfusion::where('public_id', $id)->whereIn('status', $deleteableStatus)->first();
+            if (!$transfusion) {
+                DB::rollBack();
+                return response()->json(['message' => 'Data permintaan darah tidak ditemukan!'], 404);
+            }
+            $transfusionDetailData = BloodTransfusionDetail::where('blood_transfusion_id', $transfusion->id)
+                ->with(['bloodTransfusionDetailTests'])
+                ->get();
+            if ($transfusionDetailData->isEmpty()) {
+                DB::rollBack();
+                return response()->json(['message' => 'Data detail permintaan darah tidak ditemukan!'], 404);
+            }
+
+            // ---------- Check & update BloodStock per detail ----------
+            foreach ($transfusionDetailData as $detail) {
+                if (!$detail->blood_stock_id) {
+                    continue;
+                }
+                $bloodStock = BloodStock::find($detail->blood_stock_id);
+                if (!$bloodStock) {
+                    continue;
+                }
+                $isReleased = $detail->blood_release_status == 1;
+                if (!$isReleased) {
+                    // Belum dirilis → available
+                    $bloodStock->update(['status' => 'available']);
+                    BloodStockLogActivity::create([
+                        'blood_stock_public_id' => $bloodStock->public_id,
+                        'payload' => json_encode($bloodStock->fresh()->toArray()),
+                        'status' => BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED,
+                        'description'  => generateBloodStockLogDescription(
+                            BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED,
+                            $bloodStock->bag_number,
+                            $user->username
+                        ),
+                        'created_by_user_name' => $user->name,
+                        'timestamp' => now(),
+                    ]);
+                } elseif ($isReleased) {
+                    // Sudah dirilis → jangan update
+                    continue;
+                }
+            }
+
+            // ---------- Soft delete related data ----------
+            foreach ($transfusionDetailData as $detail) {
+                $detail->bloodTransfusionDetailTests()->delete();
+            }
+            $transfusionDetailData->each->delete();
+
+            $transfusion->update([
+                'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_DELETED,
+                'deleted_by_user_id' => $user->id,
+            ]);
+            $transfusion->delete();
+
+            // ---------- Log activity ----------
+            BloodTransfusionLogActivity::create([
+                'blood_transfusion_public_id' => $transfusion->public_id,
+                'payload' => $transfusion->fresh([
+                    'patient',
+                    'insurance',
+                    'room',
+                    'doctor',
+                    'details',
+                ]),
+                'status' => BloodTransfusionLogActivityStatus::DELETED,
+                'description' => generateBloodTransfusionLogDescription(
+                    BloodTransfusionLogActivityStatus::DELETED,
+                    $this->generateDescription($transfusion),
+                    Auth::user()->username
+                ),
+                'created_by_user_name' => Auth::user()->name,
+                'timestamp' => now(),
+            ]);
+
+            DB::commit();
+
+            globalLogger('info', 'Blood transfusion request deleted succesfully!', [
+                'id' => $transfusion->id,
+                'payload' => $transfusion,
+            ], 200, 'deletebloodtransfusion');
+            return [
+                'success' => true,
+                'code' => 200,
+                'data' => ['message' => 'Data transaksi berhasil dihapus'],
+            ];
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            globalLogger('error', 'Blood transfusion request failed to delete!', [
+                'error' => $e->getMessage(),
+            ], 500, 'deletebloodtransfusion');
+            return [
+                'success' => false,
+                'code' => 500,
+                'data' => ['message' => 'Data transaksi gagal dihapus', 'error' => $e->getMessage()],
+            ];
+        }
+    }
+
     // ---------- Helpers ----------
     private function getLockedDetail(string $detailPublicId, array $conditions = []): BloodTransfusionDetail
     {

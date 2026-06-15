@@ -15,10 +15,10 @@ class LogIntegrationService
     {
         return DB::transaction(function () use ($type, $status, $message, $payload, $endpoint) {
             // Auto-extract order number
-            $orderNumber = $payload['transaksi']['no_order'] ?? 
-                           $payload['order_number'] ?? 
-                           $payload['no_ref'] ?? 
-                           null;
+            $orderNumber = $payload['transaksi']['no_order'] ??
+                $payload['order_number'] ??
+                $payload['no_ref'] ??
+                null;
 
             // Auto-resolve endpoint if null
             $resolvedEndpoint = $endpoint ?? request()->url();

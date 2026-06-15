@@ -105,6 +105,7 @@
 
 @include('utils.delete-data-modal', ['id'=> 'stock_blood', 'title' => 'Blood Stock'])
 @include('pages.inventory.sub-pages.blood-stock.partials.edit-data-modal')
+@include('pages.inventory.sub-pages.blood-stock.partials.return-data-modal')
 @include('utils.restore-data-modal', ['id'=> 'stock_blood', 'title' => 'Blood Stock'])
 @include('utils.permanent-delete-data-modal', ['id'=> 'blood_stock', 'title' => 'Blood Stock'])
 @endsection
