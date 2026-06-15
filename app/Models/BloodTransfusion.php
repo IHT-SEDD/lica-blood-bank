@@ -73,4 +73,9 @@ class BloodTransfusion extends Model
     {
         return $this->belongsTo(Room::class, 'room_id');
     }
+
+    public function blood_transfusion_details()
+    {
+        return $this->hasMany(BloodTransfusionDetail::class, 'blood_transfusion_id');
+    }
 }
