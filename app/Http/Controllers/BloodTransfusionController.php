@@ -74,6 +74,12 @@ class BloodTransfusionController extends Controller
         return $this->dataService->listBagRequestTable($request, $id);
     }
 
+    // ---------- List History Test Datatable ----------
+    public function datatableListHistoryTest(Request $request, string $patientId)
+    {
+        return $this->dataService->listHistoryTestTable($request, $patientId);
+    }
+
     // ---------- Datatable List Test ----------
     public function datatableListTest(Request $request, string $id)
     {

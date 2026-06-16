@@ -5,12 +5,12 @@
   {{-- Date filter :begin --}}
   <div>
     <div class="input-group">
-      <span class="input-group-text" id="master-blood-pack-table-date-filter">
+      <span class="input-group-text" id="report-blood-usage-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-blood-pack-table-date-filter"
-        aria-describedby="master-blood-pack-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-        data-range-date="true" type="text" placeholder="Choose date range" />
+      <input class="form-control report-blood-usage-table-date-filter"
+        aria-describedby="report-blood-usage-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
+        data-range-date="true" type="text" placeholder="Pilih rentang tanggal" />
     </div>
   </div>
   {{-- Date filter :begin --}}
@@ -22,11 +22,10 @@
   id="report-blood-usage-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th>No</th>
-      <th>Room</th>
-      <th>Blood</th>
-      <th>Total</th>
-      <th>Updated At</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
 </table>

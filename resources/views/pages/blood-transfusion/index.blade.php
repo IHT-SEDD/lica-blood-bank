@@ -238,11 +238,11 @@
   {{-- Timeline :end --}}
 
   {{-- History Test :begin --}}
-  <div class="col-xxl-6 col-12 d-none">
+  <div class="col-xxl-6 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="card-title text-capitalize mb-0">{{ __('History Test') }}</h5>
+        <h5 class="card-title text-capitalize mb-0">{{ __('History Pemeriksaan/Permintaan') }}</h5>
         <div class="card-action">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
