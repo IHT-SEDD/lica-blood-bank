@@ -142,9 +142,15 @@ export function updatePatientDetailUI(data) {
         data.lab_number?.toString().trim() !== "-";
     const isCompleted =
         data.status && data.status === "blood_transfusion_finished";
+    const isCanceled =
+        data.status && data.status === "blood_transfusion_canceled";
 
     applyButtonState("#list-request-table", data, {
-        buttons: getPatientDetailButtonConfig(hasLabNumber, isCompleted),
+        buttons: getPatientDetailButtonConfig(
+            hasLabNumber,
+            isCompleted,
+            isCanceled,
+        ),
         onReady: (d) => {
             // Set dataset.id pada checkin button jika belum ada lab number
             if (!hasLabNumber) {

@@ -101,25 +101,34 @@ export function applyButtonState(tableID, data, options = {}) {
  * @param {boolean} isCompleted - Apakah transaksi sudah selesai (status finished)
  * @returns {Array} konfigurasi buttons untuk applyButtonState
  */
-export function getPatientDetailButtonConfig(hasLabNumber, isCompleted) {
+export function getPatientDetailButtonConfig(
+    hasLabNumber,
+    isCompleted,
+    isCanceled,
+) {
     console.log(hasLabNumber, isCompleted);
     return [
         // btn-checkin-lab: tampil jika belum ada lab number
         {
             selector: SelectorBtnCheckin,
             action: "show",
-            conditions: () => !hasLabNumber,
+            conditions: () => !hasLabNumber && !isCanceled,
         },
         // btn-complete-transaction: tampil jika belum complete & sudah ada lab number
         {
             selector: SelectorBtnComplete,
             action: "hide",
-            conditions: () => !isCompleted || !hasLabNumber,
+            conditions: () => !isCompleted || !hasLabNumber || isCanceled,
         },
         {
             selector: SelectorBtnComplete,
             action: "show",
-            conditions: () => !isCompleted && hasLabNumber,
+            conditions: () => !isCompleted && hasLabNumber && !isCanceled,
+        },
+        {
+            selector: SelectorBtnComplete,
+            action: "disable",
+            conditions: () => isCanceled,
         },
         // btn-print-nota: tampil & enable jika sudah ada lab number
         {
@@ -136,12 +145,22 @@ export function getPatientDetailButtonConfig(hasLabNumber, isCompleted) {
         {
             selector: SelectorBtnEditBloodPack,
             action: "show",
-            conditions: () => hasLabNumber,
+            conditions: () => hasLabNumber && !isCanceled && !isCompleted,
         },
         {
             selector: SelectorBtnEditBloodPack,
             action: "enable",
-            conditions: () => hasLabNumber,
+            conditions: () => hasLabNumber && !isCanceled && !isCompleted,
+        },
+        {
+            selector: SelectorBtnEditBloodPack,
+            action: "hide",
+            conditions: () => isCanceled || isCompleted,
+        },
+        {
+            selector: SelectorBtnEditBloodPack,
+            action: "disable",
+            conditions: () => isCanceled || isCompleted,
         },
         // // btn-release-all-blood-pack: tampil jika sudah ada lab number
         // {
