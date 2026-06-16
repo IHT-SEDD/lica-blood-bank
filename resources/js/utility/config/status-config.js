@@ -138,6 +138,11 @@ export function TransactionOrderStatus(status) {
                 <i class="ti ti-trash"></i>
             </span>`;
             break;
+        case "Blood Transfusion Canceled":
+            return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dibatalkan" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-x"></i>
+            </span>`;
+            break;
         default:
             return `<span class="fs-6 fw-semibold uppercase">
                 ${value ?? "-"}

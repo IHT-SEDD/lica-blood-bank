@@ -9,6 +9,7 @@ enum BloodTransfusionLogActivityStatus: string
     case FINISHED = 'blood_transfusion_finished';
     case COMPLETED = 'blood_transfusion_completed';
     case DELETED = 'blood_transfusion_deleted';
+    case CANCELED = 'blood_transfusion_canceled';
     case ARCHIVED = 'blood_transfusion_archived';
     case UPDATED = 'blood_transfusion_updated';
     case CROSSMATCH_FINISH = 'crossmatch_finished';
@@ -27,6 +28,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::FINISHED => '(CROSSMATCH SELESAI)',
             self::COMPLETED => '(TRANSAKSI SELESAI)',
             self::DELETED => '(DIHAPUS)',
+            self::CANCELED => '(DIBATALKAN)',
             self::ARCHIVED => '(DIARSIP)',
             self::UPDATED => '(DIPERBAHARUI)',
             self::CROSSMATCH_FINISH => '(CROSSMATCH SELESAI)',
@@ -47,6 +49,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::FINISHED => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',
             self::COMPLETED => 'Transaksi %s: Transaksi telah diselesaikan oleh user dengan username %s.',
             self::DELETED => 'Transaksi %s: Dihapus oleh user dengan username %s.',
+            self::CANCELED => 'Transaksi %s: Dibatalkan dengan alasan %s. Aksi ini dilakukan oleh user dengan username %s.',
             self::ARCHIVED => 'Transaksi %s: Diarsip oleh user dengan username %s.',
             self::UPDATED => 'Transaksi %s: Data berhasil diperbaharui oleh user dengan username %s.',
             self::CROSSMATCH_FINISH => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',

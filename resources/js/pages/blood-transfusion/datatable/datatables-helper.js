@@ -885,6 +885,13 @@ export function DatatableHistoryTestTable() {
                 </span>`;
             },
         },
+        {
+            data: "blood_received_by",
+            title: "Penerima Labu",
+            render: (data) => {
+                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
+            },
+        },
     ];
 
     listHistoryTestTableInstance = new GlobalAdvanceYajraDatatable(
@@ -905,16 +912,16 @@ export function DatatableHistoryTestTable() {
                     .fail(() => callback(emptyCallback(data.draw)));
             },
             columns: HISTORYTESTCOLUMNS,
-            columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
-            ],
+            // columnDefs: [
+            //     {
+            //         targets: -1,
+            //         responsivePriority: 1,
+            //     },
+            //     {
+            //         targets: 0,
+            //         responsivePriority: 2,
+            //     },
+            // ],
         },
     );
 }
