@@ -8,7 +8,7 @@ import {
     GlobalSubmitForm,
     GlobalDataConfirmation,
 } from "../../../../app";
-import { BloodStatus } from "../../../../utility/config/status-config";
+import { BloodStockStatus } from "../../../../utility/config/status-config";
 
 // ---------- Global variable :begin ----------
 const StockBloodDataURL = "/inventory/blood-stock/detail/data";
@@ -37,6 +37,10 @@ const ModalReturnSelector = "return_data_stock_blood_modal";
 const ActionReturnSelector = ".btn-return-stock-blood";
 const AttributeReturn = "returnId";
 const ConfirmReturnSelector = "#confirm_return";
+const CancelTransactionSelector = "#is_cancel_transaction";
+const CancelReasonSelector = "#cancel_reason";
+const CancelReasonWrapperSelector = "#cancel_transaction_reason_wrapper";
+const CancelReasonErrorSelector = "#cancel_reason_error";
 
 const ModalRestoreSelector = "restore_data_stock_blood_modal";
 const ActionRestoreSelector = ".btn-restore-stock-blood";
@@ -569,6 +573,51 @@ export class TableActionHandler {
             ModalConfirmID: ModalReturnSelector,
         });
 
+        const selectEl = document.querySelector("#return_data_blood_stock");
+        const cancelCheckbox = document.querySelector(
+            CancelTransactionSelector,
+        );
+        const cancelReasonEl = document.querySelector(CancelReasonSelector);
+        const cancelReasonWrapper = document.querySelector(
+            CancelReasonWrapperSelector,
+        );
+        const cancelReasonError = document.querySelector(
+            CancelReasonErrorSelector,
+        );
+
+        const updateConfirmButtonState = () => {
+            const confirmBtn = document.querySelector(ConfirmReturnSelector);
+            if (!confirmBtn) return;
+            const selectedBag = selectEl?.tomselect?.getValue?.() || "";
+            const isCancel = cancelCheckbox?.checked || false;
+            const reason = cancelReasonEl?.value?.trim() || "";
+
+            // Enabled jika: ada labu dipilih, ATAU cancel + ada alasan
+            if (selectedBag || (isCancel && reason.length > 0)) {
+                confirmBtn.disabled = false;
+            } else {
+                confirmBtn.disabled = true;
+            }
+        };
+        const clearCancelReasonValidation = () => {
+            if (cancelReasonEl) {
+                cancelReasonEl.classList.remove("is-invalid");
+            }
+            if (cancelReasonError) {
+                cancelReasonError.textContent = "";
+            }
+        };
+        const setCancelReasonInvalid = (
+            message = "Alasan pembatalan wajib diisi!",
+        ) => {
+            if (cancelReasonEl) {
+                cancelReasonEl.classList.add("is-invalid");
+            }
+            if (cancelReasonError) {
+                cancelReasonError.textContent = message;
+            }
+        };
+
         document.addEventListener("confirmation:open", (e) => {
             const { data } = e.detail;
             if (!data) return;
@@ -586,7 +635,7 @@ export class TableActionHandler {
                 beforeTable.querySelector("#bag_number").textContent =
                     data.bag_number ?? "-";
                 beforeTable.querySelector("#blood_status").innerHTML =
-                    BloodStatus(data.blood_status);
+                    BloodStockStatus(data.blood_status);
                 beforeTable.querySelector("#bdrs_no").textContent =
                     transfusionDetail?.blood_transfusion?.lab_number ?? "-";
                 beforeTable.querySelector("#patient_name").textContent =
@@ -613,33 +662,96 @@ export class TableActionHandler {
                     genderMap[patient?.gender] ?? patient?.gender ?? "-";
             }
 
+            // ---------- Reset semua state modal ----------
+            if (selectEl?.tomselect) {
+                selectEl.tomselect.clear();
+                selectEl.tomselect.enable();
+            }
+            if (cancelCheckbox) {
+                cancelCheckbox.checked = false;
+                cancelCheckbox.disabled = false;
+            }
+            if (cancelReasonEl) {
+                cancelReasonEl.value = "";
+            }
+            if (cancelReasonWrapper) {
+                cancelReasonWrapper.classList.add("d-none");
+            }
+            clearCancelReasonValidation();
+
+            // ---------- Reset confirm button ----------
             const confirmBtn = document.querySelector(ConfirmReturnSelector);
             if (confirmBtn) {
                 confirmBtn.disabled = true;
                 confirmBtn.dataset.id = data.public_id;
-
-                // ---------- Simpan blood_transfusion_id ke dataset confirm button ----------
                 confirmBtn.dataset.bloodTransfusionId =
                     transfusionDetail?.blood_transfusion?.public_id ?? "";
-
-                // ---------- Reset selected blood stock setiap modal dibuka ----------
                 confirmBtn.dataset.selectedBloodStockId = "";
-            }
-
-            // ---------- Reset TomSelect setiap modal dibuka ----------
-            const selectEl = document.querySelector("#return_data_blood_stock");
-            if (selectEl?.tomselect) {
-                selectEl.tomselect.clear();
+                confirmBtn.dataset.isCancelTransaction = "0";
+                confirmBtn.dataset.cancelReason = "";
             }
         });
 
-        // ---------- Listener TomSelect: update blood_status saat bag dipilih ----------
-        const selectEl = document.querySelector("#return_data_blood_stock");
+        // ---------- Listener: Checkbox is_cancel_transaction ----------
+        if (cancelCheckbox && selectEl) {
+            cancelCheckbox.addEventListener("change", () => {
+                const confirmBtn = document.querySelector(
+                    ConfirmReturnSelector,
+                );
+                const ts = selectEl.tomselect;
+                const newTable = document.querySelector(
+                    '[data-table="patient_blood_new"]',
+                );
+                const statusCell = newTable?.querySelector("#blood_status");
+
+                if (cancelCheckbox.checked) {
+                    // disable tomselect & clear, tampilkan textarea
+                    if (ts) {
+                        ts.clear();
+                        ts.disable();
+                    }
+                    cancelReasonWrapper?.classList.remove("d-none");
+                    if (statusCell) statusCell.innerHTML = "-";
+                    if (confirmBtn) {
+                        confirmBtn.dataset.selectedBloodStockId = "";
+                        confirmBtn.dataset.isCancelTransaction = "1";
+                    }
+                } else {
+                    // aktifkan kembali tomselect, sembunyikan textarea
+                    if (ts) ts.enable();
+                    cancelReasonWrapper?.classList.add("d-none");
+                    if (cancelReasonEl) cancelReasonEl.value = "";
+                    clearCancelReasonValidation();
+                    if (confirmBtn) {
+                        confirmBtn.dataset.isCancelTransaction = "0";
+                        confirmBtn.dataset.cancelReason = "";
+                    }
+                }
+                updateConfirmButtonState();
+            });
+        }
+
+        // ---------- Listener: Textarea cancel_reason ----------
+        if (cancelReasonEl) {
+            cancelReasonEl.addEventListener("input", (e) => {
+                const confirmBtn = document.querySelector(
+                    ConfirmReturnSelector,
+                );
+                if (confirmBtn) {
+                    confirmBtn.dataset.cancelReason = e.target.value.trim();
+                }
+                if (e.target.value.trim().length > 0) {
+                    clearCancelReasonValidation();
+                }
+                updateConfirmButtonState();
+            });
+        }
+
+        // ---------- Listener: TomSelect return_data_blood_stock ----------
         if (selectEl) {
             const attachTomSelectListener = () => {
                 const ts = selectEl.tomselect;
                 if (!ts) return;
-
                 ts.on("change", async (value) => {
                     const confirmBtn = document.querySelector(
                         ConfirmReturnSelector,
@@ -649,13 +761,12 @@ export class TableActionHandler {
                     );
                     const statusCell = newTable?.querySelector("#blood_status");
                     if (!statusCell) return;
-
                     if (!value) {
-                        statusCell.innerHTML = "-";
-                        if (confirmBtn) {
-                            confirmBtn.disabled = true;
+                        // Value dikosongkan — aktifkan kembali checkbox
+                        if (cancelCheckbox) cancelCheckbox.disabled = false;
+                        if (confirmBtn)
                             confirmBtn.dataset.selectedBloodStockId = "";
-                        }
+                        updateConfirmButtonState();
                         return;
                     }
 
@@ -671,7 +782,6 @@ export class TableActionHandler {
                             },
                         );
                         const result = await response.json();
-
                         if (!response.ok) {
                             statusCell.innerHTML = "-";
                             if (confirmBtn) {
@@ -681,14 +791,25 @@ export class TableActionHandler {
                             return;
                         }
 
-                        statusCell.innerHTML = BloodStatus(result.blood_status);
+                        statusCell.innerHTML = BloodStockStatus(
+                            result.blood_status,
+                        );
 
                         if (confirmBtn) {
-                            confirmBtn.disabled = false;
-                            // ---------- Simpan public_id bag yang dipilih ----------
                             confirmBtn.dataset.selectedBloodStockId =
                                 result.public_id ?? value;
+                            confirmBtn.dataset.isCancelTransaction = "0";
                         }
+                        if (cancelCheckbox) {
+                            cancelCheckbox.checked = false;
+                            cancelCheckbox.disabled = true;
+                        }
+                        if (cancelReasonEl) cancelReasonEl.value = "";
+                        if (cancelReasonWrapper)
+                            cancelReasonWrapper.classList.add("d-none");
+
+                        clearCancelReasonValidation();
+                        updateConfirmButtonState();
                     } catch (error) {
                         console.error(error);
                         statusCell.innerHTML = "-";
@@ -715,14 +836,33 @@ export class TableActionHandler {
             }
         }
 
+        // ---------- Listener: Tombol Konfirmasi ----------
         const confirmBtn = document.querySelector(ConfirmReturnSelector);
         if (!confirmBtn) return;
         confirmBtn.addEventListener("click", async () => {
             const id = confirmBtn.dataset.id;
             const bloodTransfusionId = confirmBtn.dataset.bloodTransfusionId;
-            const selectedBloodStockId =
-                confirmBtn.dataset.selectedBloodStockId;
+            const isCancelTransaction =
+                confirmBtn.dataset.isCancelTransaction === "1";
+            const cancelReason = confirmBtn.dataset.cancelReason ?? "";
+
+            const selectedBloodStockId = isCancelTransaction
+                ? ""
+                : (confirmBtn.dataset.selectedBloodStockId ?? "");
             if (!id) return;
+
+            if (
+                isCancelTransaction &&
+                (!cancelReason || cancelReason.trim() === "")
+            ) {
+                setCancelReasonInvalid(
+                    "Alasan pembatalan transaksi wajib diisi!",
+                );
+                notyf.error({
+                    message: "Alasan pembatalan transaksi wajib diisi!",
+                });
+                return;
+            }
             try {
                 const response = await fetch(
                     StockBloodDataURL + `/${id}/return`,
@@ -735,9 +875,12 @@ export class TableActionHandler {
                         body: JSON.stringify({
                             blood_transfusion_id: bloodTransfusionId,
                             new_blood_stock_id: selectedBloodStockId,
+                            is_cancel_transaction: isCancelTransaction,
+                            cancel_reason: cancelReason,
                         }),
                     },
                 );
+
                 const result = await response.json();
                 if (!response.ok) {
                     notyf.error({
@@ -756,6 +899,7 @@ export class TableActionHandler {
             } catch (error) {
                 console.error(error);
                 notyf.error({ message: "Gagal mengembalikan darah!" });
+                this.reloadTable();
             }
         });
     }

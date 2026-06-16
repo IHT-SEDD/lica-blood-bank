@@ -1,17 +1,8 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
-import {
-    TransactionOrderStatus,
-    TransfusionBloodStatus,
-} from "../../../utility/config/status-config";
+import { TransactionOrderStatus } from "../../../utility/config/status-config";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
-import { TextFormatter } from "../../../utility/ui";
+import { setHidden, TextFormatter } from "../../../utility/ui";
 import { DateTimeFormatter } from "../../../utility/ui";
-import {
-    evaluateBagListState,
-    applyBagListButtonState,
-    updateWorkflowButtonsState,
-    updateDoneButtonState,
-} from "../helper/button-state";
 
 // ---------- GLOBAL VARIABLES ----------
 const BASE_URL = "/blood-transfusion";
@@ -21,15 +12,16 @@ const TABLE = {
     bagRequest: "#list-bag-request-table",
     test: "#list-test-table",
     bloodPack: "#edit-blood-pack-available-table",
-    historyTest: "#list-history-test-table",
 };
+const SelectorBtnPrintResult = "btn-print-result";
+const SelectorBtnComplete = "btn-complete-transaction";
+const SelectorBtnReleaseAll = "btn-release-all-blood-pack";
 
 // ---------- INSTANCES ----------
 export let listRequestTableInstance;
 export let listBagRequestTableInstance;
 export let listTestTableInstance;
 export let availableBloodComponentsInstance;
-export let listHistoryTestTableInstance;
 
 // ---------- HELPERS ----------
 const csrfToken = () =>
@@ -224,22 +216,21 @@ async function openUpdateBloodModal(btn) {
     }
 
     // ---------- Cek rekomendasi: stok lain yang expiry lebih dekat ----------
-    // const matchedExpiry = matched.expiry ? new Date(matched.expiry) : null;
-    // const recommendation = matchedExpiry
-    //     ? (availableStocks
-    //           .filter((stock) => {
-    //               if (
-    //                   String(stock.id) === bagNumber ||
-    //                   stock.text?.includes(bagNumber)
-    //               )
-    //                   return false;
-    //               if (!stock.expiry) return false;
-    //               return new Date(stock.expiry) < matchedExpiry;
-    //           })
-    //           .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
-    //           .at(0) ?? null)
-    //     : null;
-    const recommendation = null;
+    const matchedExpiry = matched.expiry ? new Date(matched.expiry) : null;
+    const recommendation = matchedExpiry
+        ? (availableStocks
+              .filter((stock) => {
+                  if (
+                      String(stock.id) === bagNumber ||
+                      stock.text?.includes(bagNumber)
+                  )
+                      return false;
+                  if (!stock.expiry) return false;
+                  return new Date(stock.expiry) < matchedExpiry;
+              })
+              .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+              .at(0) ?? null)
+        : null;
 
     // ---------- Simpan state ke modal ----------
     const modal = document.getElementById("update_blood_modal");
@@ -461,7 +452,32 @@ export function DatatableListBagRequest() {
             title: "Status",
             render: function (_, data, row) {
                 const rowData = row.row_data;
-                return TransfusionBloodStatus(rowData.blood_stock_status);
+                const status = TextFormatter.format(rowData.blood_stock_status);
+                switch (status) {
+                    case "In Use":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heartbeat fs-4"></i> Sedang Digunakan
+                            </span>`;
+                        break;
+                    case "Used":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-x fs-4"></i> Tidak Dikeluarkan
+                            </span>`;
+                        break;
+                    case "Taken Out":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-up fs-4"></i> Dikeluarkan
+                            </span>`;
+                        break;
+                    case "Hold":
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">
+                                <i class="ti ti-heart-pause fs-4"></i> Ditahan
+                            </span>`;
+                        break;
+                    default:
+                        return `<span class="fs-6 fw-semibold uppercase d-flex align-items-center justify-content-start gap-1">${status}</span>`;
+                        break;
+                }
             },
         },
         {
@@ -541,17 +557,20 @@ export function DatatableListBagRequest() {
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-result-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Hasil
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium 
+                            ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Barcode
                             </button>
                         </li>
                         <li>
-                            <button id="btn-delete-per-blood" data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-per-blood ${data.blood_release_status === 1 ? "disabled text-muted" : "text-danger"}" type="button">
+                            <button id="btn-delete-per-blood" data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-per-blood 
+                            ${data.blood_release_status === 1 ? "disabled text-muted" : "text-danger"}" type="button">
                             <i class="ti ti-trash align-middle me-1 fs-4"></i>
                                 Hapus
                             </button>
@@ -629,17 +648,10 @@ export function DatatableListTest() {
             title: "Hasil",
             render: (_, __, row) => {
                 if (!row.detail_test_public_id) return "-";
-
-                const stockStatus =
-                    window.currentBagData?.row_data?.blood_stock_status ?? null;
-                const isStockFinalized = ["taken_out", "used"].includes(
-                    stockStatus,
-                );
                 const isDisabled =
                     !window.currentTransfusionLabNumber ||
                     window.currentTransfusionLabNumber === "-" ||
-                    row.bag_released === 1 ||
-                    isStockFinalized
+                    row.bag_released === 1
                         ? "disabled"
                         : "";
                 // 1. BUAT PLACEHOLDER MANUAL: Jika result_value null/kosong, berikan atribut 'selected'
@@ -828,109 +840,65 @@ export function initAvailableBloodComponentsTable() {
     );
 }
 
-// ---------- HISTORY TEST TABLE ----------
-export function DatatableHistoryTestTable() {
-    if (isTableInitialized(TABLE.historyTest)) return;
-    const HISTORYTESTCOLUMNS = [
-        {
-            data: "blood_request_at",
-            title: "Tgl. Permintaan",
-            render: (data) => {
-                const bloodRequestAt = DateTimeFormatter.shortDateTime(data);
-                return `<span class="fs-6 fw-semibold">${bloodRequestAt}</span>`;
-            },
-        },
-        {
-            data: "lab_number",
-            title: "No. BDRS",
-            render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data}</span>`;
-            },
-        },
-        {
-            data: "order_number",
-            title: "No. Order",
-            render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
-            },
-        },
-        {
-            data: "bag_number",
-            title: "No. Labu",
-            render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
-            },
-        },
-        {
-            data: "crossmatch_result",
-            title: "Hasil",
-            render: (data) => {
-                return renderCrossmatchResult(data);
-            },
-        },
-        {
-            data: "blood_release_status",
-            title: "Status",
-            render: (data) => {
-                const isReleased = data === 1;
-                if (isReleased) {
-                    return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                        <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
-                        Dikeluarkan
-                    </span>`;
-                }
-                return `<span class="badge badge-label fw-semibold badge-soft-info">
-                    <i class="ti ti-heart-x align-middle me-2 fs-4"></i>
-                    Tidak Dikeluarkan
-                </span>`;
-            },
-        },
-        {
-            data: "blood_received_by",
-            title: "Penerima Labu",
-            render: (data) => {
-                return `<span class="fs-6 fw-semibold">${data ?? "-"}</span>`;
-            },
-        },
-    ];
-
-    listHistoryTestTableInstance = new GlobalAdvanceYajraDatatable(
-        TABLE.historyTest,
-        {
-            removeSearch: true,
-            removePageInfo: true,
-            removePagination: true,
-            ajax: (data, callback) => {
-                if (!window.currentTransfusionPatientId) {
-                    return callback(emptyCallback(data.draw));
-                }
-                $.get(
-                    `${DATATABLE_URL}/${window.currentTransfusionPatientId}/history-test`,
-                    data,
-                )
-                    .done(callback)
-                    .fail(() => callback(emptyCallback(data.draw)));
-            },
-            columns: HISTORYTESTCOLUMNS,
-            // columnDefs: [
-            //     {
-            //         targets: -1,
-            //         responsivePriority: 1,
-            //     },
-            //     {
-            //         targets: 0,
-            //         responsivePriority: 2,
-            //     },
-            // ],
-        },
-    );
-}
-
 // ---------- COMPLETE TEST BUTTON ----------
+export function updateDoneButtonState() {
+    const btn = document.getElementById("btn-test-done");
+    if (!btn) return;
+
+    const table = document.querySelector(TABLE.test);
+    const rows = table?.querySelectorAll("tbody tr") ?? [];
+
+    // Sembunyikan jika salah satu kondisi early-exit terpenuhi
+    const shouldHide =
+        !window.currentBagDetailPublicId ||
+        (window.currentBagCrossmatchResult &&
+            window.currentBagCrossmatchResult.toString().trim() !== "") ||
+        !table ||
+        rows.length === 0;
+
+    if (shouldHide) {
+        setHidden(btn, true);
+        return;
+    }
+
+    // Cek semua baris sudah punya hasil
+    let allComplete = true;
+    rows.forEach((row) => {
+        const resultSelect = row.querySelector(".select-test-result");
+        if (!resultSelect) {
+            allComplete = false;
+            return;
+        }
+        const isOptional =
+            resultSelect.dataset.testName?.toLowerCase() === "mayor" &&
+            resultSelect.dataset.component?.toLowerCase() === "tc";
+        if (!isOptional && !resultSelect.value?.trim()) {
+            allComplete = false;
+        }
+        // // Check verified checkbox
+        // const verifiedCb = row.querySelector(
+        //     '.checkbox-update[data-field="verified"]',
+        // );
+        // if (!verifiedCb || !verifiedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
+
+        // // Check validated checkbox
+        // const validatedCb = row.querySelector(
+        //     '.checkbox-update[data-field="validated"]',
+        // );
+        // if (!validatedCb || !validatedCb.checked) {
+        //     allComplete = false;
+        //     return;
+        // }
+    });
+
+    setHidden(btn, !allComplete);
+}
 export async function completeTest() {
     const detailPublicId = window.currentBagDetailPublicId;
     if (!detailPublicId) {
-        c;
         notyf.error({ message: "Please select a bag first." });
         return;
     }
@@ -966,7 +934,7 @@ export async function completeTest() {
         window.currentBagCrossmatchResult = res.crossmatch_result;
         btn.innerHTML = originalText;
         btn.disabled = false;
-        btn.classList.add("d-none");
+        setHidden(btn, true);
 
         // Reload test table
         if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
@@ -991,13 +959,43 @@ export async function completeTest() {
                             window.currentBagCrossmatchResult =
                                 updatedBag.crossmatch_result ||
                                 window.currentBagCrossmatchResult;
-                            updateWorkflowButtonsState(updatedBag);
+                            if (
+                                typeof window.updateWorkflowButtonsState ===
+                                "function"
+                            ) {
+                                window.updateWorkflowButtonsState();
+                            }
                         }
                     }
 
-                    const state = evaluateBagListState(json.data ?? []);
-                    applyBagListButtonState(state);
+                    const allHaveCrossmatch =
+                        json.data &&
+                        json.data.length > 0 &&
+                        json.data.every(
+                            (bag) =>
+                                bag.crossmatch_result &&
+                                bag.crossmatch_result.toString().trim() !== "",
+                        );
 
+                    const btnComplete =
+                        document.getElementById(SelectorBtnComplete);
+                    if (btnComplete) {
+                        btnComplete.disabled = !allHaveCrossmatch;
+                    }
+
+                    const btnReleaseAll = document.getElementById(
+                        SelectorBtnReleaseAll,
+                    );
+                    if (btnReleaseAll) {
+                        btnReleaseAll.disabled = !allHaveCrossmatch;
+                    }
+
+                    const btnPrintResult = document.getElementById(
+                        SelectorBtnPrintResult,
+                    );
+                    if (btnPrintResult) {
+                        btnPrintResult.disabled = !allHaveCrossmatch;
+                    }
                     updateDoneButtonState();
                 }, false);
         }
@@ -1023,26 +1021,28 @@ document.addEventListener("change", async function (e) {
     if (e.target.matches(".select-test-result")) {
         await patchRequest(
             `${BASE_URL}/test/${e.target.dataset.id}/update-result`,
-            { result: e.target.value },
+            {
+                result: e.target.value,
+            },
             "Result updated!",
         );
 
         // Cari checkbox yang berada di baris yang sama berdasarkan data-id
-        // const targetCheckbox = $(
-        //     `.checkbox-update[data-id="${e.target.dataset.id}"]`,
-        // );
+        const targetCheckbox = $(
+            `.checkbox-update[data-id="${e.target.dataset.id}"]`,
+        );
 
-        // if (e.target.value === "" || e.target.value === null) {
-        //     targetCheckbox.prop("checked", false);
-        //     targetCheckbox.prop("disabled", true);
-        //     targetCheckbox.css("cursor", "not-allowed");
-        // } else {
-        //     targetCheckbox.prop("checked", false);
-        //     targetCheckbox.prop("disabled", false);
-        //     targetCheckbox.css("cursor", "pointer");
-        // }
+        if (e.target.value === "" || e.target.value === null) {
+            targetCheckbox.prop("checked", false);
+            targetCheckbox.prop("disabled", true);
+            targetCheckbox.css("cursor", "not-allowed");
+        } else {
+            targetCheckbox.prop("checked", false);
+            targetCheckbox.prop("disabled", false);
+            targetCheckbox.css("cursor", "pointer");
+        }
 
-        window.currentBagCrossmatchResult = null;
+        // Update Done button state after result change
         updateDoneButtonState();
     }
     // Update Verified / Validated

@@ -22,8 +22,8 @@ export const OrderStatus = {
     },
 };
 
-// ---------- BLOOD STATUS ----------
-export function BloodStatus(status) {
+// ---------- BLOOD STOCK STATUS ----------
+export function BloodStockStatus(status) {
     const value = status?.value || status;
 
     switch (value) {
@@ -51,6 +51,54 @@ export function BloodStatus(status) {
             return `<span class="badge badge-label fw-semibold badge-soft-primary">
                 <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
                 Dikeluarkan
+            </span>`;
+        case "used":
+            return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                <i class="ti ti-activity-heartbeat align-middle me-2 fs-4"></i>
+                Sudah Pernah Digunakan
+            </span>`;
+        default:
+            return `<span class="badge badge-label fw-semibold badge-soft-secondary">
+                <i class="ti ti-droplet align-middle me-2 fs-4"></i>
+                ${value ?? "-"}
+            </span>`;
+    }
+}
+
+// ---------- BLOOD STATUS IN TRANSFUSION----------
+export function TransfusionBloodStatus(status) {
+    const value = status?.value || status;
+
+    switch (value) {
+        case "expired":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
+                Expired!
+            </span>`;
+        case "in_use":
+            return `<span class="badge badge-label fw-semibold badge-soft-info">
+                <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
+                Sedang Digunakan
+            </span>`;
+        case "available":
+            return `<span class="badge badge-label fw-semibold badge-soft-success">
+                <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
+                Tersedia
+            </span>`;
+        case "destroyed":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
+                Dimusnahkan
+            </span>`;
+        case "taken_out":
+            return `<span class="badge badge-label fw-semibold badge-soft-primary">
+                <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
+                Dikeluarkan
+            </span>`;
+        case "used":
+            return `<span class="badge badge-label fw-semibold badge-soft-info">
+                <i class="ti ti-heart-x align-middle me-2 fs-4"></i>
+                Tidak Dikeluarkan
             </span>`;
         default:
             return `<span class="badge badge-label fw-semibold badge-soft-secondary">
@@ -88,6 +136,11 @@ export function TransactionOrderStatus(status) {
         case "Blood Transfusion Deleted":
             return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dihapus" data-bs-toggle="tooltip" data-bs-trigger="hover">
                 <i class="ti ti-trash"></i>
+            </span>`;
+            break;
+        case "Blood Transfusion Canceled":
+            return `<span style="font-size: 20px;" class="text-danger" data-bs-title="Dibatalkan" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-x"></i>
             </span>`;
             break;
         default:

@@ -4,18 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    @media print {
-      @page {
-        size: 24.13cm 27.94cm !important;
-        margin: 0 !important;
-      }
-    }
-
-    @page {
-      size: 24.13cm 27.94cm;
-      margin: 0;
-    }
-
     * {
       margin: 0;
       padding: 0;
@@ -41,7 +29,7 @@
     }
 
     .page {
-      padding: 32px 40px 80px 40px;
+      padding: 20px 20px 80px 20px;
     }
 
     .header {
@@ -52,6 +40,12 @@
 
     .logo {
       height: 90px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .barcode-signature {
+      height: 105px;
       width: auto;
       object-fit: contain;
     }
@@ -112,17 +106,17 @@
       margin-bottom: 10px;
     }
 
-    .table-incompatible {
+    .table-crossmatch-result {
       margin-top: 15px;
       margin-bottom: 15px;
       border: 1px solid #ccc;
     }
 
-    .table-incompatible thead tr {
+    .table-crossmatch-result thead tr {
       text-transform: uppercase;
     }
 
-    .table-incompatible th {
+    .table-crossmatch-result th {
       padding: 9px 12px;
       font-size: 10px;
       border: 1px solid #e0e0e0;
@@ -130,22 +124,22 @@
       text-align: center;
     }
 
-    .table-incompatible td {
+    .table-crossmatch-result td {
       padding: 8px 12px;
       border: 1px solid #e0e0e0;
       font-size: 10.5px;
       vertical-align: top;
     }
 
-    .table-incompatible tbody tr:nth-child(even) {
+    .table-crossmatch-result tbody tr:nth-child(even) {
       background: #fafafa;
     }
 
-    .table-incompatible tfoot tr {
+    .table-crossmatch-result tfoot tr {
       background: #f5f5f5;
     }
 
-    .table-incompatible tfoot td {
+    .table-crossmatch-result tfoot td {
       padding: 9px 12px;
       font-size: 11px;
       font-weight: 700;
@@ -188,8 +182,8 @@
           </td>
         </tr>
         <tr>
-          <td width="10%"></td>
-          <td width="90%" align="right">
+          <td width="100px"></td>
+          <td width="900px" align="right">
             <div class="subheading" style="margin-top: 20px;">
               {{ __('Penanggung Jawab: Indriani Silvia, dr,Sp.PK(K)., MKes') }}
             </div>
@@ -202,14 +196,31 @@
     <table>
       <tr>
         <td width="100%" align="center">
-          <div class="heading-2">{{ __('SURAT TANDA PENERIMAAN DARAH') }}</div>
-          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
+          <div class="heading-2">{{ __('SURAT HASIL UJI SILANG SERASI') }}</div>
+          <div class="heading-2" style="margin-bottom: 15px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
         </td>
       </tr>
     </table>
 
     {{-- Detail Transaksi --}}
-    <table width="1000px">
+    <table width="100%">
+      <!--- Dokter --->
+      <tr>
+        <td width="17%">
+          <div class="paragraph">{{ __('Kepada Yth') }}</div>
+        </td>
+        <td width="3%">
+          <div class="paragraph">:</div>
+        </td>
+        <td width="80%">
+          @if (!empty($data->doctor?->name))
+          <div class="paragraph">{{ $data->doctor?->name ?? '-' }}</div>
+          @else
+          <div class="paragraph">dr. Sofyan, Sp.PD</div>
+          @endif
+        </td>
+      </tr>
+
       <!--- Nama --->
       <tr>
         <td width="30%">
@@ -254,7 +265,7 @@
           @if (!empty($data->lab_number))
           <div class="paragraph">{{ $data->lab_number ?? '-' }}</div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">260519001</div>
           @endif
         </td>
       </tr>
@@ -269,6 +280,24 @@
         <td width="67%">
           @if (!empty($data->patient?->address))
           <div class="paragraph">{{ $data->patient?->address ?? '-' }}</div>
+          @else
+          <div class="paragraph">Jawa Barat, Indonesia</div>
+          @endif
+        </td>
+      </tr>
+      <!--- Jenis Kelamin --->
+      <tr>
+        <td width="30%">
+          <div class="paragraph">{{ __('Jenis Kelamin') }}</div>
+        </td>
+        <td width="3%">
+          <div class="paragraph">:</div>
+        </td>
+        <td width="67%">
+          @if (!empty($data->patient->gender))
+          <div class="paragraph">
+            {{ $data->patient->gender == 'M' ? 'Laki-Laki' : 'Perempuan' }}
+          </div>
           @else
           <div class="paragraph">-</div>
           @endif
@@ -288,7 +317,7 @@
             {{ $data->patient?->blood_group . $data->patient?->blood_rhesus ?? '-'}}
           </div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">B+</div>
           @endif
         </td>
       </tr>
@@ -306,55 +335,10 @@
             {{ $data->created_at ? \Carbon\Carbon::parse($data->created_at)->format('d F Y') : '-' }}
           </div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">19 Mei 2026</div>
           @endif
         </td>
       </tr>
-      <!--- Jumlah Permintaan Labu --->
-      <tr>
-        <td width="30%">
-          <div class="paragraph">{{ __('Jumlah Permintaan Labu') }}</div>
-        </td>
-        <td width="3%">
-          <div class="paragraph">:</div>
-        </td>
-      </tr>
-    </table>
-
-    {{-- Tabel Jumlah Permintaan Labu --}}
-    <table class="table-incompatible" width="100%">
-      <thead>
-        <tr>
-          <th class="text-center" style="width: 3%;">{{ __('No.') }}</th>
-          <th class="text-center" style="width: 20%;">{{ __('Detail') }}</th>
-          {{-- <th class="text-center" style="width: 20%;">{{ __('No. Labu') }}</th>
-          <th class="text-center" style="width: 20%;">{{ __('Tanggal & Jam') }}</th>
-          <th class="text-center" style="width: 28%;">{{ __('Penyerah') }}</th>
-          <th class="text-center" style="width: 28%;">{{ __('Penerima') }}</th> --}}
-        </tr>
-      </thead>
-
-      <tbody>
-        {{-- @foreach ($data->details as $detail)
-        <tr>
-          <td class="text-center">{{ $loop->iteration }}</td>
-          <td class="text-center">{{ $detail->bloodStock->bag_number }}</td>
-          <td class="text-center">{{ $detail->blood_released_at }}</td>
-          <td class="text-center">{{ $detail->bloodReleasedByUser?->name }}</td>
-          <td class="text-center">{{ $detail->blood_received_by }}</td>
-        </tr>
-        @endforeach --}}
-
-        @foreach ($data->details as $i => $__)
-        <tr>
-          <td class="text-center" style="height: 60px; vertical-align: middle;">{{ $loop->iteration }}</td>
-          <td class="text-center" style="height: 60px;"></td>
-          {{-- <td class="text-center"></td> --}}
-          {{-- <td class="text-center"></td>
-          <td class="text-center"></td> --}}
-        </tr>
-        @endforeach
-      </tbody>
     </table>
 
     {{-- Pengantar detail darah --}}
@@ -362,7 +346,101 @@
       <tr>
         <td width="100%" align="left">
           <div class="paragraph">
-            {{ __('Bawa kembali surat ini ke Bank Darah Rumah Sakit Indramayu, ketika pengambilan darah.') }}
+            {{ __('Dengan ini kami beritahukan hasil pemeriksaan uji silang (crossmatch) antara darah pasien dan darah
+            donor adalah sebagai berikut :') }}
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    {{-- Detail darah --}}
+    <table class="table-crossmatch-result">
+      <thead>
+        <tr>
+          <th class="text-center" style="width: 12%;">{{ __('No. Kantong') }}</th>
+          <th class="text-center" style="width: 3%;">{{ __('Komponen') }}</th>
+          <th class="text-center" style="width: 19%;">{{ __('MAYOR') }}</th>
+          <th class="text-center" style="width: 19%;">{{ __('MINOR') }}</th>
+          <th class="text-center" style="width: 28%;">{{ __('AUTOCONTROL') }}</th>
+        </tr>
+      </thead>
+
+      @php
+      function formatResult(?string $result): string {
+      if (!$result) return 'TIDAK DILAKUKAN';
+      return strtoupper(str_replace('_', ' ', $result));
+      }
+      @endphp
+
+      <tbody>
+        @forelse ($data->details as $detail)
+        @php
+        $tests = $detail->bloodTransfusionDetailTests->keyBy(fn($t) => $t->test?->name);
+        $mayor = $tests->get('Mayor');
+        $minor = $tests->get('Minor');
+        $autoControl = $tests->get('Auto Control');
+        @endphp
+        <tr>
+          <td class="text-center">
+            {{ $detail->bloodStock?->bag_number ?? '-' }}
+          </td>
+          <td class="text-center">
+            <strong>{{ $detail->component ?? '-' }}</strong>
+          </td>
+          <td class="text-center">
+            {{ $detail->component == 'TC' ? 'TIDAK DILAKUKAN' : formatResult($mayor?->result) }}
+          </td>
+          <td class="text-center">
+            {{ formatResult($minor?->result) }}
+          </td>
+          <td class="text-center">
+            {{ formatResult($autoControl?->result) }}
+          </td>
+        </tr>
+        @empty
+        <tr>
+          <td class="text-center" colspan="5">No Data Available</td>
+        </tr>
+        @endforelse
+      </tbody>
+    </table>
+
+    {{-- Penjelasan DCT --}}
+    <table>
+      <tr>
+        <td width="100%" align="left">
+          <div class="paragraph">
+            {{ __('Hasil pemeriksaan Direct Coomb Test (DCT) :') }}
+            <strong>{{ $data->is_dct ? 'DILAKUKAN' : 'TIDAK DILAKUKAN' }}</strong>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    {{-- Signature --}}
+    @php
+    $firstDetail = $data->details->first();
+    $resultBy = $firstDetail?->bloodTransfusionDetailTests?->first()?->resultByUser?->name;
+    $username = strtolower($resultBy ?? '');
+    $barcodeFile = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
+    $barcodeUrl = asset("assets/images/barcode/ttd_{$username}_barcode.png");
+    @endphp
+    <table style="margin-top: 18px;">
+      <tr>
+        <td width="650px" align="center">
+        </td>
+        <td width="350px" align="center">
+          <div class="paragraph"><strong>{{ __('Indramayu') }}, {{ now()->format('d F Y') }}</strong></div>
+          <div class="paragraph"><strong>{{ __('Pemeriksa') }}</strong></div>
+          @if ($username && file_exists($barcodeFile))
+          <br>
+          <img class="barcode-signature" src="{{ $barcodeUrl }}" alt="Barcode Signature of {{ $username }}">
+          <br>
+          @else
+          <br><br><br>
+          @endif
+          <div class="heading-3">
+            <strong>{{ $resultBy ?? '_______________' }}</strong>
           </div>
         </td>
       </tr>
@@ -370,7 +448,7 @@
 
     {{-- Footer --}}
     <div class="footer">
-      {{ __('Generated On') }} {{ now()->format('d F Y, H:i') }} &mdash; Nota &mdash;
+      {{ __('Generated On') }} {{ now()->format('d F Y, H:i') }} &mdash; Crossmatch Result &mdash;
       {{ __('LICA Blood Bank Information System') }}
     </div>
   </div>

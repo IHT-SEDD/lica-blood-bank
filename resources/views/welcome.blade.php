@@ -31,9 +31,9 @@
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">{{ __('Blood Transfusion') }}</h2>
+              <h2 class="fw-bold mb-0">{{ __('Transfusi Darah') }}</h2>
               <p class="text-muted mb-0">
-                {{ __('Manage blood transfusion requests, donor matching, and patient records.') }}
+                {{ __('Mengelola permintaan transfusi darah, pencocokan donor, dan rekam medis pasien.') }}
               </p>
             </div>
 
@@ -67,9 +67,10 @@
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
             <div class="text-center">
-              <h2 class="fw-bold mb-0">{{ __('Inventory') }}</h2>
+              <h2 class="fw-bold mb-0">{{ __('Inventaris') }}</h2>
               <p class="text-muted mb-0">
-                {{ __('Manage blood inventory, including stock levels, expiration dates, and blood type availability.')
+                {{ __('Mengelola inventaris darah, termasuk tingkat persediaan, tanggal kedaluwarsa, dan ketersediaan
+                golongan darah.')
                 }}
               </p>
             </div>
@@ -111,7 +112,7 @@
             <div class="text-center">
               <h2 class="fw-bold mb-0">{{ __('Donor') }}</h2>
               <p class="text-muted mb-0">
-                {{ __('Manage donor information, donation history, and eligibility status.') }}
+                {{ __('Mengelola informasi donor, riwayat donor, dan status kelayakan.') }}
               </p>
             </div>
 
@@ -145,7 +146,7 @@
             <div class="text-center">
               <h2 class="fw-bold mb-0">{{ __('Master') }}</h2>
               <p class="text-muted mb-0">
-                {{ __('Manage core system entities and reference data.') }}
+                {{ __('Mengelola entitas inti sistem dan data referensi.') }}
               </p>
             </div>
 
@@ -181,7 +182,7 @@
             <div class="text-center">
               <h2 class="fw-bold mb-0">{{ __('Dev Playground') }}</h2>
               <p class="text-muted mb-0">
-                {{ __('Developer playground') }}
+                {{ __('Taman bermain developer/programmer ISOLA') }}
               </p>
             </div>
 

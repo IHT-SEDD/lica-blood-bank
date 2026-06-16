@@ -25,15 +25,13 @@ class ReportController extends Controller
             ->replace(['-', '_'], ' ')
             ->title();
         return view($view, [
-            'report' => $formattedReport,
+            'report' => $modules[$report]['label'] ?? $formattedReport,
             'reportJS' => $report,
         ]);
     }
 
     public function datatable(Request $request, string $report)
     {
-        return response()->json(
-            $this->dataService->datatable($report, $request)
-        );
+        return $this->dataService->datatable($report, $request);
     }
 }

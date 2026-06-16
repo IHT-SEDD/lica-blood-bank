@@ -8,9 +8,10 @@
                     <span class="d-flex align-items-center">
                         <i class="ti ti-user-circle fs-32"></i>
                         <span class="flex-grow-1 ms-2 text-truncate">
-                            <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">Patient
-                                Info</span>
-                            <span class="mb-0 fw-normal">Patient & Transaction details</span>
+                            <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">
+                                Pasien
+                            </span>
+                            <span class="mb-0 fw-normal">Detail Pasien & Transaksi</span>
                         </span>
                     </span>
                 </a>
@@ -20,9 +21,10 @@
                     <span class="d-flex align-items-center">
                         <i data-lucide="flask-conical" class="align-middle fs-32"></i>
                         <span class="flex-grow-1 ms-2 text-truncate">
-                            <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">Blood Request
-                                Info</span>
-                            <span class="mb-0 fw-normal">Blood Request details</span>
+                            <span class="mb-0 lh-base d-block fw-semibold text-body fs-base">
+                                Permintaan Darah
+                            </span>
+                            <span class="mb-0 fw-normal">Detail Permintaan Darah</span>
                         </span>
                     </span>
                 </a>
@@ -35,17 +37,17 @@
             <div class="tab-pane fade show active" id="stepPatient">
                 {{-- Choose Patient --}}
                 <div class="col-lg-12 mb-3">
-                    <label class="form-label" for="select-patient">{{ __('Choose Patient or Create New') }}</label>
+                    <label class="form-label" for="select-patient">{{ __('Pilih pasien atau tambahkan baru') }}</label>
                     <div class="input-group">
                         <select class="form-control form-control-sm" id="select-patient" name="patient_id"
-                            placeholder="{{ __('Choose Patient or Create New') }}"></select>
+                            placeholder="{{ __('Pilih pasien') }}"></select>
                         <button class="btn btn-sm btn-soft-primary" id="add-new-patient-data" type="button">
-                            {{ __('Add New') }}
+                            {{ __('Tambah Pasien Baru') }}
                         </button>
                     </div>
                     <small class="form-text text-muted fs-6">
-                        {{ __('Choose patient from dropdown if patient already exists or you can click Add New button to
-                        insert new patient.') }}
+                        {{ __('Pilih pasien jika sudah pernah ada permintaan atau tambahkan pasien baru jika belum
+                        pernah ada permintaan.') }}
                     </small>
                 </div>
 
@@ -56,7 +58,7 @@
                     <div class="col-lg-7 col-12 patient-data-border pe-lg-4">
                         {{-- Title --}}
                         <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-                            <h4>{{ __('Patient Data') }} {{ __('Details') }}</h4>
+                            <h4>{{ __('Data Detail Pasien') }}</h4>
                         </div>
 
                         <div class="row mb-2">
@@ -66,62 +68,62 @@
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input autocomplete="off" class="form-control" id="medrec" name="medrec" type="text"
-                                    placeholder="{{ __('Medical Record') }}" readonly />
+                                    placeholder="{{ __('No. Rekam Medis') }}" readonly />
                                 <small class="form-text text-muted">
-                                    {{ __('Click inputs to generate medrec.') }}
+                                    {{ __('Klik inputan untuk menghasilkan nomor rekam medis.') }}
                                 </small>
                             </div>
 
                             {{-- Name --}}
                             <div class="col-xxl-6 col-md-6 col-12 mb-0">
-                                <label class="form-label" for="name">{{ __('Name') }}
+                                <label class="form-label" for="name">{{ __('Nama') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <input autocomplete="off" class="form-control" id="name" name="name" type="text"
-                                    placeholder="{{ __('Patient Full Name') }}" required />
+                                    placeholder="{{ __('Nama lengkap pasien') }}" required />
                             </div>
 
                             {{-- Email --}}
                             <div class="col-xxl-6 col-md-6 col-12 mb-0">
                                 <label class="col-form-label" for="email">{{ __('Email') }}</label>
                                 <input autocomplete="off" class="form-control" id="email" name="email" type="email"
-                                    placeholder="{{ __('Patient Email Address') }}" />
+                                    placeholder="{{ __('Alamat email pasien') }}" />
                             </div>
 
                             {{-- Phone Number --}}
                             <div class="col-xxl-6 col-md-6 col-12 mb-0">
-                                <label class="col-form-label" for="phone_number">{{ __('Phone Number') }}</label>
+                                <label class="col-form-label" for="phone_number">{{ __('Nomor HP') }}</label>
                                 <input autocomplete="off" class="form-control" id="phone_number" name="phone_number"
                                     type="text" placeholder="08**********" />
                             </div>
 
                             {{-- Blood Group --}}
                             <div class="col-xxl-6 col-md-6 col-12 mt-2">
-                                <label class="form-label" for="select-blood-group">{{ __('Blood Group') }}</label>
+                                <label class="form-label" for="select-blood-group">{{ __('Golongan Darah') }}</label>
                                 <select class="form-control" id="select-blood-group" name="blood_group"
-                                    placeholder="{{ __('Blood Group') }}"></select>
+                                    placeholder="{{ __('Golongan darah pasien') }}"></select>
                             </div>
 
                             {{-- Blood Rhesus --}}
                             <div class="col-xxl-6 col-md-6 col-12 mt-2">
-                                <label class="form-label" for="select-blood-rhesus">{{ __('Blood Rhesus') }}</label>
+                                <label class="form-label" for="select-blood-rhesus">{{ __('Rhesus Darah') }}</label>
                                 <select class="form-control" id="select-blood-rhesus" name="blood_rhesus"
-                                    placeholder="{{ __('Blood Rhesus') }}"></select>
+                                    placeholder="{{ __('Rhesus darah pasien') }}"></select>
                             </div>
 
                             {{-- Birth Date --}}
                             <div class="col-xxl-6 col-md-6 col-12 mb-2">
                                 <label class="col-form-label m-0" for="birthdate">
-                                    {{ __('Birth Date') }} <span class="text-danger">*</span>
+                                    {{ __('Tanggal Lahir') }} <span class="text-danger">*</span>
                                 </label>
                                 <input class="form-control patient-birth-date" aria-describedby="patient-birth-date"
                                     data-date-format="Y-m-d" data-provider="flatpickr" type="text" id="birthdate"
-                                    name="birthdate" placeholder="{{ __('Choose') }} {{ __('Birth Date') }}" />
+                                    name="birthdate" placeholder="{{ __('Pilih tanggal lahir pasien') }}" />
                             </div>
 
                             {{-- Gender --}}
                             <div class="col-xxl-6 col-md-12 col-12 mt-2">
-                                <label class="form-label" for="gender">{{ __('Gender') }}
+                                <label class="form-label" for="gender">{{ __('Jenis Kelamin') }}
                                     <span class="text-danger">*</span>
                                 </label>
                                 <div class="mt-1">
@@ -129,13 +131,13 @@
                                     <div class="form-check form-check-inline">
                                         <input checked="" class="form-check-input" id="gender" name="gender"
                                             type="radio" value="M" />
-                                        <label class="form-check-label" for="gender">{{ __('Male') }}</label>
+                                        <label class="form-check-label" for="gender">{{ __('Laki-laki') }}</label>
                                     </div>
                                     {{-- Female --}}
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" id="gender" name="gender" type="radio"
                                             value="F" />
-                                        <label class="form-check-label" for="gender">{{ __('Female') }}</label>
+                                        <label class="form-check-label" for="gender">{{ __('Perempuan') }}</label>
                                     </div>
                                 </div>
                             </div>
@@ -143,27 +145,27 @@
                             {{-- Relation Name --}}
                             <div class="col-xxl-6 col-md-12 col-12 mt-2">
                                 <label class="form-label" for="relation_name">
-                                    {{ __('Relation Name') }}
+                                    {{ __('Nama Relasi') }}
                                 </label>
                                 <input autocomplete="off" class="form-control" id="relation_name" name="relation_name"
-                                    type="text" placeholder="{{ __('Patient Relation Name') }}" />
+                                    type="text" placeholder="{{ __('Nama relasi pasien') }}" />
                             </div>
 
                             {{-- Relation Type --}}
                             <div class="col-xxl-6 col-md-12 col-12 mt-2">
                                 <label class="form-label" for="select-relation-type">
-                                    {{ __('Relation Type') }}
+                                    {{ __('Jenis Relasi') }}
                                 </label>
                                 <select class="form-control" id="select-relation-type" name="relation_type"
-                                    placeholder="{{ __('Choose Relation Type') }}"></select>
+                                    placeholder="{{ __('Pilih jenis relasi pasien') }}"></select>
                             </div>
 
                             {{-- Address --}}
                             <div class="col-xxl-12 col-md-12 col-12 mt-2">
                                 <label class="form-label" for="address">
-                                    {{ __('Address') }}</label>
+                                    {{ __('Alamat') }}</label>
                                 <textarea class="form-control" id="address" name="address"
-                                    placeholder="{{ __('Address') }}" rows="5"></textarea>
+                                    placeholder="{{ __('Alamat lengkap pasien') }}" rows="5"></textarea>
                             </div>
                         </div>
                     </div>
@@ -173,47 +175,48 @@
                     <div class="col-lg-5 col-12 ps-lg-4">
                         {{-- Title --}}
                         <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-                            <h4>{{ __('Transaction') }} {{ __('Details') }}</h4>
+                            <h4>{{ __('Data Detail Transaksi') }}</h4>
                         </div>
 
                         <div class="row">
                             {{-- Insurance --}}
-                            <div class="col-xxl-6 col-12 mt-2">
-                                <label class="form-label" for="select-insurance">{{ __('Insurance') }}</label>
+                            <div class="col-12 mt-2">
+                                <label class="form-label" for="select-insurance">{{ __('Penjamin/Asuransi') }}</label>
                                 <span class="text-danger">*</span>
                                 <select class="form-control" id="select-insurance" name="insurance_id"
-                                    placeholder="{{ __('Choose') }} {{ __('Insurance') }}"></select>
+                                    placeholder="{{ __('Pilih penjamin/asuransi') }}"></select>
                             </div>
 
                             {{-- Room --}}
-                            <div class="col-xxl-6 col-12 mt-2">
-                                <label class="form-label" for="select-room">{{ __('Room') }}</label>
+                            <div class="col-12 mt-2">
+                                <label class="form-label" for="select-room">{{ __('Ruangan') }}</label>
                                 <span class="text-danger">*</span>
                                 <select class="form-control" id="select-room" name="room_id"
-                                    placeholder="{{ __('Choose') }} {{ __('Room') }}"></select>
+                                    placeholder="{{ __('Pilih ruangan') }}"></select>
                             </div>
 
                             {{-- Doctor --}}
                             <div class="col-xxl-12 col-md-12 col-12 mt-2">
-                                <label class="form-label" for="select-doctor">{{ __('Doctor') }}</label>
+                                <label class="form-label" for="select-doctor">{{ __('Dokter') }}</label>
                                 <span class="text-danger">*</span>
                                 <select class="form-control" id="select-doctor" name="doctor_id"
-                                    placeholder="{{ __('Choose') }} {{ __('Doctor') }}"></select>
+                                    placeholder="{{ __('Pilih dokter') }}"></select>
                             </div>
 
                             {{-- Diagnosis --}}
                             <div class="col-xxl-12 col-md-12 col-12 mt-2">
                                 <label class="form-label" for="diagnosis">{{ __('Diagnosis') }}</label>
                                 <textarea class="form-control" id="diagnosis" name="diagnosis"
-                                    placeholder="{{ __('Diagnosis') }}" rows="5"></textarea>
+                                    placeholder="{{ __('Diagnosis pasien') }}" rows="5"></textarea>
                             </div>
                         </div>
                     </div>
                     {{-- Transaction : end --}}
                 </div>
                 <div class="d-flex justify-content-end mt-3">
-                    <button class="btn btn-primary" data-wizard-next="#stepBloodRequest" type="button">Next: Blood
-                        Request →</button>
+                    <button class="btn btn-primary" data-wizard-next="#stepBloodRequest" type="button">
+                        Selanjutnya <i class="ti ti-arrow-right-dashed ms-1"></i>
+                    </button>
                 </div>
             </div>
 
@@ -221,13 +224,13 @@
             <div class="tab-pane fade" id="stepBloodRequest">
                 {{-- Title --}}
                 <div style="border-bottom: 2px dashed #ccc; padding-bottom: 6px; margin-bottom: 12px;">
-                    <h4>{{ __('Blood Request') }} {{ __('Details') }}</h4>
+                    <h4>{{ __('Data Detail Permintaan Darah') }}</h4>
                 </div>
 
                 {{-- Blood Required Date --}}
                 <div class="col-xxl-12 col-md-12 col-12 mb-4">
                     <label class="form-label" for="blood_required_at">
-                        {{ __('Required Date') }}
+                        {{ __('Tanggal Darah Dibutuhkan') }}
                         <span class="text-danger">*</span>
                     </label>
                     <div class="input-group">
@@ -237,7 +240,7 @@
                         <input class="form-control form-control-sm patient-blood-required-date"
                             aria-describedby="patient-blood-required-date" data-date-format="d-m-Y"
                             data-provider="flatpickr" type="text" id="blood_required_at" name="blood_required_at"
-                            placeholder="{{ __('Choose') }} {{ __('Required Date') }}" />
+                            placeholder="{{ __('Pilih tanggal') }}" />
                     </div>
                 </div>
 
@@ -245,14 +248,14 @@
                 <div class="row g-3">
                     {{-- Available Blood Components (Left) --}}
                     <div class="col-lg-6 col-12">
-                        <h5 class="mb-2">{{ __('Available Blood Components') }}</h5>
+                        <h5 class="mb-2">{{ __('Komponen Darah Yang Tersedia') }}</h5>
                         <div>
                             <table class="table table-sm table-striped dt-responsive align-middle mb-0"
                                 id="available-blood-components-table">
                                 <thead class="thead-sm text-uppercase fs-xxs">
                                     <tr>
-                                        <th>{{ __('Component') }}</th>
-                                        <th>{{ __('Action') }}</th>
+                                        <th>{{ __('Komponen') }}</th>
+                                        <th>{{ __('Aksi') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -262,14 +265,14 @@
 
                     {{-- Selected Blood Packs (Right) --}}
                     <div class="col-lg-6 col-12">
-                        <h5 class="mb-3">{{ __('Selected Blood Components') }}</h5>
+                        <h5 class="mb-3">{{ __('Komponen Darah Yang Dipilih') }}</h5>
                         <div>
                             <table class="table table-sm table-hover table-striped dt-responsive align-middle mb-0"
                                 id="selected-blood-pack-table">
                                 <thead class="thead-sm text-uppercase fs-xxs">
                                     <tr>
-                                        <th>{{ __('Component') }}</th>
-                                        <th>{{ __('Action') }}</th>
+                                        <th>{{ __('Komponen') }}</th>
+                                        <th>{{ __('Aksi') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -281,8 +284,9 @@
                 {{-- Hidden Input for Selected Blood Components --}}
                 <input type="hidden" id="selected-blood-components" name="selected_blood_components" value="[]" />
                 <div class="d-flex justify-content-between mt-3">
-                    <button class="btn btn-secondary" data-wizard-prev="#stepPatient" type="button">← Back</button>
-                    <button class="btn btn-success" type="submit">{{ __('Submit Request') }}</button>
+                    <button class="btn btn-dark" data-wizard-prev="#stepPatient" type="button"><i
+                            class="ti ti-arrow-left-dashed me-1"></i>Kembali</button>
+                    <button class="btn btn-success" type="submit">{{ __('Buat Permintaan') }}</button>
                 </div>
             </div>
         </div>

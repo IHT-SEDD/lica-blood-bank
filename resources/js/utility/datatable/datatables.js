@@ -21,36 +21,6 @@ import {
  * GlobalAdvanceYajraDatatable
  * Refactored to support Yajra DataTables JSON response
  * with column mapping via `columns` option.
- *
- * Cara pakai:
- * new GlobalAdvanceYajraDatatable('#myTable', {
- *   ajax: {
- *     url: '/api/blood-stocks',
- *     data: (d) => { d.blood_group = 'a'; d.blood_rhesus = '+'; }
- *   },
- *   columns: [
- *     { data: 'bag_number',      title: 'No. Kantong' },
- *     { data: 'bag_number_lica', title: 'No. LICA' },
- *     { data: 'blood_component', title: 'Komponen' },
- *     { data: 'blood_group',     title: 'Gol. Darah',
- *       render: (data, type, row) => data + row.blood_rhesus },
- *     { data: 'blood_volume',    title: 'Volume (ml)' },
- *     { data: 'expiry_date',     title: 'Tgl Kadaluarsa' },
- *     { data: 'blood_status',    title: 'Status',
- *       render: (data) => {
- *         const val   = typeof data === 'object' ? data.value : data;
- *         const label = typeof data === 'object' ? data.name  : data;
- *         const map   = {
- *           expired:   'danger',
- *           available: 'success',
- *           in_use:    'warning',
- *         };
- *         const color = map[val] ?? 'secondary';
- *         return `<span class="badge bg-${color}">${label}</span>`;
- *       }
- *     },
- *   ],
- * });
  */
 export class GlobalAdvanceYajraDatatable {
     constructor(selector, options = {}) {

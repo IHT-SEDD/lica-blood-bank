@@ -123,7 +123,7 @@ export const QzManager = (() => {
         const config = qz.configs.create(resolvedPrinter);
         for (const item of items) {
             const zpl = buildZPL(item, padleft, print);
-            console.log(item, zpl);
+            console.log(zpl);
             const result = [{ type: "raw", format: "plain", data: zpl }];
 
             try {

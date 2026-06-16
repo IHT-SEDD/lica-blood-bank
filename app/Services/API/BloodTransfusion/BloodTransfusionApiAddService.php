@@ -2,10 +2,12 @@
 
 namespace App\Services\API\BloodTransfusion;
 
+use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
+use App\Models\BloodTransfusionLogActivity;
 use App\Models\Doctor;
 use App\Models\Insurance;
 use App\Models\Package;
@@ -14,6 +16,7 @@ use App\Models\Room;
 use App\Models\Test;
 use App\Services\Integrations\LogIntegrationService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class BloodTransfusionApiAddService
@@ -98,18 +101,28 @@ class BloodTransfusionApiAddService
                     }
                 }
 
+                BloodTransfusionLogActivity::create([
+                    'blood_transfusion_public_id' => $transfusion->public_id,
+                    'payload' => $payload,
+                    'status' => BloodTransfusionLogActivityStatus::REGISTERED,
+                    'description' => generateBloodTransfusionLogDescription(
+                        BloodTransfusionLogActivityStatus::REGISTERED,
+                        'dengan nomor order ' . $transaksi['no_order'],
+                        'API SIMGOS'
+                    ),
+                    'created_by_user_name' => 'System',
+                    'timestamp' => now(),
+                ]);
                 $this->logIntegrationService->insertData(
                     'new_request',
                     'success',
                     'Transaksi permintaan darah sukses ditambahkan',
                     $payload
                 );
-
                 globalLogger('info', '(API) New blood transfusion request inserted succesfully!', [
                     'id' => $transfusion->id,
                     'payload' => $transfusion,
                 ], 200, 'newbloodtransfusion');
-
                 return [
                     'transfusion_public_id' => $transfusion->public_id,
                     'order_number' => $transfusion->order_number,

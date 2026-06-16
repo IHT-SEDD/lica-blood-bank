@@ -228,7 +228,8 @@ class BloodTransfusionWriteService
                         BloodTransfusionLogActivityStatus::BLOOD_RELEASE,
                         $this->generateDescription($detail->bloodTransfusion),
                         $detail->bloodStock->bag_number,
-                        Auth::user()->username
+                        Auth::user()->username,
+                        $request->blood_received_by,
                     ),
                     'created_by_user_name' => Auth::user()->name,
                     'timestamp' => now(),
