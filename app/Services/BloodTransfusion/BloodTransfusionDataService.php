@@ -4,6 +4,7 @@ namespace App\Services\BloodTransfusion;
 
 use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
+use App\Enums\BloodTransfusionStatus;
 use App\Enums\ResultTest;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
@@ -123,6 +124,48 @@ class BloodTransfusionDataService
         return DataTables::eloquent($query)
             ->addColumn('row_data', function ($detail) use ($transfusion) {
                 return $this->mapBagRequestRow($detail, $transfusion);
+            })
+            ->toJson();
+    }
+
+    // ---------- Fungsi Tabel List History Test ----------
+    public function listHistoryTestTable(Request $request, string $patientId): JsonResponse
+    {
+        $transfusions = BloodTransfusion::where('patient_id', $patientId)
+            ->select([
+                'id',
+                'public_id',
+                'lab_number',
+                'order_number',
+                'blood_request_at',
+            ])
+            ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED->value)
+            ->get();
+        if (!$transfusions) {
+            return DataTables::of(collect())->toJson();
+        }
+
+        $query = BloodTransfusionDetail::whereIn('blood_transfusion_id', $transfusions->pluck('id'))
+            ->with([
+                'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
+                'bloodStock:id,public_id,bag_number,bag_number_lica,blood_volume,aftap_date,expiry_date,process_date,is_hiv,is_hcv,is_hbsag,is_syphilis,blood_status,used_at,created_at',
+                'bloodTransfusion',
+                'bloodTransfusion.patient:id,public_id,name,medrec,gender,birthdate',
+                'bloodTransfusion.room:id,public_id,name,type',
+            ]);
+
+        return DataTables::eloquent($query)
+            ->addColumn('blood_request_at', function ($row) {
+                return $row->bloodTransfusion?->blood_request_at ?? '-';
+            })
+            ->addColumn('lab_number', function ($row) {
+                return $row->bloodTransfusion?->lab_number ?? '-';
+            })
+            ->addColumn('order_number', function ($row) {
+                return $row->bloodTransfusion?->order_number ?? '-';
+            })
+            ->addColumn('bag_number', function ($row) {
+                return $row->bloodStock?->bag_number ?? '-';
             })
             ->toJson();
     }

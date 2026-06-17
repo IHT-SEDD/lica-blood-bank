@@ -7,6 +7,8 @@ import {
     listBagRequestTableInstance,
     DatatableListTest,
     listTestTableInstance,
+    DatatableHistoryTestTable,
+    listHistoryTestTableInstance,
     completeTest,
 } from "./datatable/datatables-helper";
 import { GlobalRenderTimelineItem } from "../../utility/ui";
@@ -140,9 +142,15 @@ export function updatePatientDetailUI(data) {
         data.lab_number?.toString().trim() !== "-";
     const isCompleted =
         data.status && data.status === "blood_transfusion_finished";
+    const isCanceled =
+        data.status && data.status === "blood_transfusion_canceled";
 
     applyButtonState("#list-request-table", data, {
-        buttons: getPatientDetailButtonConfig(hasLabNumber, isCompleted),
+        buttons: getPatientDetailButtonConfig(
+            hasLabNumber,
+            isCompleted,
+            isCanceled,
+        ),
         onReady: (d) => {
             // Set dataset.id pada checkin button jika belum ada lab number
             if (!hasLabNumber) {
@@ -157,6 +165,7 @@ export function updatePatientDetailUI(data) {
             }
 
             // Update list bag request table
+            window.currentTransfusionPatientId = d.patient_id;
             window.currentTransfusionPublicId = d.public_id;
             window.currentTransfusionLabNumber = d.lab_number;
             window.currentBagDetailPublicId = null;
@@ -191,6 +200,14 @@ export function updatePatientDetailUI(data) {
                 $.fn.DataTable.isDataTable("#list-test-table")
             ) {
                 $("#list-test-table").DataTable().ajax.reload(null, false);
+            }
+            if (
+                listHistoryTestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-history-test-table")
+            ) {
+                $("#list-history-test-table")
+                    .DataTable()
+                    .ajax.reload(null, false);
             }
         },
     });
@@ -771,6 +788,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Datatables
     DatatableRequestBlood();
     DatatableListBagRequest();
+    DatatableHistoryTestTable();
     DatatableListTest();
 
     // Row interactions

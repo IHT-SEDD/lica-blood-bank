@@ -39,6 +39,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('blood-request', 'datatableBloodRequest')->name('blood-request');
                 Route::get('blood-request-archive', 'datatableBloodRequestArchive')->name('blood-request-archive');
                 Route::get('{id}/bag-requests', 'datatableListBagRequest')->name('datatable-bag-request');
+                Route::get('{patientId}/history-test', 'datatableListHistoryTest')->name('datatable-history-test');
             });
 
             // ---------- Detail group routes ----------
@@ -106,7 +107,8 @@ Route::middleware('auth')->group(function () {
     Route::prefix('report')->name('report.')->controller(ReportController::class)
         ->group(function () {
             // ---------- Page ----------
-            Route::get('{report}', 'index')->name('index');
+            Route::get('{report}', 'index')->where('report', implode('|', array_keys(config('report'))))->name('index');
+            Route::get('{report}/data', 'datatable')->where('report', implode('|', array_keys(config('report'))))->name('datatable');
         });
 
     // --------------------------------------------------------------------------

@@ -14,9 +14,9 @@ class BloodTransfusion extends Model
     protected $fillable = [
         'public_id',
         'patient_id',
-        'doctor_id',
-        'room_id',
         'insurance_id',
+        'room_id',
+        'doctor_id',
         'lab_number',
         'order_number',
         'relation_name',
@@ -28,12 +28,14 @@ class BloodTransfusion extends Model
         'status',
         'is_dct',
         'dct_value',
-        'is_approval_incompatible',
         'blood_quantity',
         'checkin_by_user_id',
         'finish_by_user_id',
         'archive_by_user_id',
         'deleted_by_user_id',
+        'canceled_by_user_id',
+        'cancel_reason',
+        'canceled_at',
     ];
 
     protected $hidden = [

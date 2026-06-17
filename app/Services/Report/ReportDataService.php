@@ -2,41 +2,25 @@
 
 namespace App\Services\Report;
 
+use App\Enums\BloodTransfusionStatus;
+use App\Models\BloodTransfusion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Yajra\DataTables\Facades\DataTables;
 
 class ReportDataService
 {
     public function datatable(string $report, Request $request)
     {
-        $modules = $this->getReportConfig($report);
-        $modelClass = $modules['model'];
-        $query = $this->getReportData($report);
-
-        $this->applyDateFilter($query, $request);
-        $this->applyReportFilter($query, $report, $request);
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $columns = $this->getSearchableColumns($modelClass);
-
-            $query->where(function ($q) use ($search, $columns) {
-                foreach ($columns as $column) {
-                    $q->orWhere($column, 'like', "%{$search}%");
-                }
-            });
+        switch ($report) {
+            case 'blood-usage':
+                return $this->datatableBloodUsage($request);
+            default:
+                abort(404, "Report '{$report}' not found.");
         }
-
-        if ($request->filled('sort_by')) {
-            $query->orderBy(
-                $request->sort_by,
-                $request->sort_dir ?? 'asc'
-            );
-        }
-
-        return $query->paginate($request->filled('per_page', 50));
     }
 
     // ---------- Helper ----------
@@ -50,48 +34,28 @@ class ReportDataService
     {
         return (new $model)->getFillable();
     }
-    private function getReportData(?string $report): Builder
-    {
-        switch ($report) {
-            case 'blood-usage':
-                return '';
-                break;
-            case 'blood-expire':
-                return '';
-                break;
-            case 'blood-request':
-                return '';
-                break;
-            default:
-                abort(404, "Report query for '{$report}' is not defined.");
-        }
-    }
-    protected function applyDateFilter(Builder $query, Request $request): void
+    protected function getDateRange(Request $request): array
     {
         $start = $request->start_date;
         $end = $request->end_date;
-        $dateField = $request->input('date_field', 'created_at');
-
         if (!$start || !$end) {
-            return;
+            return [
+                Carbon::today()->startOfDay(),
+                Carbon::today()->endOfDay(),
+            ];
         }
 
         try {
-            $startDate = Carbon::createFromFormat('d-m-Y', $start)->startOfDay();
-            $endDate = Carbon::createFromFormat('d-m-Y', $end)->endOfDay();
-
-            $table = $query->getModel()->getTable();
-
-            // Fallback ke created_at jika kolom tidak ada
-            if (!Schema::hasColumn($table, $dateField)) {
-                $dateField = 'created_at';
-            }
-
-            if (Schema::hasColumn($table, $dateField)) {
-                $query->whereBetween($dateField, [$startDate, $endDate]);
-            }
+            return [
+                Carbon::createFromFormat('d-m-Y', $start)->startOfDay(),
+                Carbon::createFromFormat('d-m-Y', $end)->endOfDay(),
+            ];
         } catch (\Exception $e) {
-            logger()->error('Date filter error: ' . $e->getMessage());
+            logger()->error('Date range error: ' . $e->getMessage());
+            return [
+                Carbon::today()->startOfDay(),
+                Carbon::today()->endOfDay(),
+            ];
         }
     }
     protected function applyReportFilter(Builder $query, string $report, Request $request): void
@@ -111,30 +75,58 @@ class ReportDataService
                     $query->where('patient_blood_group', $request->blood_group);
                 }
                 break;
-
-            case 'blood-expire':
-                if ($request->filled('component_id')) {
-                    $query->where('component_id', $request->component_id);
-                }
-                if ($request->filled('blood_group')) {
-                    $query->where('blood_group', $request->blood_group);
-                }
-                if ($request->filled('status')) {
-                    $query->where('status', $request->status);
-                }
-                break;
-
-            case 'blood-request':
-                if ($request->filled('status')) {
-                    $query->where('status', $request->status);
-                }
-                if ($request->filled('room_id')) {
-                    $query->where('room_id', $request->room_id);
-                }
-                if ($request->filled('blood_group')) {
-                    $query->where('blood_group', $request->blood_group);
-                }
-                break;
+            default:
+                null;
         }
+    }
+
+    // ---------- Datatable Blood Usage ----------
+    private function datatableBloodUsage(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+
+        $transfusions = BloodTransfusion::withoutTrashed()
+            ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED->value)
+            ->whereBetween('blood_transfusions.created_at', [$startDate, $endDate])
+            ->with(['room', 'details.bloodPack'])
+            ->get();
+
+        $grouped = $transfusions
+            ->flatMap(function ($transfusion) {
+                return $transfusion->details->map(function ($detail) use ($transfusion) {
+                    return [
+                        'room_id' => $transfusion->room_id,
+                        'room_name' => $transfusion->room?->name,
+                        'blood_pack_id' => $detail->blood_pack_id,
+                        'blood_component' => $detail->bloodPack?->blood_component,
+                        'blood_group' => $detail->bloodPack?->blood_group,
+                        'blood_rhesus' => $detail->bloodPack?->blood_rhesus,
+                    ];
+                });
+            })
+            ->groupBy(fn($row) => $row['room_id'] . '_' . $row['blood_pack_id'])
+            ->map(function ($rows) {
+                $first = $rows->first();
+                return [
+                    'room_id' => $first['room_id'],
+                    'room_name' => $first['room_name'],
+                    'blood_pack_id' => $first['blood_pack_id'],
+                    'blood_component' => $first['blood_component'],
+                    'blood_group' => $first['blood_group'],
+                    'blood_rhesus' => $first['blood_rhesus'],
+                    'total_per_room_per_pack' => $rows->count(),
+                ];
+            })
+            ->values();
+        $roomTotals = $grouped
+            ->groupBy('room_id')
+            ->map(fn($rows) => $rows->sum('total_per_room_per_pack'));
+
+        $data = $grouped->map(function ($row) use ($roomTotals) {
+            $row['room_grand_total'] = $roomTotals[$row['room_id']] ?? 0;
+            return $row;
+        });
+
+        return DataTables::of($data)->toJson();
     }
 }

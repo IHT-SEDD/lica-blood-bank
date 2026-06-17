@@ -1,4 +1,4 @@
-@extends('layouts.vertical', ['title' => "Report $report"])
+@extends('layouts.vertical', ['title' => "Laporan $report"])
 
 @section('styles')
 @endsection
@@ -7,7 +7,7 @@
 <div class="row py-4">
  {{-- Title --}}
  <div class="d-flex justify-content-between align-items-start mb-1">
-  <h1 class="fw-bold text-uppercase">REPORT {{ $report }}</h1>
+  <h1 class="fw-bold text-uppercase">Laporan {{ $report }}</h1>
  </div>
 
  {{-- Datatable :begin --}}
@@ -16,7 +16,7 @@
   <div class=" card">
    {{-- Card Header :begin --}}
    <div class="card-header justify-content-between align-items-center">
-    <h5 class="card-title text-capitalize mb-0">{{ __('List Data of :report', ['report' => $report]) }}</h5>
+    <h5 class="card-title text-capitalize mb-0">{{ __('List Data :report', ['report' => $report]) }}</h5>
     @yield('datatable-header')
    </div>
    {{-- Card Header :end --}}

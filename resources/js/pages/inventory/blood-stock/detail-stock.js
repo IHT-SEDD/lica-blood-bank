@@ -14,7 +14,7 @@ import {
 import { BloodStockLogConfigTL } from "../../../utility/config/timeline-config";
 import { TableActionHandler } from "./detail/table-action";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
-import { BloodStatus } from "../../../utility/config/status-config";
+import { BloodStockStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 // Filter datatable
@@ -131,7 +131,7 @@ function BloodStockDataTable() {
                         Dihapus
                     </span>`;
                 }
-                return BloodStatus(row.blood_status);
+                return BloodStockStatus(row.blood_status);
             },
         },
         {

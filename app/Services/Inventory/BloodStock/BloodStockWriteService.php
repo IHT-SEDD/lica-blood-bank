@@ -4,11 +4,14 @@ namespace App\Services\Inventory\BloodStock;
 
 use App\Enums\BloodStockLogActivityStatus;
 use App\Enums\BloodStockStatus;
+use App\Enums\BloodTransfusionLogActivityStatus;
+use App\Enums\BloodTransfusionStatus;
 use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
+use App\Models\BloodTransfusionLogActivity;
 use App\Models\OrderBlood;
 use App\Models\StorageRack;
 use App\Models\StorageRackBlood;
@@ -351,101 +354,162 @@ class BloodStockWriteService
   DB::beginTransaction();
   try {
    $user = Auth::user();
+   $isCancelTransaction = filter_var($request->is_cancel_transaction, FILTER_VALIDATE_BOOLEAN);
 
+   // dd($request->all());
+   // --- Validasi apakah labu darah ada di sistem atau tidak
    $oldBloodStock = BloodStock::where('public_id', $id)->first();
    if (!$oldBloodStock) {
     DB::rollBack();
     return response()->json(['message' => 'Data darah yang akan dikembalikan tidak ditemukan!'], 404);
    }
-   $bloodTransfusionID = BloodTransfusion::where('public_id', $request->blood_transfusion_id)->value('id');
-   if (!$bloodTransfusionID) {
+
+   // --- Validasi apakah blood transfusi ada atau tidak
+   $bloodTransfusionData = BloodTransfusion::where('public_id', $request->blood_transfusion_id)->first();
+   if (!$bloodTransfusionData) {
     DB::rollBack();
     return response()->json(['message' => 'Data ID permintaan darah tidak ditemukan!'], 404);
    }
-   $bloodTransfusionDetailData = BloodTransfusionDetail::where('blood_transfusion_id', $bloodTransfusionID)
+
+   // --- Validasi apakah blood transfusi detail ada atau tidak
+   $bloodTransfusionDetailData = BloodTransfusionDetail::where('blood_transfusion_id', $bloodTransfusionData->id)
+    ->where('blood_stock_id', $oldBloodStock->id)
     ->with(['bloodTransfusion', 'bloodTransfusion.patient'])
     ->get();
-   if (!$bloodTransfusionDetailData) {
+   if ($bloodTransfusionDetailData->isEmpty()) {
     DB::rollBack();
     return response()->json(['message' => 'Data detail permintaan darah tidak ditemukan!'], 404);
    }
-   $newBloodStock = BloodStock::where('public_id', $request->new_blood_stock_id)->with(['bloodPacks'])->first();
-   if (!$newBloodStock) {
-    DB::rollBack();
-    return response()->json(['message' => 'Data darah yang baru tidak ditemukan!'], 404);
+
+   // --- Validasi apakah labu darah pengganti ada atau tidak
+   $newBloodStock = null;
+   if (!$isCancelTransaction) {
+    $newBloodStock = BloodStock::where('public_id', $request->new_blood_stock_id)->with(['bloodPacks'])->first();
+    if (!$newBloodStock) {
+     DB::rollBack();
+     return response()->json(['message' => 'Data darah yang baru tidak ditemukan!'], 404);
+    }
+    if ($newBloodStock->blood_status !== BloodStockStatus::AVAILABLE) {
+     DB::rollBack();
+     return response()->json(['message' => 'Darah pengganti tidak tersedia atau sudah digunakan!'], 422);
+    }
    }
 
    $oldUsedAt = $oldBloodStock->used_at;
    $firstDetail = $bloodTransfusionDetailData->first();
    $patientName = $firstDetail?->bloodTransfusion?->patient?->name ?? null;
 
-   $oldBloodStock->update([
-    'blood_status' => BloodStockStatus::AVAILABLE,
-    'used_at' => null,
-   ]);
+   // --- Logic kondisi jika cancel transaksi
+   if ($isCancelTransaction) {
+    $relatedDetail = $bloodTransfusionDetailData->where('blood_stock_id', $oldBloodStock->id)->first();
+    $hasCrossmatch = !empty($relatedDetail?->crossmatch_result) || !empty($relatedDetail?->crossmatch_finish_at);
+    $bloodStatusOnCancel = $hasCrossmatch ? BloodStockStatus::USED : BloodStockStatus::AVAILABLE;
 
-   $bloodTransfusionDetailData->each(function ($detail) use ($newBloodStock) {
-    $detail->update([
-     'blood_stock_id' => $newBloodStock->id,
-     'component' => $newBloodStock->bloodPacks->blood_component ?? $detail->component,
+    $oldBloodStock->update([
+     'blood_status' => $bloodStatusOnCancel,
+     'used_at' => $hasCrossmatch ? $oldBloodStock->used_at : null,
     ]);
-   });
-
-   $newBloodStock->update([
-    'blood_status' => BloodStockStatus::TAKEN_OUT,
-    'used_at' => $oldUsedAt,
-   ]);
-
-   BloodStockLogActivity::create([
-    'blood_stock_public_id'  => $oldBloodStock->public_id,
-    'payload' => json_encode($oldBloodStock->fresh()->toArray()),
-    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-    'description' => generateBloodStockLogDescription(
-     BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-     $oldBloodStock->bag_number,
-     $user->username
-    ),
-    'created_by_user_name' => $user->name,
-    'timestamp' => now(),
-   ]);
-   BloodStockLogActivity::create([
-    'blood_stock_public_id'  => $newBloodStock->public_id,
-    'payload' => json_encode($newBloodStock->fresh()->toArray()),
-    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
-    'description' => generateBloodStockLogDescription(
-     BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
-     $newBloodStock->bag_number,
-     $user->username,
-     $patientName
-    ),
-    'created_by_user_name' => $user->name,
-    'timestamp' => now(),
-   ]);
+    $bloodTransfusionData->update([
+     'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CANCELED,
+     'canceled_by_user_id' => $user->id,
+     'cancel_reason' => $request->cancel_reason,
+     'canceled_at' => now(),
+    ]);
+    BloodTransfusionLogActivity::create([
+     'blood_transfusion_public_id' => $bloodTransfusionData->public_id,
+     'payload' => $bloodTransfusionData->toArray(),
+     'status' => BloodTransfusionLogActivityStatus::CANCELED,
+     'description' => generateBloodTransfusionLogDescription(
+      BloodTransfusionLogActivityStatus::CANCELED,
+      $this->generateDescription($bloodTransfusionData),
+      $request->cancel_reason,
+      Auth::user()->username,
+     ),
+     'created_by_user_name' => Auth::user()->name,
+     'timestamp' => now(),
+    ]);
+    BloodStockLogActivity::create([
+     'blood_stock_public_id' => $oldBloodStock->public_id,
+     'payload' => json_encode($oldBloodStock->fresh()->toArray()),
+     'status' => $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+     'description' => generateBloodStockLogDescription(
+      $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+      $oldBloodStock->bag_number,
+      $user->username,
+     ),
+     'created_by_user_name' => $user->name,
+     'timestamp' => now(),
+    ]);
+   } else {
+    // --- Logic kondisi jika bukan cancel transaksi (return & replace)
+    $oldBloodStock->update([
+     'blood_status' => BloodStockStatus::AVAILABLE,
+     'used_at' => null,
+    ]);
+    $bloodTransfusionDetailData->each(function ($detail) use ($newBloodStock) {
+     $detail->update([
+      'blood_stock_id' => $newBloodStock->id,
+      'component' => $newBloodStock->bloodPacks->blood_component ?? $detail->component,
+     ]);
+    });
+    $newBloodStock->update([
+     'blood_status' => BloodStockStatus::TAKEN_OUT,
+     'used_at' => $oldUsedAt,
+    ]);
+    // --- Log darah dikembalikan
+    BloodStockLogActivity::create([
+     'blood_stock_public_id'  => $oldBloodStock->public_id,
+     'payload' => json_encode($oldBloodStock->fresh()->toArray()),
+     'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+     'description' => generateBloodStockLogDescription(
+      BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+      $oldBloodStock->bag_number,
+      $user->username
+     ),
+     'created_by_user_name' => $user->name,
+     'timestamp' => now(),
+    ]);
+    // --- Log darah pengganti
+    BloodStockLogActivity::create([
+     'blood_stock_public_id'  => $newBloodStock->public_id,
+     'payload' => json_encode($newBloodStock->fresh()->toArray()),
+     'status' => BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
+     'description' => generateBloodStockLogDescription(
+      BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
+      $newBloodStock->bag_number,
+      $user->username,
+      $patientName
+     ),
+     'created_by_user_name' => $user->name,
+     'timestamp' => now(),
+    ]);
+   }
 
    DB::commit();
 
-   globalLogger('info', 'Blood stock returned to stock successfully!', [
-    'old_blood_stock' => $oldBloodStock->public_id,
-    'new_blood_stock' => $newBloodStock->public_id,
-    'returned_by' => $user->id,
-   ], 200, 'returnbloodstock');
-
+   globalLogger(
+    'info',
+    $isCancelTransaction ? 'Blood transaction cancelled successfully!' : 'Blood stock returned to stock successfully!',
+    ['old_blood_stock' => $oldBloodStock->public_id, 'new_blood_stock' => $newBloodStock?->public_id, 'is_cancel_transaction' => $isCancelTransaction, 'returned_by' => $user->id,],
+    200,
+    'returnbloodstock'
+   );
    return response()->json([
-    'message' => 'Data stok darah berhasil dikembalikan ke stock!',
+    'message' => $isCancelTransaction
+     ? 'Transaksi darah berhasil dibatalkan, dan darah berhasil dikembalikan ke stock!'
+     : 'Data stok darah berhasil dikembalikan ke stock!',
     'data' => [
      'old_blood_stock' => $oldBloodStock->fresh(),
-     'new_blood_stock' => $newBloodStock->fresh(),
+     'new_blood_stock' => $newBloodStock?->fresh(),
     ],
    ]);
   } catch (\Throwable $e) {
    DB::rollBack();
-
    globalLogger('error', 'Blood stock failed to return!', [
     'blood_stock_id' => $id,
     'error' => $e->getMessage(),
     'returned_by' => Auth::id(),
    ], 500, 'returnbloodstock');
-
    return response()->json([
     'message' => 'Data stok darah gagal dikembalikan ke stock!',
     'error' => $e->getMessage(),
@@ -453,7 +517,7 @@ class BloodStockWriteService
   }
  }
 
- // ---------- Fungsi untuk generate & simpan barcode, return path ----------
+ // ---------- HELPERS ----------
  private function resolveBarcodeLica(BloodStock $data): string
  {
   if (
@@ -485,5 +549,13 @@ class BloodStockWriteService
    ]);
 
   return Storage::disk('public')->path($folder . '/' . $filename);
+ }
+ private function generateDescription(BloodTransfusion $transfusion): string
+ {
+  return match (true) {
+   !empty($transfusion->order_number) => 'dengan no. order ' . $transfusion->order_number,
+   !empty($transfusion->lab_number) => 'dengan no. lab ' . $transfusion->lab_number,
+   default => 'dengan medrec pasien ' . $transfusion->patient->medrec,
+  };
  }
 }
