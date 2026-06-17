@@ -1,6 +1,6 @@
 <x-static-modal-layout id="confirmation_data_{{ $id ?? 'unknown' }}_modal" size="" title="{{ $title ?? 'Unknown' }}">
  <h4 class="fw-semibold">Apakah kamu yakin ingin
-  <span class="text-lowercase">{{ $action ?? 'Unknown' }}</span> untuk data ini?
+  <span class="text-lowercase">{{ $action ?? 'Unknown' }}</span> data ini?
  </h4>
  <p>Data yang kamu ingin <span class="text-lowercase">{{ $action ?? 'Unknown' }}</span>:
   <span id="confirm_data" class="text-capitalize fw-semibold text-muted"></span>

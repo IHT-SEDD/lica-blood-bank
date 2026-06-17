@@ -108,6 +108,20 @@ export function TransfusionBloodStatus(status) {
     }
 }
 
+// ---------- CROSSMATCH RESULT IN TRANSFUSION----------
+export function CrossmatchResult(result) {
+    const value = result?.value || result;
+
+    switch (value) {
+        case "Compatible":
+            return `<span class="badge badge-label text-bg-success">Compatible</span>`;
+        case "Incompatible":
+            return `<span class="badge badge-label text-bg-danger">Incompatible</span>`;
+        default:
+            return `<span class="badge badge-label text-bg-info">Belum Dilakukan</span>`;
+    }
+}
+
 // ---------- TRANSACTION ORDER STATUS ----------
 export function TransactionOrderStatus(status) {
     const value = status?.value || status;

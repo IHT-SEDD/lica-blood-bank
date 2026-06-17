@@ -1,7 +1,11 @@
-import { GlobalDeleteDataConfirmation } from "../../../app";
+import {
+    GlobalDataConfirmation,
+    GlobalDeleteDataConfirmation,
+} from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 let _deleteTransactionInitialized = false;
+let _archiveTransactionInitialized = false;
 
 // ---------- Validasi visual nomor darah ----------
 export function validateBloodNumber(inputVal, expectedBagNumber) {
@@ -600,4 +604,91 @@ export function initDeleteTransaction({
             notyf.error({ message: "Failed to delete data!" });
         }
     });
+}
+
+// ---------- Export: Archive Transaction ----------
+export function initArchiveTransaction({
+    reloadTable,
+    ActionArchiveSelector,
+    AttributeArchive,
+    ModalArchiveSelector,
+    ConfirmArchiveSelector,
+}) {
+    if (_archiveTransactionInitialized) return;
+    _archiveTransactionInitialized = true;
+
+    const getCsrfToken = () =>
+        document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content");
+
+    new GlobalDataConfirmation({
+        ButtonSelector: ActionArchiveSelector,
+        DataAttributeID: AttributeArchive,
+        UrlFetchData: (id) => `/blood-transfusion/${id}/`,
+        ModalConfirmID: ModalArchiveSelector,
+    });
+
+    const handleArchiveOpen = (e) => {
+        const { data } = e.detail;
+        if (!data) return;
+
+        const archivedDataEl = document.querySelector("#confirm_data");
+        if (archivedDataEl) {
+            archivedDataEl.textContent = `${data.blood_transfusion.lab_number ?? "-"} dengan nama ${data.patient_name}`;
+        }
+
+        const modalEl = document.getElementById(ModalArchiveSelector);
+        if (modalEl)
+            modalEl.dataset.targetId = data.blood_transfusion.public_id;
+    };
+
+    // ---------- Remove dulu sebelum pasang baru — cegah duplikasi ----------
+    document.removeEventListener("confirmation:open", handleArchiveOpen);
+    document.addEventListener("confirmation:open", handleArchiveOpen);
+
+    document.removeEventListener("click", handleConfirmArchiveClick);
+    document.addEventListener("click", handleConfirmArchiveClick);
+
+    async function handleConfirmArchiveClick(e) {
+        const btn = e.target.closest(ConfirmArchiveSelector);
+        if (!btn) return;
+
+        const modalEl = document.getElementById(ModalArchiveSelector);
+        const id = modalEl?.dataset.targetId;
+        if (!id) return;
+
+        showPageLoading();
+        try {
+            const response = await fetch(`/blood-transfusion/${id}/archive`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": getCsrfToken(),
+                },
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || "Failed to archive data!",
+                });
+                hidePageLoading();
+                return;
+            }
+
+            notyf.success({
+                message: result.message || "Data archived successfully!",
+            });
+
+            if (modalEl) bootstrap.Modal.getInstance(modalEl)?.hide();
+            if (modalEl) delete modalEl.dataset.targetId;
+            reloadTable();
+            hidePageLoading();
+        } catch (error) {
+            console.error(error);
+            notyf.error({ message: "Failed to archive data!" });
+            hidePageLoading();
+        }
+    }
 }
