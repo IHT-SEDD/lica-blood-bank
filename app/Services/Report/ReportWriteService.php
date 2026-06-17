@@ -7,6 +7,7 @@ use App\Enums\BloodGroup;
 use App\Enums\BloodTransfusionStatus;
 use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
 use App\Models\BloodTransfusion;
+use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -42,8 +43,16 @@ class ReportWriteService
             })
             ->get();
 
+        $paramFilenameExcel = [];
+        if ($request->room_public_id) {
+            $roomName = Room::where('public_id', $request->room_public_id)->value('name');
+            $paramFilenameExcel = [
+                'room_name' => $roomName
+            ];
+        }
+
         $reportData  = $this->prepareBloodUsageData($transfusions, $startDate);
-        $fileName = $this->buildFileName($startDate, $endDate, $report);
+        $fileName = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
         $storagePath = 'report/blood_usage/' . $fileName;
 
         Excel::store(new ReportBloodUsageExport($reportData), $storagePath, 'public');
@@ -129,10 +138,13 @@ class ReportWriteService
             return [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()];
         }
     }
-    protected function buildFileName(Carbon $startDate, Carbon $endDate, string $report): string
+    protected function buildFileName(Carbon $startDate, Carbon $endDate, string $report, array $params = []): string
     {
         switch ($report) {
             case 'blood-usage':
+                if (!empty($params['room_name'])) {
+                    return 'Laporan Penggunaan Darah - ' . $params['room_name'] . ' - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
+                }
                 return 'Laporan Penggunaan Darah - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
