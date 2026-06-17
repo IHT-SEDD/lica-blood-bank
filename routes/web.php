@@ -42,6 +42,11 @@ Route::middleware('auth')->group(function () {
             // ---------- Page ----------
             Route::get('{report}', 'index')->where('report', implode('|', array_keys(config('report'))))->name('index');
             Route::get('{report}/data', 'datatable')->where('report', implode('|', array_keys(config('report'))))->name('datatable');
+
+            // ---------- Export ----------
+            Route::prefix('export')->name('export.')->group(function () {
+                Route::get('{report}/excel', 'exportExcel')->where('report', implode('|', array_keys(config('report'))))->name('excel');
+            });
         });
 
     // --------------------------------------------------------------------------

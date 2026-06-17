@@ -28,28 +28,32 @@ class BackupLogCommand extends Command
     public function handle()
     {
         $logPath = storage_path('logs');
-        $destination = $this->ask('Masukkan lokasi backup');
-
-        if (!File::exists($destination)) {
-            File::makeDirectory($destination, 0755, true);
-        }
-
-        $files = File::files($logPath);
+        $destination = $this->ask('Masukkan lokasi penyimpanan backup');
+        $timestamp = now()->format('Ymd_His');
+        $backupRoot = $destination . DIRECTORY_SEPARATOR . "LICA BLOOD BANK_{$timestamp} - LOG BACKUP";
+        File::ensureDirectoryExists($backupRoot);
 
         $backupCount = 0;
 
-        foreach ($files as $file) {
-            if ($file->getExtension() === 'log') {
+        foreach (File::directories($logPath) as $directory) {
+            $folderName = basename($directory);
+            $backupFolder = $backupRoot . DIRECTORY_SEPARATOR . $folderName;
+            File::ensureDirectoryExists($backupFolder);
+
+            foreach (File::files($directory) as $file) {
+                if ($file->getExtension() !== 'log') {
+                    continue;
+                }
                 $fileName = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-                $newFileName = $fileName . '_' . Carbon::now()->format('Ymd_His') . '.log';
-                File::copy(
-                    $file->getRealPath(),
-                    $destination . DIRECTORY_SEPARATOR . $newFileName
-                );
+                $newFileName = $fileName . "_{$timestamp}.log";
+
+                File::copy($file->getRealPath(), $backupFolder . DIRECTORY_SEPARATOR . $newFileName);
+
                 $backupCount++;
             }
         }
-
+        
         $this->info("Berhasil backup {$backupCount} file log.");
+        $this->info("Lokasi backup: {$backupRoot}");
     }
 }
