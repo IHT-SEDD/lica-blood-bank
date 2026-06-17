@@ -426,44 +426,48 @@ function SendResultToSIMRS() {
             '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
         this.disabled = true;
 
+        showPageLoading();
         try {
-            const response = await fetch(`/blood-transfusion/${id}/complete`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": document
-                        .querySelector('meta[name="csrf-token"]')
-                        .getAttribute("content"),
+            const response = await fetch(
+                `/blood-transfusion/${id}/send-result`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
                 },
-            });
+            );
             const result = await response.json();
 
             if (!response.ok) {
                 notyf.error({
-                    message: result.message || "Failed to complete request!",
+                    message: result.message || "Failed to send result!",
                 });
+                hidePageLoading();
             } else {
                 notyf.success({
                     message:
-                        result.message ||
-                        "Blood Request Completed Successfully!",
+                        result.message || "Send result to SIMRS successfully!",
                 });
                 this.classList.add("d-none");
-                if (
-                    listRequestTableInstance &&
-                    $.fn.DataTable.isDataTable("#list-request-table")
-                ) {
-                    listRequestTableInstance.instance.ajax.reload(null, false);
+                if (listRequestTableInstance) {
+                    listRequestTableInstance.reload();
                 }
+                hidePageLoading();
             }
         } catch (error) {
             console.error(error);
             notyf.error({
-                message: error.message || "Failed to complete request!",
+                message: error.message || "Failed to send result!",
             });
+            hidePageLoading();
         } finally {
             this.innerHTML = originalText;
             this.disabled = false;
+            hidePageLoading();
         }
     });
 }
@@ -885,6 +889,7 @@ document.addEventListener("DOMContentLoaded", function () {
         printType: "nota",
     });
     CompleteTransaction();
+    SendResultToSIMRS();
     initDoneButton();
     initBagRequestActionButtons();
     initDeleteTransaction({

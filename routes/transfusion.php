@@ -68,6 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::post('checkin', 'checkin')->name('checkin');
         Route::post('archive', 'archiveBloodTransfusion')->name('archive');
         Route::post('complete', 'completeTransaction')->name('complete');
+        Route::post('send-result', 'sendResultToSIMRS')->name('send-result');
         Route::get('bag-requests', 'datatableListBagRequest')->name('bag-requests');
         Route::get('tests', 'datatableListTest')->name('tests');
         Route::patch('update-blood-packs', 'updateBloodPacks')->name('update-blood-packs');

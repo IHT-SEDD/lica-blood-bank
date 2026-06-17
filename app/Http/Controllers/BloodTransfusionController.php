@@ -37,7 +37,7 @@ class BloodTransfusionController extends Controller
         protected BloodTransfusionAddService $addService,
         protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
         protected BloodTransfusionPrintService $printService,
-        protected BloodTransfusionWriteService $writeService,
+        private readonly BloodTransfusionWriteService $writeService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -269,6 +269,46 @@ class BloodTransfusionController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to complete blood request.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Send Result to SIMRS ----------
+    public function sendResultToSIMRS(string $id)
+    {
+        try {
+            $transfusion = \App\Models\BloodTransfusion::where('public_id', $id)->first();
+            if (!$transfusion) {
+                return response()->json([
+                    'message' => 'Transaksi permintaan darah tidak ditemukan.',
+                ], 404);
+            }
+            if (!$transfusion->order_number) {
+                return response()->json([
+                    'message' => 'Transaksi tidak memiliki nomor order.',
+                ], 404);
+            }
+
+            $apiController = app(\App\Http\Controllers\API\BloodTransfusionApiController::class);
+            $apiResponse = $apiController->sendResult($transfusion->order_number);
+            if ($apiResponse->getStatusCode() !== 200) {
+                return response()->json([
+                    'message' => $apiResponse->getData(true)['message'] ?? 'Gagal mengirim hasil ke SIMRS',
+                ], $apiResponse->getStatusCode());
+            }
+
+            return response()->json([
+                'message' => $apiResponse->getData(true)['message'] ?? 'Mengirim hasil ke SIMRS berhasil!',
+                'data' => $apiResponse->getData(true)['data'] ?? null,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Gagal mengirim hasil ke SIMRS',
                 'error' => $e->getMessage(),
             ], 500);
         }

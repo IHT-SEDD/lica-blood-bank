@@ -87,7 +87,7 @@ class BloodTransfusionApiController extends Controller
         operationId: 'sendResult',
         title: 'Send Result to SIMRS',
         description: 'Send Blood Transfusion Result to SIMRS',
-        method: 'GET'
+        method: 'POST'
     )]
     public function sendResult(string $orderNumber): JsonResponse
     {
