@@ -278,6 +278,11 @@ return [
             'path' => storage_path('logs/blood-transfusion/complete-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
+        'archivebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/archive-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
         'incompatibleresult' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-transfusion/incompatible-blood-transfusion-data.log'),

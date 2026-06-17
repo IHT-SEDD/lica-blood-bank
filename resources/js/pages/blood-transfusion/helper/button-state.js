@@ -4,6 +4,7 @@ export const SelectorBtnCrossmatchSelesai = "btn-test-done";
 export const SelectorBtnPrintNota = "btn-print-nota";
 export const SelectorBtnPrintResult = "btn-print-result";
 export const SelectorBtnComplete = "btn-complete-transaction";
+export const SelectorBtnSendResult = "btn-send-result";
 export const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
 export const SelectorBtnPrintBarcodePerBlood = "btn-print-barcode-per-blood";
 export const SelectorBtnDeletePerBlood = "btn-delete-per-blood";
@@ -22,6 +23,8 @@ export const SelectorBtnEditBloodPack = "btn-edit-blood-pack";
 export const getCheckinBtn = () => document.getElementById(SelectorBtnCheckin);
 export const getCompleteBtn = () =>
     document.getElementById(SelectorBtnComplete);
+export const getSendResultBtn = () =>
+    document.getElementById(SelectorBtnSendResult);
 export const getCrossmatchSelesaiBtn = () =>
     document.getElementById(SelectorBtnCrossmatchSelesai);
 export const getPrintNotaBtn = () =>
@@ -114,7 +117,7 @@ export function getPatientDetailButtonConfig(
             action: "show",
             conditions: () => !hasLabNumber && !isCanceled,
         },
-        // btn-complete-transaction: tampil jika belum complete & sudah ada lab number
+        // btn-complete-transaction
         {
             selector: SelectorBtnComplete,
             action: "hide",
@@ -127,6 +130,22 @@ export function getPatientDetailButtonConfig(
         },
         {
             selector: SelectorBtnComplete,
+            action: "disable",
+            conditions: () => isCanceled,
+        },
+        // btn-send-result
+        {
+            selector: SelectorBtnSendResult,
+            action: "hide",
+            conditions: () => !isCompleted || !hasLabNumber || isCanceled,
+        },
+        {
+            selector: SelectorBtnSendResult,
+            action: "show",
+            conditions: () => isCompleted && hasLabNumber && !isCanceled,
+        },
+        {
+            selector: SelectorBtnSendResult,
             action: "disable",
             conditions: () => isCanceled,
         },
@@ -232,6 +251,11 @@ export function applyBagListButtonState(
     const btnComplete = document.getElementById(SelectorBtnComplete);
     if (btnComplete) {
         btnComplete.disabled =
+            !allHaveCrossmatch || !bloodReleased || hasUnapprovedIncompatible;
+    }
+    const btnSendResult = document.getElementById(SelectorBtnSendResult);
+    if (btnSendResult) {
+        btnSendResult.disabled =
             !allHaveCrossmatch || !bloodReleased || hasUnapprovedIncompatible;
     }
 

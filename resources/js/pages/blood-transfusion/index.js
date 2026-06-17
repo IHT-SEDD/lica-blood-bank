@@ -21,6 +21,7 @@ import {
     initReleaseBloodPack,
     initReleaseAllBloodPack,
     initDeleteTransaction,
+    initArchiveTransaction,
 } from "./helper/action-helper";
 import {
     initPrintIncompatibleLetter,
@@ -50,6 +51,7 @@ import {
     SelectorBtnPrintResultPerBlood,
     SelectorBtnPrintBarcodePerBlood,
     SelectorBtnDeletePerBlood,
+    getSendResultBtn,
 } from "./helper/button-state";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
@@ -61,12 +63,17 @@ const DateFilterSelector = ".blood-transfusion-date-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
 const LogDataURL = "/blood-transfusion/detail/log";
 
-const DeleteTransactionURL = "/blood-transfusion/detail/data";
-const DeleteTransactionGetDataURL = "/blood-transfusion/detail/get-data";
 const ModalDeleteTransactionSelector = "delete_data_blood_transfusion_modal";
 const ActionDeleteTransactionSelector = ".btn-delete-blood-transfusion";
 const AttributeDeleteTransaction = "deleteId";
 const ConfirmDeleteTransactionSelector = "#confirm_delete";
+
+const ModalArchiveTransactionSelector =
+    "confirmation_data_archive_blood_transfusion_modal";
+const ActionArchiveTransactionSelector = ".btn-archive-blood-transfusion";
+const AttributeArchiveTransaction = "archiveId";
+const ConfirmArchiveTransactionSelector = "#confirm_action";
+
 const csrfToken = document
     .querySelector('meta[name="csrf-token"]')
     .getAttribute("content");
@@ -160,6 +167,8 @@ export function updatePatientDetailUI(data) {
             if (hasLabNumber) {
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
+                const BTN_SEND_RESULT = getSendResultBtn();
+                if (BTN_SEND_RESULT) BTN_SEND_RESULT.dataset.id = d.public_id;
                 const BTN_PRINT_NOTA = getPrintNotaBtn();
                 if (BTN_PRINT_NOTA) BTN_PRINT_NOTA.dataset.id = d.public_id;
             }
@@ -216,7 +225,11 @@ function initPatientDetail() {
     $(document)
         .off("click", "#list-request-table tbody tr")
         .on("click", "#list-request-table tbody tr", function (e) {
-            if ($(e.target).closest(".dropdown").length > 0) return;
+            if (
+                $(e.target).closest(".dropdown, select, button, .ts-wrapper")
+                    .length > 0
+            )
+                return;
             if (!listRequestTableInstance) return;
             const data = listRequestTableInstance.getRowData(this);
             const lab_number = data.lab_number;
@@ -391,6 +404,70 @@ function CompleteTransaction() {
         } finally {
             this.innerHTML = originalText;
             this.disabled = false;
+        }
+    });
+}
+
+// ---------- Handle Send Result ----------
+function SendResultToSIMRS() {
+    const BTN_SEND_RESULT = getSendResultBtn();
+    if (!BTN_SEND_RESULT) return;
+
+    const sendResultNewBtn = BTN_SEND_RESULT.cloneNode(true);
+    BTN_SEND_RESULT.parentNode.replaceChild(sendResultNewBtn, BTN_SEND_RESULT);
+
+    sendResultNewBtn.addEventListener("click", async function () {
+        const id = this.dataset.id;
+        if (!id) return;
+
+        // Prevent multiple clicks
+        const originalText = this.innerHTML;
+        this.innerHTML =
+            '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+        this.disabled = true;
+
+        showPageLoading();
+        try {
+            const response = await fetch(
+                `/blood-transfusion/${id}/send-result`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="csrf-token"]')
+                            .getAttribute("content"),
+                    },
+                },
+            );
+            const result = await response.json();
+
+            if (!response.ok) {
+                notyf.error({
+                    message: result.message || "Failed to send result!",
+                });
+                hidePageLoading();
+            } else {
+                notyf.success({
+                    message:
+                        result.message || "Send result to SIMRS successfully!",
+                });
+                this.classList.add("d-none");
+                if (listRequestTableInstance) {
+                    listRequestTableInstance.reload();
+                }
+                hidePageLoading();
+            }
+        } catch (error) {
+            console.error(error);
+            notyf.error({
+                message: error.message || "Failed to send result!",
+            });
+            hidePageLoading();
+        } finally {
+            this.innerHTML = originalText;
+            this.disabled = false;
+            hidePageLoading();
         }
     });
 }
@@ -812,21 +889,30 @@ document.addEventListener("DOMContentLoaded", function () {
         printType: "nota",
     });
     CompleteTransaction();
+    SendResultToSIMRS();
     initDoneButton();
     initBagRequestActionButtons();
     initDeleteTransaction({
         reloadTable: () => {
-            if (
-                listRequestTableInstance &&
-                $.fn.DataTable.isDataTable("#list-request-table")
-            ) {
-                listRequestTableInstance.instance.ajax.reload(null, false);
+            if (listRequestTableInstance) {
+                listRequestTableInstance.reload();
             }
         },
         ActionDeleteSelector: ActionDeleteTransactionSelector,
         AttributeDelete: AttributeDeleteTransaction,
         ModalDeleteSelector: ModalDeleteTransactionSelector,
         ConfirmDeleteSelector: ConfirmDeleteTransactionSelector,
+    });
+    initArchiveTransaction({
+        reloadTable: () => {
+            if (listRequestTableInstance) {
+                listRequestTableInstance.reload();
+            }
+        },
+        ActionArchiveSelector: ActionArchiveTransactionSelector,
+        AttributeArchive: AttributeArchiveTransaction,
+        ModalArchiveSelector: ModalArchiveTransactionSelector,
+        ConfirmArchiveSelector: ConfirmArchiveTransactionSelector,
     });
 
     // Form edit

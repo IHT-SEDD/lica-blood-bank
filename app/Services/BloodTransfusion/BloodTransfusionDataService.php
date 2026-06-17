@@ -39,7 +39,8 @@ class BloodTransfusionDataService
     public function bloodRequestTable(Request $request): JsonResponse
     {
         $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
-            ->withoutTrashed();
+            ->withoutTrashed()
+            ->whereNull('archived_at');
         $this->applyDateRangeFilter($query, $request->input('date_range'));
 
         return DataTables::eloquent($query)
@@ -73,13 +74,12 @@ class BloodTransfusionDataService
             })
             ->toJson();
     }
-
     // ---------- Fungsi Tabel Blood Request Archive ----------
     public function bloodRequestTableArchive(Request $request): JsonResponse
     {
         $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
             ->withoutTrashed()->whereNotNull('archived_at');
-        $this->applyDateRangeFilter($query, $request->input('date_range'));
+        $this->applyArchiveDateRangeFilter($query, $request->input('date_range'));
 
         return DataTables::eloquent($query)
             ->filter(function ($query) use ($request) {
@@ -114,6 +114,25 @@ class BloodTransfusionDataService
     public function listBagRequestTable(Request $request, string $id): JsonResponse
     {
         $transfusion = BloodTransfusion::where('public_id', $id)->first();
+        if (!$transfusion) {
+            return DataTables::of(collect())->toJson();
+        }
+
+        $query = BloodTransfusionDetail::with(['bloodPack', 'bloodStock'])
+            ->where('blood_transfusion_id', $transfusion->id);
+
+        return DataTables::eloquent($query)
+            ->addColumn('row_data', function ($detail) use ($transfusion) {
+                return $this->mapBagRequestRow($detail, $transfusion);
+            })
+            ->toJson();
+    }
+    // ---------- Fungsi Tabel List Archive Bag Request ----------
+    public function listArchiveBagRequestTable(Request $request): JsonResponse
+    {
+        $transfusionPublicID = $request->input('transfusion_public_id');
+
+        $transfusion = BloodTransfusion::where('public_id', $transfusionPublicID)->first();
         if (!$transfusion) {
             return DataTables::of(collect())->toJson();
         }
@@ -232,6 +251,69 @@ class BloodTransfusionDataService
         return DataTables::of($rows)->with(['result_options' => ResultTest::toSelect()])
             ->toJson();
     }
+    // ---------- Fungsi Tabel Archive Test ----------
+    public function listArchiveTable(Request $request): JsonResponse
+    {
+        $detailPublicId = $request->input('transfusion_detail_public_id');
+        $transfusionPublicID = $request->input('transfusion_public_id');
+
+        $transfusion = BloodTransfusion::where('public_id', $transfusionPublicID)
+            ->whereNull('deleted_at')
+            ->first();
+        if (!$transfusion) {
+            return DataTables::of([])->toJson();
+        }
+
+        $detailQuery = BloodTransfusionDetail::withoutTrashed()
+            ->with([
+                'bloodPack:id,public_id,blood_group,blood_rhesus,blood_component',
+                'bloodTransfusionDetailTests.test:id,name',
+                'bloodStock:id,bag_number',
+                'bloodTransfusionDetailTests.resultByUser:id,name',
+                'bloodTransfusionDetailTests.verifiedByUser:id,name',
+                'bloodTransfusionDetailTests.validatedByUser:id,name',
+            ])
+            ->where('blood_transfusion_id', $transfusion->id);
+        if ($detailPublicId) {
+            $detailQuery->where('public_id', $detailPublicId);
+        }
+
+        $rows = [];
+        foreach ($detailQuery->get() as $detail) {
+            $tests = $detail->bloodTransfusionDetailTests ?? collect();
+            if ($tests->isEmpty()) {
+                $rows[] = [
+                    'detail_test_public_id' => null,
+                    'component' => $detail->component,
+                    'bag_number' => '-',
+                    'test_name' => '-',
+                    'result_value' => null,
+                    'verified' => false,
+                    'validated' => false,
+                    'bag_released' => false,
+                    'result_by_user_name' => null,
+                ];
+                continue;
+            }
+            foreach ($tests as $detailTest) {
+                $rows[] = [
+                    'detail_test_public_id' => $detailTest->public_id,
+                    'component' => $detail->component,
+                    'test_name' => $detailTest->test?->name ?? '-',
+                    'bag_number' => $detail->bloodStock?->bag_number ?? '-',
+                    'result_value' => $detailTest->result,
+                    'verified' => !empty($detailTest->verified_at)
+                        && !empty($detailTest->verified_by_user_id),
+                    'validated' => !empty($detailTest->validated_at)
+                        && !empty($detailTest->validated_by_user_id),
+                    'bag_released' => $detail->blood_release_status,
+                    'result_by_user_name' => $detailTest->resultByUser->name ?? '-',
+                ];
+            }
+        }
+
+        return DataTables::of($rows)->toJson();
+    }
 
     // ---------- Fungsi untuk mengambil data log berdasarkan id ----------
     public function getDataLogById(string $id)
@@ -278,7 +360,7 @@ class BloodTransfusionDataService
     private function applyDateRangeFilter(Builder $query, ?string $dateRange): void
     {
         if (empty($dateRange)) {
-            $query->whereDate('blood_request_at', Carbon::now()->format('Y-m-d'));
+            $query->whereDate('created_at', Carbon::now()->format('Y-m-d'));
             return;
         }
 
@@ -288,10 +370,32 @@ class BloodTransfusionDataService
             if (count($dates) === 2) {
                 $start = Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
                 $end   = Carbon::createFromFormat('d-m-Y', trim($dates[1]))->endOfDay();
-                $query->whereBetween('blood_request_at', [$start, $end]);
+                $query->whereBetween('created_at', [$start, $end]);
             } elseif (count($dates) === 1) {
                 $date = Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
-                $query->whereDate('blood_request_at', $date);
+                $query->whereDate('created_at', $date);
+            }
+        } catch (\Exception) {
+            // Parsing gagal, filter tanggal tidak diterapkan
+        }
+    }
+    private function applyArchiveDateRangeFilter(Builder $query, ?string $dateRange): void
+    {
+        if (empty($dateRange)) {
+            $query->whereDate('archived_at', Carbon::now()->format('Y-m-d'));
+            return;
+        }
+
+        try {
+            $dates = explode(' to ', $dateRange);
+
+            if (count($dates) === 2) {
+                $start = Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
+                $end   = Carbon::createFromFormat('d-m-Y', trim($dates[1]))->endOfDay();
+                $query->whereBetween('archived_at', [$start, $end]);
+            } elseif (count($dates) === 1) {
+                $date = Carbon::createFromFormat('d-m-Y', trim($dates[0]))->startOfDay();
+                $query->whereDate('archived_at', $date);
             }
         } catch (\Exception) {
             // Parsing gagal, filter tanggal tidak diterapkan
