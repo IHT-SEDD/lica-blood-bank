@@ -103,6 +103,13 @@
             <i class="ti ti-flag-check fs-lg me-1"></i> Transaksi Selesai
           </button>
 
+          {{-- Send To SIMRS button --}}
+          <button data-id="" class="btn btn-sm btn-secondary d-none fw-medium" style="font-size: 11.9px;"
+            id="btn-send-result" data-bs-title="Send Result to SIMRS" data-bs-toggle="tooltip"
+            data-bs-trigger="hover">
+            <i class="ti ti-cube-send fs-lg me-1"></i> Kirim Hasil
+          </button>
+
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>
@@ -261,6 +268,8 @@
 @include('pages.blood-transfusion.partials.edit-blood-pack-modal')
 @include('pages.blood-transfusion.partials.accept-incompatible-blood-modal')
 @include('utils.delete-data-modal', ['id'=> 'blood_transfusion', 'title' => 'Permintaan Darah'])
+@include('utils.confirmation-data-modal', ['id'=> 'archive_blood_transfusion', 'title' => 'Konfirmasi Arsip Permintaan
+Darah', 'action' => 'arsip'])
 @include('pages.blood-transfusion.partials.blood-release-modal')
 @include('pages.blood-transfusion.partials.blood-release-all-modal')
 @include('pages.blood-transfusion.partials.update-blood-modal')

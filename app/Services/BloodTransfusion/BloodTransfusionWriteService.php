@@ -94,7 +94,7 @@ class BloodTransfusionWriteService
         }
     }
 
-    // ---------- Fungsi Hold Blood Pack ----------
+    // ---------- Fungsi finish transaction ----------
     public function completeTransaction(string $publicId): void
     {
         try {
@@ -145,6 +145,59 @@ class BloodTransfusionWriteService
                 'public_id' => $publicId,
                 'error' => $e->getMessage(),
             ], 500, 'completebloodtransfusion');
+            throw $e;
+        }
+    }
+
+    // ---------- Fungsi archive transaction ----------
+    public function archiveTransaction(string $publicId): void
+    {
+        try {
+            DB::transaction(function () use ($publicId) {
+                $transfusion = BloodTransfusion::where('public_id', $publicId)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+                if ($transfusion->archived_at) {
+                    throw new \RuntimeException('Transaksi ini sudah diarsipkan!');
+                }
+
+                $lock = Cache::lock('archive_transaction', 10);
+                if (!$lock->get()) {
+                    throw new \RuntimeException('Sistem sedang melakukan permintaan anda, harap menunggu!');
+                }
+
+                try {
+                    $transfusion->update([
+                        'archived_at' => now(),
+                        'archive_by_user_id' => Auth::id(),
+                    ]);
+
+                    BloodTransfusionLogActivity::create([
+                        'blood_transfusion_public_id' => $transfusion->public_id,
+                        'payload' => $transfusion,
+                        'status' => BloodTransfusionLogActivityStatus::ARCHIVED,
+                        'description' => generateBloodTransfusionLogDescription(
+                            BloodTransfusionLogActivityStatus::ARCHIVED,
+                            $this->generateDescription($transfusion),
+                            Auth::user()->username
+                        ),
+                        'created_by_user_name' => Auth::user()->name,
+                        'timestamp' => now(),
+                    ]);
+
+                    globalLogger('info', 'Blood Transfusion Archived Successfully!', [
+                        'id' => $transfusion->public_id,
+                        'payload' => $transfusion,
+                    ], 200, 'archivebloodtransfusion');
+                } finally {
+                    $lock->release();
+                }
+            });
+        } catch (\Exception $e) {
+            globalLogger('error', 'Blood Transfusion Failed to Archive!', [
+                'public_id' => $publicId,
+                'error' => $e->getMessage(),
+            ], 500, 'archivebloodtransfusion');
             throw $e;
         }
     }

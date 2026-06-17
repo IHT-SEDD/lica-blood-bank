@@ -389,7 +389,7 @@ export function DatatableRequestBlood() {
                             </button>
                         </li>
                         <li>
-                            <button data-public-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-transfusion ${isDeleted ? "disabled text-muted" : ""}" type="button">
+                            <button id="archive-data-${data.public_id}" data-archive-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-blood-transfusion ${isDeleted ? "disabled text-muted" : ""}" type="button">
                             <i class="ti ti-archive align-middle me-1 fs-4"></i>
                                 Arsipkan
                             </button>
@@ -599,7 +599,7 @@ function renderCrossmatchResult(result) {
         case "Incompatible":
             return `<span class="badge badge-label text-bg-danger">Incompatible</span>`;
         default:
-            return `<span class="badge badge-label text-bg-secondary">No Result Yet</span>`;
+            return `<span class="badge badge-label text-bg-info">Belum Dilakukan</span>`;
     }
 }
 

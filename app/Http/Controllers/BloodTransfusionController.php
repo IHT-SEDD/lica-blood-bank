@@ -73,6 +73,11 @@ class BloodTransfusionController extends Controller
     {
         return $this->dataService->listBagRequestTable($request, $id);
     }
+    // ---------- List Archive Bag Request Datatable ----------
+    public function datatableBagRequestArchive(Request $request)
+    {
+        return $this->dataService->listArchiveBagRequestTable($request);
+    }
 
     // ---------- List History Test Datatable ----------
     public function datatableListHistoryTest(Request $request, string $patientId)
@@ -84,6 +89,11 @@ class BloodTransfusionController extends Controller
     public function datatableListTest(Request $request, string $id)
     {
         return $this->dataService->listTestTable($request, $id);
+    }
+    // ---------- Datatable Archive Test ----------
+    public function datatableTestArchive(Request $request)
+    {
+        return $this->dataService->listArchiveTable($request);
     }
 
     // ---------- Store Blood Request ----------
@@ -259,6 +269,24 @@ class BloodTransfusionController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to complete blood request.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Archive Transaction ----------
+    public function archiveBloodTransfusion(string $id)
+    {
+        try {
+            $this->writeService->archiveTransaction($id);
+            return response()->json(['message' => 'Permintaan darah berhasil diarsipkan']);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Gagal mengarsipkan permintaan darah',
                 'error' => $e->getMessage(),
             ], 500);
         }
