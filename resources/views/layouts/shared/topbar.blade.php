@@ -96,6 +96,7 @@
             @endif
 
             {{-- Report Menu --}}
+            @if (!request()->is('report*'))
             <div class="topbar-item d-none d-lg-flex">
                 {{-- Dropdown Report :begin --}}
                 <div class="dropdown">
@@ -119,8 +120,9 @@
                     </ul>
                     {{-- Dropdown Menu :end --}}
                 </div>
-                {{-- Dropdown Master :end --}}
+                {{-- Dropdown Report :end --}}
             </div>
+            @endif
 
             {{-- Integration Menu --}}
             <div class="topbar-item d-none d-lg-flex">

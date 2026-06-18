@@ -36,6 +36,10 @@
             @if(request()->is('master*'))
             @include('layouts.shared.sidenav.sidenav-item-master')
             @endif
+
+            @if(request()->is('report*'))
+            @include('layouts.shared.sidenav.sidenav-item-report')
+            @endif
         </ul>
         {{-- Menu :end --}}
     </div>
