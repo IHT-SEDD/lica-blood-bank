@@ -118,6 +118,11 @@ class BloodTransfusionApiController extends Controller
                 $result
             );
 
+            globalLogger('info', '(API) Send result blood transfusion succesfully!', [
+                'id' => $transfusion->id,
+                'payload' => $transfusion,
+            ], 200, 'apisendresult');
+
             return $this->apiUtilityService->successResponse(
                 'Hasil permintaan darah sukses terkirim ke SIMRS',
                 $result
@@ -129,6 +134,12 @@ class BloodTransfusionApiController extends Controller
                 $e->getMessage(),
                 ['order_number' => $orderNumber]
             );
+
+            globalLogger('error', '(API) Send result blood transfusion failed to send!', [
+                'payload' => null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500, 'apisendresult');
 
             return $this->apiUtilityService->errorResponse($e->getMessage());
         }

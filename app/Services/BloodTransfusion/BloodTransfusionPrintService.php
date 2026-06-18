@@ -158,8 +158,8 @@ class BloodTransfusionPrintService
         },
         'details.bloodPack:id,public_id,storage_temperature_from,storage_temperature_to',
         'details.bloodStock',
-        'details.bloodTransfusionDetailTest:id,public_id,bt_detail_id,result_by_user_id',
-        'details.bloodTransfusionDetailTest.resultByUser:id,public_id,name',
+        'details.bloodTransfusionDetailTests:id,public_id,bt_detail_id,result_by_user_id',
+        'details.bloodTransfusionDetailTests.resultByUser:id,public_id,name',
       ])
       ->firstOrFail();
 
@@ -217,7 +217,7 @@ class BloodTransfusionPrintService
               'expiry_date' => $detail->bloodStock->expiry_date,
               'crossmatch_result' => $detail->crossmatch_result,
               'crossmatch_finish_at' => $detail->crossmatch_finish_at,
-              'crossmatch_by' => $detail->bloodTransfusionDetailTest->resultByUser->name,
+              'crossmatch_by' => $this->getResultByUser($transfusionData),
               'released_at' => now()->format('Y-m-d H:i:s'),
               'clia' => $clia,
             ];
@@ -284,6 +284,22 @@ class BloodTransfusionPrintService
       abort(404, "Print template [{$print}] not found.");
     }
   }
+
+private function getResultByUser($transfusionData)
+{
+    $resultByUserName = $transfusionData->details
+        ->flatMap(function ($detail) {
+
+            $tests = $detail->bloodTransfusionDetailTests;
+
+            return $tests->map(fn($test) => $test->resultByUser);
+        })
+        ->filter()
+        ->first()?->name;
+
+    return $resultByUserName ?? 'User tidak ditemukan';
+}
+
   private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null, ?array $paperSize = null): BinaryFileResponse
   {
     $printBy = Auth::user()->name;
