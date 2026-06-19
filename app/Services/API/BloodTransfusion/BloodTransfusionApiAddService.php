@@ -35,13 +35,13 @@ class BloodTransfusionApiAddService
             return DB::transaction(function () use ($payload) {
                 $demografi = $payload['demografi'];
                 $transaksi = $payload['transaksi'];
-                $tests = $payload['tes'];
+                $tests = isset($payload['tes']) ? $payload['tes'] : [];
                 $type = $this->generateType($transaksi['jenis']);
                 $filteredTests = $this->resolveTests($tests);
-
+                
                 // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
                 $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
-
+                // dd($bloodData);
                 // ---------- Prepare demografi----------
                 $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
                 $patient = $demographic['patient'];

@@ -2,6 +2,24 @@
 
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
+  {{-- Export to excel --}}
+  <button class="btn btn-sm btn-soft-secondary" id="excel_blood_usage_btn">
+    <i class="ti ti-file-type-xls fs-lg align-middle flex-shrink-0 me-2"></i>
+    {{ __('Excel') }}
+  </button>
+
+  {{-- Select Room --}}
+  <div>
+    <select class="form-control form-control-sm tomselect-sm" id="filter-blood-usage-room"
+      name="filter-blood-usage-room" placeholder="Filter Ruangan"></select>
+  </div>
+
+  {{-- Select Blood Pack --}}
+  <div>
+    <select class="form-control form-control-sm tomselect-sm" id="filter-blood-usage-blood-pack"
+      name="filter-blood-usage-blood-pack" placeholder="Filter Detail Darah"></select>
+  </div>
+
   {{-- Date filter :begin --}}
   <div>
     <div class="input-group">

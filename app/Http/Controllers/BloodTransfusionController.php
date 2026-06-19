@@ -37,7 +37,7 @@ class BloodTransfusionController extends Controller
         protected BloodTransfusionAddService $addService,
         protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
         protected BloodTransfusionPrintService $printService,
-        protected BloodTransfusionWriteService $writeService,
+        private readonly BloodTransfusionWriteService $writeService,
     ) {}
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
@@ -73,6 +73,11 @@ class BloodTransfusionController extends Controller
     {
         return $this->dataService->listBagRequestTable($request, $id);
     }
+    // ---------- List Archive Bag Request Datatable ----------
+    public function datatableBagRequestArchive(Request $request)
+    {
+        return $this->dataService->listArchiveBagRequestTable($request);
+    }
 
     // ---------- List History Test Datatable ----------
     public function datatableListHistoryTest(Request $request, string $patientId)
@@ -84,6 +89,11 @@ class BloodTransfusionController extends Controller
     public function datatableListTest(Request $request, string $id)
     {
         return $this->dataService->listTestTable($request, $id);
+    }
+    // ---------- Datatable Archive Test ----------
+    public function datatableTestArchive(Request $request)
+    {
+        return $this->dataService->listArchiveTable($request);
     }
 
     // ---------- Store Blood Request ----------
@@ -259,6 +269,64 @@ class BloodTransfusionController extends Controller
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to complete blood request.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Send Result to SIMRS ----------
+    public function sendResultToSIMRS(string $id)
+    {
+        try {
+            $transfusion = \App\Models\BloodTransfusion::where('public_id', $id)->first();
+            if (!$transfusion) {
+                return response()->json([
+                    'message' => 'Transaksi permintaan darah tidak ditemukan.',
+                ], 404);
+            }
+            if (!$transfusion->order_number) {
+                return response()->json([
+                    'message' => 'Transaksi tidak memiliki nomor order.',
+                ], 404);
+            }
+
+            $apiController = app(\App\Http\Controllers\API\BloodTransfusionApiController::class);
+            $apiResponse = $apiController->sendResult($transfusion->order_number);
+            if ($apiResponse->getStatusCode() !== 200) {
+                return response()->json([
+                    'message' => $apiResponse->getData(true)['message'] ?? 'Gagal mengirim hasil ke SIMRS',
+                ], $apiResponse->getStatusCode());
+            }
+
+            return response()->json([
+                'message' => $apiResponse->getData(true)['message'] ?? 'Mengirim hasil ke SIMRS berhasil!',
+                'data' => $apiResponse->getData(true)['data'] ?? null,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Gagal mengirim hasil ke SIMRS',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // ---------- Archive Transaction ----------
+    public function archiveBloodTransfusion(string $id)
+    {
+        try {
+            $this->writeService->archiveTransaction($id);
+            return response()->json(['message' => 'Permintaan darah berhasil diarsipkan']);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 400);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Gagal mengarsipkan permintaan darah',
                 'error' => $e->getMessage(),
             ], 500);
         }

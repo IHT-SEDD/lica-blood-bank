@@ -35,6 +35,7 @@ class BloodTransfusionApiDataService
                 $apiKey => $keyVal,
                 'key-ws' => $keyWs,
                 'Content-Type' => 'application/json',
+                'Accept' => 'application/json',
             ])
             ->post($url, $payload);
 
@@ -45,7 +46,7 @@ class BloodTransfusionApiDataService
                 'body' => $response->body(),
             ]);
             throw new \RuntimeException(
-                'Failed to send result to SIMRS. HTTP ' . $response->status()
+                'Failed to send result to SIMRS. HTTP ' . $response->body()
             );
         }
 
@@ -66,11 +67,10 @@ class BloodTransfusionApiDataService
                 $hasil[] = [
                     'test_id' => $detailTest->test_id,
                     'test_name' => $detailTest->test->name ?? null,
-                    'kode_jenis_tes' => $detailTest->generalCode ?? null,
+                    'kode_jenis_tes' => $detailTest->general_code ?? null,
                     'result' => $detailTest->result ?? null,
-                    'result_status' => $detailTest->result_status ?? null,
                     'unit' =>  null,
-                    'normal_value'  =>  null,
+                    'nilai_normal'  =>  null,
                     'notes' => $detailTest->notes ?? null,
                     'flag' => null,
                     'group_test' => null,

@@ -84,11 +84,23 @@ class ReportDataService
     private function datatableBloodUsage(Request $request)
     {
         [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodPackPublicID = $request->blood_pack_public_id;
+        $roomPublicID = $request->room_public_id;
 
         $transfusions = BloodTransfusion::withoutTrashed()
             ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED->value)
             ->whereBetween('blood_transfusions.created_at', [$startDate, $endDate])
             ->with(['room', 'details.bloodPack'])
+            ->when($bloodPackPublicID, function ($query) use ($bloodPackPublicID) {
+                $query->whereHas('details.bloodPack', function ($q) use ($bloodPackPublicID) {
+                    $q->where('public_id', $bloodPackPublicID);
+                });
+            })
+            ->when($roomPublicID, function ($query) use ($roomPublicID) {
+                $query->whereHas('room', function ($q) use ($roomPublicID) {
+                    $q->where('public_id', $roomPublicID);
+                });
+            })
             ->get();
 
         $grouped = $transfusions

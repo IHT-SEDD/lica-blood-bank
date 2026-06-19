@@ -4,13 +4,15 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Services\Report\ReportDataService;
+use App\Services\Report\ReportWriteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ReportController extends Controller
 {
     public function __construct(
-        protected ReportDataService $dataService
+        private readonly ReportDataService $dataService,
+        private readonly ReportWriteService $writeService
     ) {}
 
     public function index(string $report)
@@ -33,5 +35,11 @@ class ReportController extends Controller
     public function datatable(Request $request, string $report)
     {
         return $this->dataService->datatable($report, $request);
+    }
+
+    // ---------- Fungsi export data ke Excel ----------
+    public function exportExcel(string $report, Request $request)
+    {
+        return $this->writeService->exportExcel($report, $request);
     }
 }

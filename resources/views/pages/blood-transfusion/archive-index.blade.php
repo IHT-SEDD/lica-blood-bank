@@ -19,6 +19,11 @@
 <div class="row py-3">
   {{-- Header :begin --}}
   <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+    <a href="{{ route('blood-transfusion.index') }}" class="btn btn-sm btn-soft-primary">
+      <i class="ti ti-arrow-left-dashed fs-lg align-middle flex-shrink-0 me-1"></i>
+      {{ __('Keluar') }}
+    </a>
+
     <h1 class="fw-bold uppercase">{{ __('Arsip Transaksi') }}</h1>
 
     <div class="d-flex align-items-center justify-content-center gap-2">
@@ -40,7 +45,7 @@
   <div class="col-xxl-7 col-12">
     <div class="card">
       <div class="card-header justify-content-between align-items-center">
-        <h5 class="card-title mb-0">{{ __('Data Permintaan Darah') }}</h5>
+        <h5 class="card-title mb-0">{{ __('Data Arsip Permintaan Darah') }}</h5>
         <div class="card-action d-flex align-items-center gap-2">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
@@ -111,17 +116,21 @@
   {{-- Timeline :begin --}}
   <div class="col-xxl-6 col-12">
     <div class="card">
+      {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="card-title text-capitalize mb-0">{{ __('Timeline') }}</h5>
         <div class="card-action">
           <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
         </div>
       </div>
+
+      {{-- Card Body :begin --}}
       <div class="card-body archive-blood-transfusion-log-data-container overflow-auto" style="max-height: 500px;">
         <div class="timeline timeline-icon-bordered timeline-archive-blood-transfusion-log">
           {{-- Populate by JS --}}
         </div>
       </div>
+      {{-- Card Body :end --}}
     </div>
   </div>
   {{-- Timeline :end --}}

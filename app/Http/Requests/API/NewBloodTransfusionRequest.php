@@ -53,10 +53,10 @@ class NewBloodTransfusionRequest extends FormRequest
             'transaksi.dokter' => 'nullable|string',
             'transaksi.diagnosis' => 'nullable|string',
 
-            'tes' => 'required|array|min:1',
-            'tes.*.kode_jenis_tes' => 'required|string',
-            'tes.*.nama_tes' => 'required|string',
-            'tes.*.cito' => 'nullable|string',
+            // 'tes' => 'required|array|min:1',
+            // 'tes.*.kode_jenis_tes' => 'required|string',
+            // 'tes.*.nama_tes' => 'required|string',
+            // 'tes.*.cito' => 'nullable|string',
         ];
     }
 
@@ -82,10 +82,10 @@ class NewBloodTransfusionRequest extends FormRequest
             'transaksi.jenis.required' => 'Jenis tidak boleh kosong!.',
             'transaksi.kode_dokter.required' => 'Kode dokter tidak boleh kosong!.',
 
-            'tes.required' => 'Data tes tidak boleh kosong!.',
-            'tes.min' => 'Minimal harus ada 1 data tes.',
-            'tes.*.kode_jenis_tes.required' => 'Kode jenis tes tidak boleh kosong!.',
-            'tes.*.nama_tes.required' => 'Nama tes tidak boleh kosong!.',
+            // 'tes.required' => 'Data tes tidak boleh kosong!.',
+            // 'tes.min' => 'Minimal harus ada 1 data tes.',
+            // 'tes.*.kode_jenis_tes.required' => 'Kode jenis tes tidak boleh kosong!.',
+            // 'tes.*.nama_tes.required' => 'Nama tes tidak boleh kosong!.',
         ];
     }
 

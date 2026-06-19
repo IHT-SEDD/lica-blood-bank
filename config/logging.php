@@ -258,6 +258,11 @@ return [
             'path' => storage_path('logs/blood-transfusion/new-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
+        'apisendresult' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/api-send-result-data.log'),
+            'level' => 'debug',
+        ],
         'updatebloodtransfusion' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-transfusion/update-blood-transfusion-data.log'),
@@ -276,6 +281,11 @@ return [
         'completebloodtransfusion' => [
             'driver' => 'single',
             'path' => storage_path('logs/blood-transfusion/complete-blood-transfusion-data.log'),
+            'level' => 'debug',
+        ],
+        'archivebloodtransfusion' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/blood-transfusion/archive-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
         'incompatibleresult' => [

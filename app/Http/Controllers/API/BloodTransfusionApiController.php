@@ -62,7 +62,7 @@ class BloodTransfusionApiController extends Controller
             }
 
             // ---- Jika transaksi belum ada, maka create data
-            $result = $this->apiAddService->insertNewData($request->validated());
+            $result = $this->apiAddService->insertNewData($request->all());
             return $this->apiUtilityService->successResponse(
                 'Transaksi permintaan darah berhasil ditambahkan',
                 $result
@@ -87,7 +87,7 @@ class BloodTransfusionApiController extends Controller
         operationId: 'sendResult',
         title: 'Send Result to SIMRS',
         description: 'Send Blood Transfusion Result to SIMRS',
-        method: 'GET'
+        method: 'POST'
     )]
     public function sendResult(string $orderNumber): JsonResponse
     {
@@ -118,6 +118,11 @@ class BloodTransfusionApiController extends Controller
                 $result
             );
 
+            globalLogger('info', '(API) Send result blood transfusion succesfully!', [
+                'id' => $transfusion->id,
+                'payload' => $transfusion,
+            ], 200, 'apisendresult');
+
             return $this->apiUtilityService->successResponse(
                 'Hasil permintaan darah sukses terkirim ke SIMRS',
                 $result
@@ -129,6 +134,12 @@ class BloodTransfusionApiController extends Controller
                 $e->getMessage(),
                 ['order_number' => $orderNumber]
             );
+
+            globalLogger('error', '(API) Send result blood transfusion failed to send!', [
+                'payload' => null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500, 'apisendresult');
 
             return $this->apiUtilityService->errorResponse($e->getMessage());
         }
