@@ -67,7 +67,7 @@ class BloodTransfusionApiDataService
                 $hasil[] = [
                     'test_id' => $detailTest->test_id,
                     'test_name' => $detailTest->test->name ?? null,
-                    'kode_jenis_tes' => $detailTest->generalCode ?? null,
+                    'kode_jenis_tes' => $detailTest->general_code ?? null,
                     'result' => $detailTest->result ?? null,
                     'unit' =>  null,
                     'nilai_normal'  =>  null,

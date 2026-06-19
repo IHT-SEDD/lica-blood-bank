@@ -62,7 +62,7 @@ class BloodTransfusionApiController extends Controller
             }
 
             // ---- Jika transaksi belum ada, maka create data
-            $result = $this->apiAddService->insertNewData($request->validated());
+            $result = $this->apiAddService->insertNewData($request->all());
             return $this->apiUtilityService->successResponse(
                 'Transaksi permintaan darah berhasil ditambahkan',
                 $result
