@@ -114,7 +114,7 @@ class BloodTransfusionWriteService
                 try {
                     $transfusion->update([
                         'finish_at' => now(),
-                        'archived_at' => now(),
+                        // 'archived_at' => now(),
                         'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED ?? $transfusion->status,
                         'finish_by_user_id' => Auth::id(),
                     ]);
