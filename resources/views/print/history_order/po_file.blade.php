@@ -170,7 +170,9 @@
   $userName = $order->users?->name ?? '-';
   $userRole = $order->users?->roles?->first();
   $roleName = $userRole?->name ?? '-';
-  $barcodeUser = strtolower(str_replace(' ', '', $userName));
+  $username = strtolower($order?->users->username ?? '');
+  $barcodeFile = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
+  $barcodeUrl = asset("assets/images/barcode/ttd_{$username}_barcode.png");
   @endphp
 
   <div class="page">
@@ -370,7 +372,7 @@
     @endif
 
     {{-- Signature --}}
-    <table style="margin-top: 13px;">
+    <table style="margin-top: 2px;">
       <tr>
         <td width="65%" align="center">
         </td>
@@ -379,19 +381,16 @@
           <div class="paragraph">{{ __('Pemohon') }}</div>
           <div class="paragraph">{{ $roleName }}</div>
           <br>
-          @switch($barcodeUser)
-          @case('superadmin')
-          <img class="barcode-signature" src="{{ asset('assets/images/barcode/ttd_superadmin_barcode.png') }}"
-            alt="Barcode Signature of Super Admin">
-          @break
-          @case(2)
-
-          @break
-          @default
-
-          @endswitch
+          @if ($username && file_exists($barcodeFile))
           <br>
-          <div class="heading-3">{{ $userName ?? '_______________' }}</div>
+          <img class="barcode-signature" src="{{ $barcodeUrl }}" alt="Barcode Signature of {{ $username }}">
+          <br>
+          @else
+          <br><br><br>
+          @endif
+          <div class="heading-3">
+            <strong>{{ $userName ?? '_______________' }}</strong>
+          </div>
         </td>
       </tr>
     </table>
