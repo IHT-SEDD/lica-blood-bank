@@ -46,6 +46,7 @@ class BloodStock extends Model
     protected $casts = [
         'blood_group' => BloodGroup::class,
         'blood_component' => BloodComponent::class,
+        'expiry_date' => 'datetime',
     ];
 
     protected static function booted()
@@ -59,19 +60,13 @@ class BloodStock extends Model
 
         // ---------- Auto check expired setiap kali data diambil :begin ----------
         static::retrieved(function ($bloodStock) {
-            // Skip jika sudah expired
             if ($bloodStock->is_expired) return;
-
-            // Cek apakah expiry_date sudah lewat atau hari ini
             if (!$bloodStock->expiry_date) return;
 
-            $isExpired = now()->startOfDay()->gte(
-                \Illuminate\Support\Carbon::parse($bloodStock->expiry_date)->startOfDay()
-            );
+            if (now()->lt($bloodStock->expiry_date)) {
+                return;
+            }
 
-            if (!$isExpired) return;
-
-            // ---------- Update is_expired & blood_status ----------
             $bloodStock->withoutEvents(function () use ($bloodStock) {
                 $bloodStock->update([
                     'is_expired' => true,

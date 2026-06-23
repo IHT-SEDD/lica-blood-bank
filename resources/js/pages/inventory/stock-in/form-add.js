@@ -25,7 +25,7 @@ const AddRowButton = ".add_row_blood_data";
 const AddRowCountInput = "#add_row_blood_data_count";
 
 // Form Excel
-const TemplateExcelPath = "/assets/files/Template Add Incoming Stock.xlsx";
+const TemplateExcelPath = "/assets/files/[Template] Add Stock In.xlsx";
 
 // URLS
 const URLSelectBloodPack = "/inventory/stock-in/data/select/blood-pack";
@@ -33,13 +33,11 @@ const URLSelectPO = "/inventory/stock-in/data/select/po";
 const UrlPostIncomingStock = "/inventory/stock-in/data/new";
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 
-// ---------- State global :begin ----------
+// ---------- GLOBAL STATE ----------
 let currentMethod = "manual";
 let formValidation = null;
 let selectedPoNumber = null;
 let selectedBatchNumber = null;
-// ---------- State global :end ----------
-
 const REQUIRED_FIELDS = [
     "bag_number",
     "blood_pack_id",
@@ -48,17 +46,15 @@ const REQUIRED_FIELDS = [
     "expiry_date",
 ];
 
+// ---------- HELPERS ----------
 function f(idx, field) {
     return `blood_data[${idx}][${field}]`;
 }
-
 function getTemplateExcelFileName() {
     const batch = selectedBatchNumber ?? "Unknown";
     const po = selectedPoNumber ?? "Unknown";
     return `New Incoming Blood for Batch - ${batch}_${po}.xlsx`;
 }
-
-// ---------- Helper: toggle tampilan form berdasarkan method :begin ----------
 function toggleFormMethod(methodId) {
     const formLoading = document.getElementById(LoadingForm);
     const formManual = document.getElementById(FormManualWrapper);
@@ -108,17 +104,14 @@ function toggleFormMethod(methodId) {
         }
     }
 }
-// ---------- Helper: toggle tampilan form berdasarkan method :end ----------
-
-// ---------- Helper: init flatpickr pada elemen :begin ----------
 function initFlatpickr(el) {
     if (!el) return;
     const escapedId = el.id.replace(/\[/g, "\\[").replace(/\]/g, "\\]");
-    new GlobalAdvanceFlatpickr(`#${escapedId}`, { allowInput: true });
+    new GlobalAdvanceFlatpickr(`#${escapedId}`, {
+        allowInput: true,
+        enableTime: true,
+    });
 }
-// ---------- Helper: init flatpickr pada elemen :end ----------
-
-// ---------- Helper: init TomSelect pada elemen dengan value default :begin ----------
 function initTomSelect(el, url) {
     return new GlobalAdvanceTomselect(el, {
         valueField: "id",
@@ -132,7 +125,6 @@ function initTomSelect(el, url) {
         },
     });
 }
-// ---------- Helper: init TomSelect pada elemen dengan value default :end ----------
 
 // ---------- Select po dari tom-select untuk form add new data :begin ----------
 function SelectPO() {
@@ -290,17 +282,17 @@ function HandleFormManual() {
                 <td>
                     <input type="text" class="form-control form-control-sm"
                         id="${f(idx, "aftap_date")}" name="${f(idx, "aftap_date")}"
-                        data-date-format="d-m-Y" data-provider="flatpickr" />
+                        data-date-format="d-m-Y H:i" data-provider="flatpickr" />
                 </td>
                 <td>
                     <input type="text" class="form-control form-control-sm"
                         id="${f(idx, "expiry_date")}" name="${f(idx, "expiry_date")}"
-                        data-date-format="d-m-Y" data-provider="flatpickr" />
+                        data-date-format="d-m-Y H:i" data-provider="flatpickr" />
                 </td>
                 <td>
                     <input type="text" class="form-control form-control-sm"
                         id="${f(idx, "process_date")}" name="${f(idx, "process_date")}"
-                        data-date-format="d-m-Y" data-provider="flatpickr" />
+                        data-date-format="d-m-Y H:i" data-provider="flatpickr" />
                 </td>
                 <td>
                     <div class="form-check form-check-danger">

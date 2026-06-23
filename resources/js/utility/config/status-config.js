@@ -57,6 +57,11 @@ export function BloodStockStatus(status) {
                 <i class="ti ti-activity-heartbeat align-middle me-2 fs-4"></i>
                 Sudah Pernah Digunakan
             </span>`;
+        case "hold":
+            return `<span class="badge badge-label fw-semibold badge-soft-warning">
+                <i class="ti ti-heart-pause align-middle me-2 fs-4"></i>
+                Ditahan
+            </span>`;
         default:
             return `<span class="badge badge-label fw-semibold badge-soft-secondary">
                 <i class="ti ti-droplet align-middle me-2 fs-4"></i>

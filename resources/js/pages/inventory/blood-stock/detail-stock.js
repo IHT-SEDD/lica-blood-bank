@@ -104,20 +104,38 @@ function BloodStockDataTable() {
             defaultContent: "",
             orderable: false,
             render: (data, type, row, meta) => {
-                return meta.row + 1;
+                return `<span class="fs-6">${meta.row + 1}</span>`;
             },
         },
-        { data: "bag_number", title: "No. Labu" },
-        { data: "bag_number_lica", title: "No. Labu LICA" },
+        {
+            data: "bag_number",
+            title: "No. Labu",
+            render: (data, type, row, meta) => {
+                return `<span class="fw-semibold fs-6">${data}</span>`;
+            },
+        },
+        {
+            data: "bag_number_lica",
+            title: "No. Labu LICA",
+            render: (data, type, row, meta) => {
+                return `<span class="fw-semibold fs-6">${data}</span>`;
+            },
+        },
         {
             data: null,
             title: "Detail",
             render: (data, row) => {
                 const bloodPack = data.blood_packs;
-                return `${bloodPack.blood_group}${bloodPack.blood_rhesus} ${bloodPack.blood_component}`;
+                return `<span class="fw-medium fs-6">${bloodPack.blood_group}${bloodPack.blood_rhesus} ${bloodPack.blood_component}</span>`;
             },
         },
-        { data: "blood_volume", title: "Volume" },
+        {
+            data: "blood_volume",
+            title: "Volume",
+            render: (data, type, row, meta) => {
+                return `<span class="fs-6">${data}</span>`;
+            },
+        },
         {
             data: null,
             title: "Status",
@@ -138,42 +156,42 @@ function BloodStockDataTable() {
             data: "expiry_date",
             title: "Tgl. Expire",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
             data: "aftap_date",
             title: "Tgl. Aftap",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
             data: "process_date",
             title: "Tgl. Proses",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
             data: "used_at",
             title: "Tgl. Digunakan",
             render: (data) => {
-                return DateTimeFormatter.human(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
             data: "created_at",
             title: "Tgl. Tersedia",
             render: (data) => {
-                return DateTimeFormatter.human(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
             data: "deleted_at",
             title: "Tgl. Dihapus",
             render: (data) => {
-                return DateTimeFormatter.human(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
             },
         },
         {
@@ -262,7 +280,8 @@ function BloodStockDataTable() {
                     responsivePriority: 2,
                 },
             ],
-            pageLength: 50,
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
         },
     );
 }

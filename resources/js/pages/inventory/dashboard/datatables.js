@@ -1,6 +1,7 @@
 import { DateTimeFormatter } from "../../../utility/ui";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { GlobalAdvanceTomselect } from "../../../app";
+import { BloodStockStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let listStockTableInstance;
@@ -92,45 +93,7 @@ function ListStockTable() {
             orderable: false,
             title: "Status",
             render: (data, type, row) => {
-                switch (row.blood_status) {
-                    case "expired":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
-                            Expire!
-                        </span>`;
-                        break;
-                    case "in_use":
-                        return `<span class="badge badge-label fw-semibold badge-soft-info">
-                            <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
-                            Sedang Digunakan
-                        </span>`;
-                        break;
-                    case "available":
-                        return `<span class="badge badge-label fw-semibold badge-soft-success">
-                            <i class="ti ti-circle-check align-middle me-2 fs-4"></i>
-                            Tersedia
-                        </span>`;
-                        break;
-                    case "destroyed":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-heart-broken align-middle me-2 fs-4"></i>
-                            Dimusnahkan
-                        </span>`;
-                        break;
-                    case "taken_out":
-                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                            <i class="ti ti-heart-up align-middle me-2 fs-4"></i>
-                            Dikeluarkan
-                        </span>`;
-                        break;
-
-                    default:
-                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                            <i class="ti ti-droplet align-middle me-2 fs-4"></i>
-                            ${row.blood_status}
-                        </span>`;
-                        break;
-                }
+                return BloodStockStatus(row.blood_status);
             },
         },
         { data: "patient_name", title: "Nama Pasien" },

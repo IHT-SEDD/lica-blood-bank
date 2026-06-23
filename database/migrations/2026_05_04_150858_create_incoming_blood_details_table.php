@@ -32,7 +32,6 @@ return new class extends Migration
             $table->integer('blood_volume');
 
             $table->date('aftap_date');
-            // Blood process date
             $table->date('process_date');
             $table->date('expiry_date');
 

@@ -48,6 +48,10 @@ class StockInAddService
       $orderBlood = OrderBlood::with(['vendors', 'orderBloodDetails'])
         ->where('po_number', $request->po_number)
         ->first();
+      if (!$orderBlood) {
+        DB::rollBack();
+        return response()->json(['message' => "PO Number {$request->po_number} tidak ditemukan."], 404);
+      }
 
       // ---------- Buat atau ambil incoming blood ----------
       $incomingBlood = $this->firstOrCreateIncomingBlood($request, $orderBlood, $user);
@@ -63,6 +67,10 @@ class StockInAddService
         $bloodPackMap,
         'public_id'
       );
+      if ($incomingBloodDetails instanceof \Illuminate\Http\JsonResponse) {
+        DB::rollBack();
+        return $incomingBloodDetails;
+      }
 
       // ---------- Bulk insert incoming blood details ----------
       IncomingBloodDetail::insert($incomingBloodDetails);
@@ -112,10 +120,11 @@ class StockInAddService
   {
     DB::beginTransaction();
     try {
-      $rows = $this->readExcelFile($request->file('excel_file'));
+      $user = Auth::user();
 
+      $rows = $this->readExcelFile($request->file('excel_file'));
       if (!$rows || $rows->isEmpty()) {
-        return response()->json(['message' => 'Excel file is empty or not readable!'], 422);
+        return response()->json(['message' => 'File excel kosong atau tidak bisa dibaca!'], 422);
       }
 
       // ---------- Filter baris kosong & parse ----------
@@ -144,6 +153,10 @@ class StockInAddService
       $orderBlood = OrderBlood::with(['vendors', 'orderBloodDetails'])
         ->where('po_number', $request->po_number)
         ->first();
+      if (!$orderBlood) {
+        DB::rollBack();
+        return response()->json(['message' => "PO Number {$request->po_number} tidak ditemukan."], 404);
+      }
 
       // ---------- Buat atau ambil incoming blood ----------
       $incomingBlood = $this->firstOrCreateIncomingBlood($request, $orderBlood, $user = Auth::user());
@@ -162,7 +175,6 @@ class StockInAddService
         $bloodPackMap,
         'composite_key'
       );
-
       if ($incomingBloodDetails instanceof \Illuminate\Http\JsonResponse) {
         return $incomingBloodDetails;
       }
@@ -214,8 +226,6 @@ class StockInAddService
   // ==========================================================================
   // PRIVATE HELPERS
   // ==========================================================================
-
-  // ---------- Helper: cek duplikat bag number di database :begin ----------
   private function checkDuplicateBagNumbers(array $bagNumbers): ?\Illuminate\Http\JsonResponse
   {
     $duplicates = IncomingBloodDetail::whereIn('bag_number', $bagNumbers)
@@ -224,16 +234,13 @@ class StockInAddService
 
     if (!empty($duplicates)) {
       return response()->json([
-        'message'    => 'Duplicate bag number detected!',
+        'message' => 'Terdapat nomor kantong yang duplikat!',
         'duplicates' => $duplicates,
       ], 422);
     }
 
     return null;
   }
-  // ---------- Helper: cek duplikat bag number di database :end ----------
-
-  // ---------- Helper: firstOrCreate IncomingBlood :begin ----------
   private function firstOrCreateIncomingBlood(Request $request, OrderBlood $orderBlood, ?User $user): IncomingBlood
   {
     return IncomingBlood::firstOrCreate(
@@ -250,9 +257,6 @@ class StockInAddService
       ]
     );
   }
-  // ---------- Helper: firstOrCreate IncomingBlood :end ----------
-
-  // ---------- Helper: build incoming blood details array untuk bulk insert :begin ----------
   private function buildIncomingBloodDetails(
     array $items,
     int $incomingBloodId,
@@ -266,16 +270,16 @@ class StockInAddService
       // ---------- Resolve blood pack id berdasarkan mode ----------
       if ($mode === 'public_id') {
         $bloodPackId = $bloodPackMap[$item['blood_pack_id']] ?? null;
-        $errorKey    = $item['blood_pack_id'];
+        $errorKey = $item['blood_pack_id'];
       } else {
-        $bloodPack   = $bloodPackMap->get($item['blood_pack_key']);
+        $bloodPack = $bloodPackMap->get($item['blood_pack_key']);
         $bloodPackId = $bloodPack?->id;
-        $errorKey    = $item['blood_pack_key'];
+        $errorKey = $item['blood_pack_key'];
       }
 
       if (!$bloodPackId) {
         return response()->json([
-          'message' => "Blood pack not found for: {$errorKey}",
+          'message' => "Kantong darah tidak ditemukan untuk: {$errorKey}",
         ], 422);
       }
 
@@ -285,11 +289,11 @@ class StockInAddService
         'bag_number' => $item['bag_number'],
         'blood_pack_id' => $bloodPackId,
         'blood_volume' => $item['blood_volume'],
-        'aftap_date' => Carbon::createFromFormat('d-m-Y', $item['aftap_date'])->toDateString(),
+        'aftap_date' => Carbon::createFromFormat('d-m-Y H:i', $item['aftap_date'])->toDateTimeString(),
         'process_date' => !empty($item['process_date'])
-          ? Carbon::createFromFormat('d-m-Y', $item['process_date'])->toDateString()
+          ? Carbon::createFromFormat('d-m-Y H:i', $item['process_date'])
           : null,
-        'expiry_date' => Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->toDateString(),
+        'expiry_date' => Carbon::createFromFormat('d-m-Y H:i', $item['expiry_date'])->toDateTimeString(),
         'is_hiv' => (bool) ($item['is_hiv'] ?? false),
         'is_hbsag' => (bool) ($item['is_hbsag'] ?? false),
         'is_hcv' => (bool) ($item['is_hcv'] ?? false),
@@ -301,9 +305,6 @@ class StockInAddService
 
     return $details;
   }
-  // ---------- Helper: build incoming blood details array untuk bulk insert :end ----------
-
-  // ---------- Helper: tentukan status order berdasarkan jumlah yang diinsert :begin ----------
   private function resolveOrderStatus(int $totalQuantity, int $orderBloodId): OrderBloodStatus
   {
     $totalInserted = IncomingBloodDetail::whereHas('incomingBloods', function ($q) use ($orderBloodId) {
@@ -314,9 +315,6 @@ class StockInAddService
       ? OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED
       : OrderBloodStatus::SOME_ORDER_STOCK_REGISTERED;
   }
-  // ---------- Helper: tentukan status order berdasarkan jumlah yang diinsert :end ----------
-
-  // ---------- Helper: insert incoming blood log activity :begin ----------
   private function insertIncomingBloodLog(
     IncomingBlood $incomingBlood,
     Request $request,
@@ -344,9 +342,6 @@ class StockInAddService
       ),
     ]);
   }
-  // ---------- Helper: insert incoming blood log activity :end ----------
-
-  // ---------- Helper: insert order log activity :begin ----------
   private function insertOrderLog(OrderBlood $orderBlood, OrderBloodStatus $status, ?User $user): void
   {
     $logStatus = $status === OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED
@@ -370,9 +365,6 @@ class StockInAddService
       'timestamp' => $orderBlood->created_at,
     ]);
   }
-  // ---------- Helper: insert order log activity :end ----------
-
-  // ---------- Helper: parse baris excel ke array blood data items :begin ----------
   private function parseExcelRows(\Illuminate\Support\Collection $rows): array|\Illuminate\Http\JsonResponse
   {
     $bloodDataItems = [];
@@ -384,14 +376,14 @@ class StockInAddService
     foreach ($dataRows as $rowIndex => $row) {
       $excelRowNumber = $rowIndex + 2;
 
-      $bagNumber      = trim((string) ($row->get(0) ?? ''));
-      $bloodGroup     = trim((string) ($row->get(1) ?? ''));
-      $rhesus         = trim((string) ($row->get(2) ?? ''));
+      $bagNumber = trim((string) ($row->get(0) ?? ''));
+      $bloodGroup = trim((string) ($row->get(1) ?? ''));
+      $rhesus = trim((string) ($row->get(2) ?? ''));
       $bloodComponent = trim((string) ($row->get(3) ?? ''));
-      $volume         = $row->get(4);
-      $aftapRaw       = $row->get(5);
-      $expiryRaw      = $row->get(6);
-      $processRaw     = $row->get(7);
+      $volume = $row->get(4);
+      $aftapRaw = $row->get(5);
+      $expiryRaw = $row->get(6);
+      $processRaw = $row->get(7);
 
       if (
         empty($bagNumber) || empty($bloodGroup) || empty($rhesus) ||
@@ -399,63 +391,68 @@ class StockInAddService
         is_null($aftapRaw) || is_null($expiryRaw)
       ) {
         return response()->json([
-          'message' => "Row {$excelRowNumber}: required field missing",
+          'message' => "Baris {$excelRowNumber}: tidak boleh kosong",
         ], 422);
       }
 
-      $bloodDataItems[] = [
-        'bag_number' => $bagNumber,
-        'blood_pack_key' => strtoupper("{$bloodGroup}|{$rhesus}|{$bloodComponent}"),
-        'blood_volume' => $volume,
-        'aftap_date' => Carbon::parse($this->parseExcelDate($aftapRaw))->format('d-m-Y'),
-        'process_date' => !empty($processRaw)
-          ? Carbon::parse($this->parseExcelDate($processRaw))->format('d-m-Y')
-          : null,
-        'expiry_date' => Carbon::parse($this->parseExcelDate($expiryRaw))->format('d-m-Y'),
-        'is_hiv' => $this->parseSerologicalValue($row->get(8)),
-        'is_hcv' => $this->parseSerologicalValue($row->get(9)),
-        'is_hbsag' => $this->parseSerologicalValue($row->get(10)),
-        'is_syphilis' => $this->parseSerologicalValue($row->get(11)),
-      ];
+      try {
+        $bloodDataItems[] = [
+          'bag_number' => $bagNumber,
+          'blood_pack_key' => strtoupper("{$bloodGroup}|{$rhesus}|{$bloodComponent}"),
+          'blood_volume' => $volume,
+          'aftap_date' => Carbon::parse($this->parseExcelDate($aftapRaw))->format('d-m-Y H:i'),
+          'process_date' => !empty($processRaw)
+            ? Carbon::parse($this->parseExcelDate($processRaw))->format('d-m-Y H:i')
+            : null,
+          'expiry_date' => Carbon::parse($this->parseExcelDate($expiryRaw))->format('d-m-Y H:i'),
+          'is_hiv' => $this->parseSerologicalValue($row->get(8)),
+          'is_hcv' => $this->parseSerologicalValue($row->get(9)),
+          'is_hbsag' => $this->parseSerologicalValue($row->get(10)),
+          'is_syphilis' => $this->parseSerologicalValue($row->get(11)),
+        ];
+      } catch (\InvalidArgumentException $e) {
+        return response()->json([
+          'message' => "Baris {$excelRowNumber}: " . $e->getMessage(),
+        ], 422);
+      }
     }
 
     return $bloodDataItems;
   }
-  // ---------- Helper: parse baris excel ke array blood data items :end ----------
-
-  // ---------- Helper: parse tanggal dari nilai excel :begin ----------
   private function parseExcelDate(mixed $value): string
   {
     if (is_numeric($value)) {
       return Carbon::instance(
         Date::excelToDateTimeObject((float) $value)
-      )->toDateString();
+      )->toDateTimeString();
     }
 
     if ($value instanceof \DateTime || $value instanceof \DateTimeInterface) {
-      return Carbon::instance($value)->toDateString();
+      return Carbon::instance($value)->toDateTimeString();
     }
 
     try {
-      return Carbon::createFromFormat('d-m-Y', (string) $value)->toDateString();
+      return Carbon::createFromFormat('d-m-Y H:i', (string) $value)->toDateTimeString();
     } catch (\Exception) {
-      return Carbon::parse((string) $value)->toDateString();
+      return Carbon::parse((string) $value)->toDateTimeString();
     }
   }
-  // ---------- Helper: parse tanggal dari nilai excel :end ----------
-
-  // ---------- Helper: parse nilai serologis dari excel :begin ----------
   private function parseSerologicalValue(mixed $value): bool
   {
     if (is_null($value) || $value === '') return false;
     if (is_bool($value)) return $value;
     if (is_numeric($value)) return (bool) $value;
 
-    return in_array(strtolower(trim((string) $value)), ['r', 'reactive', '1', 'true', 'yes', 'y'], true);
-  }
-  // ---------- Helper: parse nilai serologis dari excel :end ----------
+    $normalized = strtolower(trim((string) $value));
 
-  // ---------- Helper: baca file excel ke collection :begin ----------
+    $truthy = ['r', 'reactive', '1', 'true', 'yes', 'y'];
+    $falsy  = ['nr', 'non-reactive', 'non reactive', '0', 'false', 'no', 'n', '-'];
+
+    if (in_array($normalized, $truthy, true)) return true;
+    if (in_array($normalized, $falsy, true))  return false;
+
+    throw new \InvalidArgumentException("Nilai serologi tidak dikenali: '{$value}'");
+  }
   private function readExcelFile(\Illuminate\Http\UploadedFile $file): \Illuminate\Support\Collection
   {
     $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
@@ -464,9 +461,6 @@ class StockInAddService
     return collect(array_values(array_slice($rows, 1)))
       ->map(fn($row) => collect($row));
   }
-  // ---------- Helper: baca file excel ke collection :end ----------
-
-  // ---------- Helper: untuk memvalidasi tanggal pada blood data :begin ----------
   private function validateBloodDates(array $bloodDataItems): ?string
   {
     $today = Carbon::today()->startOfDay();
@@ -476,23 +470,17 @@ class StockInAddService
       $row = $index + 1;
 
       if (in_array($item['bag_number'], $bagNumbers)) {
-        return "Duplicate bag number at row {$row}";
+        return "Terdapat nomor kantong duplikat pada baris {$row}";
       }
       $bagNumbers[] = $item['bag_number'];
 
       try {
-        $aftap = Carbon::createFromFormat('d-m-Y', $item['aftap_date'])->startOfDay();
+        $aftap = Carbon::createFromFormat('d-m-Y H:i', $item['aftap_date']);
         $process = !empty($item['process_date'])
-          ? Carbon::createFromFormat('d-m-Y', $item['process_date'])->startOfDay()
+          ? Carbon::createFromFormat('d-m-Y H:i', $item['process_date'])
           : null;
-        $expiry = Carbon::createFromFormat('d-m-Y', $item['expiry_date'])->startOfDay();
+        $expiry  = Carbon::createFromFormat('d-m-Y H:i', $item['expiry_date']);
 
-        // if ($aftap->gte($today)) return "Tanggal aftap pada baris {$row} harus sebelum tanggal sekarang";
-        // if ($process->gte($today)) return "Tanggal proses pada baris {$row} harus sebelum tanggal sekarang";
-        // if ($process && $process->lt($aftap)) {
-        //   return "Tanggal proses pada baris {$row} harus setelah tanggal aftap";
-        // }
-        // if ($expiry->lte($today)) return "Tanggal expire pada baris {$row} harus setelah tanggal sekarang";
         if ($expiry->lt($aftap)) return "Tanggal expire pada baris {$row} harus setelah tanggal aftap";
         if ($process && $expiry->lt($process)) {
           return "Tanggal expire pada baris {$row} harus setelah tanggal proses";
@@ -504,5 +492,4 @@ class StockInAddService
 
     return null;
   }
-  // ---------- Helper: untuk memvalidasi tanggal pada blood data :end ----------
 }

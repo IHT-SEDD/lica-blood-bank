@@ -26,7 +26,7 @@ class DashboardDataService
                 SUM(CASE WHEN blood_packs.blood_group = 'AB' AND blood_packs.blood_rhesus = '-' THEN 1 ELSE 0 END) as ab_negative_count,
                 SUM(CASE WHEN blood_packs.blood_group = 'O'  AND blood_packs.blood_rhesus = '-' THEN 1 ELSE 0 END) as o_negative_count
             ")
-            ->whereNotIn('blood_status', [BloodStockStatus::TAKEN_OUT, BloodStockStatus::DESTROYED])
+            ->whereIn('blood_status', [BloodStockStatus::AVAILABLE, BloodStockStatus::USED])
             ->first();
 
         $aPositive = (int) ($raw->a_positive_count  ?? 0);
@@ -84,9 +84,7 @@ class DashboardDataService
                 'bloodTransfusionDetails.bloodTransfusion:id,public_id,patient_id',
                 'bloodTransfusionDetails.bloodTransfusion.patient:id,public_id,name',
             ])
-            ->whereNotIn('blood_status', [
-                BloodStockStatus::DESTROYED,
-            ])
+            ->whereIn('blood_status', [BloodStockStatus::AVAILABLE, BloodStockStatus::USED])
             ->when($bloodRhesus, fn($q) => $q->whereHas(
                 'bloodPacks',
                 fn($sub) =>
