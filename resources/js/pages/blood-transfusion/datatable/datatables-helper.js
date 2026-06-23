@@ -566,6 +566,7 @@ export function DatatableListBagRequest() {
         {
             removeSearch: true,
             removePageInfo: true,
+            removePageLength: true,
             removePagination: true,
             rowSelect: true,
             ajax: (data, callback) => {
@@ -678,6 +679,7 @@ export function DatatableListTest() {
         removeSearch: true,
         removePageInfo: true,
         removePagination: true,
+        removePageLength: true,
         ajax: (data, callback) => {
             if (
                 !window.currentTransfusionPublicId ||
@@ -718,6 +720,7 @@ export function DatatableBloodPackModal() {
     new GlobalAdvanceYajraDatatable(TABLE.bloodPack, {
         removePageInfo: true,
         removePagination: true,
+        removePageLength: true,
         removeSearch: true,
         searchDelay: 800,
         scrollY: "250px",
@@ -900,6 +903,7 @@ export function DatatableHistoryTestTable() {
             removeSearch: true,
             removePageInfo: true,
             removePagination: true,
+            removePageLength: true,
             ajax: (data, callback) => {
                 if (!window.currentTransfusionPatientId) {
                     return callback(emptyCallback(data.draw));

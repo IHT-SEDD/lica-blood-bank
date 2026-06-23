@@ -19,7 +19,7 @@
   {{-- Header :end --}}
 
   {{-- Blood Data Table :begin --}}
-  <div class="col-lg-8 col-md-7 col-12">
+  <div class="col-12">
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header d-flex justify-content-between align-items-center">
@@ -80,7 +80,7 @@
   {{-- Blood Data Table :end --}}
 
   {{-- Log Activity :begin --}}
-  <div class="col-lg-4 col-md-5 col-12">
+  <div class="col-6">
     <div class="card">
       {{-- Card Header :begin --}}
       <div class="card-header d-flex justify-content-between align-items-center">

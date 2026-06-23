@@ -36,7 +36,7 @@
 
             {{-- Topbar app version --}}
             <div class="topbar-item d-none d-lg-flex">
-                <a href="" class="topbar-link btn shadow-none btn-link px-2 disabled">v1.0.0 - Beta.2</a>
+                <a href="" class="topbar-link btn shadow-none btn-link px-2 disabled">v1.1.0</a>
             </div>
 
             {{-- Blood Transfusion Menu --}}
