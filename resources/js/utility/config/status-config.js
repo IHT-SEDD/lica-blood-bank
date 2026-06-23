@@ -75,11 +75,6 @@ export function TransfusionBloodStatus(status) {
     const value = status?.value || status;
 
     switch (value) {
-        case "expired":
-            return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
-                Expired!
-            </span>`;
         case "in_use":
             return `<span class="badge badge-label fw-semibold badge-soft-info">
                 <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
@@ -101,9 +96,14 @@ export function TransfusionBloodStatus(status) {
                 Dikeluarkan
             </span>`;
         case "used":
-            return `<span class="badge badge-label fw-semibold badge-soft-info">
+            return `<span class="badge badge-label fw-semibold badge-soft-primary">
                 <i class="ti ti-heart-x align-middle me-2 fs-4"></i>
                 Tidak Dikeluarkan
+            </span>`;
+        case "hold":
+            return `<span class="badge badge-label fw-semibold badge-soft-warning">
+                <i class="ti ti-heart-pause align-middle me-2 fs-4"></i>
+                Ditahan
             </span>`;
         default:
             return `<span class="badge badge-label fw-semibold badge-soft-secondary">

@@ -156,42 +156,42 @@ function BloodStockDataTable() {
             data: "expiry_date",
             title: "Tgl. Expire",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "aftap_date",
             title: "Tgl. Aftap",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "process_date",
             title: "Tgl. Proses",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "used_at",
             title: "Tgl. Digunakan",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "created_at",
             title: "Tgl. Tersedia",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "deleted_at",
             title: "Tgl. Dihapus",
             render: (data) => {
-                return `<span class="fw-medium fs-6">${DateTimeFormatter.shortDateTime(data)}</span>`;
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {

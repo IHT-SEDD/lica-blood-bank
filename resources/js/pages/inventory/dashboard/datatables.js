@@ -101,14 +101,14 @@ function ListStockTable() {
             data: "created_at",
             title: "Tgl. Diterima",
             render: (data) => {
-                return DateTimeFormatter.human(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {
             data: "expiry_date",
             title: "Tgl. Expire",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {
@@ -163,7 +163,7 @@ function ListStockTable() {
             data: "updated_at",
             title: "Tgl. Update",
             render: (data) => {
-                return DateTimeFormatter.human(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {

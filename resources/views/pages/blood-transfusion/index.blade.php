@@ -272,6 +272,7 @@
 Darah', 'action' => 'arsip'])
 @include('pages.blood-transfusion.partials.blood-release-modal')
 @include('pages.blood-transfusion.partials.blood-release-all-modal')
+@include('pages.blood-transfusion.partials.blood-unrelease-modal')
 @include('pages.blood-transfusion.partials.update-blood-modal')
 @endsection
 

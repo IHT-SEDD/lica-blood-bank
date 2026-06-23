@@ -44,8 +44,6 @@ class BloodStock extends Model
     ];
 
     protected $casts = [
-        'blood_group' => BloodGroup::class,
-        'blood_component' => BloodComponent::class,
         'expiry_date' => 'datetime',
     ];
 
