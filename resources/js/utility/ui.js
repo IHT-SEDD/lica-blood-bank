@@ -392,3 +392,14 @@ export class DateTimeFormatter {
         return days[index];
     }
 }
+
+// ---------- Get Instance ----------
+export class GetInstance {
+    Modal(selectorId) {
+        const modalEl = document.getElementById(selectorId);
+        if (!modalEl) return null;
+        return (
+            bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)
+        );
+    }
+}
