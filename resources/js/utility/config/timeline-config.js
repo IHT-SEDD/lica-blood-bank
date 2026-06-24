@@ -188,6 +188,12 @@ export const BloodTransfusionLogConfigTL = {
         title: "Crossmatch Selesai",
         tooltipTitle: "Pemeriksaan crossmatch berhasil diselesaikan",
     },
+    crossmatch_result_updated: {
+        icon: "pencil",
+        colorClass: "text-info fill-info",
+        title: "Hasil Crossmatch Diperbaharui",
+        tooltipTitle: "Hasil crossmatch telah berhasil diperbaharui",
+    },
     blood_transfusion_completed: {
         icon: "shield-check",
         colorClass: "text-success fill-success",

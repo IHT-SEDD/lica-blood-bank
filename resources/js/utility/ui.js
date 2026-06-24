@@ -36,7 +36,7 @@ window.notyf = new Notyf({
 // ---------- Global Text Formatter Class ----------
 export class TextFormatter {
     static format(text, format = "underscoreReplace") {
-        if (!text) return "-";
+        if (!text || text == null) return "-";
         switch (format) {
             case "underscoreReplace":
                 return this.underscoreReplace(text);
@@ -69,6 +69,7 @@ export class TextFormatter {
             .replace(/\b\w/g, (c) => c.toUpperCase());
     }
     static capitalize(text) {
+        if (!text || text == null) return "-";
         return text.charAt(0).toUpperCase() + text.slice(1);
     }
     static titleCase(text) {
@@ -389,5 +390,16 @@ export class DateTimeFormatter {
             "Sabtu",
         ];
         return days[index];
+    }
+}
+
+// ---------- Get Instance ----------
+export class GetInstance {
+    Modal(selectorId) {
+        const modalEl = document.getElementById(selectorId);
+        if (!modalEl) return null;
+        return (
+            bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl)
+        );
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Services\Report;
 
+use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
+use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -18,22 +20,14 @@ class ReportDataService
         switch ($report) {
             case 'blood-usage':
                 return $this->datatableBloodUsage($request);
+            case 'blood-expire':
+                return $this->datatableBloodExpire($request);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
     }
 
     // ---------- Helper ----------
-    private function getReportConfig(string $report): array
-    {
-        $modules = config('report');
-        abort_unless(isset($modules[$report]), 404, "Report '{$report}' not found.");
-        return $modules[$report];
-    }
-    private function getSearchableColumns(string $model): array
-    {
-        return (new $model)->getFillable();
-    }
     protected function getDateRange(Request $request): array
     {
         $start = $request->start_date;
@@ -136,6 +130,59 @@ class ReportDataService
 
         $data = $grouped->map(function ($row) use ($roomTotals) {
             $row['room_grand_total'] = $roomTotals[$row['room_id']] ?? 0;
+            return $row;
+        });
+
+        return DataTables::of($data)->toJson();
+    }
+    // ---------- Datatable Blood Expire ----------
+    private function datatableBloodExpire(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodComponent = $request->blood_component;
+
+        $bloodStocks = BloodStock::withoutTrashed()
+            ->where('blood_status', BloodStockStatus::EXPIRED)
+            ->whereBetween('expiry_date', [$startDate->toDateString(), $endDate->toDateString()])
+            ->with(['bloodPacks'])
+            ->when($bloodComponent, function ($query) use ($bloodComponent) {
+                $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                    $q->where('blood_component', $bloodComponent);
+                });
+            })
+            ->get();
+
+        $grouped = $bloodStocks
+            ->map(fn($stock) => [
+                'expiry_date' => $stock->expiry_date instanceof \Carbon\Carbon
+                    ? $stock->expiry_date->toDateString()
+                    : (string) $stock->expiry_date,
+                'blood_pack_id' => $stock->blood_pack_id,
+                'blood_component' => $stock->bloodPack?->blood_component,
+                'blood_group' => $stock->bloodPack?->blood_group,
+                'blood_rhesus' => $stock->bloodPack?->blood_rhesus,
+            ])
+            ->groupBy(fn($row) => $row['expiry_date'] . '|' . $row['blood_pack_id'])
+            ->map(function ($rows) {
+                $first = $rows->first();
+                return [
+                    'expiry_date' => $first['expiry_date'],
+                    'blood_pack_id' => $first['blood_pack_id'],
+                    'blood_component' => $first['blood_component'],
+                    'blood_group' => $first['blood_group'],
+                    'blood_rhesus' => $first['blood_rhesus'],
+                    'total' => $rows->count(),
+                ];
+            })
+            ->values()
+            ->sortBy('expiry_date')
+            ->values();
+        $dateTotals = $grouped
+            ->groupBy('expiry_date')
+            ->map(fn($rows) => $rows->sum('total'));
+
+        $data = $grouped->map(function ($row) use ($dateTotals) {
+            $row['date_grand_total'] = $dateTotals[$row['expiry_date']] ?? 0;
             return $row;
         });
 

@@ -66,14 +66,14 @@
               <th>Bag Number <span class="text-danger">*</span></th>
               <th>Blood Pack <span class="text-danger">*</span></th>
               <th style="width: 5%;">Volume <span class="text-danger">*</span></th>
-              <th style="width: 8%;">Aftap <span class="text-danger">*</span></th>
-              <th style="width: 8%;">Expiry <span class="text-danger">*</span></th>
-              <th style="width: 8%;">Process <span class="text-danger">*</span></th>
-              <th>HIV?</th>
-              <th>HCV?</th>
-              <th>HbsAG?</th>
-              <th>Syphilis?</th>
-              <th>Action</th>
+              <th style="width: 9%;">Aftap <span class="text-danger">*</span></th>
+              <th style="width: 9%;">Expiry <span class="text-danger">*</span></th>
+              <th style="width: 9%;">Process <span class="text-danger">*</span></th>
+              <th style="width: 3%;">HIV?</th>
+              <th style="width: 3%;">HCV?</th>
+              <th style="width: 3%;">HbsAG?</th>
+              <th style="width: 3%;">Syphilis?</th>
+              <th style="width: 10%;">Action</th>
             </tr>
           </thead>
           <tbody id="blood_data_row">

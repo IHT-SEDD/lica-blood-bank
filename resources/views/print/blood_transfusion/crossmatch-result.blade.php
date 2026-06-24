@@ -420,7 +420,7 @@
     {{-- Signature --}}
     @php
     $firstDetail = $data->details->first();
-    $resultBy = $firstDetail?->bloodTransfusionDetailTests?->first()?->resultByUser?->name;
+    $resultBy = $firstDetail?->bloodTransfusionDetailTests?->first()?->resultByUser?->usename;
     $username = strtolower($resultBy ?? '');
     $barcodeFile = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
     $barcodeUrl = asset("assets/images/barcode/ttd_{$username}_barcode.png");
