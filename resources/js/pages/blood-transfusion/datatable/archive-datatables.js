@@ -217,6 +217,7 @@ export function DatatableArchiveBagRequest() {
             removeSearch: true,
             removePageInfo: true,
             removePagination: true,
+            removePageLength: true,
             rowSelect: true,
             ajax: {
                 url: `${DATATABLE_URL}/bag-request`,
@@ -277,6 +278,7 @@ export function DatatableArchiveTest() {
             removeSearch: true,
             removePageInfo: true,
             removePagination: true,
+            removePageLength: true,
             ajax: {
                 url: `${DATATABLE_URL}/test`,
                 data: function (d) {

@@ -2,26 +2,45 @@
   {{-- Form Edit :begin --}}
   <form class="row g-2" id="edit_data_stock_blood" autocomplete="off">
     {{-- Storage Rack --}}
-    <div class="col-lg-6">
+    <div class="col-lg-4">
       <label class="form-label" for="edit_data_blood_stock_storage_rack">Rak Penyimpanan</label>
       <select class="form-control form-control-sm tomselect-sm" id="edit_data_blood_stock_storage_rack"
         name="storage_rack_id" placeholder="Pilih rak penyimpanan..."></select>
     </div>
 
+    {{-- Status --}}
+    <div class="col-lg-8">
+      <label class="form-label" for="edit_data_blood_stock_status">Status</label>
+      <select class="form-control form-control-sm tomselect-sm" id="edit_data_blood_stock_status" name="status"
+        placeholder="Pilih status..."></select>
+    </div>
+
     {{-- Volume --}}
     <div class="col-lg-6">
-      <label class="form-label" for="edit_data_blood_stock_volume">Volume<span class="text-danger">*</span></label>
+      <label class="form-label" for="edit_data_blood_stock_volume">Volume</label>
       <input autocomplete="off" class="form-control form-control-sm" id="edit_data_blood_stock_volume" name="volume"
         type="text" placeholder="ml" />
     </div>
 
-    {{-- Status --}}
-    <div class="col-lg-12">
-      <label class="form-label" for="edit_data_blood_stock_status">Status
-        <span class="text-danger">*</span>
-      </label>
-      <select class="form-control form-control-sm tomselect-sm" id="edit_data_blood_stock_status" name="status"
-        placeholder="Pilih status..."></select>
+    {{-- Tgl. Aftap --}}
+    <div class="col-lg-6">
+      <label class="form-label" for="edit_data_blood_stock_aftap_date">Tgl. Aftap</label>
+      <input type="text" class="form-control form-control-sm" id="edit_data_blood_stock_aftap_date" name="aftap_date"
+        data-date-format="d-m-Y H:i" data-provider="flatpickr" />
+    </div>
+
+    {{-- Tgl. Expire --}}
+    <div class="col-lg-6">
+      <label class="form-label" for="edit_data_blood_stock_expiry_date">Tgl. Expire</label>
+      <input type="text" class="form-control form-control-sm" id="edit_data_blood_stock_expiry_date" name="expiry_date"
+        data-date-format="d-m-Y H:i" data-provider="flatpickr" />
+    </div>
+
+    {{-- Tgl. Proses --}}
+    <div class="col-lg-6">
+      <label class="form-label" for="edit_data_blood_stock_process_date">Tgl. Proses</label>
+      <input type="text" class="form-control form-control-sm" id="edit_data_blood_stock_process_date"
+        name="process_date" data-date-format="d-m-Y H:i" data-provider="flatpickr" />
     </div>
 
     {{-- Is Expired? --}}

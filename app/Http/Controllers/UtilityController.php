@@ -57,6 +57,22 @@ class UtilityController extends Controller
         return response()->json($results);
     }
 
+    // ---------- Fungsi untuk mengambil data no bdrs ----------
+    public function selectDataBDRSNumber(Request $request)
+    {
+        return response()->json(
+            $this->service->getSelectBdrsNumber($request)
+        );
+    }
+
+    // ---------- Fungsi untuk mengambil data no order ----------
+    public function selectDataOrderNumber(Request $request)
+    {
+        return response()->json(
+            $this->service->getSelectOrderNumber($request)
+        );
+    }
+
     // ---------- Fungsi untuk mengambil data per id ----------
     public function getDataById(Request $request, string $data, string $id)
     {

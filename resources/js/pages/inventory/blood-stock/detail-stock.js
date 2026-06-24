@@ -325,7 +325,7 @@ function GenerateTimeline(logs = []) {
     bloodStockTimeline.render(logs);
 }
 
-// ---------- Select tom-select untuk data di modal edit ----------
+// ---------- Select tom-select & Flatpickr untuk data di modal edit ----------
 function EditStorageRack() {
     new GlobalAdvanceTomselect("#edit_data_blood_stock_storage_rack", {
         valueField: "id",
@@ -354,6 +354,14 @@ function EditBloodStatus() {
                 .then((json) => callback(json.results))
                 .catch(() => callback());
         },
+    });
+}
+function EditBloodDate(id) {
+    if (!id) return;
+    new GlobalAdvanceFlatpickr(`#${id}`, {
+        allowInput: true,
+        enableTime: true,
+        static: true,
     });
 }
 
@@ -388,6 +396,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Date range picker
     DateRangeFilter();
+    EditBloodDate("edit_data_blood_stock_aftap_date");
+    EditBloodDate("edit_data_blood_stock_expiry_date");
+    EditBloodDate("edit_data_blood_stock_process_date");
 
     new TableActionHandler(reloadTable).init();
 
