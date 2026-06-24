@@ -42,19 +42,20 @@ class BloodStockWriteService
 
    if ($request->storage_rack_id) {
     $storageRackId = StorageRack::where('public_id', $request->storage_rack_id)->value('id');
-
     if (!$storageRackId) {
      DB::rollBack();
      return response()->json(['message' => 'Data rak penyimpanan tidak ditemukan!'], 404);
     }
-
     StorageRackBlood::create([
      'storage_rack_id' => $storageRackId,
      'blood_stock_id' => $stock->id,
     ]);
    }
 
-   $isCurrentlyUse = BloodTransfusionDetail::withoutTrashed()->where('blood_stock_id', $stock->id)->exists();
+   $isCurrentlyUse = BloodTransfusionDetail::withoutTrashed()->where('blood_stock_id', $stock->id)
+    ->where('blood_release_status', 0)
+    ->whereNull('crossmatch_finish_at')
+    ->exists();
    if ($isCurrentlyUse) {
     DB::rollBack();
     return response()->json(['message' => 'Darah tidak bisa diubah statusnya karena sedang digunakan oleh pasien!'], 500);
@@ -65,6 +66,9 @@ class BloodStockWriteService
     'blood_volume' => $request->volume,
     'blood_status' => $request->status,
     'storage_rack_id' => $request->storage_rack_id ? $storageRackId : null,
+    'aftap_date' => Carbon::createFromFormat('d-m-Y H:i', $request->aftap_date),
+    'process_date' => Carbon::createFromFormat('d-m-Y H:i', $request->process_date),
+    'expiry_date' => Carbon::createFromFormat('d-m-Y H:i', $request->expiry_date),
     'is_expired' => $request->boolean('is_expired'),
    ]);
    $stock->refresh();
