@@ -20,9 +20,9 @@
       <span class="input-group-text" id="report-blood-expire-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control report-blood-expire-table-date-filter"
-        aria-describedby="report-blood-expire-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-        data-range-date="true" type="text" placeholder="Pilih rentang tanggal" />
+      <input class="form-control report-blood-expire-table-month-filter"
+        aria-describedby="report-blood-expire-table-month-filter" data-provider="monthpickr" type="text"
+        placeholder="Pilih bulan dan tahun" />
     </div>
   </div>
   {{-- Date filter :begin --}}
