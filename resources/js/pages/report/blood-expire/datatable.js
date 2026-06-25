@@ -1,4 +1,5 @@
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let reportBloodExpireTableInstance;
@@ -24,7 +25,13 @@ export function ReportBloodExpireTable(getFilters) {
                 return meta.row + 1;
             },
         },
-        { data: "expiry_date", title: "Tgl. Expire" },
+        {
+            data: "expiry_date",
+            title: "Tgl. Expire",
+            render: (data, type, row, meta) => {
+                return DateTimeFormatter.datetime24(row.expiry_date);
+            },
+        },
         {
             data: null,
             title: "Detail",
@@ -34,7 +41,7 @@ export function ReportBloodExpireTable(getFilters) {
                 return `${row.blood_component.name} ${row.blood_group.name}${row.blood_rhesus}`;
             },
         },
-        { data: "total_per_date_per_pack", title: "Total" },
+        { data: "total", title: "Total" },
     ];
 
     reportBloodExpireTableInstance = new GlobalAdvanceYajraDatatable(
@@ -44,8 +51,7 @@ export function ReportBloodExpireTable(getFilters) {
                 url: ReportDataURL,
                 data: function (d) {
                     const filters = getFilters();
-                    d.start_date = filters.start_date;
-                    d.end_date = filters.end_date;
+                    d.month_year = filters.monthAndYear;
                     d.blood_component = filters.bloodComponent;
                 },
             },

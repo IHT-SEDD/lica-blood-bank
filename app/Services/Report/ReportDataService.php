@@ -138,29 +138,30 @@ class ReportDataService
     // ---------- Datatable Blood Expire ----------
     private function datatableBloodExpire(Request $request)
     {
-        [$startDate, $endDate] = $this->getDateRange($request);
+        $monthYear = $request->month_year;
         $bloodComponent = $request->blood_component;
 
-        $bloodStocks = BloodStock::withoutTrashed()
-            ->where('blood_status', BloodStockStatus::EXPIRED)
-            ->whereBetween('expiry_date', [$startDate->toDateString(), $endDate->toDateString()])
-            ->with(['bloodPacks'])
-            ->when($bloodComponent, function ($query) use ($bloodComponent) {
-                $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
-                    $q->where('blood_component', $bloodComponent);
-                });
-            })
-            ->get();
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED);
+        if (!empty($monthYear)) {
+            $date = Carbon::createFromFormat('Y-m', $monthYear);
+            $query->whereYear('expiry_date', $date->year)->whereMonth('expiry_date', $date->month);
+        }
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                $q->where('blood_component', $bloodComponent);
+            });
+        }
+        $bloodStocks = $query->get();
 
         $grouped = $bloodStocks
             ->map(fn($stock) => [
                 'expiry_date' => $stock->expiry_date instanceof \Carbon\Carbon
-                    ? $stock->expiry_date->toDateString()
+                    ? $stock->expiry_date->format('Y-m-d H:i:s')
                     : (string) $stock->expiry_date,
                 'blood_pack_id' => $stock->blood_pack_id,
-                'blood_component' => $stock->bloodPack?->blood_component,
-                'blood_group' => $stock->bloodPack?->blood_group,
-                'blood_rhesus' => $stock->bloodPack?->blood_rhesus,
+                'blood_component' => $stock->bloodPacks?->blood_component,
+                'blood_group' => $stock->bloodPacks?->blood_group,
+                'blood_rhesus' => $stock->bloodPacks?->blood_rhesus,
             ])
             ->groupBy(fn($row) => $row['expiry_date'] . '|' . $row['blood_pack_id'])
             ->map(function ($rows) {
