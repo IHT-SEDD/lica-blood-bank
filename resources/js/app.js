@@ -48,6 +48,8 @@ import { initDismissible } from "./utility/app/dismissable";
 // OTHERS
 import "simplebar";
 import flatpickr from "flatpickr";
+import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index.js";
+import "flatpickr/dist/plugins/monthSelect/style.css";
 import TomSelect from "tom-select";
 import Choices from "choices.js";
 
@@ -208,26 +210,17 @@ export class GlobalAdvanceDatatable {
 
 // ------------------------------ Advance Flatpickr for global config ------------------------------
 export class GlobalAdvanceFlatpickr {
-    // Mulai constructor untuk global config flatpickr
     constructor(selector, options = {}) {
-        // Ambil selector HTML untuk element
         this.elements = document.querySelectorAll(selector);
-
-        // Lempar error jika element tidak ditemukan
         if (!this.elements.length) {
             console.error("Flatpickr element not found:", selector);
             return;
         }
-
-        // Ambil options dari client
         this.options = options;
-        // Bikin init untuk instance
         this.init();
     }
 
-    // Bangun init untuk flatpickr
     init() {
-        // Terapkan config pada tiap element
         this.elements.forEach((item) => {
             // Ambil tipe flatpickr dari attribut data-provider
             const type = item.getAttribute("data-provider");
@@ -243,56 +236,38 @@ export class GlobalAdvanceFlatpickr {
             if (type === "flatpickr") {
                 if (attrs["data-date-format"])
                     config.dateFormat = attrs["data-date-format"].value;
-
                 if (attrs["data-enable-time"]) {
                     config.enableTime = true;
                     config.dateFormat = (config.dateFormat || "Y-m-d") + " H:i";
                 }
-
                 if (attrs["data-altformat"]) {
                     config.altInput = true;
                     config.altFormat = attrs["data-altformat"].value;
                 }
-
                 if (attrs["data-mindate"])
                     config.minDate = attrs["data-mindate"].value;
-
                 if (attrs["data-maxdate"])
                     config.maxDate = attrs["data-maxdate"].value;
-
                 if (attrs["data-default-date"])
                     config.defaultDate = attrs["data-default-date"].value;
-
                 if (attrs["data-multiple-date"]) config.mode = "multiple";
-
                 if (attrs["data-range-date"]) config.mode = "range";
-
                 if (attrs["data-inline-date"]) {
                     config.inline = true;
                     config.defaultDate = attrs["data-default-date"]?.value;
                 }
-
                 if (attrs["data-disable-date"]) {
                     config.disable =
                         attrs["data-disable-date"].value.split(",");
                 }
-
                 if (attrs["data-week-number"]) {
                     config.weekNumbers = true;
                 }
-
                 // ---------- merge event dari luar ----------
-                config = {
-                    ...config,
-                    ...this.options,
-                };
-
+                config = { ...config, ...this.options };
                 const instance = flatpickr(item, config);
-
-                // simpan instance
                 item._flatpickrInstance = instance;
             }
-
             // ---------- TIMEPICKR ----------
             else if (type === "timepickr") {
                 let configTime = {
@@ -314,13 +289,35 @@ export class GlobalAdvanceFlatpickr {
                     configTime.defaultDate = attrs["data-time-inline"].value;
                 }
 
-                configTime = {
-                    ...configTime,
-                    ...this.options,
+                configTime = { ...configTime, ...this.options };
+                const instance = flatpickr(item, configTime);
+                item._flatpickrInstance = instance;
+            }
+            // ---------- MONTHPICKR ----------
+            else if (type === "monthpickr") {
+                let configMonth = {
+                    plugins: [
+                        new monthSelectPlugin({
+                            shorthand: attrs["data-shorthand"]
+                                ? attrs["data-shorthand"].value === "true"
+                                : false,
+                            dateFormat:
+                                attrs["data-date-format"]?.value || "Y-m",
+                            altFormat: attrs["data-altformat"]?.value || "F Y",
+                            theme: attrs["data-theme"]?.value || "light",
+                        }),
+                    ],
                 };
 
-                const instance = flatpickr(item, configTime);
+                if (attrs["data-default-date"])
+                    configMonth.defaultDate = attrs["data-default-date"].value;
+                if (attrs["data-mindate"])
+                    configMonth.minDate = attrs["data-mindate"].value;
+                if (attrs["data-maxdate"])
+                    configMonth.maxDate = attrs["data-maxdate"].value;
 
+                configMonth = { ...configMonth, ...this.options };
+                const instance = flatpickr(item, configMonth);
                 item._flatpickrInstance = instance;
             }
         });

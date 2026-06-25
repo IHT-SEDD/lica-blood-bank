@@ -5,7 +5,7 @@ import { ReportBloodExpireTable, reloadTable } from "./datatable";
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 const ReloadDatatableSelector = "report-blood-expire-reload";
 
-const DateFilterSelector = ".report-blood-expire-table-date-filter";
+const MonthFilterSelector = ".report-blood-expire-table-month-filter";
 const FilterBloodComponentSelector = "#filter-blood-expire-blood-component";
 
 const ExportURL = "/report/export/";
@@ -13,26 +13,15 @@ const ExportBtnSelector = "excel_blood_expire_btn";
 
 // ---------- HELPERS ----------
 function getFilters() {
-    const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const monthAndYear = document.querySelector(MonthFilterSelector)?.value;
     const bloodComponent =
         document.querySelector(FilterBloodComponentSelector)?.value || "";
-
-    let start_date = "";
-    let end_date = "";
-
-    if (dateVal) {
-        const separator = dateVal.includes(" to ") ? " to " : " - ";
-        const parts = dateVal.split(separator);
-        start_date = parts[0] || "";
-        end_date = parts[1] || "";
-    }
-
-    return { bloodComponent, start_date, end_date };
+    return { bloodComponent, monthAndYear };
 }
 
 // ---------- FILTERS ----------
-function DateRangeFilter() {
-    new GlobalAdvanceFlatpickr(DateFilterSelector, {
+function MonthFilter() {
+    new GlobalAdvanceFlatpickr(MonthFilterSelector, {
         onClose: reloadTable,
     });
 }
@@ -94,7 +83,7 @@ function ExportToExcel() {
                 disposition.match(/filename="?([^"]+)"?/);
             const fileName = filenameMatch
                 ? decodeURIComponent(filenameMatch[1])
-                : `Laporan Pengeluaran dan Darah Kadaluarsa.xlsx`;
+                : `Laporan Darah Kadaluarsa.xlsx`;
 
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -119,7 +108,7 @@ function ExportToExcel() {
 // ---------- Init ----------
 document.addEventListener("DOMContentLoaded", function () {
     ReportBloodExpireTable(getFilters);
-    DateRangeFilter();
+    MonthFilter();
     FilterBloodComponent();
     ExportToExcel();
 

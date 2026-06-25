@@ -4,8 +4,11 @@ namespace App\Services\Report;
 
 use App\Enums\BloodComponent;
 use App\Enums\BloodGroup;
+use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
+use App\Exports\Report\BloodExpire\ReportBloodExpireExport;
 use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
+use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\Room;
 use Illuminate\Http\Request;
@@ -21,6 +24,8 @@ class ReportWriteService
         switch ($report) {
             case 'blood-usage':
                 return $this->excelBloodUsage($request, $report);
+            case 'blood-expire':
+                return $this->excelBloodExpire($request, $report);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -120,6 +125,105 @@ class ReportWriteService
         return compact('title', 'components', 'bloodGroups', 'rooms', 'rows', 'totals');
     }
 
+    // ---------- Excel Blood Expire ----------
+    public function excelBloodExpire(Request $request, string $report)
+    {
+        $monthYear = $request->filled('month_year')
+            ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
+            : Carbon::now()->startOfMonth();
+        $startDate = $monthYear->copy()->startOfMonth();
+        $endDate = $monthYear->copy()->endOfMonth();
+        $bloodComponent = $request->blood_component;
+        $paramFilenameExcel = [];
+
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereBetween('expiry_date', [$startDate, $endDate]);
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                $q->where('blood_component', $bloodComponent);
+            });
+            $componentName = BloodComponent::from($bloodComponent)->label();
+            $paramFilenameExcel = [
+                'blood_component' => $componentName
+            ];
+        }
+        $bloodStocks = $query->get();
+
+        $reportData = $this->prepareBloodExpireData($bloodStocks, $startDate);
+        $fileName = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $storagePath = 'report/blood_expire/' . $fileName;
+
+        Excel::store(new ReportBloodExpireExport($reportData), $storagePath, 'public');
+        return Excel::download(new ReportBloodExpireExport($reportData), $fileName);
+    }
+    public function prepareBloodExpireData(Collection $bloodStocks, ?Carbon $referenceDate = null): array
+    {
+        $components = collect(BloodComponent::cases())
+            ->mapWithKeys(fn(BloodComponent $c) => [$c->value => $c->exportLabel()])
+            ->all();
+        $bloodGroups = collect(BloodGroup::cases())
+            ->map(fn(BloodGroup $g) => $g->value)
+            ->all();
+        $bulanLabel = '';
+        $year = $referenceDate?->year ?? now()->year;
+        $month = $referenceDate?->month ?? now()->month;
+
+        if ($referenceDate) {
+            $original = Carbon::getLocale();
+            Carbon::setLocale('id');
+            $bulanLabel = strtoupper($referenceDate->translatedFormat('F Y'));
+            Carbon::setLocale($original);
+        }
+        $title = 'LAPORAN DARAH EXPIRE BDRS INDRAMAYU BULAN ' . $bulanLabel;
+
+        $daysInMonth = Carbon::create($year, $month)->daysInMonth;
+        $allDates = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $allDates[] = Carbon::create($year, $month, $d)->toDateString();
+        }
+
+        $qtyMap = [];
+        foreach ($bloodStocks as $bloodStock) {
+            $expDate = $bloodStock->expiry_date instanceof Carbon
+                ? $bloodStock->expiry_date->toDateString()
+                : Carbon::parse($bloodStock->expiry_date)->toDateString();
+            $bloodPack = $bloodStock->bloodPacks;
+            if (!$bloodPack instanceof \App\Models\BloodPack) continue;
+
+            $comp = $bloodPack->blood_component?->value;
+            $group = $bloodPack->blood_group?->value;
+            if (!$comp || !$group) continue;
+
+            $qtyMap[$expDate][$comp][$group] =
+                ($qtyMap[$expDate][$comp][$group] ?? 0) + 1;
+        }
+
+        $emptyGroups = array_fill_keys($bloodGroups, 0);
+        $emptyComps = array_fill_keys(array_keys($components), $emptyGroups);
+
+        $rows = [];
+        foreach ($allDates as $date) {
+            $rows[$date] = array_merge($emptyComps, ['_total' => 0]);
+        }
+        $totals = array_merge($emptyComps, ['_grand' => 0]);
+
+        foreach ($qtyMap as $date => $comps) {
+            if (!isset($rows[$date])) continue; // lewati jika di luar bulan
+            foreach ($comps as $comp => $groups) {
+                foreach ($groups as $group => $qty) {
+                    if (!isset($rows[$date][$comp][$group])) continue;
+                    $rows[$date][$comp][$group] += $qty;
+                    $rows[$date]['_total'] += $qty;
+                    $totals[$comp][$group] += $qty;
+                    $totals['_grand'] += $qty;
+                }
+            }
+        }
+
+        $expDates = $allDates;
+
+        return compact('title', 'components', 'bloodGroups', 'expDates', 'rows', 'totals');
+    }
+
     // ---------- HELPERS ----------
     protected function getDateRange(Request $request): array
     {
@@ -146,6 +250,12 @@ class ReportWriteService
                     return 'Laporan Penggunaan Darah - ' . $params['room_name'] . ' - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
                 }
                 return 'Laporan Penggunaan Darah - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
+            case 'blood-expire':
+                $bulanLabel = $startDate->translatedFormat('F Y');
+                if (!empty($params['blood_component'])) {
+                    return 'Laporan Darah Kadaluarsa - ' . $params['blood_component'] . ' - ' . $bulanLabel . '.xlsx';
+                }
+                return 'Laporan Darah Kadaluarsa - ' . $bulanLabel . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
         }
