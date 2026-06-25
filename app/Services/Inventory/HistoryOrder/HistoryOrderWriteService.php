@@ -734,7 +734,7 @@ class HistoryOrderWriteService
         return OrderBlood::where('po_number', $poNumber)
             ->with([
                 'vendors:id,public_id,name,address',
-                'users:id,public_id,name',
+                'users:id,public_id,username,name',
                 'users.roles',
                 'orderBloodDetails:id,public_id,order_blood_id,blood_pack_id,quantity,note',
                 'orderBloodDetails.bloodPacks:id,public_id,blood_group,blood_rhesus,blood_component',

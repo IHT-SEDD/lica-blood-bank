@@ -222,6 +222,28 @@ export class TableActionHandler {
                 }
             }
 
+            // ---------- Aftap Date (Flatpickr) ----------
+            const aftapDate = document.querySelector(
+                "#edit_data_blood_stock_aftap_date",
+            );
+            if (aftapDate?._flatpickr && data.aftap_date) {
+                aftapDate._flatpickr.setDate(data.aftap_date, true);
+            }
+            // ---------- Process Date (Flatpickr) ----------
+            const processDate = document.querySelector(
+                "#edit_data_blood_stock_process_date",
+            );
+            if (processDate?._flatpickr && data.process_date) {
+                processDate._flatpickr.setDate(data.process_date, true);
+            }
+            // ---------- Expiry Date (Flatpickr) ----------
+            const expiryDate = document.querySelector(
+                "#edit_data_blood_stock_expiry_date",
+            );
+            if (expiryDate?._flatpickr && data.expiry_date) {
+                expiryDate._flatpickr.setDate(data.expiry_date, true);
+            }
+
             // ---------- Blood Status (TomSelect) ----------
             const selectBloodStatus = document.querySelector(
                 "#edit_data_blood_stock_status",

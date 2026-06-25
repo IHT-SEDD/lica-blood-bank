@@ -16,13 +16,16 @@ import { BloodTransfusionLogConfigTL } from "../../utility/config/timeline-confi
 import { initFormEdit } from "./form/edit";
 import { QzManager } from "../../utility/config/qz";
 import {
-    validateBloodNumber,
-    updateConfirmButtonState,
     initReleaseBloodPack,
     initReleaseAllBloodPack,
     initDeleteTransaction,
     initArchiveTransaction,
+    initNotReleaseBloodPack,
 } from "./helper/action-helper";
+import {
+    updateConfirmButtonState,
+    validateBloodNumber,
+} from "./helper/utility-helper";
 import {
     initPrintIncompatibleLetter,
     initPrintNota,
@@ -681,15 +684,7 @@ function initBagRequestActionButtons() {
     initReleaseAllBloodPack({ doAction, SelectorBtnReleaseAll });
 
     // Unrelease
-    $(document)
-        .off("click", "#" + SelectorBtnUnrelease)
-        .on("click", "#" + SelectorBtnUnrelease, function (e) {
-            e.preventDefault();
-            if (!window.currentBagDetailPublicId) return;
-            doAction({
-                url: `/blood-transfusion/detail/${window.currentBagDetailPublicId}/unrelease`,
-            });
-        });
+    initNotReleaseBloodPack({ doAction, SelectorBtnUnrelease });
 
     // Print Incompatible Letter
     initPrintIncompatibleLetter({

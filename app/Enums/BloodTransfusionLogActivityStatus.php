@@ -13,6 +13,7 @@ enum BloodTransfusionLogActivityStatus: string
     case ARCHIVED = 'blood_transfusion_archived';
     case UPDATED = 'blood_transfusion_updated';
     case CROSSMATCH_FINISH = 'crossmatch_finished';
+    case CROSSMATCH_RESULT_UPDATED = 'crossmatch_result_updated';
 
     case BLOOD_HOLD = 'blood_stock_hold';
     case BLOOD_RELEASE = 'blood_stock_released';
@@ -32,6 +33,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::ARCHIVED => '(DIARSIP)',
             self::UPDATED => '(DIPERBAHARUI)',
             self::CROSSMATCH_FINISH => '(CROSSMATCH SELESAI)',
+            self::CROSSMATCH_RESULT_UPDATED => '(HASIL CROSSMATCH DIPERBAHARUI)',
 
             self::BLOOD_HOLD => '(DARAH SEDANG DITAHAN)',
             self::BLOOD_RELEASE => '(DARAH DIKELUARKAN)',
@@ -53,6 +55,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::ARCHIVED => 'Transaksi %s: Diarsip oleh user dengan username %s.',
             self::UPDATED => 'Transaksi %s: Data berhasil diperbaharui oleh user dengan username %s.',
             self::CROSSMATCH_FINISH => 'Transaksi %s: Crossmatch untuk no. labu %s, berhasil diselesaikan oleh user dengan username %s.',
+            self::CROSSMATCH_RESULT_UPDATED => 'Transaksi %s: Hasil crossmatch untuk no. labu %s, telah diubah oleh user dengan username %s. Detail: %s',
 
             self::BLOOD_HOLD => 'Transaksi %s: Darah dengan no. labu %s, status nya diubah menjadi ditahan oleh user dengan username %s',
             self::BLOOD_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, telah dikeluarkan oleh user dengan username %s, dan penerima labu darah bernama %s',

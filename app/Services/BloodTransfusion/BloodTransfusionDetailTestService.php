@@ -124,29 +124,11 @@ class BloodTransfusionDetailTestService
                 return ['success' => false, 'message' => 'Data detail transaksi tidak ditemukan'];
             }
 
-            // Ambil semua test untuk detail ini
             $tests = BloodTransfusionDetailTest::withoutTrashed()->with(['test:id,public_id,name'])
                 ->where('bt_detail_id', $detail->id)
                 ->get();
             if ($tests->isEmpty()) {
                 return ['success' => false, 'message' => 'Tidak ada pemeriksaan untuk labu darah ini'];
-            }
-
-            $requiredTests = $tests->reject(function ($t) use ($detail) {
-                return
-                    strtolower($detail->component ?? '') === 'tc' &&
-                    strtolower($t->test?->name ?? '') === 'mayor';
-            });
-
-            // Validasi: semua test harus sudah ada result
-            $missingResult = $requiredTests->filter(
-                fn($t) => empty($t->result)
-            );
-            if ($missingResult->isNotEmpty()) {
-                return [
-                    'success' => false,
-                    'message' => 'Terdapat pemeriksaan yang belum dikerjakan',
-                ];
             }
 
             // // Validasi: semua test harus sudah verified
@@ -171,19 +153,42 @@ class BloodTransfusionDetailTestService
             //     ];
             // }
 
-            // Tentukan result: jika semua compatible → Compatible, jika ada incompatible → Incompatible
-            $allCompatible = $requiredTests->every(
-                fn($t) => $t->result === ResultTest::COMPATIBLE->value
+            // Validasi minimal 2 test harus memiliki hasil
+            $completedTests = $tests->filter(
+                fn($t) => !empty($t->result)
             );
-            $transfusionResult = $allCompatible
-                ? 'Compatible'
-                : 'Incompatible';
+            if ($completedTests->count() < 2) {
+                return [
+                    'success' => false,
+                    'message' => 'Minimal 2 pemeriksaan harus memiliki hasil.',
+                ];
+            }
+
+            // Penentuan crossmatch_result
+            $hasIncompatible = $completedTests->contains(function ($t) {
+                $result = strtolower(trim($t->result ?? ''));
+                return str_starts_with($result, 'incompatible');
+            });
+            $hasCompatible = $completedTests->contains(function ($t) {
+                $result = strtolower(trim($t->result ?? ''));
+                return str_starts_with($result, 'compatible');
+            });
+            if ($hasIncompatible) {
+                $crossmatchResult = 'Incompatible';
+            } elseif ($hasCompatible) {
+                $crossmatchResult = 'Compatible';
+            } else {
+                return [
+                    'success' => false,
+                    'message' => 'Tidak ditemukan hasil Compatible atau Incompatible untuk menentukan hasil crossmatch.',
+                ];
+            }
             $detail->update([
-                'crossmatch_result' => $transfusionResult,
+                'crossmatch_result' => $crossmatchResult,
                 'crossmatch_finish_at' => now(),
             ]);
 
-            $this->insertCrossMatchHistory($detail, $transfusionResult);
+            $this->insertCrossMatchHistory($detail, $crossmatchResult);
 
             BloodTransfusionLogActivity::create([
                 'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
@@ -207,8 +212,8 @@ class BloodTransfusionDetailTestService
             ], 200, 'donebloodtransfusion');
             return [
                 'success' => true,
-                'message' => "Pemeriksaan crossmatch berhasil diselesaikan dengan hasil: {$transfusionResult}.",
-                'crossmatch_result' => $transfusionResult,
+                'message' => "Pemeriksaan crossmatch berhasil diselesaikan dengan hasil: {$crossmatchResult}.",
+                'crossmatch_result' => $crossmatchResult,
             ];
         } catch (\Throwable $th) {
             DB::rollBack();
@@ -224,7 +229,7 @@ class BloodTransfusionDetailTestService
         }
     }
 
-    private function insertCrossMatchHistory($detail, ?string $transfusionResult)
+    private function insertCrossMatchHistory($detail, ?string $crossmatchResult)
     {
         try {
             DB::beginTransaction();
@@ -232,7 +237,7 @@ class BloodTransfusionDetailTestService
             $history = CrossMatchHistory::where('blood_transfusion_detail_id', $detail->id)->first();
             if ($history) {
                 $history->update([
-                    'result' => $transfusionResult,
+                    'result' => $crossmatchResult,
                     'blood_stock_id' => $detail->blood_stock_id,
                     'updated_at' => now()
                 ]);
@@ -241,7 +246,7 @@ class BloodTransfusionDetailTestService
             $newlyCreated = CrossMatchHistory::create([
                 'blood_transfusion_detail_id' => $detail->id,
                 'blood_stock_id' => $detail->blood_stock_id,
-                'result' => $transfusionResult,
+                'result' => $crossmatchResult,
                 'patient_name' => $detail->bloodTransfusion->patient->name
             ]);
             DB::commit();

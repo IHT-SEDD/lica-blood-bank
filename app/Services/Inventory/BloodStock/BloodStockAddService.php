@@ -27,23 +27,20 @@ class BloodStockAddService
   DB::beginTransaction();
   try {
    $user = Auth::user();
+   
    $bagNumberItems = $request->input('bag_numbers', []);
-
-   // ---------- Validasi bag_numbers tidak kosong ----------
    if (empty($bagNumberItems)) {
     return response()->json(['message' => 'Nomor labu/kantong tidak boleh kosong!'], 422);
    }
 
    // ---------- Validasi & klasifikasi tiap bag number ----------
    [$validDetails, $notFoundBags, $alreadyInStockBags] = $this->classifyBagNumbers($bagNumberItems);
-
    if (!empty($notFoundBags)) {
     return response()->json([
      'message' => 'Beberapa nomor labu/kantong tidak tersedia atau tidak ditemukan!',
      'invalid_bags' => $notFoundBags,
     ], 422);
    }
-
    if (!empty($alreadyInStockBags)) {
     return response()->json([
      'message' => 'Beberapa nomor labu/kantong sudah ada di sistem!',

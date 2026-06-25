@@ -8,7 +8,7 @@ export const datatableLanguage = {
     },
     search: "",
     searchPlaceholder: "Search data...",
-    lengthMenu: `_MENU_ <span style="font-size: 12px;">Jumlah data per halaman</span>`,
+    // lengthMenu: `_MENU_ <span style="font-size: 12px;">Jumlah data per halaman</span>`,
     info: `<span style="font-size: 12px;">
             Menampilkan <span class="fw-semibold">_START_</span> - <span class="fw-semibold">_END_</span> dari <span class="fw-semibold">_TOTAL_</span> Data
         </span>`,
@@ -25,20 +25,33 @@ export function buildDatatableDom({
     removeSearch,
     removePagination,
     removePageInfo,
+    removePageLength = false,
 }) {
-    const topLeft = [
+    const leftControls = [
         useHideColumn ? "<'columnToggleWrapper'>" : "",
-        !removeSearch ? "f" : "",
-    ].join("");
+        !removePageLength ? "<'pageLengthWrapper'>" : "",
+    ].some(Boolean)
+        ? `<'d-flex align-items-center gap-2'${[
+              useHideColumn ? "<'columnToggleWrapper'>" : "",
+              !removePageLength ? "<'pageLengthWrapper'>" : "",
+          ].join("")}>`
+        : "";
+
+    const searchControl = !removeSearch ? "f" : "";
+
+    // const topLeft = [
+    //     useHideColumn ? "<'columnToggleWrapper'>" : "",
+    //     !removePageLength ? "<'pageLengthWrapper'>" : "",
+    //     !removeSearch ? "f" : "",
+    // ].join("");
 
     const bottomLeft = [
-        "l",
         !removePageInfo ? "i" : "",
         !removePagination ? "p" : "",
     ].join("");
 
     return (
-        `<'d-lg-flex justify-content-between align-items-center mt-2 mb-3'${topLeft}>` +
+        `<'d-lg-flex justify-content-between align-items-center mt-2 mb-3'${leftControls}${searchControl}>` +
         `rt` +
         `<'d-lg-flex justify-content-between align-items-center mt-2'${bottomLeft}>`
     );

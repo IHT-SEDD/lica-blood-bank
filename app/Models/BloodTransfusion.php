@@ -75,6 +75,11 @@ class BloodTransfusion extends Model
     {
         return $this->belongsTo(Room::class, 'room_id');
     }
+    
+    public function checkinBy()
+    {
+        return $this->belongsTo(User::class, 'checkin_by_user_id');
+    }
 
     public function blood_transfusion_details()
     {

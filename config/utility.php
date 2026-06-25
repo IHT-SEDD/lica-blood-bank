@@ -148,6 +148,9 @@ return [
         'label' => 'name',
         'with' => [],
     ],
+    'result-test' => [
+        'type' => 'enum',
+    ],
 
     // ---------- S ----------
     'storage' => [

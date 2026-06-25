@@ -379,21 +379,50 @@ export function updateDoneButtonState() {
         return;
     }
 
-    // Cek semua baris sudah punya hasil
-    let allComplete = true;
+    // Tambahkan {namatest}|{namakomponen} untuk pengecualian
+    const OPTIONAL_CROSSMATCH = ["mayor|tc", "minor|tc", "auto control|tc"];
+
+    // Minimal 2 test harus memiliki hasil
+    let filledCount = 0;
     rows.forEach((row) => {
         const resultSelect = row.querySelector(".select-test-result");
-        if (!resultSelect) {
-            allComplete = false;
-            return;
-        }
-        const isOptional =
-            resultSelect.dataset.testName?.toLowerCase() === "mayor" &&
-            resultSelect.dataset.component?.toLowerCase() === "tc";
-        if (!isOptional && !resultSelect.value?.trim()) {
-            allComplete = false;
+        if (!resultSelect) return;
+
+        // console.log(
+        //     resultSelect.dataset.testName?.toLowerCase() +
+        //         "|" +
+        //         resultSelect.dataset.component?.toLowerCase(),
+        // );
+
+        // Uncomment jika ada pengecualian component dan test
+        // const testName = resultSelect.dataset.testName?.toLowerCase() ?? "";
+        // const component = resultSelect.dataset.component?.toLowerCase() ?? "";
+        // const key = `${testName}|${component}`;
+        // if (OPTIONAL_CROSSMATCH.includes(key)) {
+        //     return;
+        // }
+
+        if (resultSelect.value?.trim()) {
+            filledCount++;
         }
     });
+    btn.classList.toggle("d-none", filledCount < 2);
 
-    btn.classList.toggle("d-none", !allComplete);
+    // Semua tes harus memiliki hasil kecuali yang optional
+    // let allComplete = true;
+    // rows.forEach((row) => {
+    //     const resultSelect = row.querySelector(".select-test-result");
+    //     if (!resultSelect) {
+    //         allComplete = false;
+    //         return;
+    //     }
+    //     const isOptional =
+    //         resultSelect.dataset.testName?.toLowerCase() === "mayor" &&
+    //         resultSelect.dataset.component?.toLowerCase() === "tc";
+    //     if (!isOptional && !resultSelect.value?.trim()) {
+    //         allComplete = false;
+    //     }
+    // });
+
+    // btn.classList.toggle("d-none", !allComplete);
 }

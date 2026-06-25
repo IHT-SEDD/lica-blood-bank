@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BloodTransfusion;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -149,6 +150,58 @@ class UtilityService
     return $item->toArray();
   }
 
+  // ---------- Fungsi untuk mengambil data nomor bdrs ----------
+  public function getSelectBdrsNumber(Request $request): array
+  {
+    $search = $request->filled('q') ? $request->q : '';
+
+    $query = BloodTransfusion::withoutTrashed()
+      ->whereNotNull('lab_number')
+      ->whereNull('canceled_at')
+      ->select('id', 'lab_number');
+
+    if (!empty($search)) {
+      $query->where('lab_number', 'like', "%{$search}%");
+    }
+
+    $data = $query
+      ->orderBy('lab_number')
+      ->get();
+
+    return [
+      'results' => $data->map(fn($item) => [
+        'id' => $item->id,
+        'text' => $item->lab_number,
+      ])->values(),
+    ];
+  }
+
+  // ---------- Fungsi untuk mengambil data nomor order ----------
+  public function getSelectOrderNumber(Request $request): array
+  {
+    $search = $request->filled('q') ? $request->q : '';
+
+    $query = BloodTransfusion::withoutTrashed()
+      ->whereNotNull('order_number')
+      ->whereNull('canceled_at')
+      ->select('id', 'order_number');
+
+    if (!empty($search)) {
+      $query->where('order_number', 'like', "%{$search}%");
+    }
+
+    $data = $query
+      ->orderBy('order_number')
+      ->get();
+
+    return [
+      'results' => $data->map(fn($item) => [
+        'id' => $item->id,
+        'text' => $item->order_number,
+      ])->values(),
+    ];
+  }
+
   // ---------- HELPERS ----------
   private function normalizeWith(array $with): array
   {
@@ -213,6 +266,9 @@ class UtilityService
         break;
       case 'rack-type':
         $data = collect(\App\Enums\StorageRackType::toSelect());
+        break;
+      case 'result-test':
+        $data = collect(\App\Enums\ResultTest::toSelect());
         break;
       case 'incoming-stock-status':
         $data = collect(\App\Enums\IncomingBloodStatus::toSelect());

@@ -461,12 +461,14 @@ class BloodTransfusionController extends Controller
     {
         try {
             $this->writeService->unReleaseBloodPack($detailPublicId);
-            return response()->json(['message' => 'Blood has been un-released.']);
+            return response()->json(['message' => 'Darah berhasil tidak dikeluarkan.']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to unrelease blood.',
+                'message' => 'Gagal tidak mengeluarkan darah.',
                 'error' => $e->getMessage(),
             ], 500);
         }

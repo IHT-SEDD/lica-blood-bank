@@ -40,6 +40,8 @@ export class GlobalAdvanceYajraDatatable {
             removeSearch = false,
             removePagination = false,
             removePageInfo = false,
+            removePageLength = false,
+            pageLengthOptions = [10, 25, 50, 100],
             columnDefs: userColumnDefs = [],
             columns: userColumns = [],
             ...restOptions
@@ -71,6 +73,7 @@ export class GlobalAdvanceYajraDatatable {
             removeSearch,
             removePagination,
             removePageInfo,
+            removePageLength,
         });
 
         // ---- Build select config ----
@@ -110,6 +113,7 @@ export class GlobalAdvanceYajraDatatable {
         this.tableElement._datatable = this.instance;
 
         if (useHideColumn) this.initColumnToggle();
+        if (!removePageLength) this.initCustomPageLength(pageLengthOptions);
     }
 
     // ------------------------------------------------------------------ //
@@ -178,7 +182,7 @@ export class GlobalAdvanceYajraDatatable {
         dropdown.className = "dropdown";
         dropdown.innerHTML = `
             <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>
+                <i class="ti ti-eye-off align-middle fs-4"></i>
             </button>
             <ul class="dropdown-menu">
                 ${this.getColumnLabels()
@@ -201,6 +205,56 @@ export class GlobalAdvanceYajraDatatable {
                 const col = parseInt(e.target.dataset.column, 10);
                 this.instance.column(col).visible(e.target.checked);
             }
+        });
+    }
+
+    // Generate dropdown page length
+    initCustomPageLength(lengths = [10, 25, 50, 100]) {
+        const wrapper = this.instance
+            .table()
+            .container()
+            .querySelector(".pageLengthWrapper");
+        if (!wrapper || !this.instance) return;
+
+        const currentLength = this.instance.page.len();
+
+        wrapper.innerHTML = `
+        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" data-bs-auto-close="true" aria-expanded="false">
+            <span class="dt-page-length-label fs-6">${currentLength === -1 ? "All" : currentLength}</span>
+        </button>
+        <ul class="dropdown-menu shadow-sm">
+            ${lengths
+                .map(
+                    (val) => `<li>
+                    <button class="dropdown-item dt-page-length-option ${val === currentLength ? "active" : ""}" type="button" data-value="${val}">
+                        ${val === -1 ? "All" : val} baris
+                    </button>
+                </li>`,
+                )
+                .join("")}
+        </ul>`;
+
+        const label = wrapper.querySelector(".dt-page-length-label");
+        const options = wrapper.querySelectorAll(".dt-page-length-option");
+
+        options.forEach((btn) => {
+            btn.addEventListener("click", () => {
+                const val = parseInt(btn.dataset.value, 10);
+                this.instance.page.len(val).draw();
+                if (label) label.textContent = val === -1 ? "All" : val;
+                options.forEach((b) => b.classList.remove("active"));
+                btn.classList.add("active");
+            });
+        });
+
+        this.instance.on("length.dt", (e, settings, len) => {
+            if (label) label.textContent = len === -1 ? "All" : len;
+            options.forEach((b) => {
+                b.classList.toggle(
+                    "active",
+                    parseInt(b.dataset.value, 10) === len,
+                );
+            });
         });
     }
 

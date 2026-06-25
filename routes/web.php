@@ -67,6 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::get('select/{select}', 'selectData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data');
         Route::get('select-special/{select}/{id}', 'selectDataSpecial')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-special');
         Route::get('select-batch', 'selectBatchData')->where('select', implode('|', array_keys(config('utility'))))->name('select-data-batch');
+        Route::get('select-manual/bdrs-number', 'selectDataBDRSNumber')->name('select-bdrs-number');
+        Route::get('select-manual/order-number', 'selectDataOrderNumber')->name('select-order-number');
         Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 
