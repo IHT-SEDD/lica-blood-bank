@@ -18,6 +18,7 @@ class BloodTransfusion extends Model
         'room_id',
         'doctor_id',
         'lab_number',
+        'checkin_time',
         'order_number',
         'relation_name',
         'relation_type',

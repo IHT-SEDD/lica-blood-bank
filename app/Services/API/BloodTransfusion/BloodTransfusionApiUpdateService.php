@@ -25,7 +25,7 @@ class BloodTransfusionApiUpdateService
         return DB::transaction(function () use ($transfusion, $payload) {
             $demografi = $payload['demografi'];
             $transaksi = $payload['transaksi'];
-            $tests = $payload['tes'];
+            $tests = isset($payload['tes']) ? $payload['tes'] : [];
 
             // ---------- Update demografi (patient) ----------
             $this->updatePatient($transfusion->patient, $demografi);

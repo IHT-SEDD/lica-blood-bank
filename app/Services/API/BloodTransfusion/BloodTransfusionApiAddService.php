@@ -41,7 +41,7 @@ class BloodTransfusionApiAddService
                 
                 // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
                 $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
-                // dd($bloodData);
+                dd($bloodData);
                 // ---------- Prepare demografi----------
                 $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
                 $patient = $demographic['patient'];

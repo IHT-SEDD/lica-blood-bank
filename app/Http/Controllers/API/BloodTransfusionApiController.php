@@ -53,7 +53,7 @@ class BloodTransfusionApiController extends Controller
                         'Transaksi permintaan darah ini tidak bisa diperbaharui karena sudah selesai!'
                     );
                 }
-                $result = $this->apiUpdateService->updateData($existing, $validated);
+                $result = $this->apiUpdateService->updateData($existing, $request->all());
 
                 return $this->apiUtilityService->successResponse(
                     'Transaksi permintaan darah sukses diperbaharui',

@@ -22,6 +22,8 @@ class ReportDataService
                 return $this->datatableBloodUsage($request);
             case 'blood-expire':
                 return $this->datatableBloodExpire($request);
+            case 'expedition-book':
+                return $this->datatableExpeditionBook($request);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -186,6 +188,94 @@ class ReportDataService
             $row['date_grand_total'] = $dateTotals[$row['expiry_date']] ?? 0;
             return $row;
         });
+
+        return DataTables::of($data)->toJson();
+    }
+
+       // ---------- Datatable Expedition Book ----------
+    private function datatableExpeditionBook(Request $request)
+    {
+        $monthYear = $request->month_year;
+        $bloodComponent = $request->blood_component;
+
+        $query = BloodTransfusion::withoutTrashed()->with(
+            ['patient', 
+            'insurance',
+             'room', 
+             'details.bloodTransfusionDetailTests.test',
+             'details.bloodStock.incomingBloodDetails.incomingBloods.orderBloods.vendors'
+             ]
+            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
+        if (!empty($monthYear)) {
+            $date = Carbon::createFromFormat('Y-m', $monthYear);
+            $query->whereYear('blood_request_at', $date->year)->whereMonth('blood_request_at', $date->month);
+        }
+
+        $bloodTransfusions = $query->get();
+
+        $data = $bloodTransfusions
+            ->flatMap(function ($transfusion) {
+
+                return $transfusion->details->map(function ($detail) use ($transfusion) {
+
+                    return [
+                        'transfusion' => $transfusion,
+                        'detail' => $detail,
+                    ];
+                });
+
+            })
+            ->groupBy(fn($item) => $item['detail']->blood_stock_id)
+            ->map(function ($rows) {
+
+                $first = $rows->first();
+
+                $transfusion = $first['transfusion'];
+                $detail = $first['detail'];
+        
+                $tests = $rows
+                    ->flatMap(fn($row) => $row['detail']->bloodTransfusionDetailTests)
+                    ->keyBy(fn($test) => strtolower($test->test->name ?? '') );
+                
+                return [
+
+                    'tanggal' => optional(Carbon::parse($transfusion->blood_request_at))->format('Y-m-d'),
+
+                    'asal_labu' => $detail->bloodStock?->incomingBloodDetails?->incomingBloods?->orderBloods?->vendors->name,
+
+                    'nama_pasien' => $transfusion->patient?->name,
+
+                    'no_medrec' => $transfusion->patient?->medrec,
+
+                    'goldar_rhesus' =>
+                        $transfusion->patient?->blood_group .
+                        $transfusion->patient?->blood_rhesus,
+
+                    'ruangan' => $transfusion->room?->name,
+
+                    'diagnosa' => $transfusion->diagnosis,
+
+                    'jenis_pasien' => $transfusion->insurance?->name,
+
+                    'jenis_darah' => $detail->component,
+
+                    'jam_penerimaan' => optional(Carbon::parse($transfusion->blood_request_at))->format('H:i'),
+
+                    'jam_mulai' => $transfusion->checkin_time ? Carbon::parse($transfusion->checkin_time)->format('H:i') : '',
+
+                    'jam_selesai' => optional(Carbon::parse($transfusion->finish_at))->format('H:i'),
+
+                    'no_kantong_darah' => $detail->bloodStock?->bag_number,
+
+                    'result_mayor' => $tests['mayor']->result ?? null,
+
+                    'result_minor' => $tests['minor']->result ?? null,
+
+                    'result_auto_control' => $tests['auto control']->result ?? null,
+                ];
+
+            })
+            ->values();
 
         return DataTables::of($data)->toJson();
     }

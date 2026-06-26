@@ -58,6 +58,7 @@ class BloodTransfusionWriteService
 
                     $transfusion->update([
                         'lab_number' => $labNumber,
+                        'checkin_time' => now(),
                         'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CHECKED_IN ?? $transfusion->status,
                         'checkin_by_user_id' => Auth::id(),
                     ]);
