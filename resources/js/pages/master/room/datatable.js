@@ -8,6 +8,7 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterRoomTableInstance; // instance datatable untuk global
@@ -74,25 +75,28 @@ function MasterRoomTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
         },
         { data: "name", title: "Name" },
         { data: "class", title: "Class" },
-        { data: "type", title: "Type" ,
-            render: (data)=>{
-                if(data == 'rawat_jalan'){
-                    return 'Rawat Jalan';
+        {
+            data: "type",
+            title: "Type",
+            render: (data) => {
+                if (data == "rawat_jalan") {
+                    return "Rawat Jalan";
+                } else if (data == "rawat_inap") {
+                    return "Rawat Inap";
+                } else if (data == "igd") {
+                    return "IGD";
+                } else {
+                    return "-";
                 }
-                else if(data == 'rawat_inap'){
-                    return 'Rawat Inap';
-                }else if(data == 'igd'){
-                    return 'IGD'
-                }else{
-                    return '-';
-                }
-            }
+            },
         },
         { data: "general_code", title: "General Code" },
         {
@@ -146,7 +150,7 @@ function MasterRoomTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterRoomTableInstance = new GlobalAdvanceDatatable(
+    masterRoomTableInstance = new GlobalAdvanceYajraDatatable(
         "#master-room-table",
         {
             ajax: {
@@ -161,15 +165,13 @@ function MasterRoomTable() {
             columns: MasterRoomTableColumns,
             useHideColumn: true,
             columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
             ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
     );
 }
@@ -198,12 +200,10 @@ function EditDataRoomActionModal() {
 
         if (!data) return;
 
-        document.querySelector("#edit_data_room_name").value =
-            data.name ?? "";
+        document.querySelector("#edit_data_room_name").value = data.name ?? "";
         document.querySelector("#edit_data_room_class").value =
             data.class ?? "";
-        document.querySelector("#edit_data_room_type").value =
-            data.type ?? "";
+        document.querySelector("#edit_data_room_type").value = data.type ?? "";
         document.querySelector("#edit_data_room_general_code").value =
             data.general_code ?? "";
     });

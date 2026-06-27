@@ -36,29 +36,7 @@ class MasterService
 
     // ---------- Terapkan filter khusus pada data ----------
     $this->applyMasterFilter($query, $master, $request);
-
-    // ---------- Handle search pada kolom data ----------
-    // if ($request->filled('search')) {
-    //   $search = $request->search;
-    //   $columns = $this->getSearchableColumns($modelClass);
-
-    //   $query->where(function ($q) use ($search, $columns) {
-    //     foreach ($columns as $column) {
-    //       $q->orWhere($column, 'like', "%{$search}%");
-    //     }
-    //   });
-    // }
-
-    // // ---------- Urutkan data master ----------
-    // if ($request->filled('sort_by')) {
-    //   $query->orderBy(
-    //     $request->sort_by,
-    //     $request->sort_dir ?? 'asc'
-    //   );
-    // }
-
-    // ---------- Tampilkan data ke tabel frontend ----------
-    // return $query->paginate($request->filled('per_page', 50));
+    
     return DataTables::of($query)->toJson();
   }
   // ---------- Fungsi untuk query data berdasarkan jenis master :end ----------

@@ -8,6 +8,8 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { BooleanStatus } from "../../../utility/config/status-config";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterVendorTableInstance; // instance datatable untuk global
@@ -73,6 +75,8 @@ function MasterVendorTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -91,9 +95,7 @@ function MasterVendorTable() {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
+                return BooleanStatus(data);
             },
         },
         {
@@ -147,7 +149,7 @@ function MasterVendorTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterVendorTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
+    masterVendorTableInstance = new GlobalAdvanceYajraDatatable(DatatableSelector, {
         ajax: {
             url: MasterDataURL,
             data: function (d) {
@@ -159,15 +161,13 @@ function MasterVendorTable() {
         columns: MasterVendorTableColumns,
         useHideColumn: true,
         columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
+            { targets: -1, responsivePriority: 1 },
+            { targets: 0, responsivePriority: 2 },
         ],
+        pageLengthOptions: [10, 25, 50, 100],
+        pageLength: 25,
+        bodyFontSize: "12px",
+        bodyFontStyle: "medium",
     });
 }
 // ---------- Datatable untuk master storage :end ----------

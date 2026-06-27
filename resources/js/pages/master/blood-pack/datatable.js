@@ -9,6 +9,8 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { BooleanStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterBloodPackTableInstance; // instance datatable untuk global
@@ -77,6 +79,8 @@ function MasterBloodPackTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -84,6 +88,8 @@ function MasterBloodPackTable() {
         {
             data: null,
             title: "Group",
+            orderable: false,
+            searchable: false,
             render: (data, row) => {
                 return `${data.blood_group}${data.blood_rhesus}`;
             },
@@ -92,6 +98,8 @@ function MasterBloodPackTable() {
         {
             data: null,
             title: "Qty Level",
+            orderable: false,
+            searchable: false,
             render: (data, row) => {
                 return `<div class="d-flex align-items-center justify-content center m-0 gap-2">
                     <span class="badge badge-label fs-6 text-bg-warning">Warning: ${data.warning_quantity}</span>
@@ -108,9 +116,7 @@ function MasterBloodPackTable() {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
+                return BooleanStatus(data);
             },
         },
         {
@@ -137,6 +143,8 @@ function MasterBloodPackTable() {
         {
             data: null,
             title: "Action",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" 
@@ -169,7 +177,7 @@ function MasterBloodPackTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterBloodPackTableInstance = new GlobalAdvanceDatatable(
+    masterBloodPackTableInstance = new GlobalAdvanceYajraDatatable(
         DatatableSelector,
         {
             ajax: {
@@ -185,15 +193,13 @@ function MasterBloodPackTable() {
             columns: MasterBloodPackTableColumns,
             useHideColumn: true,
             columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
             ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
     );
 }
