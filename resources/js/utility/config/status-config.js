@@ -168,3 +168,20 @@ export function TransactionOrderStatus(status) {
             </span>`;
     }
 }
+
+// ---------- BOOLEAN STATUS ----------
+export function BooleanStatus(status, labelTrue, labelFalse) {
+    const trueStatus = status === "1" || status === true || status === 1;
+
+    if (trueStatus) {
+        return `<span class="badge badge-label fw-semibold badge-soft-success">
+            <i class="ti ti-check align-middle me-2 fs-4"></i>
+            ${labelTrue ?? "Active"}
+        </span>`;
+    } else {
+        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+            <i class="ti ti-x align-middle me-2 fs-4"></i>
+            ${labelFalse ?? "Inactive"}
+        </span>`;
+    }
+}

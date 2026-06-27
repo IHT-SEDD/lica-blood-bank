@@ -8,6 +8,7 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterInsuranceTableInstance; // instance datatable untuk global
@@ -74,6 +75,8 @@ function MasterInsuranceTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -131,7 +134,7 @@ function MasterInsuranceTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterInsuranceTableInstance = new GlobalAdvanceDatatable(
+    masterInsuranceTableInstance = new GlobalAdvanceYajraDatatable(
         "#master-insurance-table",
         {
             ajax: {
@@ -146,15 +149,13 @@ function MasterInsuranceTable() {
             columns: MasterInsuranceTableColumns,
             useHideColumn: true,
             columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
             ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
     );
 }

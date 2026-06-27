@@ -191,7 +191,7 @@
           <td width="10%"></td>
           <td width="90%" align="right">
             <div class="subheading" style="margin-top: 20px;">
-              {{ __('Penanggung Jawab: Indriani Silvia, dr,Sp.PK(K)., MKes') }}
+              Penanggung Jawab: {{ $data->dokter_penanggung_jawab?->name ?? 'Indriani Silvia, dr,Sp.PK(K)., MKes' }}
             </div>
           </td>
         </tr>

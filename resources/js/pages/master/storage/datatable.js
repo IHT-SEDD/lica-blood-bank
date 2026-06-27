@@ -6,6 +6,8 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
 } from "../../../app";
+import { BooleanStatus } from "../../../utility/config/status-config";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -72,6 +74,8 @@ function MasterStorageTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -88,9 +92,7 @@ function MasterStorageTable() {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
+                return BooleanStatus(data);
             },
         },
         {
@@ -112,6 +114,8 @@ function MasterStorageTable() {
         {
             data: null,
             title: "Action",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -139,7 +143,7 @@ function MasterStorageTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterStorageTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
+    masterStorageTableInstance = new GlobalAdvanceYajraDatatable(DatatableSelector, {
         ajax: {
             url: MasterDataURL,
             data: function (d) {
@@ -151,15 +155,13 @@ function MasterStorageTable() {
         columns: MasterStorageTableColumns,
         useHideColumn: true,
         columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
+            { targets: -1, responsivePriority: 1 },
+            { targets: 0, responsivePriority: 2 },
         ],
+        pageLengthOptions: [10, 25, 50, 100],
+        pageLength: 25,
+        bodyFontSize: "12px",
+        bodyFontStyle: "medium",
     });
 }
 // ---------- Datatable untuk master storage :end ----------

@@ -8,6 +8,7 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterTestTableInstance; // instance datatable untuk global
@@ -74,6 +75,8 @@ function MasterTestTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -131,7 +134,7 @@ function MasterTestTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterTestTableInstance = new GlobalAdvanceDatatable(
+    masterTestTableInstance = new GlobalAdvanceYajraDatatable(
         "#master-test-table",
         {
             ajax: {
@@ -146,15 +149,13 @@ function MasterTestTable() {
             columns: MasterTestTableColumns,
             useHideColumn: true,
             columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
             ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
     );
 }
@@ -183,8 +184,7 @@ function EditDataTestActionModal() {
 
         if (!data) return;
 
-        document.querySelector("#edit_data_test_name").value =
-            data.name ?? "";
+        document.querySelector("#edit_data_test_name").value = data.name ?? "";
         document.querySelector("#edit_data_test_general_code").value =
             data.general_code ?? "";
     });
@@ -365,7 +365,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Reload table
     window.addEventListener(ReloadDatatableSelector, function () {
-        
         reloadTable();
     });
 });
