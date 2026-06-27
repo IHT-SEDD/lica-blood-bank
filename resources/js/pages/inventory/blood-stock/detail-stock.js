@@ -271,14 +271,8 @@ function BloodStockDataTable() {
             columns: BloodStockDataTableColumns,
             useHideColumn: true,
             columnDefs: [
-                {
-                    targets: -1,
-                    responsivePriority: 1,
-                },
-                {
-                    targets: 0,
-                    responsivePriority: 2,
-                },
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
             ],
             pageLengthOptions: [10, 25, 50, 100],
             pageLength: 25,
