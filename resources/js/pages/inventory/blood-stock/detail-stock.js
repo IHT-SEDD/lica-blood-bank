@@ -355,7 +355,6 @@ function EditBloodDate(id) {
     new GlobalAdvanceFlatpickr(`#${id}`, {
         allowInput: true,
         enableTime: true,
-        static: true,
     });
 }
 
