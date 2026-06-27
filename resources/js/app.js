@@ -229,6 +229,7 @@ export class GlobalAdvanceFlatpickr {
             // Bikin default config
             let config = {
                 disableMobile: true,
+                static: true,
                 defaultDate: new Date(),
             };
 
@@ -267,6 +268,14 @@ export class GlobalAdvanceFlatpickr {
                 config = { ...config, ...this.options };
                 const instance = flatpickr(item, config);
                 item._flatpickrInstance = instance;
+
+                if (item.classList.contains("flatpickr-custom")) {
+                    const wrapper = item.closest(".flatpickr-wrapper");
+                    if (wrapper) {
+                        wrapper.style.display = "block";
+                        wrapper.style.width = "100%";
+                    }
+                }
             }
             // ---------- TIMEPICKR ----------
             else if (type === "timepickr") {

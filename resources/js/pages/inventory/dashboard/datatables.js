@@ -65,50 +65,51 @@ function ListStockTable() {
             defaultContent: "",
             orderable: false,
             render: (data, type, row, meta) => {
-                return meta.row + 1;
+                return `<span class="fs-6">${meta.row + 1}</span>`;
             },
         },
-        { data: "bag_number", title: "No. Kantong" },
+        {
+            data: "bag_number",
+            title: "No. Labu",
+            render: (data, type, row, meta) => {
+                return `<span class="fw-semibold fs-6">${data}</span>`;
+            },
+        },
         {
             data: null,
-            defaultContent: "",
-            orderable: false,
             title: "Detail",
-            render: (data, type, row) => {
-                const bloodPacks = row.blood_packs;
-                const bloodGroup = bloodPacks.blood_group || "";
-                const bloodRhesus = bloodPacks.blood_rhesus || "";
-                const bloodComponent = bloodPacks.blood_component || "";
-                const bloodPack =
-                    bloodGroup && bloodRhesus
-                        ? `${bloodGroup}${bloodRhesus} ${bloodComponent}`
-                        : bloodGroup || "-";
-
-                return `<span class="fw-semibold fs-5">${bloodPack}</span>`;
+            render: (data, row) => {
+                const bloodPacks = data.blood_packs;
+                return `<span class="fw-medium fs-6">${bloodPacks.blood_group}${bloodPacks.blood_rhesus} ${bloodPacks.blood_component}</span>`;
             },
         },
         {
             data: null,
-            defaultContent: "",
-            orderable: false,
             title: "Status",
+            defaultContent: "",
             render: (data, type, row) => {
                 return BloodStockStatus(row.blood_status);
             },
         },
-        { data: "patient_name", title: "Nama Pasien" },
+        {
+            data: "patient_name",
+            title: "Nama Pasien",
+            render: (data, type, row, meta) => {
+                return `<span class="fw-semibold fs-6">${data ?? "-"}</span>`;
+            },
+        },
         {
             data: "created_at",
             title: "Tgl. Diterima",
             render: (data) => {
-                return DateTimeFormatter.datetime24(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
             data: "expiry_date",
             title: "Tgl. Expire",
             render: (data) => {
-                return DateTimeFormatter.datetime24(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
@@ -117,12 +118,11 @@ function ListStockTable() {
             render: (data, type, row) => {
                 const now = new Date();
                 const expiry = new Date(row.expiry_date);
-
-                // Jika sudah expired
                 if (expiry <= now) {
-                    return `<span class="text-danger fw-semibold">
-                    Expired
-                </span>`;
+                    return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                        <i class="ti ti-calendar-x align-middle me-2 fs-4"></i>
+                        Expired!
+                    </span>`;
                 }
 
                 let diff = expiry - now;
@@ -135,35 +135,30 @@ function ListStockTable() {
 
                 const years = Math.floor(diff / year);
                 diff %= year;
-
                 const months = Math.floor(diff / month);
                 diff %= month;
-
                 const days = Math.floor(diff / day);
                 diff %= day;
-
                 const hours = Math.floor(diff / hour);
                 diff %= hour;
-
                 const minutes = Math.floor(diff / minute);
 
                 let result = [];
 
-                // Tampilkan hanya jika > 0
                 if (years > 0) result.push(`${years} Tahun`);
                 if (months > 0) result.push(`${months} Bulan`);
                 if (days > 0) result.push(`${days} Hari`);
                 if (hours > 0) result.push(`${hours} Jam`);
                 if (minutes > 0) result.push(`${minutes} Menit`);
 
-                return result.join(" ");
+                return `<span class="fw-medium fs-6">${result.join(" ")}</span>`;
             },
         },
         {
             data: "updated_at",
             title: "Tgl. Update",
             render: (data) => {
-                return DateTimeFormatter.datetime24(data);
+                return `<span class="fw-medium fs-6">${DateTimeFormatter.datetime24(data)}</span>`;
             },
         },
         {
@@ -207,6 +202,8 @@ function ListStockTable() {
                 { targets: -1, responsivePriority: 1 },
                 { targets: 0, responsivePriority: 2 },
             ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
         },
     );
 }
