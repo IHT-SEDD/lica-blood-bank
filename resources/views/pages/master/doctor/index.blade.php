@@ -3,7 +3,7 @@
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
   {{-- Select Role --}}
- 
+
 
   {{-- Date filter :begin --}}
   <div>
@@ -11,9 +11,9 @@
       <span class="input-group-text" id="master-doctor-table-date-filter">
         <i data-lucide="calendar" class="align-middle flex-shrink-0"></i>
       </span>
-      <input class="form-control master-doctor-table-date-filter"
-        aria-describedby="master-doctor-table-date-filter" data-date-format="d-m-Y" data-provider="flatpickr"
-        data-range-date="true" type="text" placeholder="Choose date range" />
+      <input class="form-control master-doctor-table-date-filter" aria-describedby="master-doctor-table-date-filter"
+        data-date-format="d-m-Y" data-provider="flatpickr" data-range-date="true" type="text"
+        placeholder="Choose date range" />
     </div>
   </div>
   {{-- Date filter :begin --}}
@@ -21,14 +21,16 @@
 @endsection
 
 @section('datatable-content')
-<table class="table table-striped dt-responsive align-middle mb-0 master-doctor-table" id="master-doctor-table">
+<table class="table table-sm table-striped dt-responsive align-middle mb-0 master-doctor-table"
+  id="master-doctor-table">
   <thead class="thead-sm text-uppercase fs-xxs">
     <tr>
-      <th>No</th>
-      <th>Name</th>
-      <th>General Code</th>
-      <th>Deleted At</th>
-      <th>Action</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
     </tr>
   </thead>
 </table>
@@ -43,19 +45,32 @@
     </label>
     <input autocomplete="off" class="form-control" id="name" name="name" type="text" placeholder="Enter doctor Name" />
   </div>
+
+  {{-- General Code --}}
   <div class="col-lg-12">
-    <label class="form-label" for="general_code">General Code
-     
+    <label class="form-label" for="general_code">
+      General Code
     </label>
-    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text" placeholder="Enter General Code" />
+    <input autocomplete="off" class="form-control" id="general_code" name="general_code" type="text"
+      placeholder="Enter General Code" />
   </div>
 
   {{-- Is Active? --}}
-  <div class="col-lg-3">
+  <div class="col-lg-6">
     <div>
       <div class="form-check form-check-info my-1">
         <input checked="" class="form-check-input" id="is_active" name="is_active" type="checkbox" />
         <label class="form-check-label" for="is_active">Active?</label>
+      </div>
+    </div>
+  </div>
+
+  {{-- Is Penanggung Jawab? --}}
+  <div class="col-lg-6">
+    <div>
+      <div class="form-check form-check-secondary my-1">
+        <input checked="" class="form-check-input" id="is_pj" name="is_pj" type="checkbox" />
+        <label class="form-check-label" for="is_pj">Penanggung Jawab?</label>
       </div>
     </div>
   </div>

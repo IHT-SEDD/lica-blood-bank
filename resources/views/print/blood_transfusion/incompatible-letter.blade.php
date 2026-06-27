@@ -185,7 +185,7 @@
           <td width="10%"></td>
           <td width="90%" align="right">
             <div class="subheading" style="margin-top: 20px;">
-              {{ __('Penanggung Jawab: Indriani Silvia, dr,Sp.PK(K)., MKes') }}
+              Penanggung Jawab: {{ $data->dokter_penanggung_jawab?->name ?? 'Indriani Silvia, dr,Sp.PK(K)., MKes' }}
             </div>
           </td>
         </tr>
@@ -446,9 +446,8 @@
 
     {{-- Signature --}}
     @php
-    $firstDetail = $data->details->first();
-    $resultBy = $firstDetail?->bloodTransfusionDetailTests?->first()?->resultByUser?->username;
-    $username = strtolower($resultBy ?? '');
+    $username = $data->result_by->username;
+    $resultByName = $data->result_by->name;
     $barcodeFile = public_path("assets/images/barcode/ttd_{$username}_barcode.png");
     $barcodeUrl = asset("assets/images/barcode/ttd_{$username}_barcode.png");
     @endphp
@@ -467,7 +466,7 @@
           <br><br><br>
           @endif
           <div class="heading-3">
-            <strong>{{ $resultBy ?? '_______________' }}</strong>
+            <strong>{{ $resultByName ?? '_______________' }}</strong>
           </div>
         </td>
       </tr>

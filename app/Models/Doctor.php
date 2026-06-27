@@ -15,6 +15,7 @@ class Doctor extends Model
     protected $fillable = [
         'public_id',
         'is_active',
+        'is_pj',
         'name',
         'general_code'
     ];
