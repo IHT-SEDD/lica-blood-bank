@@ -180,6 +180,8 @@ class BloodTransfusionPrintService
       return [
         'patient_name' => $transfusionData->patient->name,
         'patient_gender' => $transfusionData->patient->gender,
+        'patient_blood_group' => $transfusionData->patient->blood_group,
+        'patient_blood_rhesus' => $transfusionData->patient->blood_rhesus,
         'patient_medrec' => $transfusionData->patient->medrec,
         'patient_lab_number' => $transfusionData->lab_number,
         'patient_relation' => $relation,
