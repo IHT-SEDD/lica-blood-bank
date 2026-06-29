@@ -70,7 +70,7 @@ class StockInDataService
         }
       })
       ->order(function ($query) use ($request) {
-        $query->orderBy('created_at', 'asc');
+        $query->orderBy('created_at', 'desc');
       })
       ->toJson();
   }
