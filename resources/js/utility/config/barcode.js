@@ -37,21 +37,17 @@ const bloodHeader = () =>
     field(200, 80, "UMUM DAERAH INDRAMAYU") +
     font(20) +
     field(180, 120, "Jl. Murah Nara No. 7 Telp. (0234) 272655 - Indramayu") +
-    hline(50, 170);
-
-// Jika hanya reaktif → tampilkan 1 baris "Reaktif"
-// Jika hanya non-reaktif → tampilkan 1 baris "Non Reaktif"
-// Jika keduanya ada (atau keduanya null) → tampilkan 2 baris
+    hline(50, 150);
 const cliaRows = (clia) => {
     const { reactive, non_reactive } = clia;
     if (reactive !== null && non_reactive === null) {
-        return bloodInfoRow(385, "Reaktif", reactive);
+        return bloodInfoRow(380, "Reaktif", reactive);
     }
     if (non_reactive !== null && reactive === null) {
-        return bloodInfoRow(385, "Non Reaktif", non_reactive);
+        return bloodInfoRow(380, "Non Reaktif", non_reactive);
     }
     return (
-        bloodInfoRow(385, "Non Reaktif", non_reactive ?? "-") +
+        bloodInfoRow(380, "Non Reaktif", non_reactive ?? "-") +
         bloodInfoRow(420, "Reaktif", reactive ?? "-")
     );
 };
@@ -63,43 +59,38 @@ export function buildZplBarcodeBlood(item) {
         "^CI28", // Unicode UTF-8
         "^LH0,0", // titik awal cetak (kiri atas)
         bloodHeader(),
-        bloodInfoRow(200, "Kantong No", item.bag_number),
-        font(60) + field(610, 200, item.component),
-        font(80) + field(610, 258, `${item.blood_group}${item.blood_rhesus}`),
-        font(50) + field(590, 338, `${item.blood_volume} CC`),
-        bloodInfoRow(237, "Tanggal Aftap", item.aftap_date),
-        bloodInfoRow(274, "Tanggal Proses", item.process_date),
-        bloodInfoRow(311, "Tanggal Expire", item.expiry_date),
-        // bloodInfoRow(
-        //     348,
-        //     "Suhu Simpan",
-        //     `${item.storage_temp_from}-${item.storage_temp_to}°C`,
-        // ),
+        bloodInfoRow(180, "No. Kantong", item.bag_number),
+        font(60) + field(610, 180, item.component),
+        font(80) + field(610, 250, `${item.blood_group}${item.blood_rhesus}`),
+        font(50) + field(590, 330, `${item.blood_volume} CC`),
+        bloodInfoRow(220, "Tanggal Aftap", item.aftap_date),
+        bloodInfoRow(260, "Tanggal Proses", item.process_date),
+        bloodInfoRow(300, "Tanggal Expire", item.expiry_date),
         font(25) +
-            field(50, 348, "Suhu Simpan") +
-            field(230, 348, ":") +
+            field(50, 340, "Suhu Simpan") +
+            field(230, 340, ":") +
             font(26) +
             fieldFH(
                 250,
-                348,
-                `${item.storage_temp_from}-${item.storage_temp_to}${DEGREE}C`,
+                340,
+                `${item.storage_temp_from ?? "-"}-${item.storage_temp_to ?? "-"}${DEGREE}C`,
             ),
         cliaRows(item.clia),
 
         // Barcode nomor kantong
         // BY: lebar modul, rasio, tinggi — BCN: Code-128, tanpa teks di bawah
         "^BY3,3,70",
-        font(0) + `^FO50,455^BCN,70,N,N,N^FD${item.bag_number}^FS`,
+        font(0) + `^FO50,420^BCN,70,N,N,N^FD${item.bag_number}^FS`,
 
-        hline(50, 540),
-        patientRow(560, "Tanggal diberikan", item.released_at),
-        patientRow(597, "Nama O.S", item.patient_name),
-        patientRow(634, "No. Register", item.patient_medrec),
-        patientRow(671, "No. BDRS", item.patient_lab_number),
+        hline(50, 510),
+        patientRow(540, "Tanggal diberikan", item.released_at),
+        patientRow(580, "Nama O.S", item.patient_name),
+        patientRow(620, "No. Register", item.patient_medrec),
+        patientRow(660, "No. BDRS", item.patient_lab_number),
         patientRow(
-            708,
+            700,
             "Ruangan/Kelas",
-            `${item.room_name}/${item.room_class}`,
+            `${item.room_name} / ${item.room_class}`,
         ),
 
         hline(50, 745),
@@ -114,28 +105,77 @@ export function buildZplBarcodeBlood(item) {
             26,
         ),
         font(27) +
-            field(50, 799, "Hasil") +
-            field(115, 799, ":") +
+            field(50, 800, "Hasil") +
+            field(115, 800, ":") +
             font(26) +
-            field(135, 799, item.crossmatch_result) +
-            field(270, 799, "/") +
-            field(300, 799, item.crossmatch_finish_at),
+            field(135, 800, item.crossmatch_result) +
+            field(270, 800, "/") +
+            field(300, 800, item.crossmatch_finish_at),
 
-        // Salinan info pasien di bagian bawah (font lebih kecil: 23/24)
-        hline(50, 1030),
-        row(50, 260, 280, 1060, "Nama O.S", item.patient_name, 23, 24),
-        row(50, 260, 280, 1090, "No. Register", item.patient_medrec, 23, 24),
-        row(50, 260, 280, 1120, "No. BDRS", item.patient_lab_number, 23, 24),
+        hline(50, 850),
+        row(50, 220, 240, 870, "No. Kantong", item.bag_number, 23, 24),
+        font(40) +
+            field(
+                620,
+                940,
+                `${item.component} ${item.blood_group}${item.blood_rhesus}`,
+            ),
+        font(40) + field(620, 980, `${item.blood_volume} CC`),
         row(
             50,
-            260,
-            280,
-            1150,
-            "Ruangan/Kelas",
-            `${item.room_name}/${item.room_class}`,
+            220,
+            240,
+            900,
+            "Tgl. Aftap/Proses",
+            `${item.aftap_date} / ${item.process_date}`,
             23,
             24,
         ),
+        row(50, 220, 240, 930, "Tgl. Expire", item.expiry_date, 23, 24),
+        row(50, 220, 240, 960, "Tgl. Diberikan", item.released_at, 23, 24),
+        row(
+            50,
+            220,
+            240,
+            990,
+            "Nama O.S",
+            `${item.patient_name} / ${item.patient_birthdate}`,
+            23,
+            24,
+        ),
+        row(50, 220, 240, 1020, "No. BDRS", item.patient_lab_number, 23, 24),
+        row(400, 540, 570, 1020, "No. Register", item.patient_medrec, 23, 24),
+        row(
+            50,
+            220,
+            240,
+            1050,
+            "Ruangan/Kelas",
+            `${item.room_name} / ${item.room_class}`,
+            23,
+            24,
+        ),
+        row(
+            50,
+            220,
+            240,
+            1080,
+            "Gol. Rh/Tes Oleh",
+            `${item.patient_blood_group}${item.patient_blood_rhesus} / `,
+            23,
+            24,
+        ),
+        row(
+            50,
+            220,
+            240,
+            1110,
+            "Hasil Crossmatch",
+            `${item.crossmatch_result} / ${item.crossmatch_finish_at}`,
+            23,
+            24,
+        ),
+        row(50, 220, 240, 1140, "Oleh", item.crossmatch_by, 23, 24),
 
         "^XZ",
     ].join("");

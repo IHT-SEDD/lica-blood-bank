@@ -6,6 +6,7 @@ import {
     GlobalRestoreDataConfirmation,
     GlobalEditData,
 } from "../../../app";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
@@ -72,6 +73,8 @@ function MasterRoleTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -96,6 +99,8 @@ function MasterRoleTable() {
         {
             data: null,
             title: "Action",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -119,28 +124,29 @@ function MasterRoleTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterRoleTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
-        ajax: {
-            url: MasterDataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterRoleTableInstance = new GlobalAdvanceYajraDatatable(
+        DatatableSelector,
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterRoleTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
+            ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
-        columns: MasterRoleTableColumns,
-        useHideColumn: true,
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master storage :end ----------
 

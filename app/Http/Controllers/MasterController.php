@@ -42,9 +42,10 @@ class MasterController extends Controller
     // ---------- Fungsi untuk mengambil data master berdasarkan jenis master data dari service datatable :begin ----------
     public function datatable(Request $request, string $master)
     {
-        return response()->json(
-            $this->service->datatable($master, $request)
-        );
+        // return response()->json(
+        //     $this->service->datatable($master, $request)
+        // );
+        return $this->service->datatable($master, $request);
     }
     // ---------- Fungsi untuk mengambil data master berdasarkan jenis master data dari service datatable:begin ----------
 

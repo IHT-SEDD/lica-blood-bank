@@ -73,7 +73,21 @@ function reloadTable() {
 function HistoryOrderTable() {
     // ---------- Init kolom pada tabel ----------
     const HistoryOrderTableColumns = [
-        { data: "po_number", title: "No. PO" },
+        {
+            data: "po_number",
+            title: "No. PO",
+            render: (data, type, row) => {
+                const createdAt = new Date(row.created_at);
+                const now = new Date();
+                const newlyCreated = (now - createdAt) / (1000 * 60 * 60);
+                if (newlyCreated < 2) {
+                    return `<span class="badge badge-label text-bg-success">New</span>
+                        <span class="fw-semibold fs-5 ms-1">${data}</span>`;
+                }
+
+                return `<span class="fw-semibold fs-5">${data}</span>`;
+            },
+        },
         {
             data: "vendor_id",
             title: "PMI",
@@ -174,30 +188,27 @@ function HistoryOrderTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    historyOrderTableInstance = new GlobalAdvanceYajraDatatable(DatatableSelector, {
-        ajax: {
-            url: DataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
-                d.vendor = filters.vendor;
-                d.status = filters.status;
+    historyOrderTableInstance = new GlobalAdvanceYajraDatatable(
+        DatatableSelector,
+        {
+            ajax: {
+                url: DataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                    d.vendor = filters.vendor;
+                    d.status = filters.status;
+                },
             },
+            columns: HistoryOrderTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
+            ],
         },
-        columns: HistoryOrderTableColumns,
-        useHideColumn: true,
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master storage :end ----------
 

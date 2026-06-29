@@ -8,6 +8,7 @@ import {
     GlobalEditData,
 } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterPatientTableInstance; // instance datatable untuk global
@@ -125,6 +126,8 @@ function MasterPatientTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -160,6 +163,8 @@ function MasterPatientTable() {
         {
             data: null,
             title: "Action",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -186,28 +191,29 @@ function MasterPatientTable() {
         },
     ];
 
-    masterPatientTableInstance = new GlobalAdvanceDatatable(DatatableSelector, {
-        ajax: {
-            url: MasterDataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterPatientTableInstance = new GlobalAdvanceYajraDatatable(
+        DatatableSelector,
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterPatientTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
+            ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
-        columns: MasterPatientTableColumns,
-        useHideColumn: true,
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master patient :end ----------
 

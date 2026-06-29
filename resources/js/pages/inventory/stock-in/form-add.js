@@ -110,6 +110,7 @@ function initFlatpickr(el) {
     new GlobalAdvanceFlatpickr(`#${escapedId}`, {
         allowInput: true,
         enableTime: true,
+        static: false,
     });
 }
 function initTomSelect(el, url) {
