@@ -43,9 +43,9 @@ class BloodStock extends Model
         'id',
     ];
 
-    protected $casts = [
-        'expiry_date' => 'datetime',
-    ];
+    // protected $casts = [
+    //     'expiry_date' => 'datetime',
+    // ];
 
     protected static function booted()
     {
