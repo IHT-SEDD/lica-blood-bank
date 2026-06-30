@@ -18,6 +18,7 @@ class BloodTransfusion extends Model
         'room_id',
         'doctor_id',
         'lab_number',
+        'checkin_time',
         'order_number',
         'relation_name',
         'relation_type',
@@ -84,5 +85,10 @@ class BloodTransfusion extends Model
     public function blood_transfusion_details()
     {
         return $this->hasMany(BloodTransfusionDetail::class, 'blood_transfusion_id');
+    }
+
+    public function blood_transfusion_log_activities()
+    {
+        return $this->hasMany(BloodTransfusionLogActivity::class, 'blood_transfusion_public_id', 'public_id');
     }
 }

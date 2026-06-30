@@ -38,4 +38,13 @@ class BloodTransfusionLogActivity extends Model
             }
         });
     }
+
+    public function creator()
+    {
+        return $this->belongsTo(
+            User::class,
+            'created_by_user_name', 
+            'name'                  
+        );
+    }
 }

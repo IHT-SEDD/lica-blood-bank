@@ -8,6 +8,7 @@ use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Exports\Report\BloodExpire\ReportBloodExpireExport;
 use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
+use App\Exports\Report\ExpeditionBook\ExpeditionBookExport;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\Room;
@@ -26,6 +27,8 @@ class ReportWriteService
                 return $this->excelBloodUsage($request, $report);
             case 'blood-expire':
                 return $this->excelBloodExpire($request, $report);
+            case 'expedition-book':
+                return $this->excelExpeditionBook($request, $report);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -224,6 +227,97 @@ class ReportWriteService
         return compact('title', 'components', 'bloodGroups', 'expDates', 'rows', 'totals');
     }
 
+    // ---------- Excel Expedition Book ----------
+    public function excelExpeditionBook(Request $request, string $report)
+    {
+        $monthYear = $request->filled('month_year')
+            ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
+            : Carbon::now()->startOfMonth();
+        $startDate = $monthYear->copy()->startOfMonth();
+        $endDate = $monthYear->copy()->endOfMonth();
+        $paramFilenameExcel = [];
+
+       $bloodTransfusions = BloodTransfusion::withoutTrashed()->with(
+            ['patient', 
+            'insurance',
+             'room', 
+             'details.bloodTransfusionDetailTests.test',
+             'details.bloodStock.incomingBloodDetails.incomingBloods.orderBloods.vendors'
+             ]
+            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED)
+            ->whereBetween('blood_request_at', [$startDate, $endDate])
+            ->get();
+
+        $reportData = $this->prepareExpeditionBookData($bloodTransfusions, $startDate);
+        $fileName = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $storagePath = 'report/expedition_book/' . $fileName;
+
+        // Excel::store(new ExpeditionBookExport($reportData), $storagePath, 'public');
+        return Excel::download(new ExpeditionBookExport($reportData), $fileName);
+    }
+    
+    private function prepareExpeditionBookData($bloodTransfusions, $startDate) : array
+    {
+      $data = $bloodTransfusions
+                ->map(function ($transfusion) {
+                    
+                    $user_is_admin = $transfusion->blood_transfusion_log_activities->map(function ($log) {
+                        return $log->creator?->roles->firstWhere('name', 'Admin') ? $log->creator : null;
+                    })->filter()->first();
+
+                    $technician = $transfusion->blood_transfusion_log_activities->map(function ($log) {
+                        return $log->creator?->roles->firstWhere('name', 'Teknisi Bank Darah') ? $log->creator : null;
+                    })->filter()->first();
+      
+                    $mappedDetails = $transfusion->details->map(function ($detail) {
+                     
+                        $tests = collect($detail->bloodTransfusionDetailTests)
+                            ->keyBy(fn($test) => strtolower($test->test->name ?? ''));
+                   
+                        return [
+                            'no_kantong_darah'    => $detail->bloodStock?->bag_number,
+                            'jenis_darah'         => $detail->component,
+                            'asal_labu'           => $detail->bloodStock?->incomingBloodDetails?->incomingBloods?->orderBloods?->vendors?->name,
+                            'result_mayor'        => $tests['mayor']->result ?? null,
+                            'result_minor'        => $tests['minor']->result ?? null,
+                            'result_auto_control' => $tests['auto control']->result ?? null,
+                            'result_crossmatch'   => $detail?->crossmatch_result,
+                        ];
+                    })->all(); 
+
+                    return [
+                        'tanggal'            => $transfusion->blood_request_at ? Carbon::parse($transfusion->blood_request_at)->format('Y-m-d') : null,
+                        'nama_pasien'        => $transfusion->patient?->name,
+                        'no_medrec'          => $transfusion->patient?->medrec,
+                        'goldar_rhesus'      => $transfusion->patient?->blood_group . $transfusion->patient?->blood_rhesus,
+                        'ruangan'            => $transfusion->room?->name,
+                        'diagnosa'           => $transfusion->diagnosis,
+                        'jenis_pasien'       => $transfusion->insurance?->name,
+                        'jam_penerimaan'     => $transfusion->blood_request_at ? Carbon::parse($transfusion->blood_request_at)->format('H:i') : null,
+                        'jam_mulai'          => $transfusion->checkin_time ? Carbon::parse($transfusion->checkin_time)->format('H:i') : '',
+                        'jam_selesai'        => $transfusion->finish_at ? Carbon::parse($transfusion->finish_at)->format('H:i') : null,
+                        'admin'              => $user_is_admin?->name,
+                        'teknisi_bank_darah' => $technician?->name,
+                        'jumlah_permintaan'  => count($transfusion->details),
+                        'details'            => $mappedDetails 
+                    ];
+                })
+                ->values();
+
+        $title = 'Buku Expedisi Darah ';
+
+        $firstRow = collect($data)->first();
+
+        $totalColumns = 0;
+
+        if ($firstRow) {            
+            $keys = array_keys($firstRow);
+            $totalColumns = !empty($firstRow['details']) ? count(array_keys($firstRow['details'][0])) + count($keys) : 0;
+        }
+
+        return compact('title', 'data', 'totalColumns');
+    }
+
     // ---------- HELPERS ----------
     protected function getDateRange(Request $request): array
     {
@@ -256,6 +350,9 @@ class ReportWriteService
                     return 'Laporan Darah Kadaluarsa - ' . $params['blood_component'] . ' - ' . $bulanLabel . '.xlsx';
                 }
                 return 'Laporan Darah Kadaluarsa - ' . $bulanLabel . '.xlsx';
+            case 'expedition-book':
+                $bulanLabel = $startDate->translatedFormat('F Y');
+                return 'Buku Ekspedidisi - ' . $bulanLabel . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
         }
