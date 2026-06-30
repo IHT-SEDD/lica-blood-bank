@@ -4,6 +4,7 @@ namespace App\Services\API\BloodTransfusion;
 
 use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\BloodTransfusionStatus;
+use App\Models\BloodPack;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
@@ -41,7 +42,7 @@ class BloodTransfusionApiAddService
                 
                 // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
                 $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
-                dd($bloodData);
+         
                 // ---------- Prepare demografi----------
                 $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
                 $patient = $demographic['patient'];
@@ -73,6 +74,11 @@ class BloodTransfusionApiAddService
                         ->where('blood_component', $bloodComponent['component'])
                         ->first();
 
+                        $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
+                            ->where('blood_rhesus', $patient->blood_rhesus)
+                            ->where('blood_component', $bloodComponent['component'])
+                            ->first();
+
                     for ($i = 0; $i < $bloodComponent['quantity']; $i++) {
                         $detailGeneralCode = $bloodComponent['general_codes'][$i] ?? null;
 
@@ -80,6 +86,7 @@ class BloodTransfusionApiAddService
                             'blood_transfusion_id' => $transfusion->id,
                             'component' => $bloodComponent['component'],
                             'general_code' => $detailGeneralCode,
+                            'blood_pack_id' => $bloodPack->id ?? null,
                         ]);
 
                         foreach ($package->package_tests as $pkgTest) {
