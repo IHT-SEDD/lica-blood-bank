@@ -28,6 +28,7 @@ class BloodTransfusion extends Model
         'archived_at',
         'status',
         'is_dct',
+        'is_cito',
         'dct_value',
         'blood_quantity',
         'checkin_by_user_id',
@@ -76,7 +77,7 @@ class BloodTransfusion extends Model
     {
         return $this->belongsTo(Room::class, 'room_id');
     }
-    
+
     public function checkinBy()
     {
         return $this->belongsTo(User::class, 'checkin_by_user_id');

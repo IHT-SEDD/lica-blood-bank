@@ -1,5 +1,7 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import {
+    BooleanStatus,
+    CitoStatus,
     TransactionOrderStatus,
     TransfusionBloodStatus,
 } from "../../../utility/config/status-config";
@@ -370,6 +372,16 @@ export function DatatableRequestBlood() {
         },
         {
             data: null,
+            defaultContent: "",
+            orderable: false,
+            searchable: false,
+            render: (row, data) => {
+                const cito = row.is_cito;
+                return CitoStatus(cito);
+            },
+        },
+        {
+            data: null,
             orderable: false,
             searchable: false,
             title: "Aksi",
@@ -423,15 +435,14 @@ export function DatatableRequestBlood() {
         },
         columns: REQUESTCOLUMNS,
         useHideColumn: true,
+        createdRow: function (row, data) {
+            if (data.is_cito === "1" || Number(data.is_cito) === 1) {
+                row.classList.add("row-cito");
+            }
+        },
         columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
+            { targets: -1, responsivePriority: 1 },
+            { targets: 0, responsivePriority: 2 },
         ],
         drawCallback: function () {
             const tooltipTriggerList = document.querySelectorAll(

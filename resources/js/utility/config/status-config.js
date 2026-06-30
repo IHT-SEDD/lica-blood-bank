@@ -186,6 +186,20 @@ export function BooleanStatus(status, labelTrue, labelFalse) {
     }
 }
 
+// ---------- CITO STATUS ----------
+export function CitoStatus(status) {
+    const trueStatus = status === "1" || status === true || status === 1;
+
+    if (trueStatus) {
+        return `<span class="badge badge-label fw-semibold badge-soft-warning">
+            <i class="ti ti-alert-triangle align-middle me-2 fs-4"></i>
+            CITO
+        </span>`;
+    } else {
+        return "";
+    }
+}
+
 // ---------- INCOMING STOCK STATUS ----------
 export function IncomingStockStatus(status) {
     const value = status?.value || status;
