@@ -86,4 +86,9 @@ class BloodTransfusion extends Model
     {
         return $this->hasMany(BloodTransfusionDetail::class, 'blood_transfusion_id');
     }
+
+    public function blood_transfusion_log_activities()
+    {
+        return $this->hasMany(BloodTransfusionLogActivity::class, 'blood_transfusion_public_id', 'public_id');
+    }
 }

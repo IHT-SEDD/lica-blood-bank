@@ -196,23 +196,24 @@ class ReportDataService
     private function datatableExpeditionBook(Request $request)
     {
         $monthYear = $request->month_year;
-        $bloodComponent = $request->blood_component;
 
         $query = BloodTransfusion::withoutTrashed()->with(
             ['patient', 
             'insurance',
              'room', 
+             'blood_transfusion_log_activities.creator.roles',
              'details.bloodTransfusionDetailTests.test',
              'details.bloodStock.incomingBloodDetails.incomingBloods.orderBloods.vendors'
              ]
             )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
         if (!empty($monthYear)) {
             $date = Carbon::createFromFormat('Y-m', $monthYear);
-            $query->whereYear('blood_request_at', $date->year)->whereMonth('blood_request_at', $date->month);
+            $query->whereYear('blood_request_at', $date->year)
+                  ->whereMonth('blood_request_at', $date->month);
         }
 
         $bloodTransfusions = $query->get();
-
+    
         $data = $bloodTransfusions
             ->flatMap(function ($transfusion) {
 
@@ -229,9 +230,25 @@ class ReportDataService
             ->map(function ($rows) {
 
                 $first = $rows->first();
-
                 $transfusion = $first['transfusion'];
                 $detail = $first['detail'];
+
+                $user_is_admin = $transfusion->blood_transfusion_log_activities->map(function($log){
+                    $admin = $log->creator?->roles->firstWhere('name', 'Admin');
+                    if ($admin) {
+                        return $log->creator;
+                    }
+                    return null;
+                })->filter()->first();
+
+                $technician = $transfusion->blood_transfusion_log_activities->map(function($log){
+                    $admin = $log->creator?->roles->firstWhere('name', 'Teknisi Bank Darah');
+                    if ($admin) {
+                        return $log->creator;
+                    }
+                    return null;
+                })->filter()->first();
+
         
                 $tests = $rows
                     ->flatMap(fn($row) => $row['detail']->bloodTransfusionDetailTests)
@@ -272,6 +289,12 @@ class ReportDataService
                     'result_minor' => $tests['minor']->result ?? null,
 
                     'result_auto_control' => $tests['auto control']->result ?? null,
+
+                    'result_crossmatch' => $detail?->crossmatch_result,
+
+                    'admin' => $user_is_admin?->name,
+
+                    'teknisi_bank_darah' => $technician?->name,
                 ];
 
             })

@@ -51,9 +51,9 @@
       <th>Crossmatch (Mayor)</th>
       <th>Crossmatch (Minor)</th>
       <th>Crossmatch (AK)</th>
-      {{-- <th>Crossmatch (HASIL)</th> --}}
-      {{-- <th>Teknisi</th>
-      <th>Admin</th> --}}
+      <th>Crossmatch (HASIL)</th>
+       <th>Teknisi</th>
+      <th>Admin</th> 
     </tr>
   </thead>
 </table>

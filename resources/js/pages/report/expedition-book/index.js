@@ -50,14 +50,10 @@ function ExportToExcel() {
 
     btn.addEventListener("click", async function () {
         const filters = getFilters();
-
         const params = new URLSearchParams();
-        if (filters.start_date) params.append("start_date", filters.start_date);
-        if (filters.end_date) params.append("end_date", filters.end_date);
-        if (filters.bloodComponent)
-            params.append("blood_component", filters.bloodComponent);
-
-        const url = ExportURL + `blood-expire/excel/?${params.toString()}`;
+        if (filters.monthAndYear)
+            params.append("month_year", filters.monthAndYear);
+        const url = ExportURL + `expedition-book/excel/?${params.toString()}`;
 
         showPageLoading();
         try {
@@ -83,7 +79,7 @@ function ExportToExcel() {
                 disposition.match(/filename="?([^"]+)"?/);
             const fileName = filenameMatch
                 ? decodeURIComponent(filenameMatch[1])
-                : `Laporan Darah Kadaluarsa.xlsx`;
+                : `Laporan Buku Pengiriman Darah.xlsx`;
 
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);

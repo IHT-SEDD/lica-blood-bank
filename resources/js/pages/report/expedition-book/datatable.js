@@ -89,6 +89,18 @@ export function ReportExpeditionBookTable(getFilters) {
             data: "result_auto_control",
             title: "Result Auto Control",
         },
+        {
+            data: "result_crossmatch",
+            title: "Result Crossmatch",
+        },
+        {
+            data: "admin",
+            title: "Admin",
+        },
+        {
+            data: "teknisi_bank_darah",
+            title: "Teknisi",
+        },
     ];
 
     reportExpeditionBookTableInstance = new GlobalAdvanceYajraDatatable(
