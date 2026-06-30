@@ -180,6 +180,8 @@ class BloodTransfusionPrintService
       return [
         'patient_name' => $transfusionData->patient->name,
         'patient_gender' => $transfusionData->patient->gender,
+        'patient_blood_group' => $transfusionData->patient->blood_group,
+        'patient_blood_rhesus' => $transfusionData->patient->blood_rhesus,
         'patient_medrec' => $transfusionData->patient->medrec,
         'patient_lab_number' => $transfusionData->lab_number,
         'patient_relation' => $relation,
@@ -232,7 +234,7 @@ class BloodTransfusionPrintService
   // ---------- Helpers ----------
   private function queryTransfusionData(string $transfusionPublicID, ?string $btDetailID = null, ?string $crossmatchResult = null): BloodTransfusion
   {
-    return BloodTransfusion::withoutTrashed()
+    $transfusion = BloodTransfusion::withoutTrashed()
       ->where('public_id', $transfusionPublicID)
       ->select([
         'id',
@@ -274,9 +276,22 @@ class BloodTransfusionPrintService
         'details.bloodReleasedByUser:id,public_id,name',
         'details.bloodTransfusionDetailTests:id,public_id,bt_detail_id,test_id,result,result_by_user_id',
         'details.bloodTransfusionDetailTests.test:id,public_id,name',
-        'details.bloodTransfusionDetailTests.resultByUser:id,public_id,name',
+        'details.bloodTransfusionDetailTests.resultByUser:id,public_id,name,username',
       ])
       ->firstOrFail();
+
+    $transfusion->dokter_penanggung_jawab = \App\Models\Doctor::query()
+      ->where('is_active', 1)
+      ->where('is_pj', 1)
+      ->select(['id', 'public_id', 'name'])
+      ->first();
+    $transfusion->result_by = $transfusion->details
+      ->first()
+      ?->bloodTransfusionDetailTests
+      ?->first()
+      ?->resultByUser ?? '-';
+
+    return $transfusion;
   }
   private function validatePrintTemplate(string $print): void
   {
@@ -284,21 +299,20 @@ class BloodTransfusionPrintService
       abort(404, "Print template [{$print}] not found.");
     }
   }
-
-private function getResultByUser($transfusionData)
-{
+  private function getResultByUser($transfusionData)
+  {
     $resultByUserName = $transfusionData->details
-        ->flatMap(function ($detail) {
+      ->flatMap(function ($detail) {
 
-            $tests = $detail->bloodTransfusionDetailTests;
+        $tests = $detail->bloodTransfusionDetailTests;
 
-            return $tests->map(fn($test) => $test->resultByUser);
-        })
-        ->filter()
-        ->first()?->name;
+        return $tests->map(fn($test) => $test->resultByUser);
+      })
+      ->filter()
+      ->first()?->name;
 
     return $resultByUserName ?? 'User tidak ditemukan';
-}
+  }
 
   private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null, ?array $paperSize = null): BinaryFileResponse
   {

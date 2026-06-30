@@ -8,6 +8,8 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { BooleanStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterDoctorTableInstance; // instance datatable untuk global
@@ -41,8 +43,8 @@ const ConfirmRestoreSelector = "#confirm_restore"; // id selector confirm restor
 
 // ---------- Helper: Ambil semua filter :begin ----------
 function getFilters() {
-    const dateVal = document.querySelector(DateFilterSelector) ?.value;
-    const role = document.querySelector("#filter-role") ?.value || "";
+    const dateVal = document.querySelector(DateFilterSelector)?.value;
+    const role = document.querySelector("#filter-role")?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -61,7 +63,7 @@ function getFilters() {
 
 // ---------- Helper: Reload tabel :begin ----------
 function reloadTable() {
-    if (masterDoctorTableInstance ?.instance) {
+    if (masterDoctorTableInstance?.instance) {
         masterDoctorTableInstance.instance.ajax.reload();
     }
 }
@@ -70,39 +72,56 @@ function reloadTable() {
 // ---------- Datatable untuk master doctor :begin ----------
 function MasterDoctorTable() {
     // ---------- Init kolom pada tabel ----------
-    const MasterDoctorTableColumns = [{
+    const MasterDoctorTableColumns = [
+        {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
         },
         { data: "name", title: "Name" },
-        { data: "general_code", title: "General Code" },
+        { data: "general_code", title: "Kode" },
         {
             data: "created_at",
-            title: "Created At",
+            title: "Tgl. Dibuat",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
+            data: "is_active",
+            title: "Active?",
+            render: (data, type, row) => {
+                return BooleanStatus(data);
+            },
+        },
+        {
+            data: "is_pj",
+            title: "PJ?",
+            render: (data, type, row) => {
+                return BooleanStatus(data, "Ya", "Tidak");
+            },
+        },
+        {
             data: "updated_at",
-            title: "Updated At",
+            title: "Tgl. Update",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "deleted_at",
-            title: "Deleted At",
+            title: "Tgl. Hapus",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -130,28 +149,30 @@ function MasterDoctorTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterDoctorTableInstance = new GlobalAdvanceDatatable("#master-doctor-table", {
-        ajax: {
-            url: MasterDataURL,
-            data: function(d) {
-                const filters = getFilters();
-                d.role = filters.role;
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterDoctorTableInstance = new GlobalAdvanceYajraDatatable(
+        "#master-doctor-table",
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.role = filters.role;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterDoctorTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
+            ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
-        columns: MasterDoctorTableColumns,
-        useHideColumn: true,
-        columnDefs: [{
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master doctor :end ----------
 
@@ -173,15 +194,14 @@ function EditDataDoctorActionModal() {
         FormSelector: FormEditSelector,
     });
 
-    document.addEventListener("edit:open", function(e) {
+    document.addEventListener("edit:open", function (e) {
         const { data } = e.detail;
 
         if (!data) return;
-        console.log(data)
-        document.querySelector("#edit_data_doctor_name").value = data.name ?? "";
-        document.querySelector("#edit_data_doctor_general_code").value = data.general_code ?? "";
-
-
+        document.querySelector("#edit_data_doctor_name").value =
+            data.name ?? "";
+        document.querySelector("#edit_data_doctor_general_code").value =
+            data.general_code ?? "";
     });
 }
 // ---------- Handle modal edit data :end ----------
@@ -197,7 +217,7 @@ function DeleteDataDoctorActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("delete:open", function(e) {
+    document.addEventListener("delete:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -213,7 +233,7 @@ function DeleteDataDoctorActionModal() {
     const confirmBtn = document.querySelector(ConfirmDeleteSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -275,7 +295,7 @@ function RestoreDataDoctorActionModal() {
     });
 
     // Custom isi modal
-    document.addEventListener("restore:open", function(e) {
+    document.addEventListener("restore:open", function (e) {
         const { data } = e.detail;
         if (!data) return;
 
@@ -291,7 +311,7 @@ function RestoreDataDoctorActionModal() {
     const confirmBtn = document.querySelector(ConfirmRestoreSelector);
 
     if (confirmBtn) {
-        confirmBtn.addEventListener("click", async function() {
+        confirmBtn.addEventListener("click", async function () {
             const id = this.dataset.id;
 
             if (!id) return;
@@ -342,13 +362,9 @@ function RestoreDataDoctorActionModal() {
 }
 // ---------- Handle modal restore data :end ----------
 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     MasterDoctorTable();
-
-    // Select function
-    // FilterRole();
-    // EditRole();
 
     // Date range picker
     DateRangeFilter();
@@ -359,7 +375,7 @@ document.addEventListener("DOMContentLoaded", function() {
     RestoreDataDoctorActionModal();
 
     // Reload table
-        window.addEventListener(ReloadDatatableSelector, function() {
-            reloadTable();
-        });
+    window.addEventListener(ReloadDatatableSelector, function () {
+        reloadTable();
+    });
 });

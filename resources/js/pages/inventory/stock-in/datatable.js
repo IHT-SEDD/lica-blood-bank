@@ -6,6 +6,7 @@ import {
     GlobalEditData,
     GlobalAdvanceTomselect,
 } from "../../../app";
+import { IncomingStockStatus } from "../../../utility/config/status-config";
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
 import { DateTimeFormatter } from "../../../utility/ui";
 
@@ -74,7 +75,21 @@ function reloadTable() {
 function StockInTable() {
     // ---------- Init kolom pada tabel ----------
     const StockInTableColumns = [
-        { data: "po_number", title: "No. PO" },
+        {
+            data: "po_number",
+            title: "No. PO",
+            render: (data, type, row) => {
+                const createdAt = new Date(row.created_at);
+                const now = new Date();
+                const newlyCreated = (now - createdAt) / (1000 * 60 * 60);
+                if (newlyCreated < 2) {
+                    return `<span class="badge badge-label text-bg-success">New</span>
+                        <span class="fw-semibold fs-5 ms-1">${data}</span>`;
+                }
+
+                return `<span class="fw-semibold fs-5">${data}</span>`;
+            },
+        },
         {
             data: null,
             title: "PMI",
@@ -106,39 +121,7 @@ function StockInTable() {
                     </span>`;
                 }
 
-                switch (data.value || data) {
-                    case "stock_ready":
-                        return `<span class="badge badge-label fw-semibold bg-success">
-                            <i class="ti ti-check align-middle me-2 fs-4"></i>
-                            Semua Darah Ready
-                        </span>`;
-                        break;
-                    case "stock_registered":
-                        return `<span class="badge badge-label fw-semibold badge-soft-info">
-                            <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
-                            Semua Darah Terdaftar
-                        </span>`;
-                        break;
-                    case "incoming_stock_cancelled":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-x align-middle me-2 fs-4"></i>
-                            Dibatalkan
-                        </span>`;
-                        break;
-                    case "incoming_stock_deleted":
-                        return `<span class="badge badge-label fw-semibold badge-soft-danger">
-                            <i class="ti ti-trash align-middle me-2 fs-4"></i>
-                            Dihapus
-                        </span>`;
-                        break;
-
-                    default:
-                        return `<span class="badge badge-label fw-semibold badge-soft-primary">
-                            <i class="ti ti-droplet align-middle me-2 fs-4"></i>
-                            ${data.value || data}
-                        </span>`;
-                        break;
-                }
+                return IncomingStockStatus(data);
             },
         },
         {

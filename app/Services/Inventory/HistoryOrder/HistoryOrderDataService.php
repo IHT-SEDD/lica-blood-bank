@@ -71,13 +71,7 @@ class HistoryOrderDataService
           2 => 'created_at',
           3 => 'updated_at',
         ];
-        $orderColumn = $request->input('order.0.column');
-        $orderDir = $request->input('order.0.dir', 'asc');
-        if (isset($columns[$orderColumn])) {
-          $query->orderBy($columns[$orderColumn], $orderDir);
-        } else {
-          $query->orderBy('po_number', 'asc');
-        }
+        $query->orderBy('po_number', 'desc');
       })
       ->toJson();
   }

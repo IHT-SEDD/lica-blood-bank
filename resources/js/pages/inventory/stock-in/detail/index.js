@@ -58,38 +58,38 @@ function IncomingBloodTable() {
         },
         { data: "blood_volume", title: "Volume" },
         {
-            data: "expiry_date",
-            title: "Expire",
-            render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
-            },
-        },
-        {
             data: "created_at",
             title: "Didaftarkan",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return DateTimeFormatter.datetime24(data);
+            },
+        },
+        {
+            data: "expiry_date",
+            title: "Expire",
+            render: (data) => {
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {
             data: "process_date",
             title: "Tgl. Proses",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {
             data: "aftap_date",
             title: "Aftap",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
         {
             data: "ready_at",
             title: "Tersedia",
             render: (data) => {
-                return DateTimeFormatter.dateOnly(data);
+                return DateTimeFormatter.datetime24(data);
             },
         },
     ];

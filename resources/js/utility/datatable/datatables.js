@@ -44,6 +44,8 @@ export class GlobalAdvanceYajraDatatable {
             pageLengthOptions = [10, 25, 50, 100],
             columnDefs: userColumnDefs = [],
             columns: userColumns = [],
+            bodyFontSize = null,
+            bodyFontStyle = null,
             ...restOptions
         } = options;
 
@@ -111,6 +113,26 @@ export class GlobalAdvanceYajraDatatable {
             ...restOptions,
         });
         this.tableElement._datatable = this.instance;
+
+        if (bodyFontSize || bodyFontStyle) {
+            this.instance.on("draw.dt", () => {
+                const tbody = this.tableElement.querySelector("tbody");
+                if (!tbody) return;
+
+                if (bodyFontSize) {
+                    tbody.style.fontSize = bodyFontSize;
+                }
+                if (bodyFontStyle === "semibold") {
+                    tbody.style.fontWeight = "600";
+                } else if (bodyFontStyle === "bold") {
+                    tbody.style.fontWeight = "700";
+                } else if (bodyFontStyle === "medium") {
+                    tbody.style.fontWeight = "500";
+                } else if (bodyFontStyle) {
+                    tbody.style.fontWeight = bodyFontStyle;
+                }
+            });
+        }
 
         if (useHideColumn) this.initColumnToggle();
         if (!removePageLength) this.initCustomPageLength(pageLengthOptions);

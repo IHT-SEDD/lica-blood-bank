@@ -8,6 +8,8 @@ import {
 } from "../../../app";
 import TomSelect from "tom-select";
 import { DateTimeFormatter } from "../../../utility/ui";
+import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { BooleanStatus } from "../../../utility/config/status-config";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 let masterUserTableInstance; // instance datatable untuk global
@@ -74,6 +76,8 @@ function MasterUserTable() {
         {
             data: null,
             title: "No",
+            orderable: false,
+            searchable: false,
             render: (data, type, row, meta) => {
                 return meta.row + 1;
             },
@@ -90,9 +94,7 @@ function MasterUserTable() {
                     return `<span class="badge badge-label badge-soft-danger">Trashed</span>`;
                 }
 
-                return `<span class="badge badge-label badge-soft-${data == 1 ? "success" : "danger"}">
-                    ${data == 1 ? "Active" : "Inactive"}
-                </span>`;
+                return BooleanStatus(data);
             },
         },
         {
@@ -153,29 +155,30 @@ function MasterUserTable() {
     ];
 
     // ---------- Panggil GlobalAdvanceDatatable untuk menampilkan tabel ----------
-    masterUserTableInstance = new GlobalAdvanceDatatable("#master-user-table", {
-        ajax: {
-            url: MasterDataURL,
-            data: function (d) {
-                const filters = getFilters();
-                d.role = filters.role;
-                d.start_date = filters.start_date;
-                d.end_date = filters.end_date;
+    masterUserTableInstance = new GlobalAdvanceYajraDatatable(
+        "#master-user-table",
+        {
+            ajax: {
+                url: MasterDataURL,
+                data: function (d) {
+                    const filters = getFilters();
+                    d.role = filters.role;
+                    d.start_date = filters.start_date;
+                    d.end_date = filters.end_date;
+                },
             },
+            columns: MasterUserTableColumns,
+            useHideColumn: true,
+            columnDefs: [
+                { targets: -1, responsivePriority: 1 },
+                { targets: 0, responsivePriority: 2 },
+            ],
+            pageLengthOptions: [10, 25, 50, 100],
+            pageLength: 25,
+            bodyFontSize: "12px",
+            bodyFontStyle: "medium",
         },
-        columns: MasterUserTableColumns,
-        useHideColumn: true,
-        columnDefs: [
-            {
-                targets: -1,
-                responsivePriority: 1,
-            },
-            {
-                targets: 0,
-                responsivePriority: 2,
-            },
-        ],
-    });
+    );
 }
 // ---------- Datatable untuk master user :end ----------
 

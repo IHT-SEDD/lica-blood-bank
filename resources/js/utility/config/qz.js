@@ -158,6 +158,8 @@ function resolvePrintData(data, printType) {
             return (data.blood_details || []).map((detail) => ({
                 patient_name: data.patient_name,
                 patient_gender: data.patient_gender,
+                patient_blood_group: data.patient_blood_group,
+                patient_blood_rhesus: data.patient_blood_rhesus,
                 patient_medrec: data.patient_medrec,
                 patient_lab_number: data.patient_lab_number,
                 patient_birthdate: data.patient_birthdate,

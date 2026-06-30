@@ -168,3 +168,57 @@ export function TransactionOrderStatus(status) {
             </span>`;
     }
 }
+
+// ---------- BOOLEAN STATUS ----------
+export function BooleanStatus(status, labelTrue, labelFalse) {
+    const trueStatus = status === "1" || status === true || status === 1;
+
+    if (trueStatus) {
+        return `<span class="badge badge-label fw-semibold badge-soft-success">
+            <i class="ti ti-check align-middle me-2 fs-4"></i>
+            ${labelTrue ?? "Active"}
+        </span>`;
+    } else {
+        return `<span class="badge badge-label fw-semibold badge-soft-danger">
+            <i class="ti ti-x align-middle me-2 fs-4"></i>
+            ${labelFalse ?? "Inactive"}
+        </span>`;
+    }
+}
+
+// ---------- INCOMING STOCK STATUS ----------
+export function IncomingStockStatus(status) {
+    const value = status?.value || status;
+
+    switch (value) {
+        case "stock_ready":
+            return `<span class="badge badge-label fw-semibold badge-soft-success">
+                <i class="ti ti-check align-middle me-2 fs-4"></i>
+                Semua Darah Ready
+            </span>`;
+            break;
+        case "stock_registered":
+            return `<span class="badge badge-label fw-semibold badge-soft-info">
+                <i class="ti ti-droplet-heart align-middle me-2 fs-4"></i>
+                Semua Darah Terdaftar
+            </span>`;
+            break;
+        case "incoming_stock_cancelled":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-x align-middle me-2 fs-4"></i>
+                Dibatalkan
+            </span>`;
+            break;
+        case "incoming_stock_deleted":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-trash align-middle me-2 fs-4"></i>
+                Dihapus
+            </span>`;
+            break;
+        default:
+            return `<span class="badge badge-label fw-semibold badge-soft-secondary">
+                <i class="ti ti-droplet align-middle me-2 fs-4"></i>
+                ${value ?? "-"}
+            </span>`;
+    }
+}
