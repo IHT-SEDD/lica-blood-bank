@@ -49,6 +49,7 @@ class BloodTransfusionPrintService
         ->where('crossmatch_result', 'Incompatible')
         ->update([
           'is_print_incompatible_letter' => true,
+          'print_incompatible_letter_at' => now(),
         ]);
 
       $html = view($this->printMap[$print], [

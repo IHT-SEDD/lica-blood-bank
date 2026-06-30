@@ -421,7 +421,10 @@ class BloodTransfusionWriteService
                     ['is_approval_incompatible', false],
                 ]);
 
-                $detail->update(['is_approval_incompatible' => true]);
+                $detail->update([
+                    'is_approval_incompatible' => true,
+                    'approve_incompatible_at' => now(),
+                ]);
 
                 BloodTransfusionLogActivity::create([
                     'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
