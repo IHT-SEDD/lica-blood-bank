@@ -26,21 +26,21 @@
     <div>
       <label class="form-label" for="edit_data_blood_stock_aftap_date">Tgl. Aftap</label>
       <input type="text" class="form-control form-control-sm flatpickr-custom" id="edit_data_blood_stock_aftap_date"
-        name="aftap_date" data-date-format="d-m-Y H:i" data-provider="flatpickr" />
+        name="aftap_date" data-enable-time="d-m-Y H:i" data-provider="flatpickr" />
     </div>
 
     {{-- Tgl. Expire --}}
     <div>
       <label class="form-label" for="edit_data_blood_stock_expiry_date">Tgl. Expire</label>
       <input type="text" class="form-control form-control-sm flatpickr-custom" id="edit_data_blood_stock_expiry_date"
-        name="expiry_date" data-date-format="d-m-Y H:i" data-provider="flatpickr" />
+        name="expiry_date" data-enable-time="d-m-Y H:i" data-provider="flatpickr" />
     </div>
 
     {{-- Tgl. Proses --}}
     <div>
       <label class="form-label" for="edit_data_blood_stock_process_date">Tgl. Proses</label>
       <input type="text" class="form-control form-control-sm flatpickr-custom" id="edit_data_blood_stock_process_date"
-        name="process_date" data-date-format="d-m-Y H:i" data-provider="flatpickr" />
+        name="process_date" data-enable-time="d-m-Y H:i" data-provider="flatpickr" />
     </div>
 
     {{-- Is Expired? --}}
