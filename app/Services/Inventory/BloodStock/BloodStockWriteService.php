@@ -66,9 +66,9 @@ class BloodStockWriteService
     'blood_volume' => $request->volume,
     'blood_status' => $request->status,
     'storage_rack_id' => $request->storage_rack_id ? $storageRackId : null,
-    'aftap_date' => Carbon::createFromFormat('d-m-Y H:i', $request->aftap_date),
-    'process_date' => Carbon::createFromFormat('d-m-Y H:i', $request->process_date),
-    'expiry_date' => Carbon::createFromFormat('d-m-Y H:i', $request->expiry_date),
+    'aftap_date' => Carbon::createFromFormat('Y-m-d H:i', $request->aftap_date)->format('Y-m-d H:i:s'),
+    'process_date' => Carbon::createFromFormat('Y-m-d H:i', $request->process_date)->format('Y-m-d H:i:s'),
+    'expiry_date' => Carbon::createFromFormat('Y-m-d H:i', $request->expiry_date)->format('Y-m-d H:i:s'),
     'is_expired' => $request->boolean('is_expired'),
    ]);
    $stock->refresh();
@@ -102,7 +102,8 @@ class BloodStockWriteService
    globalLogger('error', 'Blood stock failed to update!', [
     'payload' => $request->all(),
     'error' => $e->getMessage(),
-    'updated_by' => Auth::id(),
+    'line code' => $e->getLine(),
+    'get file' => $e->getFile()
    ], 500, 'editbloodstock');
    return response()->json([
     'message' => 'Data stok darah gagal diperbaharui!',

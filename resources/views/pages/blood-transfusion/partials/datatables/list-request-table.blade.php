@@ -12,6 +12,11 @@
           <i class="ti ti-info-circle"></i>
         </span>
       </th>
+      <th>
+        <span class="fs-4" data-bs-title="CITO Badge" data-bs-toggle="tooltip" data-bs-trigger="hover">
+          <i class="ti ti-alert-circle"></i>
+        </span>
+      </th>
       <th></th>
     </tr>
   </thead>

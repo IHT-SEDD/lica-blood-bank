@@ -13,4 +13,8 @@ return [
         'view' => 'pages.report.blood-request.index',
         'label' => 'Permintaan Darah',
     ],
+    'expedition-book' => [
+        'view' => 'pages.report.expedition-book.index',
+        'label' => 'Buku Expedisi',
+    ],
 ];

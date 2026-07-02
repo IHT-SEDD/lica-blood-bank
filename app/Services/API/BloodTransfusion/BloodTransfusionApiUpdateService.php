@@ -2,6 +2,7 @@
 
 namespace App\Services\API\BloodTransfusion;
 
+use App\Models\BloodPack;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
 use App\Models\BloodTransfusionDetailTest;
@@ -25,7 +26,7 @@ class BloodTransfusionApiUpdateService
         return DB::transaction(function () use ($transfusion, $payload) {
             $demografi = $payload['demografi'];
             $transaksi = $payload['transaksi'];
-            $tests = $payload['tes'];
+            $tests = isset($payload['tes']) ? $payload['tes'] : [];
 
             // ---------- Update demografi (patient) ----------
             $this->updatePatient($transfusion->patient, $demografi);
@@ -150,6 +151,7 @@ class BloodTransfusionApiUpdateService
     }
     private function appendNewBloodComponents(BloodTransfusion $transfusion, array $bloodData): array
     {
+        dd($transfusion->patient);
         // Ambil komponen yang sudah ada di DB
         $existingComponents = $transfusion->details()
             ->pluck('component')
@@ -172,8 +174,14 @@ class BloodTransfusionApiUpdateService
                 continue;
             }
 
+        $bloodPack = BloodPack::where('blood_group', $transfusion->patient->blood_group)
+                    ->where('blood_rhesus', $transfusion->patient->blood_rhesus)
+                    ->where('blood_component', $component)
+                    ->first();
+
             $btDetail = BloodTransfusionDetail::create([
                 'blood_transfusion_id' => $transfusion->id,
+                'blood_pack_id' => $bloodPack->id ?? null,
                 'component' => $component,
             ]);
             foreach ($package->package_tests as $pkgTest) {

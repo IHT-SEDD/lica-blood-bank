@@ -11,3 +11,10 @@
 .tomselect-sm .option {
     font-size: 13px !important;
 }
+
+tr.row-cito {
+    background-color: #fff3cd !important;
+}
+tr.row-cito td {
+    background-color: #fff3cd !important;
+}

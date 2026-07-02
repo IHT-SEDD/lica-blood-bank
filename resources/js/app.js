@@ -52,6 +52,7 @@ import monthSelectPlugin from "flatpickr/dist/plugins/monthSelect/index.js";
 import "flatpickr/dist/plugins/monthSelect/style.css";
 import TomSelect from "tom-select";
 import Choices from "choices.js";
+import { log } from "handlebars/runtime";
 
 // ---------------------- Import init function for app ----------------------
 
@@ -239,7 +240,15 @@ export class GlobalAdvanceFlatpickr {
                     config.dateFormat = attrs["data-date-format"].value;
                 if (attrs["data-enable-time"]) {
                     config.enableTime = true;
-                    config.dateFormat = (config.dateFormat || "Y-m-d") + " H:i";
+                    // PERBAIKAN 1: Cegah duplikasi H:i jika di HTML sudah ditulis d-m-Y H:i
+                    if (
+                        config.dateFormat &&
+                        !config.dateFormat.includes("H:i")
+                    ) {
+                        config.dateFormat += " H:i";
+                    } else if (!config.dateFormat) {
+                        config.dateFormat = "Y-m-d H:i";
+                    }
                 }
                 if (attrs["data-altformat"]) {
                     config.altInput = true;
@@ -267,7 +276,31 @@ export class GlobalAdvanceFlatpickr {
                 // ---------- merge event dari luar ----------
                 config = { ...config, ...this.options };
                 const instance = flatpickr(item, config);
+
+                const originalSetDate = instance.setDate.bind(instance);
+                instance.setDate = (date, triggerChange, format) => {
+                    if (date && config.enableTime) {
+                        let parsedDate = new Date(date);
+                        // Jika objek tanggal valid dan menunjukkan jam 00:00:00 dari backend
+                        if (
+                            !isNaN(parsedDate) &&
+                            parsedDate.getHours() === 0 &&
+                            parsedDate.getMinutes() === 0
+                        ) {
+                            const now = new Date();
+                            parsedDate.setHours(now.getHours());
+                            parsedDate.setMinutes(now.getMinutes());
+                            date = parsedDate; // gunakan tanggal yang sudah di-update jamnya
+                        }
+                    }
+                    // Jalankan fungsi setDate asli milik flatpickr
+                    originalSetDate(date, triggerChange, format);
+                };
+
+                // Daftarkan instance ke element DOM
                 item._flatpickrInstance = instance;
+                // Sediakan alias _flatpickr agar tidak merusak kode set value lama kamu
+                item._flatpickr = instance;
 
                 if (item.classList.contains("flatpickr-custom")) {
                     const wrapper = item.closest(".flatpickr-wrapper");

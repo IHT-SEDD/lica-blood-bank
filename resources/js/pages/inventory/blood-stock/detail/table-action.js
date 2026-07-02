@@ -1,3 +1,4 @@
+import { log } from "handlebars/runtime";
 import {
     GlobalAdvanceFlatpickr,
     GlobalDeleteDataConfirmation,
@@ -204,6 +205,7 @@ export class TableActionHandler {
         document.addEventListener("edit:open", function (e) {
             const { data } = e.detail;
             if (!data) return;
+            console.log(data);
 
             // ---------- Volume ----------
             document.querySelector("#edit_data_blood_stock_volume").value =
@@ -241,9 +243,10 @@ export class TableActionHandler {
                 "#edit_data_blood_stock_expiry_date",
             );
             if (expiryDate?._flatpickr && data.expiry_date) {
-                expiryDate._flatpickr.setDate(data.expiry_date, true);
+                expiryDate._flatpickr.setDate(data.expiry_date);
             }
-
+            console.log(data.expiry_date);
+            console.log(expiryDate.value);
             // ---------- Blood Status (TomSelect) ----------
             const selectBloodStatus = document.querySelector(
                 "#edit_data_blood_stock_status",
