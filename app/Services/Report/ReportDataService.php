@@ -2,6 +2,7 @@
 
 namespace App\Services\Report;
 
+use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Models\BloodStock;
@@ -24,6 +25,8 @@ class ReportDataService
                 return $this->datatableBloodExpire($request);
             case 'expedition-book':
                 return $this->datatableExpeditionBook($request);
+            case 'blood-request':
+                return $this->datatableBloodRequest($request);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -301,5 +304,79 @@ class ReportDataService
             ->values();
 
         return DataTables::of($data)->toJson();
+    }
+
+     // ---------- Datatable Blood Request ----------
+    private function datatableBloodRequest(Request $request)
+    {
+           $monthYear = $request->filled('month_year')
+            ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
+            : Carbon::now()->startOfMonth();
+
+        $startDate = $monthYear->copy()->startOfMonth();
+        $endDate = $monthYear->copy()->endOfMonth();
+
+        $query = BloodTransfusion::withoutTrashed()->with(
+            [
+             'room', 
+             'details.bloodPack',
+             ]
+            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
+
+        if ($request->room_public_id) {
+            $query->whereHas('room', function ($query) use ($request) {
+                $query->where('public_id', $request->room_public_id);
+            });
+        }
+
+        $query->whereBetween('blood_request_at', [$startDate, $endDate]);
+
+        $bloodTransfusions = $query->get();
+
+     // 1. Definisikan komponen & golongan darah sesuai urutan kolom yang Anda inginkan
+        $components = ['PRC', 'TC', 'LP', 'WB'];
+        $bloodTypes = ['A', 'B', 'O', 'AB']; // Urutan: A, B, O, AB sesuai request Anda
+
+        // 2. Kelompokkan data menjadi struktur FLAT per ruangan
+        $reportData = $bloodTransfusions->groupBy(function ($transfusion) {
+            return $transfusion->room->name ?? 'Tanpa Ruangan'; 
+        })->map(function ($roomTransfusions) use ($components, $bloodTypes) {
+       
+            // Inisialisasi struktur array FLAT bernilai 0 untuk ruangan ini
+            $row = [];
+            $row['room_name'] = $roomTransfusions->first()->room->name;
+            foreach ($components as $comp) {
+                foreach ($bloodTypes as $type) {
+                    // Membuat key flat seperti: PRC_A, PRC_B, TC_O, dll.
+                    $row["{$comp}_{$type}"] = 0;
+                }
+            }
+            
+            $row['total'] = 0; // Kolom total paling kanan
+
+            // Iterasi hitung data permintaan
+            foreach ($roomTransfusions as $transfusion) {
+                foreach ($transfusion->details as $detail) {
+                    $componentId = $detail->bloodPack->blood_component->value ?? $detail->blood_component_id ?? null;
+                    $bloodType   = $detail->bloodPack->blood_group->value ?? null;
+
+                    $bloodType = strtoupper(trim($bloodType));
+
+                    // Gabungkan key pencarian
+                    $flatKey = "{$componentId}_{$bloodType}";
+
+                    // Jika key tersebut ada di dalam daftar kolom kita, tambahkan nilainya
+                    if (array_key_exists($flatKey, $row)) {
+                        $row[$flatKey]++;
+                        $row['total']++;
+                    }
+                }
+            }
+
+            return $row;
+        });
+
+        return DataTables::of($reportData)->toJson();
+
     }
 }
