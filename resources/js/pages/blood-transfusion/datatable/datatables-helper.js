@@ -643,7 +643,7 @@ export function DatatableListTest() {
                 if (!row.detail_test_public_id) return "-";
 
                 const stockStatus =
-                    window.currentBagData?.bag_status ?? null;
+                    window.currentBagData?.bag_status ? window.currentBagData.bag_status : (window.currentBagData?.row_data?.blood_stock_status ?? null);
                 const isStockFinalized = ["taken_out", "used"].includes(
                     stockStatus,
                 );
