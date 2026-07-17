@@ -109,7 +109,7 @@ export function getPatientDetailButtonConfig(
     isCompleted,
     isCanceled,
 ) {
-    console.log(hasLabNumber, isCompleted);
+
     return [
         // btn-checkin-lab: tampil jika belum ada lab number
         {
@@ -219,7 +219,7 @@ export function evaluateBagListState(bagData = []) {
             (bag) =>
                 bag.blood_release_status === 1 ||
                 ["taken_out", "used"].includes(
-                    bag.bag_status ? bag.bag_status : "",
+                    bag.bag_status ? bag.bag_status : (bag.row_data?.blood_stock_status ?? null),
                 ),
         );
 
@@ -309,11 +309,14 @@ export function updateWorkflowButtonsState(data) {
     const {
         crossmatch_result,
         is_print_incompatible_letter,
+        blood_stock_status,
         is_approval_incompatible,
     } = data.row_data;
 
+    const bagStatus = data.bag_status ?? blood_stock_status ?? null;
+
     if (crossmatch_result === "Incompatible") {
-        if (data.bag_status === "in_use") {
+        if (bagStatus === "in_use") {
             // Sudah print incompatible letter tetapi belum approve incompatible
             if (is_print_incompatible_letter && !is_approval_incompatible) {
                 showButtons(btnAccept);
@@ -326,7 +329,7 @@ export function updateWorkflowButtonsState(data) {
             showButtons(btnHold, btnUnrelease);
         }
 
-        if (data.bag_status === "hold") {
+        if (bagStatus === "hold") {
             hideButtons(btnHold);
             showButtons(btnPrintIncomp, btnUnrelease);
 
@@ -342,11 +345,11 @@ export function updateWorkflowButtonsState(data) {
             }
         }
     } else if (crossmatch_result === "Compatible") {
-        if (data.bag_status === "in_use") {
+        if (bagStatus === "in_use") {
             showButtons(btnHold, btnRelease, btnUnrelease);
         }
 
-        if (data.bag_status === "hold") {
+        if (bagStatus === "hold") {
             hideButtons(btnHold);
             showButtons(btnRelease, btnUnrelease);
         }
