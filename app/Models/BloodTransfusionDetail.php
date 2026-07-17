@@ -27,6 +27,7 @@ class BloodTransfusionDetail extends Model
         'print_incompatible_letter_at',
         'is_approval_incompatible',
         'approve_incompatible_at',
+        'bag_status',
         'blood_release_status',
         'blood_released_by_user_id',
         'blood_received_by',

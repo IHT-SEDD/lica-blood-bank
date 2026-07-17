@@ -2,10 +2,10 @@
 
 namespace App\Http\Requests\BloodTransfusion;
 
-use App\Models\Patient;
-use App\Models\Insurance;
-use App\Models\Room;
 use App\Models\Doctor;
+use App\Models\Insurance;
+use App\Models\Patient;
+use App\Models\Room;
 use App\Rules\Date;
 use App\Rules\Email;
 use App\Rules\Exists;
@@ -13,6 +13,8 @@ use App\Rules\Integer;
 use App\Rules\Json;
 use App\Rules\OneOf;
 use App\Rules\Varchar;
+use App\Rules\DateTime;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -101,9 +103,9 @@ class StoreBloodTransfusionRequest extends FormRequest
             'name'          => [Rule::requiredIf($isNewPatient), new Varchar(min: 5)],
             'gender'        => [Rule::requiredIf($isNewPatient), new OneOf(['M', 'F'])],
             'birthdate'     => [Rule::requiredIf($isNewPatient), new Date],
-            'medrec'        => ['nullable', new Varchar(max: 50, min: 10)],
+            'medrec'        => ['nullable'],
             'email'         => ['nullable', new Email],
-            'phone_number'  => ['nullable', new Varchar(max: 20, min: 15)],
+            'phone_number'  => ['nullable'],
             'blood_group'   => ['nullable', new Varchar(max: 10)],
             'blood_rhesus'  => ['nullable', new Varchar(max: 10)],
             'address'       => ['nullable', new Varchar(min: 5)],
@@ -117,7 +119,7 @@ class StoreBloodTransfusionRequest extends FormRequest
             'diagnosis'    => ['nullable', new Varchar(min: 5)],
 
             // ---------- Blood Request ----------
-            'blood_required_at'         => ['required', new Date],
+            'blood_required_at'         => ['required', 'date_format:Y-m-d H:i'],
             'selected_blood_components' => ['required', new Json],
         ];
     }
