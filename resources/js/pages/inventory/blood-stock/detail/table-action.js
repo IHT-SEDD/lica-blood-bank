@@ -245,8 +245,6 @@ export class TableActionHandler {
             if (expiryDate?._flatpickr && data.expiry_date) {
                 expiryDate._flatpickr.setDate(data.expiry_date);
             }
-            console.log(data.expiry_date);
-            console.log(expiryDate.value);
             // ---------- Blood Status (TomSelect) ----------
             const selectBloodStatus = document.querySelector(
                 "#edit_data_blood_stock_status",

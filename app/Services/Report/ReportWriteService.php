@@ -9,12 +9,14 @@ use App\Enums\BloodTransfusionStatus;
 use App\Exports\Report\BloodExpire\ReportBloodExpireExport;
 use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
 use App\Exports\Report\ExpeditionBook\ExpeditionBookExport;
+use App\Exports\Report\BloodRequest\BloodRequestExport;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\Room;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ReportWriteService
@@ -29,6 +31,8 @@ class ReportWriteService
                 return $this->excelBloodExpire($request, $report);
             case 'expedition-book':
                 return $this->excelExpeditionBook($request, $report);
+            case 'blood-request':
+                return $this->excelBloodRequest($request, $report);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -126,6 +130,130 @@ class ReportWriteService
         }
 
         return compact('title', 'components', 'bloodGroups', 'rooms', 'rows', 'totals');
+    }
+
+    // ---------- Excel Blood Request ----------
+    private function excelBloodRequest(Request $request, string $report)
+    {
+
+            $monthYear = $request->filled('month_year')
+            ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
+            : Carbon::now()->startOfMonth();
+
+        $startDate = $monthYear->copy()->startOfMonth();
+        $endDate = $monthYear->copy()->endOfMonth();
+
+        $bloodTransfusions = BloodTransfusion::withoutTrashed()->with(
+            [
+             'room', 
+             'details.bloodPack',
+             ]
+            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED)
+             ->when($request->room_public_id, function ($query, $id) {
+                $query->whereHas('room', fn($q) => $q->where('public_id', $id));
+            })->whereBetween('blood_request_at', [$startDate, $endDate])
+            ->get();
+
+          $paramFilenameExcel = [];
+        if ($request->room_public_id) {
+            $roomName = Room::where('public_id', $request->room_public_id)->value('name');
+            $paramFilenameExcel = [
+                'room_name' => $roomName
+            ];
+        }
+
+        $fileName = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $reportData = $this->prepareBloodRequestData($bloodTransfusions, $fileName);
+
+        return Excel::download(new BloodRequestExport($reportData), $fileName);
+    }
+
+
+    private function prepareBloodRequestData(Collection $bloodTransfusions, string $fileName) :array
+    {
+
+          // 1. Definisikan komponen yang diperbolehkan beserta labelnya
+        $allowedComponents = [
+            'WB'  => 'Whole Blood',
+            'PRC' => 'Packed Red Cells',
+            'TC'  => 'Trombocyte Concentrate',
+            'LP'  => 'Liquid Plasma'
+        ];
+
+        // 2. Definisikan daftar golongan darah (sesuaikan jika data Anda menggunakan rhesus seperti A+, B+, dst)
+        $bloodTypes = ['A', 'B', 'AB', 'O'];
+
+        // 3. Kelompokkan data berdasarkan ruangan dan hitung breakdown-nya
+        $rooms = $bloodTransfusions->groupBy(function ($transfusion) {
+       
+            // Mengelompokkan berdasarkan nama ruangan (sesuaikan nama field 'name' pada tabel room Anda)
+            return $transfusion->room->name ?? 'Tanpa Ruangan'; 
+        })->map(function ($roomTransfusions) use ($allowedComponents, $bloodTypes) {
+            
+            // Inisialisasi struktur array bawaan bernilai 0 untuk ruangan ini
+            $summary = [];
+            $summary['room_name'] = $roomTransfusions->first()->room->name;
+            foreach ($allowedComponents as $compId => $compText) {
+                foreach ($bloodTypes as $type) {
+                    $summary[$compId][$type] = 0;
+                }
+                $summary[$compId]['total'] = 0; // Total per komponen dalam 1 ruangan
+            }
+            $summary['grand_total'] = 0; // Grand total semua komponen dalam 1 ruangan
+
+            // Iterasi untuk menghitung jumlah item darah
+            foreach ($roomTransfusions as $transfusion) {
+                foreach ($transfusion->details as $detail) {
+                    /**
+                     * PENTING: Sesuaikan letak properti id komponen dan golongan darah di bawah ini.
+                     * Kode di bawah berasumsi properti ada di relasi 'bloodPack' atau langsung di 'detail'.
+                     */
+                    $componentId = $detail->bloodPack->blood_component->value ?? $detail->blood_component_id ?? null;
+                    $bloodType   = $detail->bloodPack->blood_group->value ?? null;
+              
+                    // Standarisasi string menjadi uppercase (antisipasi perbedaan penulisan di DB)
+                    $bloodType = strtoupper(trim($bloodType));
+                    
+                    // Lakukan pengecekan apakah masuk ke dalam filter komponen & golongan darah yang ditentukan
+                    if (array_key_exists($componentId, $allowedComponents) && in_array($bloodType, $bloodTypes)) {
+                        $summary[$componentId][$bloodType]++;
+                        $summary[$componentId]['total']++;
+                        $summary['grand_total']++;
+                    }
+                }
+            }
+
+            return $summary;
+        })->toArray();
+
+        // Jika Anda ingin memfilter $bloodComponent bawaan agar hanya tersisa 4 item tersebut:
+        $components = collect(BloodComponent::toSelect())
+            ->whereIn('id', array_keys($allowedComponents))
+            ->values()
+            ->toArray();
+
+         $grandTotals = [];
+        foreach ($components as $comp) {
+            foreach ($bloodTypes as $type) {
+                $grandTotals["{$comp['id']}_{$type}"] = 0;
+            }
+        }
+        $grandTotals['total'] = 0;
+        
+        // Hitung total dari seluruh ruangan
+        foreach ($rooms as $roomData) {
+            foreach ($components as $comp) {
+                foreach ($bloodTypes as $type) {
+                    $key = "{$comp['id']}_{$type}";
+                    $grandTotals[$key] += $roomData[$comp['id']][$type];
+                    $grandTotals['total'] += $roomData[$comp['id']][$type];
+                }
+            }
+        }
+
+        $title = Str::remove('.xlsx', $fileName);
+        // dd($grandTotals, $rooms);
+        return compact('title', 'components', 'bloodTypes', 'rooms', 'grandTotals');
     }
 
     // ---------- Excel Blood Expire ----------
@@ -353,6 +481,12 @@ class ReportWriteService
             case 'expedition-book':
                 $bulanLabel = $startDate->translatedFormat('F Y');
                 return 'Buku Ekspedidisi - ' . $bulanLabel . '.xlsx';
+            case 'blood-request':
+                 $bulanLabel = $startDate->translatedFormat('F Y');
+                if (!empty($params['room_name'])) {
+                    return 'Laporan Permintaan Darah - ' . $params['room_name'] . ' - ' . $bulanLabel . '.xlsx';
+                }
+                return 'Laporan Permintaan Darah - ' . $bulanLabel . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
         }

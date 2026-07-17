@@ -149,7 +149,6 @@ class BloodTransfusionController extends Controller
         // $request->validate([
         //     'blood_stock_id' => 'required|exists:blood_stocks,id'
         // ]);
-
         try {
             $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
             // dd($request->all());
@@ -164,17 +163,18 @@ class BloodTransfusionController extends Controller
                 ]);
             }
 
-            // Currently only updating the detail record.
-            $detail->update([
-                'blood_stock_id' => $request->blood_stock_id
-            ]);
-
             if ($request->blood_stock_id) {
                 // Update status Blood Stock to IN_USE
                 $bloodStock = BloodStock::find($request->blood_stock_id);
                 $bloodStock->update([
                     'blood_status' => BloodStockStatus::IN_USE,
                     'used_at'     => now(),
+                ]);
+
+                // Currently only updating the detail record.
+                $detail->update([
+                    'blood_stock_id' => $request->blood_stock_id,
+                    'bag_status' => BloodStockStatus::IN_USE,
                 ]);
             }
 

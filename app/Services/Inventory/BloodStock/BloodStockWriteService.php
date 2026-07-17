@@ -244,7 +244,8 @@ class BloodStockWriteService
   try {
    $user = Auth::user();
 
-   $stock = BloodStock::onlyTrashed()->where('public_id', $id)->where('blood_status', BloodStockStatus::DELETED)->whereNotNull('deleted_at')->first();
+   $stock = BloodStock::onlyTrashed()->where('public_id', $id)->whereNotNull('deleted_at')->first();
+
    if (!$stock) {
     DB::rollBack();
     return response()->json(['message' => 'Data stok darah tidak ditemukan!'], 404);
