@@ -407,7 +407,7 @@ export function DatatableRequestBlood() {
                             </button>
                         </li>
                         <li>
-                            <button id="delete-data-${data.public_id}" data-delete-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion 
+                            <button id="delete-data-${data.public_id}" data-delete-id="${data.public_id}" class="dropdown-item fw-medium btn-delete-blood-transfusion
                             ${canDelete ? "text-danger" : "disabled text-muted"}" type="button">
                             <i class="ti ti-trash align-middle me-1 fs-4"></i>
                                 Hapus
@@ -472,7 +472,7 @@ export function DatatableListBagRequest() {
             title: "Status",
             render: function (_, data, row) {
                 const rowData = row.row_data;
-                return TransfusionBloodStatus(rowData.blood_stock_status);
+                return TransfusionBloodStatus(row.bag_status);
             },
         },
         {
@@ -643,7 +643,7 @@ export function DatatableListTest() {
                 if (!row.detail_test_public_id) return "-";
 
                 const stockStatus =
-                    window.currentBagData?.row_data?.blood_stock_status ?? null;
+                    window.currentBagData?.bag_status ?? null;
                 const isStockFinalized = ["taken_out", "used"].includes(
                     stockStatus,
                 );

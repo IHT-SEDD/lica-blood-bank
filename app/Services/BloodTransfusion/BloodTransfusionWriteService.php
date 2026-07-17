@@ -212,6 +212,11 @@ class BloodTransfusionWriteService
                 if (!$detail->blood_stock_id) {
                     throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
+
+                $detail->update([
+                    'bag_status' => BloodStockStatus::HOLD
+                ]);
+
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::HOLD);
 
                 BloodTransfusionLogActivity::create([
@@ -266,12 +271,15 @@ class BloodTransfusionWriteService
                 if (strtolower(trim($bloodStock->bag_number)) !== strtolower(trim($request->blood_number))) {
                     throw new \Exception('Nomor darah tidak sesuai dengan labu darah pasien ini!');
                 }
+
                 $detail->update([
                     'blood_release_status' => true,
+                    'bag_status' => BloodStockStatus::TAKEN_OUT,
                     'blood_released_by_user_id' => Auth::user()->id,
                     'blood_received_by' => $request->blood_received_by,
                     'blood_released_at' => now(),
                 ]);
+
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::TAKEN_OUT);
 
                 BloodTransfusionLogActivity::create([
@@ -306,6 +314,7 @@ class BloodTransfusionWriteService
     // ---------- Fungsi Delete Blood Pack ----------
     public function deleteBloodPack(string $detailPublicId): void
     {
+        dd(3);
         try {
             DB::transaction(function () use ($detailPublicId) {
                 $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)
@@ -380,6 +389,11 @@ class BloodTransfusionWriteService
                 if (!$detail->blood_stock_id) {
                     throw new \RuntimeException('Darah tidak digunakan untuk pemeriksaan pasien ini!');
                 }
+
+                $detail->update([
+                    'bag_status' => BloodStockStatus::USED
+                ]);
+
                 $this->updateBloodStockStatus($detail->blood_stock_id, BloodStockStatus::USED);
 
                 BloodTransfusionLogActivity::create([
@@ -454,7 +468,7 @@ class BloodTransfusionWriteService
         }
     }
 
-    // ---------- Fungsi Update Data ---------- 
+    // ---------- Fungsi Update Data ----------
     public function updateData(Request $request, string $id): array
     {
         DB::beginTransaction();
@@ -568,7 +582,7 @@ class BloodTransfusionWriteService
         }
     }
 
-    // ---------- Fungsi Update Data Darah ---------- 
+    // ---------- Fungsi Update Data Darah ----------
     public function updateBloodPacks(UpdateBloodPacksRequest $request, string $id): array
     {
         try {
@@ -646,6 +660,10 @@ class BloodTransfusionWriteService
                             $newStatus = (!empty($detail->crossmatch_result) && !empty($detail->crossmatch_finish_at))
                                 ? BloodStockStatus::USED
                                 : BloodStockStatus::AVAILABLE;
+
+                            $detail->update([
+                                'bag_status' => $newStatus
+                            ]);
 
                             $stock->update([
                                 'blood_status' => $newStatus,
