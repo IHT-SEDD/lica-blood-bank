@@ -1,21 +1,22 @@
 import { GlobalAdvanceFlatpickr, GlobalAdvanceTomselect } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
-import { ReportBloodRequestTable, reloadTable } from "./datatable";
+import { ReportBloodStockTable, reloadTable } from "./datatable";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
-const ReloadDatatableSelector = "report-blood-request-reload";
+const ReloadDatatableSelector = "report-blood-stock-reload";
 
-const MonthFilterSelector = ".report-blood-request-table-month-filter";
-const FilterVendorSelector = "#filter-blood-request-vendor";
+const MonthFilterSelector = ".report-blood-stock-table-month-filter";
+const FilterBloodComponentSelector = "#filter-blood-stock-blood-component";
 
 const ExportURL = "/report/export/";
-const ExportBtnSelector = "excel_blood_request_btn";
+const ExportBtnSelector = "excel_blood_stock_btn";
 
 // ---------- HELPERS ----------
 function getFilters() {
     const monthAndYear = document.querySelector(MonthFilterSelector)?.value;
-    const vendor = document.querySelector(FilterVendorSelector)?.value || "";
-    return { vendor, monthAndYear };
+    const bloodComponent =
+        document.querySelector(FilterBloodComponentSelector)?.value || "";
+    return { bloodComponent, monthAndYear };
 }
 
 // ---------- FILTERS ----------
@@ -24,12 +25,14 @@ function MonthFilter() {
         onClose: reloadTable,
     });
 }
-function FilterVendor() {
-    new GlobalAdvanceTomselect(FilterVendorSelector, {
+function FilterBloodComponent() {
+    new GlobalAdvanceTomselect(FilterBloodComponentSelector, {
         valueField: "id",
         preload: true,
         load: function (query, callback) {
-            fetch(`/utility/select/vendor?q=${encodeURIComponent(query)}`)
+            fetch(
+                `/utility/select/blood-component?q=${encodeURIComponent(query)}`,
+            )
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
@@ -50,8 +53,7 @@ function ExportToExcel() {
         const params = new URLSearchParams();
         if (filters.monthAndYear)
             params.append("month_year", filters.monthAndYear);
-        if (filters.vendor) params.append("vendor_public_id", filters.vendor);
-        const url = ExportURL + `blood-request/excel/?${params.toString()}`;
+        const url = ExportURL + `blood-stock/excel/?${params.toString()}`;
 
         showPageLoading();
         try {
@@ -77,7 +79,7 @@ function ExportToExcel() {
                 disposition.match(/filename="?([^"]+)"?/);
             const fileName = filenameMatch
                 ? decodeURIComponent(filenameMatch[1])
-                : `Laporan Buku Pengiriman Darah.xlsx`;
+                : `Laporan Darah Kadaluarsa.xlsx`;
 
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -101,10 +103,10 @@ function ExportToExcel() {
 
 // ---------- Init ----------
 document.addEventListener("DOMContentLoaded", function () {
-    ReportBloodRequestTable(getFilters);
+    ReportBloodStockTable(getFilters);
     MonthFilter();
+    FilterBloodComponent();
     ExportToExcel();
-    FilterVendor();
 
     window.addEventListener(ReloadDatatableSelector, function () {
         reloadTable();

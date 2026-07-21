@@ -1,6 +1,6 @@
 @php
 $compKeys = array_keys($components);
-$totalCols = 4 + count($components) * count($bloodGroups) + 1;
+$totalCols = 2 + count($components) * count($bloodGroups) + 1;
 $headerStyle = 'font-weight:bold; text-align:center; vertical-align:middle;
 background-color:#f58700; border:1px solid #000; white-space:nowrap;';
 $cellStyle = 'text-align:center; border:1px solid #000;';
@@ -20,8 +20,6 @@ $cellStyle = 'text-align:center; border:1px solid #000;';
   <tr>
    <th rowspan="3" style="{{ $headerStyle }}">NO</th>
    <th rowspan="3" style="{{ $headerStyle }}">Tanggal</th>
-   <th rowspan="3" style="{{ $headerStyle }}">PO</th>
-   <th rowspan="3" style="{{ $headerStyle }}">PMI</th>
    @foreach ($components as $label)
    <th colspan="{{ count($bloodGroups) }}" style="{{ $headerStyle }}">
     {{ $label }}
@@ -50,35 +48,29 @@ $cellStyle = 'text-align:center; border:1px solid #000;';
  </thead>
 
  <tbody>
-  {{-- Baris per PO --}}
-  @foreach ($rows as $index => $row)
+  {{-- Baris per tanggal --}}
+  @foreach ($stockDates as $index => $stockDate)
   <tr>
    <td style="{{ $cellStyle }}">{{ $index + 1 }}</td>
    <td style="border:1px solid #000; white-space:nowrap;">
-    {{ $row['created_at']->format('d-m-Y') }}
-   </td>
-   <td style="border:1px solid #000; white-space:nowrap; {{ $cellStyle }}">
-    {{ $row['po_number'] }}
-   </td>
-   <td style="border:1px solid #000; white-space:nowrap;">
-    {{ $row['vendor_name'] }}
+    {{ \Carbon\Carbon::parse($stockDate)->format('d-m-Y') }}
    </td>
    @foreach ($compKeys as $comp)
    @foreach ($bloodGroups as $group)
    <td style="{{ $cellStyle }}">
-    {{ $row[$comp][$group] ?: '' }}
+    {{ $rows[$stockDate][$comp][$group] ?: '' }}
    </td>
    @endforeach
    @endforeach
    <td style="font-weight:bold; {{ $cellStyle }}">
-    {{ $row['_total'] ?: '' }}
+    {{ $rows[$stockDate]['_total'] ?: '' }}
    </td>
   </tr>
   @endforeach
 
   {{-- Baris JUMLAH --}}
   <tr>
-   <td colspan="4" style="font-weight:bold; text-align:center; background-color:#f58700; border:1px solid #000;">
+   <td colspan="2" style="font-weight:bold; text-align:center; background-color:#f58700; border:1px solid #000;">
     JUMLAH
    </td>
    @foreach ($compKeys as $comp)

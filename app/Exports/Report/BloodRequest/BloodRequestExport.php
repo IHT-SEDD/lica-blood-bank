@@ -13,7 +13,7 @@ class BloodRequestExport implements FromView, ShouldAutoSize, WithTitle
 
     public function title(): string
     {
-        return 'Laporan Permintaan Darah';
+        return 'LAPORAN PERMINTAAN DROPPING DARAH BDRS INDRAMAYU';
     }
 
     public function view(): View
