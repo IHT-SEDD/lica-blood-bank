@@ -1,4 +1,5 @@
 import { GlobalAdvanceYajraDatatable } from "../../../utility/datatable/datatables";
+import { DateTimeFormatter } from "../../../utility/ui";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 let reportBloodRequestTableInstance;
@@ -24,24 +25,46 @@ export function ReportBloodRequestTable(getFilters) {
                 return meta.row + 1;
             },
         },
-        { data: "room_name", title: "Ruangan" },
-        { data: "PRC_A", title: "A (PRC)" },
-        { data: "PRC_B", title: "B (PRC)" },
-        { data: "PRC_O", title: "O (PRC)" },
-        { data: "PRC_AB", title: "AB (PRC)" },
-        { data: "TC_A", title: "A (TC)" },
-        { data: "TC_B", title: "B (TC)" },
-        { data: "TC_O", title: "O (TC)" },
-        { data: "TC_AB", title: "AB (TC)" },
-        { data: "LP_A", title: "A (LP)" },
-        { data: "LP_B", title: "B (LP)" },
-        { data: "LP_O", title: "O (LP)" },
-        { data: "LP_AB", title: "AB (LP)" },
-        { data: "WB_A", title: "A (WB)" },
-        { data: "WB_B", title: "B (WB)" },
-        { data: "WB_O", title: "O (WB)" },
-        { data: "WB_AB", title: "AB (WB)" },
-        { data: "total", title: "Total" },
+        {
+            data: "created_at",
+            title: "Tgl. Order",
+            render: (data, type, row, meta) => {
+                return DateTimeFormatter.datetime24(row.created_at);
+            },
+        },
+        { data: "po_number", title: "No. PO" },
+        { data: "vendor_name", title: "PMI" },
+        {
+            data: null,
+            title: "Detail",
+            orderable: false,
+            searchable: false,
+            render: (data, type, row, meta) => {
+                if (
+                    !Array.isArray(row.order_blood_detail) ||
+                    row.order_blood_detail.length === 0
+                ) {
+                    return "-";
+                }
+
+                const items = row.order_blood_detail.map((detail) => {
+                    const component = detail.blood_component?.name ?? "";
+                    const group = detail.blood_group?.name ?? "";
+                    const rhesus = detail.blood_rhesus ?? "";
+                    const quantity = detail.quantity ?? 0;
+
+                    return `${component} ${group}${rhesus} : ${quantity}`;
+                });
+
+                return `<ul class="mb-0 ps-3">${items
+                    .map((item) => `<li>${item}</li>`)
+                    .join("")}</ul>`;
+            },
+        },
+        {
+            data: "total_quantity",
+            title: "Total",
+        },
     ];
 
     reportBloodRequestTableInstance = new GlobalAdvanceYajraDatatable(
@@ -51,8 +74,8 @@ export function ReportBloodRequestTable(getFilters) {
                 url: ReportDataURL,
                 data: function (d) {
                     const filters = getFilters();
-                    d.room_public_id = filters.room;
                     d.month_year = filters.monthAndYear;
+                    d.vendor = filters.vendor;
                 },
             },
             columns: ReportBloodRequestTableColumns,
