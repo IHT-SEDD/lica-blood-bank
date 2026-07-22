@@ -12,6 +12,7 @@ use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
 use App\Exports\Report\ExpeditionBook\ExpeditionBookExport;
 use App\Exports\Report\BloodRequest\BloodRequestExport;
 use App\Exports\Report\BloodStock\ReportBloodStockExport;
+use App\Exports\Report\Incompatible\ReportIncompatibleExport;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\OrderBlood;
@@ -39,6 +40,8 @@ class ReportWriteService
                 return $this->excelBloodRequest($request, $report);
             case 'blood-stock':
                 return $this->excelBloodStock($request, $report);
+            case 'incompatible':
+                return $this->excelIncompatible($request, $report);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -533,6 +536,112 @@ class ReportWriteService
         return compact('title', 'components', 'bloodGroups', 'stockDates', 'rows', 'totals');
     }
 
+    // ---------- Excel Incompatible ----------
+    public function excelIncompatible(Request $request, string $report)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $room = $request->room_public_id;
+        $paramFilenameExcel = [];
+
+        $query = BloodTransfusion::withoutTrashed()
+            ->with([
+                'room',
+                'insurance',
+                'blood_transfusion_details.bloodPack',
+                'blood_transfusion_details.bloodStock',
+                'blood_transfusion_details.bloodTransfusionDetailTests.test',
+            ])
+            ->whereNotNull('finish_at')
+            ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED)
+            ->whereBetween('blood_transfusions.created_at', [$startDate, $endDate])
+            ->whereHas('blood_transfusion_details', function ($q) {
+                $q->where('crossmatch_result', 'Incompatible');
+            });
+
+        if (!empty($room)) {
+            $query->whereHas('room', function ($q) use ($room) {
+                $q->where('public_id', $room);
+            });
+
+            $roomName = Room::where('public_id', $room)->value('name');
+            $paramFilenameExcel = [
+                'room_name' => $roomName,
+            ];
+        }
+
+        $bloodTransfusions = $query->get();
+
+        $reportData = $this->prepareIncompatibleData(
+            bloodTransfusions: $bloodTransfusions,
+            startDate: $startDate,
+            endDate: $endDate,
+            referenceDate: $startDate,
+        );
+        $fileName = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $storagePath = 'report/incompatible/' . $fileName;
+
+        Excel::store(new ReportIncompatibleExport($reportData), $storagePath, 'public');
+        return Excel::download(new ReportIncompatibleExport($reportData), $fileName);
+    }
+    public function prepareIncompatibleData(Collection $bloodTransfusions, ?string $startDate, ?string $endDate, ?Carbon $referenceDate = null,): array
+    {
+        $bulanLabel = '';
+        if ($referenceDate) {
+            $original = Carbon::getLocale();
+            Carbon::setLocale('id');
+            $bulanLabel = strtoupper($referenceDate->translatedFormat('F Y'));
+            Carbon::setLocale($original);
+        }
+        $title = 'LAPORAN HASIL INCOMPATIBLE BDRS INDRAMAYU BULAN ' . $bulanLabel;
+
+        $components = collect(BloodComponent::cases())
+            ->mapWithKeys(fn(BloodComponent $c) => [$c->value => $c->exportLabel()])
+            ->all();
+        $bloodGroups = collect(BloodGroup::cases())
+            ->map(fn(BloodGroup $g) => $g->value)
+            ->all();
+
+        $dataIncompatibles = collect();
+
+        foreach ($bloodTransfusions as $bt) {
+            foreach ($bt->blood_transfusion_details as $detail) {
+                if ($detail->crossmatch_result !== 'Incompatible') {
+                    continue;
+                }
+
+                $tests = $this->mapDetailTests($detail->bloodTransfusionDetailTests);
+
+                $dataIncompatibles->push((object) [
+                    'public_id' => $bt->public_id,
+                    'insurance_name' => optional($bt->insurance)->name,
+                    'room_name' => optional($bt->room)->name,
+                    'lab_number' => $bt->lab_number,
+                    'order_number' => $bt->order_number,
+                    'created_at' => $bt->created_at,
+                    'finish_at' => $bt->finish_at,
+                    'status' => $bt->status,
+
+                    'component' => $detail->component,
+                    'bag_number' => optional($detail->bloodStock)->bag_number,
+                    'crossmatch_result' => $detail->crossmatch_result,
+                    'crossmatch_finish_at' => $detail->crossmatch_finish_at,
+
+                    'mayor_result' => $tests['mayor_result'],
+                    'minor_result' => $tests['minor_result'],
+                    'auto_control_result' => $tests['auto_control_result'],
+
+                    'blood_component' => optional($detail->bloodPack)->blood_component,
+                    'blood_group' => optional($detail->bloodPack)->blood_group,
+                    'blood_rhesus' => optional($detail->bloodPack)->blood_rhesus,
+                ]);
+            }
+        }
+
+        $dataIncompatibles = $dataIncompatibles->values();
+
+        return compact('title', 'components', 'bloodGroups', 'dataIncompatibles', 'startDate', 'endDate');
+    }
+
     // ---------- HELPERS ----------
     protected function getDateRange(Request $request): array
     {
@@ -580,8 +689,35 @@ class ReportWriteService
                     return 'Laporan Stok Darah - ' . $params['blood_component'] . ' - ' . $bulanLabel . '.xlsx';
                 }
                 return 'Laporan Stok Darah - ' . $bulanLabel . '.xlsx';
+            case 'incompatible':
+                if (!empty($params['room_name'])) {
+                    return 'Laporan Hasil Incompatible - ' . $params['room_name'] . ' - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
+                }
+                return 'Laporan Hasil Incompatible - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
         }
+    }
+    private function mapDetailTests($tests): array
+    {
+        $result = [
+            'mayor_result'        => null,
+            'minor_result'        => null,
+            'auto_control_result' => null,
+        ];
+
+        foreach ($tests as $test) {
+            $name = strtolower(optional($test->test)->name ?? '');
+
+            if (str_contains($name, 'mayor')) {
+                $result['mayor_result'] = $test->result;
+            } elseif (str_contains($name, 'minor')) {
+                $result['minor_result'] = $test->result;
+            } elseif (str_contains($name, 'auto')) {
+                $result['auto_control_result'] = $test->result;
+            }
+        }
+
+        return $result;
     }
 }

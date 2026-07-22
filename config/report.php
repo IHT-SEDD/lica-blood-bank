@@ -9,6 +9,10 @@ return [
         'view' => 'pages.report.blood-expire.index',
         'label' => 'Darah Kadaluarsa',
     ],
+    'incompatible' => [
+        'view' => 'pages.report.incompatible.index',
+        'label' => 'Hasil Incompatible',
+    ],
     'blood-usage' => [
         'view' => 'pages.report.blood-usage.index',
         'label' => 'Penggunaan Darah',
