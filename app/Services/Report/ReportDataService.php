@@ -6,6 +6,7 @@ use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Enums\OrderBloodStatus;
+use App\Models\BloodDestroy;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\OrderBlood;
@@ -27,6 +28,8 @@ class ReportDataService
                 return $this->datatableBloodStock($request);
             case 'blood-expire':
                 return $this->datatableBloodExpire($request);
+            case 'blood-destroy':
+                return $this->datatableBloodDestroy($request);
             case 'expedition-book':
                 return $this->datatableExpeditionBook($request);
             case 'blood-request':
@@ -175,7 +178,7 @@ class ReportDataService
         $monthYear = $request->month_year;
         $bloodComponent = $request->blood_component;
 
-        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED);
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereNull('used_at');
         if (!empty($monthYear)) {
             $date = Carbon::createFromFormat('Y-m', $monthYear);
             $query->whereYear('expiry_date', $date->year)->whereMonth('expiry_date', $date->month);
@@ -222,6 +225,28 @@ class ReportDataService
         });
 
         return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Blood Destroy ----------
+    private function datatableBloodDestroy(Request $request)
+    {
+        $monthYear = $request->month_year;
+        $bloodComponent = $request->blood_component;
+
+        $query = BloodDestroy::withoutTrashed()->with(['bloodStocks.bloodPacks', 'destroyBy']);
+        if (!empty($monthYear)) {
+            $date = Carbon::createFromFormat('Y-m', $monthYear);
+            $query->whereYear('created_at', $date->year)->whereMonth('created_at', $date->month);
+        }
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodStocks', function ($q) use ($bloodComponent) {
+                $q->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                    $q->where('blood_component', $bloodComponent);
+                });
+            });
+        }
+        $bloodDestroys = $query->get();
+        return DataTables::of($bloodDestroys)->toJson();
     }
 
     // ---------- Datatable Expedition Book ----------

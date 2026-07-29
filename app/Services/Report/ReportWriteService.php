@@ -251,7 +251,7 @@ class ReportWriteService
         $bloodComponent = $request->blood_component;
         $paramFilenameExcel = [];
 
-        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereBetween('expiry_date', [$startDate, $endDate]);
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereBetween('expiry_date', [$startDate, $endDate])->whereNull('used_at');
         if (!empty($bloodComponent)) {
             $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
                 $q->where('blood_component', $bloodComponent);

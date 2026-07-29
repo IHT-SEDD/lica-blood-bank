@@ -26,8 +26,10 @@ class ReportController extends Controller
         $formattedReport = Str::of($report)
             ->replace(['-', '_'], ' ')
             ->title();
+
         return view($view, [
             'report' => $modules[$report]['label'] ?? $formattedReport,
+            'descriptionReport' => $modules[$report]['deskripsi'] ?? $modules[$report]['label'],
             'reportJS' => $report,
         ]);
     }

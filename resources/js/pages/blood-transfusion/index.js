@@ -168,6 +168,7 @@ export function updatePatientDetailUI(data) {
                 if (BTN_CHECKIN) BTN_CHECKIN.dataset.id = d.public_id;
             }
             if (hasLabNumber) {
+                console.log("Has lab number? True");
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
                 const BTN_SEND_RESULT = getSendResultBtn();
@@ -191,6 +192,7 @@ export function updatePatientDetailUI(data) {
                     .DataTable()
                     .ajax.reload(function (json) {
                         const state = evaluateBagListState(json.data ?? []);
+                        console.log(state);
                         applyBagListButtonState(state);
 
                         if (window.currentBagDetailPublicId && json.data) {

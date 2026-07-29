@@ -5,10 +5,38 @@
 
 @section('content')
 <div class="row py-4">
- {{-- Title --}}
- <div class="d-flex justify-content-between align-items-start mb-1">
-  <h1 class="fw-bold text-uppercase">Laporan {{ $report }}</h1>
+ {{-- Title & Subtitle--}}
+ <div class="row justify-content-center pb-2">
+  <div class="col-12 text-center">
+   <!-- Title & Icon -->
+   <span class="badge badge-default fw-normal shadow px-2 py-1 mb-2 fst-italic fs-xxs">
+    <i data-lucide="file-text" class="fs-sm me-1"></i> Reports
+   </span>
+   <h3 class="fw-bold text-uppercase">
+    LAPORAN {{ $report }}
+   </h3>
+
+   <!-- Subtitle atau deskripsi report -->
+   <p class="fs-sm text-muted mb-0">
+    {{ $descriptionReport }}
+   </p>
+  </div>
  </div>
+
+ {{-- Pro Tips--}}
+ @if(View::hasSection('pro-tip'))
+ <div class="row align-items-center justify-content-center pb-2">
+  <div class="col-12 d-flex flex-md-row flex-column align-items-center gap-2 justify-content-md-end justify-content-center">
+   <!-- Title & Icon -->
+   <span class="badge badge-default fw-normal shadow px-2 py-1 mb-0 fst-italic fs-xxs">
+    <i data-lucide="lightbulb" class="fs-sm me-1"></i> Pro Tip!
+   </span>
+   <h5 class="fw-medium mb-0">
+    @yield('pro-tip')
+   </h5>
+  </div>
+ </div>
+ @endif
 
  {{-- Datatable :begin --}}
  <div class="col-12 {{ View::hasSection('form-content') ? 'col-xxl-8 col-md-6' : '' }}">

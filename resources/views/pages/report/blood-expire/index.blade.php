@@ -1,5 +1,9 @@
 @extends('layouts.report-page-layout')
 
+@section('pro-tip')
+Export data laporan ini ke file excel untuk melihat detail!
+@endsection
+
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
   {{-- Export to excel --}}

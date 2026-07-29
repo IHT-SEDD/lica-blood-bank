@@ -211,6 +211,10 @@ export class TableActionHandler {
             document.querySelector("#edit_data_blood_stock_volume").value =
                 data.blood_volume ?? "";
 
+            // ---------- No. Labu ----------
+            document.querySelector("#edit_data_blood_stock_bag_number").value =
+                data.bag_number ?? "";
+
             // ---------- Storage Rack (TomSelect) ----------
             const selectStorageRack = document.querySelector(
                 "#edit_data_blood_stock_storage_rack",
@@ -245,6 +249,14 @@ export class TableActionHandler {
             if (expiryDate?._flatpickr && data.expiry_date) {
                 expiryDate._flatpickr.setDate(data.expiry_date);
             }
+            // ---------- Expiry Date (Flatpickr) ----------
+            const usageDate = document.querySelector(
+                "#edit_data_blood_stock_used_at",
+            );
+            if (usageDate?._flatpickr && data.used_at) {
+                usageDate._flatpickr.setDate(data.used_at);
+            }
+
             // ---------- Blood Status (TomSelect) ----------
             const selectBloodStatus = document.querySelector(
                 "#edit_data_blood_stock_status",
@@ -253,6 +265,18 @@ export class TableActionHandler {
                 selectBloodStatus.tomselect.clear();
                 if (data.blood_status) {
                     selectBloodStatus.tomselect.setValue(data.blood_status);
+                }
+            }
+            // ---------- Blood Pack (TomSelect) ----------
+            const selectBloodPack = document.querySelector(
+                "#edit_data_blood_stock_blood_pack_id",
+            );
+            if (selectBloodPack?.tomselect) {
+                selectBloodPack.tomselect.clear();
+                if (data.blood_packs.public_id) {
+                    selectBloodPack.tomselect.setValue(
+                        data.blood_packs.public_id,
+                    );
                 }
             }
 

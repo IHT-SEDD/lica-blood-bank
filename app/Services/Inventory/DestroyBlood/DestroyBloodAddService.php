@@ -71,7 +71,6 @@ class DestroyBloodAddService
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-
             globalLogger('error', 'Blood failed to destroy!', [
                 'payload' => $request->all(),
                 'error' => $e->getMessage(),
@@ -164,7 +163,6 @@ class DestroyBloodAddService
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
-
             globalLogger('error', 'Blood failed to destroy via scan!', [
                 'payload' => $request->all(),
                 'error' => $e->getMessage(),
@@ -245,11 +243,14 @@ class DestroyBloodAddService
                 'blood_stock_id' => $detail->id,
                 'reason' => $request->reason,
                 'status' => BloodDestroyStatus::DESTROYED,
+                'destroyed_by_user_id' => $user->id,
             ]);
 
             // ---------- Update blood_status BloodStock menjadi destroyed ----------
             $detail->update([
                 'blood_status' => BloodStockStatus::DESTROYED,
+                'is_destroyed' => TRUE,
+                'destroyed_at' => now(),
             ]);
 
             // ---------- Hapus data di storage rack (jika ada) ----------

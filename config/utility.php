@@ -160,7 +160,8 @@ return [
     ],
     'storage-rack' => [
         'model' => App\Models\StorageRack::class,
-        'label' => 'name',
+        'label' => ['storages.name', 'name'], // Array, text display pada tom-select akan sesuai urutan array ini
+        'label_separator' => ' - ', // Opsional, defaultnya '-'
         'with' => ['storages'],
     ],
 

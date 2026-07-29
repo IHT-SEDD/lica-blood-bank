@@ -50,10 +50,10 @@ class UtilityService
       'results' => $data->map(function ($item) use ($modules, $labelField) {
         $text = isset($modules['label_callback'])
           ? call_user_func($modules['label_callback'], $item)
-          : data_get($item, $labelField);
+          : $this->resolveLabel($item, $modules);
 
         return [
-          'id'   => $item->public_id ?? $item->id,
+          'id' => $item->public_id ?? $item->id,
           'text' => $text,
         ];
       })->values(),
@@ -98,12 +98,11 @@ class UtilityService
     }
 
     $data = $query->orderBy('id', 'asc')->get();
-
     return [
       'results' => $data->map(function ($item) use ($modules, $labelField) {
         $text = isset($modules['label_callback'])
           ? call_user_func($modules['label_callback'], $item)
-          : data_get($item, $labelField);
+          : $this->resolveLabel($item, $modules);
 
         return [
           'id'   => $item->public_id ?? $item->id,
@@ -380,5 +379,35 @@ class UtilityService
       $query->where($field, $operator, $value);
       // ---------- Handle kondisi biasa :end ----------
     }
+  }
+  private function resolveLabel($item, array $modules): string
+  {
+    $labelField = $modules['label'];
+    $separator = $modules['label_separator'] ?? ' - ';
+
+    $fields = is_array($labelField) ? $labelField : [$labelField];
+
+    return collect($fields)
+      ->map(fn($field) => $this->resolveField($item, $field))
+      ->filter(fn($value) => $value !== null && $value !== '')
+      ->implode($separator);
+  }
+  private function resolveField($item, string $field)
+  {
+    // ---------- Handle path relasi satu level, misal "storages.name" ----------
+    if (Str::contains($field, '.')) {
+      [$relation, $rest] = explode('.', $field, 2);
+      $related = data_get($item, $relation);
+
+      // ---------- Jika relasi hasMany/belongsToMany (Collection) ----------
+      if ($related instanceof \Illuminate\Support\Collection) {
+        return $related
+          ->map(fn($rel) => data_get($rel, $rest))
+          ->filter(fn($v) => $v !== null && $v !== '')
+          ->implode(', ');
+      }
+    }
+
+    return data_get($item, $field);
   }
 }

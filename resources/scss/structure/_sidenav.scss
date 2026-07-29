@@ -11,7 +11,7 @@
     background: $sidenav-bg;
     box-shadow: $card-box-shadow;
     border-right: $card-border-width solid $sidenav-border-color;
-    transition: width .25s ease-in-out;
+    transition: width 0.25s ease-in-out;
 
     [data-simplebar] {
         height: calc(100% - 41px);
@@ -27,7 +27,6 @@
     padding: 10px;
 
     .side-nav-item {
-
         .side-nav-link {
             display: flex;
             align-items: center;
@@ -35,7 +34,7 @@
             position: relative;
             white-space: nowrap;
             color: $sidenav-item-color;
-            transition: color .25s ease-in-out;
+            transition: color 0.25s ease-in-out;
             font-size: $sidenav-item-font-size;
             font-weight: $sidenav-item-font-weight;
             padding: $sidenav-item-padding-y $sidenav-item-padding-x;
@@ -86,7 +85,8 @@
         list-style-type: none;
         display: flex;
         flex-direction: column;
-        padding-left: calc($sidenav-item-icon-size + $sidenav-item-gap);
+        // padding-left: calc($sidenav-item-icon-size + $sidenav-item-gap);
+        padding-left: 0px;
         padding-bottom: 10px;
 
         .side-nav-item {
@@ -118,9 +118,8 @@
     }
 
     // Active Menu
-    >.side-nav-item.active {
-
-        >a {
+    > .side-nav-item.active {
+        > a {
             color: $sidenav-item-active-color;
             background-color: $sidenav-item-active-bg;
             font-weight: $font-weight-semibold;
@@ -131,7 +130,7 @@
         }
 
         .side-nav-item.active {
-            >a {
+            > a {
                 color: $sidenav-item-active-color;
                 font-weight: $font-weight-semibold;
 
@@ -145,7 +144,7 @@
 
 .menu-arrow {
     margin-left: auto;
-    transition: transform .1s ease-in-out;
+    transition: transform 0.1s ease-in-out;
 
     &:before {
         content: "\ea5f";
@@ -174,18 +173,17 @@
         color: $sidenav-item-color;
     }
 
-    html[data-sidenav-user="true"] &{
+    html[data-sidenav-user="true"] & {
         display: block;
     }
 
-    html[data-sidenav-color="dark"] &{
-        border-color: rgba(255,255,255,0.1) !important;
+    html[data-sidenav-color="dark"] & {
+        border-color: rgba(255, 255, 255, 0.1) !important;
     }
 }
 
 // Hover View Menu
 html[data-sidenav-size="collapse"] {
-
     .content-page {
         margin-left: $sidenav-width-sm;
     }
@@ -210,7 +208,8 @@ html[data-sidenav-size="collapse"] {
         .side-nav-item {
             .side-nav-link {
                 justify-content: center;
-                padding: calc($sidenav-item-padding-y * 1.5) $sidenav-item-padding-x;
+                padding: calc($sidenav-item-padding-y * 1.5)
+                    $sidenav-item-padding-x;
 
                 .menu-text,
                 .menu-arrow,
@@ -271,7 +270,6 @@ html[data-sidenav-size="collapse"] {
 
 // Offcanvas Menu
 html[data-sidenav-size="offcanvas"] {
-
     .logo-topbar {
         display: none;
 
@@ -301,7 +299,7 @@ html[data-sidenav-size="offcanvas"] {
         margin-left: calc($sidenav-width * -1);
         top: 0;
         opacity: 0;
-        transition: all .25s ease-in-out;
+        transition: all 0.25s ease-in-out;
 
         .logo {
             text-align: left;
@@ -317,14 +315,14 @@ html[data-sidenav-size="offcanvas"] {
     }
 }
 
-// 
+//
 // Menu Collpase Btn
 //
 .menu-collapse-box {
     background: $sidenav-bg;
     border-top: $card-border-width solid $sidenav-border-color;
     padding: 0 10px;
-    
+
     .button-collapse-toggle {
         padding: $sidenav-item-padding-y $sidenav-item-padding-x;
         display: flex;
@@ -332,7 +330,7 @@ html[data-sidenav-size="offcanvas"] {
         align-items: center;
         color: $sidenav-item-color;
         gap: $sidenav-item-gap;
-        transition: color .25s ease-in-out;
+        transition: color 0.25s ease-in-out;
         font-weight: $sidenav-item-font-weight;
 
         &:hover {
@@ -342,7 +340,7 @@ html[data-sidenav-size="offcanvas"] {
         svg {
             height: $sidenav-item-icon-size;
             width: $sidenav-item-icon-size;
-            fill: rgba(var(--#{$prefix}dark-rgb), 0.1)
+            fill: rgba(var(--#{$prefix}dark-rgb), 0.1);
         }
 
         span {
@@ -352,12 +350,11 @@ html[data-sidenav-size="offcanvas"] {
 }
 
 html[data-sidenav-size="collapse"] {
-        .sidenav-menu:not(:hover) {
-            .button-collapse-toggle {
-                span {
-                    display: none;
-                }
+    .sidenav-menu:not(:hover) {
+        .button-collapse-toggle {
+            span {
+                display: none;
             }
         }
-        
     }
+}
