@@ -32,6 +32,10 @@ class DevPlaygroundController extends Controller
     {
         return view('pages.playground.crossmatch-result.index');
     }
+    public function fixBloodStockData()
+    {
+        return view('pages.playground.blood-stock-data.index');
+    }
 
     public function printPreview(string $print)
     {
