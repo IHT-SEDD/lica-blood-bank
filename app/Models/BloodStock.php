@@ -33,10 +33,12 @@ class BloodStock extends Model
         'is_hcv',
         'is_syphilis',
         'is_expired',
+        'is_destroyed',
         'blood_status',
         'add_new_note',
         'note',
         'used_at',
+        'destroyed_at',
     ];
 
     protected $hidden = [

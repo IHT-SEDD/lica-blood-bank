@@ -63,6 +63,7 @@ const BloodTransfusionLogContainerSelector =
 const TimelineContainerSelector = ".timeline-blood-transfusion-log";
 
 const DateFilterSelector = ".blood-transfusion-date-filter";
+const MonthFilterHistoryTestSelector = ".history-test-month-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
 const LogDataURL = "/blood-transfusion/detail/log";
 
@@ -96,6 +97,21 @@ function DateRangeFilter() {
                 $.fn.DataTable.isDataTable("#list-request-table")
             ) {
                 listRequestTableInstance.instance.ajax.reload(null, false);
+            }
+        });
+}
+// ---------- Filter bulan dan tahun dari flatpickr untuk data di tabel history test ----------
+function MonthHistoryTestFilter() {
+    new GlobalAdvanceFlatpickr(MonthFilterHistoryTestSelector);
+
+    $(document)
+        .off("change", MonthFilterHistoryTestSelector)
+        .on("change", MonthFilterHistoryTestSelector, function () {
+            if (
+                listHistoryTestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-history-test-table")
+            ) {
+                listHistoryTestTableInstance.instance.ajax.reload(null, false);
             }
         });
 }
@@ -168,6 +184,7 @@ export function updatePatientDetailUI(data) {
                 if (BTN_CHECKIN) BTN_CHECKIN.dataset.id = d.public_id;
             }
             if (hasLabNumber) {
+                console.log("Has lab number? True");
                 const BTN_COMPLETE = getCompleteBtn();
                 if (BTN_COMPLETE) BTN_COMPLETE.dataset.id = d.public_id;
                 const BTN_SEND_RESULT = getSendResultBtn();
@@ -191,6 +208,7 @@ export function updatePatientDetailUI(data) {
                     .DataTable()
                     .ajax.reload(function (json) {
                         const state = evaluateBagListState(json.data ?? []);
+                        console.log(state);
                         applyBagListButtonState(state);
 
                         if (window.currentBagDetailPublicId && json.data) {
@@ -855,6 +873,7 @@ function GenerateTimeline(logs = []) {
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
+    MonthHistoryTestFilter();
     FilterStatus();
 
     // Datatables

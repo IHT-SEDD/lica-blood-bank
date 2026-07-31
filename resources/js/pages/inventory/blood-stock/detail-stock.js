@@ -350,6 +350,21 @@ function EditBloodStatus() {
         },
     });
 }
+function EditBloodPack() {
+    new GlobalAdvanceTomselect("#edit_data_blood_stock_blood_pack_id", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Detail darah tidak ditemukan",
+        blurOnItemAdd: false,
+        closeAfterSelect: false,
+        load: function (query, callback) {
+            fetch(`/utility/select/blood-pack?q=${encodeURIComponent(query)}`)
+                .then((res) => res.json())
+                .then((json) => callback(json.results))
+                .catch(() => callback());
+        },
+    });
+}
 function EditBloodDate(id) {
     if (!id) return;
     new GlobalAdvanceFlatpickr(`#${id}`, {
@@ -385,6 +400,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     FilterBloodStatus();
     EditStorageRack();
     EditBloodStatus();
+    EditBloodPack();
     ReturnBloodStock();
 
     // Date range picker
@@ -392,6 +408,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     EditBloodDate("edit_data_blood_stock_aftap_date");
     EditBloodDate("edit_data_blood_stock_expiry_date");
     EditBloodDate("edit_data_blood_stock_process_date");
+    EditBloodDate("edit_data_blood_stock_used_at");
 
     new TableActionHandler(reloadTable).init();
 

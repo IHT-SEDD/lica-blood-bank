@@ -77,25 +77,25 @@ export function DatatableTests(transfusionPublicId) {
             data: "bag_number",
             title: "No. Kantong",
             render: (_val, _type, row) =>
-                `<span class="text-white fw-semibold fs-6">${row.bag_number ?? "-"}</span>`,
+                `<span class="fw-semibold fs-6">${row.bag_number ?? "-"}</span>`,
         },
         {
             data: "mayor",
             title: "Mayor",
             render: (_val, _type, row) =>
-                `<span class="text-white fw-semibold fs-6">${row.mayor ?? "-"}</span>`,
+                `<span class="fw-semibold fs-6">${row.mayor ?? "-"}</span>`,
         },
         {
             data: "minor",
             title: "Minor",
             render: (_val, _type, row) =>
-                `<span class="text-white fw-semibold fs-6">${row.minor ?? "-"}</span>`,
+                `<span class="fw-semibold fs-6">${row.minor ?? "-"}</span>`,
         },
         {
             data: "auto_control",
             title: "Auto Control",
             render: (_val, _type, row) =>
-                `<span class="text-white fw-semibold fs-6">${row.auto_control ?? "-"}</span>`,
+                `<span class="fw-semibold fs-6">${row.auto_control ?? "-"}</span>`,
         },
         {
             data: "crossmatch_result",

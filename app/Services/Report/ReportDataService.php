@@ -6,6 +6,7 @@ use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Enums\OrderBloodStatus;
+use App\Models\BloodDestroy;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\OrderBlood;
@@ -27,10 +28,14 @@ class ReportDataService
                 return $this->datatableBloodStock($request);
             case 'blood-expire':
                 return $this->datatableBloodExpire($request);
+            case 'blood-destroy':
+                return $this->datatableBloodDestroy($request);
             case 'expedition-book':
                 return $this->datatableExpeditionBook($request);
             case 'blood-request':
                 return $this->datatableBloodRequest($request);
+            case 'incompatible':
+                return $this->datatableIncompatible($request);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -81,6 +86,28 @@ class ReportDataService
             default:
                 null;
         }
+    }
+    private function mapDetailTests($tests)
+    {
+        $result = [
+            'mayor_result' => null,
+            'minor_result' => null,
+            'auto_control_result' => null,
+        ];
+
+        foreach ($tests as $test) {
+            $name = strtolower(optional($test->test)->name ?? '');
+
+            if (str_contains($name, 'mayor')) {
+                $result['mayor_result'] = $test->result;
+            } elseif (str_contains($name, 'minor')) {
+                $result['minor_result'] = $test->result;
+            } elseif (str_contains($name, 'auto')) {
+                $result['auto_control_result'] = $test->result;
+            }
+        }
+
+        return $result;
     }
 
     // ---------- Datatable Blood Usage ----------
@@ -151,7 +178,7 @@ class ReportDataService
         $monthYear = $request->month_year;
         $bloodComponent = $request->blood_component;
 
-        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED);
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereNull('used_at');
         if (!empty($monthYear)) {
             $date = Carbon::createFromFormat('Y-m', $monthYear);
             $query->whereYear('expiry_date', $date->year)->whereMonth('expiry_date', $date->month);
@@ -198,6 +225,28 @@ class ReportDataService
         });
 
         return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Blood Destroy ----------
+    private function datatableBloodDestroy(Request $request)
+    {
+        $monthYear = $request->month_year;
+        $bloodComponent = $request->blood_component;
+
+        $query = BloodDestroy::withoutTrashed()->with(['bloodStocks.bloodPacks', 'destroyBy']);
+        if (!empty($monthYear)) {
+            $date = Carbon::createFromFormat('Y-m', $monthYear);
+            $query->whereYear('created_at', $date->year)->whereMonth('created_at', $date->month);
+        }
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodStocks', function ($q) use ($bloodComponent) {
+                $q->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                    $q->where('blood_component', $bloodComponent);
+                });
+            });
+        }
+        $bloodDestroys = $query->get();
+        return DataTables::of($bloodDestroys)->toJson();
     }
 
     // ---------- Datatable Expedition Book ----------
@@ -421,6 +470,72 @@ class ReportDataService
             })
             ->sortBy('created_at')
             ->values();
+
+        return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Incompatible ----------
+    private function datatableIncompatible(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $room = $request->room_public_id;
+
+        $query = BloodTransfusion::withoutTrashed()
+            ->with([
+                'room',
+                'insurance',
+                'blood_transfusion_details.bloodPack',
+                'blood_transfusion_details.bloodStock',
+                'blood_transfusion_details.bloodTransfusionDetailTests.test',
+            ])
+            ->whereNotNull('finish_at')
+            ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED)
+            ->whereBetween('blood_transfusions.created_at', [$startDate, $endDate])
+            ->whereHas('blood_transfusion_details', function ($q) {
+                $q->where('crossmatch_result', 'Incompatible');
+            });
+
+        if (!empty($room)) {
+            $query->whereHas('room', function ($q) use ($room) {
+                $q->where('public_id', $room);
+            });
+        }
+
+        $data = collect();
+
+        $query->get()->each(function ($bt) use ($data) {
+            foreach ($bt->blood_transfusion_details as $detail) {
+                if ($detail->crossmatch_result !== 'Incompatible') {
+                    continue;
+                }
+                $tests = $this->mapDetailTests($detail->bloodTransfusionDetailTests);
+
+                $data->push([
+                    'public_id' => $bt->public_id,
+                    'insurance_name' => optional($bt->insurance)->name,
+                    'room_name' => optional($bt->room)->name,
+                    'lab_number' => $bt->lab_number,
+                    'order_number' => $bt->order_number,
+                    'created_at' => $bt->created_at,
+                    'finish_at' => $bt->finish_at,
+                    'status' => $bt->status,
+
+                    'component' => $detail->component,
+                    'bag_number' => optional($detail->bloodStock)->bag_number,
+                    'crossmatch_result' => $detail->crossmatch_result,
+                    'crossmatch_finish_at' => $detail->crossmatch_finish_at,
+
+                    'mayor_result' => $tests['mayor_result'],
+                    'minor_result' => $tests['minor_result'],
+                    'auto_control_result' => $tests['auto_control_result'],
+
+                    // sesuaikan sumbernya kalau ada di bloodStock
+                    'blood_component' => optional($detail->bloodPack)->blood_component,
+                    'blood_group' => optional($detail->bloodPack)->blood_group,
+                    'blood_rhesus' => optional($detail->bloodPack)->blood_rhesus,
+                ]);
+            }
+        });
 
         return DataTables::of($data)->toJson();
     }

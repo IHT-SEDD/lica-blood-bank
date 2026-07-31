@@ -12,6 +12,18 @@
     table-layout: fixed !important;
     width: 100% !important;
   }
+
+  .input-group .flatpickr-wrapper {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+  }
+
+  .input-group .flatpickr-wrapper .form-control {
+    width: 100%;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
 </style>
 @endsection
 
@@ -105,8 +117,7 @@
 
           {{-- Send To SIMRS button --}}
           <button data-id="" class="btn btn-sm btn-secondary d-none fw-medium" style="font-size: 11.9px;"
-            id="btn-send-result" data-bs-title="Send Result to SIMRS" data-bs-toggle="tooltip"
-            data-bs-trigger="hover">
+            id="btn-send-result" data-bs-title="Send Result to SIMRS" data-bs-toggle="tooltip" data-bs-trigger="hover">
             <i class="ti ti-cube-send fs-lg me-1"></i> Kirim Hasil
           </button>
 

@@ -1,23 +1,20 @@
 import { GlobalAdvanceFlatpickr, GlobalAdvanceTomselect } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
-import { ReportBloodUsageTable, reloadTable } from "./datatable";
+import { ReporIncompatibleTable, reloadTable } from "./datatable";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
-const ReloadDatatableSelector = "report-blood-usage-reload";
+const ReloadDatatableSelector = "report-incompatible-reload";
 
-const DateFilterSelector = ".report-blood-usage-table-date-filter";
-const FilterRoomSelector = "#filter-blood-usage-room";
-const FilterBloodPackSelector = "#filter-blood-usage-blood-pack";
+const DateFilterSelector = ".report-incompatible-table-date-filter";
+const FilterRoomSelector = "#filter-incompatible-room";
 
 const ExportURL = "/report/export/";
-const ExportBtnSelector = "excel_blood_usage_btn";
+const ExportBtnSelector = "excel_incompatible_btn";
 
 // ---------- HELPERS ----------
 function getFilters() {
     const dateVal = document.querySelector(DateFilterSelector)?.value;
     const room = document.querySelector(FilterRoomSelector)?.value || "";
-    const bloodPack =
-        document.querySelector(FilterBloodPackSelector)?.value || "";
 
     let start_date = "";
     let end_date = "";
@@ -29,14 +26,16 @@ function getFilters() {
         end_date = parts[1] || "";
     }
 
-    return { room, bloodPack, start_date, end_date };
+    return { room, start_date, end_date };
 }
 
 // ---------- FILTERS ----------
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
-        onClose: reloadTable,
         static: false,
+        appendTo: document.body,
+        position: "auto left",
+        onClose: reloadTable,
     });
 }
 function FilterRoom() {
@@ -45,21 +44,6 @@ function FilterRoom() {
         preload: true,
         load: function (query, callback) {
             fetch(`/utility/select/room?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-        onChange: function () {
-            reloadTable();
-        },
-    });
-}
-function FilterBloodPack() {
-    new GlobalAdvanceTomselect(FilterBloodPackSelector, {
-        valueField: "id",
-        preload: true,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-pack?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
@@ -82,10 +66,8 @@ function ExportToExcel() {
         if (filters.start_date) params.append("start_date", filters.start_date);
         if (filters.end_date) params.append("end_date", filters.end_date);
         if (filters.room) params.append("room_public_id", filters.room);
-        if (filters.bloodPack)
-            params.append("blood_pack_public_id", filters.bloodPack);
 
-        const url = ExportURL + `blood-usage/excel/?${params.toString()}`;
+        const url = ExportURL + `incompatible/excel/?${params.toString()}`;
 
         showPageLoading();
         try {
@@ -111,7 +93,7 @@ function ExportToExcel() {
                 disposition.match(/filename="?([^"]+)"?/);
             const fileName = filenameMatch
                 ? decodeURIComponent(filenameMatch[1])
-                : `Laporan Penggunaan Darah.xlsx`;
+                : `Laporan Hasil Incompatible.xlsx`;
 
             const blob = await response.blob();
             const blobUrl = URL.createObjectURL(blob);
@@ -135,10 +117,9 @@ function ExportToExcel() {
 
 // ---------- Init ----------
 document.addEventListener("DOMContentLoaded", function () {
-    ReportBloodUsageTable(getFilters);
+    ReporIncompatibleTable(getFilters);
     DateRangeFilter();
     FilterRoom();
-    FilterBloodPack();
     ExportToExcel();
 
     window.addEventListener(ReloadDatatableSelector, function () {
