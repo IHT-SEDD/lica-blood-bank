@@ -63,6 +63,7 @@ const BloodTransfusionLogContainerSelector =
 const TimelineContainerSelector = ".timeline-blood-transfusion-log";
 
 const DateFilterSelector = ".blood-transfusion-date-filter";
+const MonthFilterHistoryTestSelector = ".history-test-month-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
 const LogDataURL = "/blood-transfusion/detail/log";
 
@@ -96,6 +97,21 @@ function DateRangeFilter() {
                 $.fn.DataTable.isDataTable("#list-request-table")
             ) {
                 listRequestTableInstance.instance.ajax.reload(null, false);
+            }
+        });
+}
+// ---------- Filter bulan dan tahun dari flatpickr untuk data di tabel history test ----------
+function MonthHistoryTestFilter() {
+    new GlobalAdvanceFlatpickr(MonthFilterHistoryTestSelector);
+
+    $(document)
+        .off("change", MonthFilterHistoryTestSelector)
+        .on("change", MonthFilterHistoryTestSelector, function () {
+            if (
+                listHistoryTestTableInstance &&
+                $.fn.DataTable.isDataTable("#list-history-test-table")
+            ) {
+                listHistoryTestTableInstance.instance.ajax.reload(null, false);
             }
         });
 }
@@ -857,6 +873,7 @@ function GenerateTimeline(logs = []) {
 document.addEventListener("DOMContentLoaded", function () {
     // Date range picker
     DateRangeFilter();
+    MonthHistoryTestFilter();
     FilterStatus();
 
     // Datatables

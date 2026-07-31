@@ -10,6 +10,7 @@ enum ResultTest: string
     case INCOMPATIBLE_4 = 'incompatible_4+';
     case COMPATIBLE = 'compatible';
     case NEGATIVE = 'negative';
+    case LEFT_UNDONE = 'tidak_dikerjakan';
 
     public function label(): string
     {
@@ -20,6 +21,7 @@ enum ResultTest: string
             self::INCOMPATIBLE_4 => 'Incompatible 4+',
             self::COMPATIBLE => 'Compatible',
             self::NEGATIVE => 'Negative',
+            self::LEFT_UNDONE => 'Tidak Dikerjakan',
         };
     }
 
