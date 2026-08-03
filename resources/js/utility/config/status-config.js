@@ -127,6 +127,28 @@ export function CrossmatchResult(result) {
     }
 }
 
+// ---------- CROSSMATCH RESULT PER TEST IN TRANSFUSION----------
+export function CrossmatchTestResult(result) {
+    const value = (result?.value ?? result ?? "").toString().toLowerCase();
+
+    if (!value) {
+        return `<span class="fw-semibold fs-6 text-info">Belum Dilakukan</span>`;
+    }
+
+    if (value === "compatible") {
+        return `<span class="fw-semibold fs-6 text-success">Compatible</span>`;
+    }
+
+    const match = value.match(/^incompatible(?:_(\d\+))?$/);
+    if (match) {
+        const strength = match[1]; // "1+", "2+", dst, atau undefined
+        const label = strength ? `Incompatible ${strength}` : "Incompatible";
+        return `<span class="fw-semibold fs-6 text-danger">${label}</span>`;
+    }
+
+    return `<span class="fw-semibold fs-6 text-secondary">${result?.name ?? value}</span>`;
+}
+
 // ---------- TRANSACTION ORDER STATUS ----------
 export function TransactionOrderStatus(status) {
     const value = status?.value || status;

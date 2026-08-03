@@ -36,6 +36,7 @@ function getFilters() {
 function DateRangeFilter() {
     new GlobalAdvanceFlatpickr(DateFilterSelector, {
         onClose: reloadTable,
+        static: false,
     });
 }
 function FilterRoom() {

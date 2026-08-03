@@ -17,6 +17,7 @@ class BloodDestroy extends Model
         'public_id',
         'blood_stock_id',
         'reason',
+        'destroyed_by_user_id',
         'status',
     ];
 
@@ -42,5 +43,11 @@ class BloodDestroy extends Model
     public function bloodStocks(): BelongsTo
     {
         return $this->belongsTo(BloodStock::class, 'blood_stock_id');
+    }
+
+    // Relation to user
+    public function destroyBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'destroyed_by_user_id');
     }
 }

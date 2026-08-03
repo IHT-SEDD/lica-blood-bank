@@ -34,6 +34,8 @@ class BloodStockWriteService
   try {
    $user = Auth::user();
 
+   dd($request->all());
+
    $stock = BloodStock::where('public_id', $id)->first();
    if (!$stock) {
     DB::rollBack();

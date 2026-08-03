@@ -104,6 +104,7 @@ class BloodTransfusionPrintService
 
       $this->validatePrintTemplate($print);
       $printData = $this->queryTransfusionData($transfusionPublicID, $btDetailID);
+
       $html = view($this->printMap[$print], [
         'data' => $printData,
       ])->render();
@@ -287,9 +288,8 @@ class BloodTransfusionPrintService
       ->select(['id', 'public_id', 'name'])
       ->first();
     $transfusion->result_by = $transfusion->details
-      ->first()
-      ?->bloodTransfusionDetailTests
-      ?->first()
+      ->flatMap(fn($detail) => $detail->bloodTransfusionDetailTests)
+      ->first(fn($test) => !empty($test->resultByUser))
       ?->resultByUser ?? '-';
 
     return $transfusion;
@@ -314,7 +314,6 @@ class BloodTransfusionPrintService
 
     return $resultByUserName ?? 'User tidak ditemukan';
   }
-
   private function generatePdfResponse(string $print, BloodTransfusion $printData, ?string $btDetailID = null, ?array $paperSize = null): BinaryFileResponse
   {
     $printBy = Auth::user()->name;

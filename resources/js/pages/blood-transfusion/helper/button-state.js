@@ -68,6 +68,14 @@ export function applyButtonState(tableID, data, options = {}) {
                 ? conditions(data, { tableID, ...restOptions })
                 : true;
 
+        console.log(
+            `[${selector}]`,
+            "action:",
+            action,
+            "matched:",
+            conditionMet,
+        );
+
         switch (action) {
             case "show":
                 conditionMet
@@ -109,7 +117,6 @@ export function getPatientDetailButtonConfig(
     isCompleted,
     isCanceled,
 ) {
-
     return [
         // btn-checkin-lab: tampil jika belum ada lab number
         {
@@ -219,14 +226,18 @@ export function evaluateBagListState(bagData = []) {
             (bag) =>
                 bag.blood_release_status === 1 ||
                 ["taken_out", "used"].includes(
-                    bag.bag_status ? bag.bag_status : (bag.row_data?.blood_stock_status ?? null),
+                    bag.bag_status
+                        ? bag.bag_status
+                        : (bag.row_data?.blood_stock_status ?? null),
                 ),
         );
 
     const hasUnapprovedIncompatible = bagData.some(
         (bag) =>
             bag.crossmatch_result?.toString().toLowerCase() ===
-                "incompatible" && Number(bag.is_approval_incompatible) !== 1,
+                "incompatible" &&
+            Number(bag.is_approval_incompatible) !== 1 &&
+            bag.blood_release_status === 1,
     );
 
     return { allHaveCrossmatch, bloodReleased, hasUnapprovedIncompatible };

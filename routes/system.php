@@ -42,6 +42,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/data-transfusion', 'dataTransfusion')->name('data-transfusion');
     Route::get('/get-data/{id}', 'dataCrossmatch')->name('data-crossmatch');
    });
+
+   // Fixing blood stock data
+   Route::prefix('blood-stock-data')->name('blood-stock-data.')->group(function () {
+    Route::get('/', 'fixBloodStockData')->name('index');
+    Route::get('/data', 'testDatatable')->name('test-table');
+    Route::patch('/{id}', 'editCrossmatchResult')->name('update');
+   });
   });
  });
 });

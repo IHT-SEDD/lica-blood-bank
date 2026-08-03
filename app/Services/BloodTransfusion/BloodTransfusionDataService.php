@@ -173,6 +173,10 @@ class BloodTransfusionDataService
                 'bloodTransfusion.room:id,public_id,name,type',
             ]);
 
+        if ($request->input('month_and_year')) {
+            $this->applyMonthAndYearFilter($query, $request->input('month_and_year'));
+        }
+
         return DataTables::eloquent($query)
             ->addColumn('blood_request_at', function ($row) {
                 return $row->bloodTransfusion?->blood_request_at ?? '-';
@@ -378,6 +382,11 @@ class BloodTransfusionDataService
         } catch (\Exception) {
             // Parsing gagal, filter tanggal tidak diterapkan
         }
+    }
+    private function applyMonthAndYearFilter(Builder $query, ?string $monthYear): void
+    {
+        $date = Carbon::createFromFormat('Y-m', $monthYear);
+        $query->whereYear('created_at', $date->year)->whereMonth('created_at', $date->month);
     }
     private function applyArchiveDateRangeFilter(Builder $query, ?string $dateRange): void
     {

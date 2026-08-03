@@ -6,7 +6,7 @@ import { ReportBloodRequestTable, reloadTable } from "./datatable";
 const ReloadDatatableSelector = "report-blood-request-reload";
 
 const MonthFilterSelector = ".report-blood-request-table-month-filter";
-const FilterRoomSelector = "#filter-blood-request-room";
+const FilterVendorSelector = "#filter-blood-request-vendor";
 
 const ExportURL = "/report/export/";
 const ExportBtnSelector = "excel_blood_request_btn";
@@ -14,8 +14,8 @@ const ExportBtnSelector = "excel_blood_request_btn";
 // ---------- HELPERS ----------
 function getFilters() {
     const monthAndYear = document.querySelector(MonthFilterSelector)?.value;
-    const room = document.querySelector(FilterRoomSelector)?.value || "";
-    return { room, monthAndYear };
+    const vendor = document.querySelector(FilterVendorSelector)?.value || "";
+    return { vendor, monthAndYear };
 }
 
 // ---------- FILTERS ----------
@@ -24,12 +24,12 @@ function MonthFilter() {
         onClose: reloadTable,
     });
 }
-function FilterRoom() {
-    new GlobalAdvanceTomselect(FilterRoomSelector, {
+function FilterVendor() {
+    new GlobalAdvanceTomselect(FilterVendorSelector, {
         valueField: "id",
         preload: true,
         load: function (query, callback) {
-            fetch(`/utility/select/room?q=${encodeURIComponent(query)}`)
+            fetch(`/utility/select/vendor?q=${encodeURIComponent(query)}`)
                 .then((res) => res.json())
                 .then((json) => callback(json.results))
                 .catch(() => callback());
@@ -50,7 +50,7 @@ function ExportToExcel() {
         const params = new URLSearchParams();
         if (filters.monthAndYear)
             params.append("month_year", filters.monthAndYear);
-        if (filters.room) params.append("room_public_id", filters.room);
+        if (filters.vendor) params.append("vendor_public_id", filters.vendor);
         const url = ExportURL + `blood-request/excel/?${params.toString()}`;
 
         showPageLoading();
@@ -103,8 +103,8 @@ function ExportToExcel() {
 document.addEventListener("DOMContentLoaded", function () {
     ReportBloodRequestTable(getFilters);
     MonthFilter();
-    FilterRoom();
     ExportToExcel();
+    FilterVendor();
 
     window.addEventListener(ReloadDatatableSelector, function () {
         reloadTable();

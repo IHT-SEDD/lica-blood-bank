@@ -642,8 +642,10 @@ export function DatatableListTest() {
             render: (_, __, row) => {
                 if (!row.detail_test_public_id) return "-";
 
-                const stockStatus =
-                    window.currentBagData?.bag_status ? window.currentBagData.bag_status : (window.currentBagData?.row_data?.blood_stock_status ?? null);
+                const stockStatus = window.currentBagData?.bag_status
+                    ? window.currentBagData.bag_status
+                    : (window.currentBagData?.row_data?.blood_stock_status ??
+                      null);
                 const isStockFinalized = ["taken_out", "used"].includes(
                     stockStatus,
                 );
@@ -919,6 +921,9 @@ export function DatatableHistoryTestTable() {
                 if (!window.currentTransfusionPatientId) {
                     return callback(emptyCallback(data.draw));
                 }
+                data.month_and_year =
+                    document.querySelector(".history-test-month-filter")
+                        ?.value ?? "";
                 $.get(
                     `${DATATABLE_URL}/${window.currentTransfusionPatientId}/history-test`,
                     data,
@@ -927,16 +932,6 @@ export function DatatableHistoryTestTable() {
                     .fail(() => callback(emptyCallback(data.draw)));
             },
             columns: HISTORYTESTCOLUMNS,
-            // columnDefs: [
-            //     {
-            //         targets: -1,
-            //         responsivePriority: 1,
-            //     },
-            //     {
-            //         targets: 0,
-            //         responsivePriority: 2,
-            //     },
-            // ],
         },
     );
 }

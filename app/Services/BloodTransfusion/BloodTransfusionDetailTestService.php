@@ -57,7 +57,6 @@ class BloodTransfusionDetailTestService
         ];
     }
 
-
     public function updateVerifiedValidated($publicId, $field, $value): array
     {
         // Validasi: pastikan field termasuk dalam field yang diizinkan

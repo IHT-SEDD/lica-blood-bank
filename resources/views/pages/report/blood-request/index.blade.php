@@ -1,5 +1,9 @@
 @extends('layouts.report-page-layout')
 
+@section('pro-tip')
+Export data laporan ini ke file excel untuk melihat detail!
+@endsection
+
 @section('datatable-header')
 <div class="d-flex align-items-center justify-content-center gap-2">
   {{-- Export to excel --}}
@@ -10,8 +14,8 @@
 
   {{-- Select Room --}}
   <div>
-    <select class="form-control form-control-sm tomselect-sm" id="filter-blood-request-room"
-      name="filter-blood-request-room" placeholder="Filter Ruangan"></select>
+    <select class="form-control form-control-sm tomselect-sm" id="filter-blood-request-vendor"
+      name="filter-blood-request-vendor" placeholder="Filter PMI"></select>
   </div>
 
   {{-- Date filter :begin --}}
@@ -32,29 +36,15 @@
 @section('datatable-content')
 <table class="table table-sm table-striped dt-responsive align-middle mb-0 report-blood-request-table"
   id="report-blood-request-table">
- <thead class="thead-sm text-uppercase fs-xxs">
-  <tr>
-   <th>No</th>
-   <th>Ruangan</th>
-   <th>A (PRC)</th>
-   <th>B (PRC)</th>
-   <th>O (PRC)</th>
-   <th>AB (PRC)</th>
-   <th>A (TC)</th>
-   <th>B (TC)</th>
-   <th>O (TC)</th>
-   <th>AB (TC)</th>
-   <th>A (LP)</th>
-   <th>B (LP)</th>
-   <th>O (LP)</th>
-   <th>AB (LP)</th>
-   <th>A (WB)</th>
-   <th>B (WB)</th>
-   <th>O (WB)</th>
-   <th>AB (WB)</th>
-   <th>Total</th>
-  </tr>
- </thead>
+  <thead class="thead-sm text-uppercase fs-xxs">
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
 </table>
 @endsection
 

@@ -5,8 +5,11 @@ namespace App\Services\Report;
 use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
+use App\Enums\OrderBloodStatus;
+use App\Models\BloodDestroy;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
+use App\Models\OrderBlood;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -21,12 +24,18 @@ class ReportDataService
         switch ($report) {
             case 'blood-usage':
                 return $this->datatableBloodUsage($request);
+            case 'blood-stock':
+                return $this->datatableBloodStock($request);
             case 'blood-expire':
                 return $this->datatableBloodExpire($request);
+            case 'blood-destroy':
+                return $this->datatableBloodDestroy($request);
             case 'expedition-book':
                 return $this->datatableExpeditionBook($request);
             case 'blood-request':
                 return $this->datatableBloodRequest($request);
+            case 'incompatible':
+                return $this->datatableIncompatible($request);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -77,6 +86,28 @@ class ReportDataService
             default:
                 null;
         }
+    }
+    private function mapDetailTests($tests)
+    {
+        $result = [
+            'mayor_result' => null,
+            'minor_result' => null,
+            'auto_control_result' => null,
+        ];
+
+        foreach ($tests as $test) {
+            $name = strtolower(optional($test->test)->name ?? '');
+
+            if (str_contains($name, 'mayor')) {
+                $result['mayor_result'] = $test->result;
+            } elseif (str_contains($name, 'minor')) {
+                $result['minor_result'] = $test->result;
+            } elseif (str_contains($name, 'auto')) {
+                $result['auto_control_result'] = $test->result;
+            }
+        }
+
+        return $result;
     }
 
     // ---------- Datatable Blood Usage ----------
@@ -140,13 +171,14 @@ class ReportDataService
 
         return DataTables::of($data)->toJson();
     }
+
     // ---------- Datatable Blood Expire ----------
     private function datatableBloodExpire(Request $request)
     {
         $monthYear = $request->month_year;
         $bloodComponent = $request->blood_component;
 
-        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED);
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')->where('blood_status', BloodStockStatus::EXPIRED)->whereNull('used_at');
         if (!empty($monthYear)) {
             $date = Carbon::createFromFormat('Y-m', $monthYear);
             $query->whereYear('expiry_date', $date->year)->whereMonth('expiry_date', $date->month);
@@ -195,28 +227,51 @@ class ReportDataService
         return DataTables::of($data)->toJson();
     }
 
-       // ---------- Datatable Expedition Book ----------
+    // ---------- Datatable Blood Destroy ----------
+    private function datatableBloodDestroy(Request $request)
+    {
+        $monthYear = $request->month_year;
+        $bloodComponent = $request->blood_component;
+
+        $query = BloodDestroy::withoutTrashed()->with(['bloodStocks.bloodPacks', 'destroyBy']);
+        if (!empty($monthYear)) {
+            $date = Carbon::createFromFormat('Y-m', $monthYear);
+            $query->whereYear('created_at', $date->year)->whereMonth('created_at', $date->month);
+        }
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodStocks', function ($q) use ($bloodComponent) {
+                $q->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                    $q->where('blood_component', $bloodComponent);
+                });
+            });
+        }
+        $bloodDestroys = $query->get();
+        return DataTables::of($bloodDestroys)->toJson();
+    }
+
+    // ---------- Datatable Expedition Book ----------
     private function datatableExpeditionBook(Request $request)
     {
         $monthYear = $request->month_year;
 
         $query = BloodTransfusion::withoutTrashed()->with(
-            ['patient', 
-            'insurance',
-             'room', 
-             'blood_transfusion_log_activities.creator.roles',
-             'details.bloodTransfusionDetailTests.test',
-             'details.bloodStock.incomingBloodDetails.incomingBloods.orderBloods.vendors'
-             ]
-            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
+            [
+                'patient',
+                'insurance',
+                'room',
+                'blood_transfusion_log_activities.creator.roles',
+                'details.bloodTransfusionDetailTests.test',
+                'details.bloodStock.incomingBloodDetails.incomingBloods.orderBloods.vendors'
+            ]
+        )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
         if (!empty($monthYear)) {
             $date = Carbon::createFromFormat('Y-m', $monthYear);
             $query->whereYear('blood_request_at', $date->year)
-                  ->whereMonth('blood_request_at', $date->month);
+                ->whereMonth('blood_request_at', $date->month);
         }
 
         $bloodTransfusions = $query->get();
-    
+
         $data = $bloodTransfusions
             ->flatMap(function ($transfusion) {
 
@@ -227,7 +282,6 @@ class ReportDataService
                         'detail' => $detail,
                     ];
                 });
-
             })
             ->groupBy(fn($item) => $item['detail']->blood_stock_id)
             ->map(function ($rows) {
@@ -236,7 +290,7 @@ class ReportDataService
                 $transfusion = $first['transfusion'];
                 $detail = $first['detail'];
 
-                $user_is_admin = $transfusion->blood_transfusion_log_activities->map(function($log){
+                $user_is_admin = $transfusion->blood_transfusion_log_activities->map(function ($log) {
                     $admin = $log->creator?->roles->firstWhere('name', 'Admin');
                     if ($admin) {
                         return $log->creator;
@@ -244,7 +298,7 @@ class ReportDataService
                     return null;
                 })->filter()->first();
 
-                $technician = $transfusion->blood_transfusion_log_activities->map(function($log){
+                $technician = $transfusion->blood_transfusion_log_activities->map(function ($log) {
                     $admin = $log->creator?->roles->firstWhere('name', 'Teknisi Bank Darah');
                     if ($admin) {
                         return $log->creator;
@@ -252,11 +306,11 @@ class ReportDataService
                     return null;
                 })->filter()->first();
 
-        
+
                 $tests = $rows
                     ->flatMap(fn($row) => $row['detail']->bloodTransfusionDetailTests)
-                    ->keyBy(fn($test) => strtolower($test->test->name ?? '') );
-                
+                    ->keyBy(fn($test) => strtolower($test->test->name ?? ''));
+
                 return [
 
                     'tanggal' => optional(Carbon::parse($transfusion->blood_request_at))->format('Y-m-d'),
@@ -268,7 +322,7 @@ class ReportDataService
                     'no_medrec' => $transfusion->patient?->medrec,
 
                     'goldar_rhesus' =>
-                        $transfusion->patient?->blood_group .
+                    $transfusion->patient?->blood_group .
                         $transfusion->patient?->blood_rhesus,
 
                     'ruangan' => $transfusion->room?->name,
@@ -299,84 +353,190 @@ class ReportDataService
 
                     'teknisi_bank_darah' => $technician?->name,
                 ];
-
             })
             ->values();
 
         return DataTables::of($data)->toJson();
     }
 
-     // ---------- Datatable Blood Request ----------
+    // ---------- Datatable Blood Request ----------
     private function datatableBloodRequest(Request $request)
     {
-           $monthYear = $request->filled('month_year')
+        $monthYear = $request->filled('month_year')
             ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
             : Carbon::now()->startOfMonth();
+        $vendor = $request->vendor;
 
-        $startDate = $monthYear->copy()->startOfMonth();
-        $endDate = $monthYear->copy()->endOfMonth();
+        $query = OrderBlood::withoutTrashed()->with(['vendors', 'orderBloodDetails.bloodPacks'])
+            ->whereIn('status', [OrderBloodStatus::ALL_ORDER_STOCK_REGISTERED, OrderBloodStatus::DONE])
+            ->whereYear('created_at', $monthYear->year)
+            ->whereMonth('created_at', $monthYear->month);
 
-        $query = BloodTransfusion::withoutTrashed()->with(
-            [
-             'room', 
-             'details.bloodPack',
-             ]
-            )->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED);
-
-        if ($request->room_public_id) {
-            $query->whereHas('room', function ($query) use ($request) {
-                $query->where('public_id', $request->room_public_id);
+        if (!empty($vendor)) {
+            $query->whereHas('vendors', function ($q) use ($vendor) {
+                $q->where('public_id', $vendor);
             });
         }
 
-        $query->whereBetween('blood_request_at', [$startDate, $endDate]);
+        $orderBloods = $query->get();
 
-        $bloodTransfusions = $query->get();
-
-     // 1. Definisikan komponen & golongan darah sesuai urutan kolom yang Anda inginkan
-        $components = ['PRC', 'TC', 'LP', 'WB'];
-        $bloodTypes = ['A', 'B', 'O', 'AB']; // Urutan: A, B, O, AB sesuai request Anda
-
-        // 2. Kelompokkan data menjadi struktur FLAT per ruangan
-        $reportData = $bloodTransfusions->groupBy(function ($transfusion) {
-            return $transfusion->room->name ?? 'Tanpa Ruangan'; 
-        })->map(function ($roomTransfusions) use ($components, $bloodTypes) {
-       
-            // Inisialisasi struktur array FLAT bernilai 0 untuk ruangan ini
-            $row = [];
-            $row['room_name'] = $roomTransfusions->first()->room->name;
-            foreach ($components as $comp) {
-                foreach ($bloodTypes as $type) {
-                    // Membuat key flat seperti: PRC_A, PRC_B, TC_O, dll.
-                    $row["{$comp}_{$type}"] = 0;
+        $data = $orderBloods
+            ->map(function ($order) {
+                $details = $order->orderBloodDetails;
+                if ($details->isEmpty()) {
+                    return null;
                 }
-            }
-            
-            $row['total'] = 0; // Kolom total paling kanan
 
-            // Iterasi hitung data permintaan
-            foreach ($roomTransfusions as $transfusion) {
-                foreach ($transfusion->details as $detail) {
-                    $componentId = $detail->bloodPack->blood_component->value ?? $detail->blood_component_id ?? null;
-                    $bloodType   = $detail->bloodPack->blood_group->value ?? null;
+                $orderBloodDetail = $details->map(function ($detail) {
+                    return [
+                        'blood_component' => optional($detail->bloodPacks)->blood_component,
+                        'blood_group' => optional($detail->bloodPacks)->blood_group,
+                        'blood_rhesus' => optional($detail->bloodPacks)->blood_rhesus,
+                        'quantity' => $detail->quantity,
+                    ];
+                })->values();
 
-                    $bloodType = strtoupper(trim($bloodType));
+                return [
+                    'created_at' => $order->created_at->format('Y-m-d H:i:s'),
+                    'po_number' => $order->po_number,
+                    'vendor_name' => $order->vendors->name,
+                    'order_blood_detail' => $orderBloodDetail,
+                    'total_quantity' => $orderBloodDetail->sum('quantity'),
+                ];
+            })
+            ->filter()
+            ->sortBy('created_at')
+            ->values();
 
-                    // Gabungkan key pencarian
-                    $flatKey = "{$componentId}_{$bloodType}";
+        return DataTables::of($data)->toJson();
+    }
 
-                    // Jika key tersebut ada di dalam daftar kolom kita, tambahkan nilainya
-                    if (array_key_exists($flatKey, $row)) {
-                        $row[$flatKey]++;
-                        $row['total']++;
-                    }
+    // ---------- Datatable Blood Stock ----------
+    private function datatableBloodStock(Request $request)
+    {
+        $monthYear = $request->filled('month_year')
+            ? Carbon::createFromFormat('Y-m', $request->month_year)->startOfMonth()
+            : Carbon::now()->startOfMonth();
+        $bloodComponent = $request->blood_component;
+
+        $query = BloodStock::withoutTrashed()->with('bloodPacks')
+            ->where('blood_status', BloodStockStatus::AVAILABLE)
+            ->whereYear('created_at', $monthYear->year)
+            ->whereMonth('created_at', $monthYear->month);
+
+        if (!empty($bloodComponent)) {
+            $query->whereHas('bloodPacks', function ($q) use ($bloodComponent) {
+                $q->where('blood_component', $bloodComponent);
+            });
+        }
+        $bloodStocks = $query->get();
+
+        $data = $bloodStocks
+            ->groupBy(function ($stock) {
+                return $stock->created_at instanceof Carbon
+                    ? $stock->created_at->format('Y-m-d H:i:s')
+                    : (string) $stock->created_at;
+            })
+            ->map(function ($stocksOnDate, $createdAt) {
+                $stockDetail = $stocksOnDate
+                    ->groupBy('blood_pack_id')
+                    ->map(function ($packStocks) {
+                        $bloodPack = $packStocks->first()->bloodPacks;
+
+                        return [
+                            'blood_component' => $bloodPack?->blood_component,
+                            'blood_group' => $bloodPack?->blood_group,
+                            'blood_rhesus' => $bloodPack?->blood_rhesus,
+                            'quantity' => $packStocks->count(),
+                        ];
+                    })
+                    ->filter(fn($row) => $row['blood_group'] && $row['blood_rhesus'])
+                    // Sekarang kelompokkan lagi berdasarkan "golongan darah + rhesus" -> jadi key kolom (A+, A-, dst)
+                    ->groupBy(fn($row) => $row['blood_group']->value . $row['blood_rhesus'])
+                    ->map(function ($rows) {
+                        return $rows->map(function ($row) {
+                            return [
+                                'blood_component' => $row['blood_component'],
+                                'quantity' => $row['quantity'],
+                            ];
+                        })->values();
+                    });
+
+                return [
+                    'created_at' => $createdAt,
+                    'stock_detail' => $stockDetail,
+                    'total' => $stocksOnDate->count(),
+                ];
+            })
+            ->sortBy('created_at')
+            ->values();
+
+        return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Incompatible ----------
+    private function datatableIncompatible(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $room = $request->room_public_id;
+
+        $query = BloodTransfusion::withoutTrashed()
+            ->with([
+                'room',
+                'insurance',
+                'blood_transfusion_details.bloodPack',
+                'blood_transfusion_details.bloodStock',
+                'blood_transfusion_details.bloodTransfusionDetailTests.test',
+            ])
+            ->whereNotNull('finish_at')
+            ->where('status', BloodTransfusionStatus::BLOOD_TRANSFUSION_FINISHED)
+            ->whereBetween('blood_transfusions.created_at', [$startDate, $endDate])
+            ->whereHas('blood_transfusion_details', function ($q) {
+                $q->where('crossmatch_result', 'Incompatible');
+            });
+
+        if (!empty($room)) {
+            $query->whereHas('room', function ($q) use ($room) {
+                $q->where('public_id', $room);
+            });
+        }
+
+        $data = collect();
+
+        $query->get()->each(function ($bt) use ($data) {
+            foreach ($bt->blood_transfusion_details as $detail) {
+                if ($detail->crossmatch_result !== 'Incompatible') {
+                    continue;
                 }
-            }
+                $tests = $this->mapDetailTests($detail->bloodTransfusionDetailTests);
 
-            return $row;
+                $data->push([
+                    'public_id' => $bt->public_id,
+                    'insurance_name' => optional($bt->insurance)->name,
+                    'room_name' => optional($bt->room)->name,
+                    'lab_number' => $bt->lab_number,
+                    'order_number' => $bt->order_number,
+                    'created_at' => $bt->created_at,
+                    'finish_at' => $bt->finish_at,
+                    'status' => $bt->status,
+
+                    'component' => $detail->component,
+                    'bag_number' => optional($detail->bloodStock)->bag_number,
+                    'crossmatch_result' => $detail->crossmatch_result,
+                    'crossmatch_finish_at' => $detail->crossmatch_finish_at,
+
+                    'mayor_result' => $tests['mayor_result'],
+                    'minor_result' => $tests['minor_result'],
+                    'auto_control_result' => $tests['auto_control_result'],
+
+                    // sesuaikan sumbernya kalau ada di bloodStock
+                    'blood_component' => optional($detail->bloodPack)->blood_component,
+                    'blood_group' => optional($detail->bloodPack)->blood_group,
+                    'blood_rhesus' => optional($detail->bloodPack)->blood_rhesus,
+                ]);
+            }
         });
 
-        return DataTables::of($reportData)->toJson();
-
+        return DataTables::of($data)->toJson();
     }
 }

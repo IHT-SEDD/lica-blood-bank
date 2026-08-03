@@ -10,75 +10,44 @@
   <h1 class="fw-bold uppercase">{{ __('Developer Playground') }}</h1>
  </div>
 
- {{-- Kolom Uji Coba--}}
- <div class="col-xxl-3 col-md-4 col-6">
+ <div class="col-12">
   <div class="row">
-   {{-- Halaman Uji Coba Print --}}
-   <div class="col-12">
-    <div class="card">
-     {{-- Card Header --}}
-     <div class="card-header justify-content-between align-items-center">
-      <h5 class="card-title mb-0"><i class="ti ti-flask me-2 fs-4"></i> Uji Coba Print</h5>
-      <div class="card-action d-flex align-items-center gap-2">
-       <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
-      </div>
-     </div>
-
-     {{-- Card Body --}}
-     <div class="card-body">
-      <a href={{ route('playground.print.index') }} class="btn btn-primary w-100" type="button">
-       Masuk Halaman
-      </a>
-     </div>
+   <!-- Navs -->
+   <div class="col-sm-2 mt-2 mt-sm-0">
+    <div aria-orientation="vertical" class="nav flex-column nav-pills nav-pills-primary" id="nav-tab-dev-playground"
+     role="tablist">
+     <!-- Testing -->
+     <a aria-controls="nav-pills-testing" aria-selected="true" class="nav-link fw-semibold active show"
+      data-bs-toggle="pill" href="#nav-pills-testing-left" id="nav-pills-testing-tab-left" role="tab">
+      Uji Coba / Testing
+     </a>
+     <!-- Update -->
+     <a aria-controls="nav-pills-update" aria-selected="false" class="nav-link fw-semibold" data-bs-toggle="pill"
+      href="#nav-pills-update-left" id="nav-pills-update-tab-left" role="tab">
+      Penyesuaian / Updates
+     </a>
+     <!-- Setting -->
+     <a aria-controls="nav-pills-setting" aria-selected="false" class="nav-link fw-semibold" data-bs-toggle="pill"
+      href="#nav-pills-setting-left" id="nav-pills-setting-tab-left" role="tab">
+      Pengaturan / Settings
+     </a>
     </div>
    </div>
-
-   {{-- Halaman Uji Coba API --}}
-   <div class="col-12">
-    <div class="card">
-     {{-- Card Header --}}
-     <div class="card-header justify-content-between align-items-center">
-      <h5 class="card-title mb-0"><i class="ti ti-flask me-2 fs-4"></i> Testing API (Send Result)</h5>
-      <div class="card-action d-flex align-items-center gap-2">
-       <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
-      </div>
+   <!-- Contents -->
+   <div class="col-sm-10">
+    <div class="tab-content" id="nav-tab-dev-playground-content">
+     <!-- Testing Tab -->
+     <div aria-labelledby="nav-pills-testing-tab" class="tab-pane fade active show" id="nav-pills-testing-left"
+      role="tabpanel">
+      @include('pages.playground.partials.testing-tab-content')
      </div>
-
-     {{-- Card Body --}}
-     <div class="card-body">
-      <form action="{{ url('api/v1/blood-transfusion/send-result') }}" method="post">
-       @csrf
-       <label class="form-label mb-2" for="order-number">{{ __('Order Number') }}</label>
-       <input autocomplete="off" class="form-control mb-2" id="order-number" name="order_number" type="text"
-        placeholder="Order Number" />
-       <button class="btn btn-primary w-100" type="submit">Send Result</button>
-      </form>
+     <!-- Update Tab -->
+     <div aria-labelledby="nav-pills-update-tab" class="tab-pane fade" id="nav-pills-update-left" role="tabpanel">
+      @include('pages.playground.partials.update-tab-content')
      </div>
-    </div>
-   </div>
-  </div>
-
- </div>
-
- {{-- Kolom Perbaikan --}}
- <div class="col-xxl-3 col-md-4 col-6">
-  <div class="row">
-   {{-- Halaman Perbaikan Hasil Crossmatch --}}
-   <div class="col-12">
-    <div class="card">
-     {{-- Card Header --}}
-     <div class="card-header justify-content-between align-items-center">
-      <h5 class="card-title mb-0"><i class="ti ti-tool me-2 fs-4"></i> Perbaikan Crossmatch Result</h5>
-      <div class="card-action d-flex align-items-center gap-2">
-       <a class="card-action-item" data-action="card-toggle" href="#!"><i class="ti ti-chevron-up"></i></a>
-      </div>
-     </div>
-
-     {{-- Card Body --}}
-     <div class="card-body">
-      <a href={{ route('playground.fixing.crossmatch-result.index') }} class="btn btn-soft-info w-100" type="button">
-       Masuk Halaman
-      </a>
+     <!-- Settings Tab -->
+     <div aria-labelledby="nav-pills-setting-tab" class="tab-pane fade" id="nav-pills-setting-left" role="tabpanel">
+      @include('pages.playground.partials.setting-tab-content')
      </div>
     </div>
    </div>
