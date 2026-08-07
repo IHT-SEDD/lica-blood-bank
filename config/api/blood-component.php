@@ -14,8 +14,13 @@ return [
     ],
     'FFP' => [
         'label' => 'Fresh Frozen Plasma',
-        'keywords' => ['FFP', 'Fresh Frozen Plasma', 'Plasma'],
+        'keywords' => ['FFP', 'Fresh Frozen Plasma', 'Frozen Plasma'],
         'general_codes' => ['2467'],
+    ],
+    'LP' => [
+        'label' => 'Liquid Plasma',
+        'keywords' => ['LP', 'Liquid Plasma', 'Plasma'],
+        'general_codes' => ['2466'],
     ],
     'CRYO' => [
         'label' => 'Cryoprecipitate',

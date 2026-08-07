@@ -20,23 +20,45 @@ class DevPlaygroundController extends Controller
         protected WriteService $writeService,
     ) {}
 
+    // Index halaman utama
     public function index()
     {
         return view('pages.playground.index');
     }
+
+    // ---------- [INDEX] UJI COBA SECTION ----------
+    // Index halaman uji coba print
     public function printTestIndex()
     {
         return view('pages.playground.print-test.index');
     }
+
+    // ---------- [INDEX] PERBAIKAN / PENYESUAIAN SECTION ----------
+    // Index halaman perbaikan hasil crossmatch
     public function fixCrossmatchResult()
     {
         return view('pages.playground.crossmatch-result.index');
     }
+    // Index halaman penyesuaian data blood stock
     public function fixBloodStockData()
     {
         return view('pages.playground.blood-stock-data.index');
     }
 
+    // ---------- [INDEX] SETTING / PENGATURAN SECTION ----------
+    // ---------- Config
+    // Index halaman pengaturan blood-component config
+    public function settingConfigBloodComponentIndex()
+    {
+        return view('pages.playground.config.blood-component.index');
+    }
+
+    // ==============================================================================================
+    // ============================== BATAS PEMISAH INDEX DENGAN LOGIC ==============================
+    // ==============================================================================================
+
+    // ---------- [LOGIC] UJI COBA SECTION ----------
+    // Preview print hasil
     public function printPreview(string $print)
     {
         try {
@@ -47,7 +69,7 @@ class DevPlaygroundController extends Controller
             return response()->json(['message' => 'Failed to print preview File!', 'error' => $e->getMessage()], 500);
         }
     }
-
+    // Download PDF Hasil
     public function downloadPDF(string $print)
     {
         try {
@@ -59,11 +81,13 @@ class DevPlaygroundController extends Controller
         }
     }
 
+    // ---------- [LOGIC] PERBAIKAN / PENYESUAIAN SECTION ----------
+    // Datatable pemeriksaan untuk perbaikan hasil crossmatch
     public function testDatatable(Request $request)
     {
         return $this->datatableService->listTestsTable($request, $request->input('transfusion_public_id'));
     }
-
+    // Query data transfusi untuk perbaikan hasil crossmatch
     public function dataTransfusion(Request $request): JsonResponse
     {
         $bdrsNumber = $request->input('bdrs_number');
@@ -83,7 +107,7 @@ class DevPlaygroundController extends Controller
 
         return $this->dataService->getDataTransfusionViaNumber('order_number', $orderNumber);
     }
-
+    // Query data crossmatch untuk perbaikan hasil crossmatch
     public function dataCrossmatch(Request $request, string $publicID): JsonResponse
     {
         if (empty($publicID)) {
@@ -96,24 +120,16 @@ class DevPlaygroundController extends Controller
 
         return $this->dataService->getDataCrossmatch($publicID);
     }
-
+    // Edit hasil crossmatch
     public function editCrossmatchResult(EditCrossmatchResult $request, string $id)
     {
         return $this->writeService->editCrossmatchResult($request, $id);
-        // try {
-        //     $this->writeService->editCrossmatchResult($request, $id);
-        //     return response()->json([
-        //         'message' => 'Data crossmatch berhasil diperbaharui!',
-        //     ], 200);
-        // } catch (\RuntimeException $e) {
-        //     return response()->json([
-        //         'message' => $e->getMessage(),
-        //     ], 400);
-        // } catch (\Throwable $e) {
-        //     return response()->json([
-        //         'message' => 'Data crossmatch gagal diperbaharui!',
-        //         'error' => $e->getMessage(),
-        //     ], 500);
-        // }
+    }
+
+    // ---------- [LOGIC] PENGATURAN / SETTING SECTION ----------
+    // Datatable untuk list konfigurasi komponen darah
+    public function settingConfigBloodComponentData(Request $request)
+    {
+        return $this->datatableService->listConfigBloodComponentTable($request);
     }
 }

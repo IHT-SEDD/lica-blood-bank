@@ -77,4 +77,22 @@ class DatatableService
     }
     return DataTables::of($rows)->toJson();
   }
+
+  // ---------- Fungsi Tabel List Konfig Blood Component ----------
+  public function listConfigBloodComponentTable(Request $request): JsonResponse
+  {
+    $components = config('api.blood-component', []);
+    $rows = collect($components)
+      ->map(function (array $item, string $key) {
+        return [
+          'blood_component' => $key,
+          'blood_component_label' => $item['label'] ?? null,
+          'keywords' => $item['keywords'] ?? [],
+          'general_codes' => $item['general_codes'] ?? [],
+        ];
+      })
+      ->values();
+
+    return DataTables::of($rows)->toJson();
+  }
 }
