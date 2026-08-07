@@ -39,10 +39,10 @@ class BloodTransfusionApiAddService
                 $tests = isset($payload['tes']) ? $payload['tes'] : [];
                 $type = $this->generateType($transaksi['jenis']);
                 $filteredTests = $this->resolveTests($tests);
-                
+
                 // --- Ini untuk mengambil component dari payload->tests, dimapping berdasarkan nama atau kode atau dari config
                 $bloodData = $this->resolveBloodComponentAndQuantity($filteredTests);
-         
+
                 // ---------- Prepare demografi----------
                 $demographic = $this->resolveDemographic($demografi, $transaksi, $type);
                 $patient = $demographic['patient'];
@@ -74,10 +74,10 @@ class BloodTransfusionApiAddService
                         ->where('blood_component', $bloodComponent['component'])
                         ->first();
 
-                        $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
-                            ->where('blood_rhesus', $patient->blood_rhesus)
-                            ->where('blood_component', $bloodComponent['component'])
-                            ->first();
+                    $bloodPack = BloodPack::where('blood_group', $patient->blood_group)
+                        ->where('blood_rhesus', $patient->blood_rhesus)
+                        ->where('blood_component', $bloodComponent['component'])
+                        ->first();
 
                     for ($i = 0; $i < $bloodComponent['quantity']; $i++) {
                         $detailGeneralCode = $bloodComponent['general_codes'][$i] ?? null;
