@@ -146,20 +146,51 @@ class BloodTransfusionController extends Controller
     // ---------- Update Bag Number (Blood Stock ID) ----------
     public function updateBagNumber(Request $request, string $detailPublicId)
     {
-        // $request->validate([
-        //     'blood_stock_id' => 'required|exists:blood_stocks,id'
-        // ]);
         try {
-            $detail = BloodTransfusionDetail::where('public_id', $detailPublicId)->firstOrFail();
-            // dd($request->all());
-            // Optional: You could update the previous and new BloodStock statuses here if needed.
+            $detail = BloodTransfusionDetail::with(['bloodTransfusion', 'bloodTransfusion.patient'])->where('public_id', $detailPublicId)->firstOrFail();
+
+            $newBloodPackId = null;
+
+            if ($request->blood_stock_id) {
+                $newBloodStock = BloodStock::with(['bloodPacks'])->where('id', $request->blood_stock_id)->firstOrFail();
+                if (!$newBloodStock) {
+                    return response()->json([
+                        'message' => 'Labu darah tidak ditemukan.',
+                    ], 404);
+                }
+
+                // Cek apakah blood_pack_id stok baru berbeda dengan blood_pack_id detail saat ini
+                if ($newBloodStock->blood_pack_id !== $detail->blood_pack_id) {
+                    $newBloodPack = $newBloodStock->bloodPacks;
+                    $patient = $detail->bloodTransfusion->patient;
+
+                    if (!$newBloodPack || !$patient) {
+                        return response()->json([
+                            'message' => 'Detail kantong darah atau data pasien tidak lengkap!',
+                        ], 422);
+                    }
+
+                    $bloodPackRhesus = $newBloodPack->blood_rhesus;
+                    $patientRhesus = $patient->blood_rhesus;
+
+                    // Pasien rhesus negatif TIDAK boleh menerima darah rhesus positif
+                    if ($patientRhesus === 'Negative' && $bloodPackRhesus === 'Positive') {
+                        return response()->json([
+                            'message' => 'Rhesus darah tidak sesuai. Pasien dengan rhesus negatif tidak dapat menerima darah dengan rhesus positif.',
+                        ], 422);
+                    }
+                    // Selain kondisi terlarang di atas (termasuk pasien positif menerima darah negatif),
+                    // proses dapat dilanjutkan.
+
+                    $newBloodPackId = $newBloodStock->blood_pack_id;
+                }
+            }
 
             $bloodStockOld = BloodStock::find($detail->blood_stock_id);
-            // dd($bloodStockOld);
             if ($bloodStockOld) {
                 $bloodStockOld->update([
                     'blood_status' => BloodStockStatus::AVAILABLE,
-                    'used_at'     => null,
+                    'used_at' => null,
                 ]);
             }
 
@@ -168,23 +199,27 @@ class BloodTransfusionController extends Controller
                 $bloodStock = BloodStock::find($request->blood_stock_id);
                 $bloodStock->update([
                     'blood_status' => BloodStockStatus::IN_USE,
-                    'used_at'     => now(),
+                    'used_at' => now(),
                 ]);
-
-                // Currently only updating the detail record.
-                $detail->update([
+                $updateData = [
                     'blood_stock_id' => $request->blood_stock_id,
                     'bag_status' => BloodStockStatus::IN_USE,
-                ]);
+                ];
+                // Jika blood_pack_id berubah, ikut update juga di detail
+                if ($newBloodPackId !== null) {
+                    $updateData['blood_pack_id'] = $newBloodPackId;
+                }
+
+                $detail->update($updateData);
             }
 
             return response()->json([
-                'message' => 'Bag number successfully updated.'
+                'message' => 'Nomor labu darah berhasil diperbaharui.'
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'message' => 'Failed to update bag number.',
-                'error'   => $e->getMessage(),
+                'message' => 'Gagal memperbaharui nomor labu darah',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
