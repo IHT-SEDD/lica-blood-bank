@@ -83,14 +83,19 @@ export function buildZplBarcodeBlood(item) {
         font(0) + `^FO50,420^BCN,70,N,N,N^FD${item.bag_number}^FS`,
 
         hline(50, 510),
-        patientRow(540, "Tanggal diberikan", item.released_at),
-        patientRow(580, "Nama O.S", item.patient_name),
-        patientRow(620, "No. Register", item.patient_medrec),
-        patientRow(660, "No. BDRS", item.patient_lab_number),
+        patientRow(530, "Tanggal diberikan", item.released_at),
+        patientRow(570, "Nama O.S", item.patient_name),
+        patientRow(605, "No. Register", item.patient_medrec),
+        patientRow(640, "No. BDRS", item.patient_lab_number),
         patientRow(
-            700,
+            675,
             "Ruangan/Kelas",
             `${item.room_name} / ${item.room_class}`,
+        ),
+        patientRow(
+            710,
+            "Gol. Rh",
+            `${item.patient_blood_group} ${item.patient_blood_rhesus}`,
         ),
 
         hline(50, 745),

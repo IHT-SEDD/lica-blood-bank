@@ -667,6 +667,7 @@ function initBagRequestActionButtons() {
             }
 
             const data = await res.json();
+            console.log(data);
             await QzManager.sendZpl(data.data ?? [], "barcode-blood");
 
             hidePageLoading();
