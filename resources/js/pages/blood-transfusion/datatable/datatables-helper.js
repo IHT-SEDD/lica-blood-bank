@@ -86,7 +86,7 @@ const isTableInitialized = (selector) => $.fn.DataTable.isDataTable(selector);
 // ---------- RENDER BAG NUMBER COLUMN ----------
 function renderBagNumber(row) {
     const rowData = row.row_data;
-    const bloodRhesusEmpty = rowData.blood_rhesus === "-";
+    const bloodRhesusEmpty = rowData.blood_rhesus === null;
     const bloodGroupEmpty = rowData.blood_group === "-";
     const stockNotAvailable = rowData.has_available_stock === null;
 

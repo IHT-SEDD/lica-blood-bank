@@ -6,6 +6,7 @@ use App\Enums\BloodComponent;
 use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Enums\ResultTest;
+use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
@@ -477,7 +478,20 @@ class BloodTransfusionDataService
     }
     private function mapBagRequestRow(BloodTransfusionDetail $detail, BloodTransfusion $transfusion): array
     {
-        $availableStocks = BloodStock::where('blood_pack_id', $detail->blood_pack_id)
+        $bloodPack = $detail->bloodPack;
+        $bloodPackIds = [$detail->blood_pack_id];
+
+        if ($bloodPack && $bloodPack->blood_rhesus === '+') {
+            $alternativePackIds = BloodPack::where('blood_group', $bloodPack->blood_group)
+                ->where('blood_component', $bloodPack->blood_component)
+                ->where('blood_rhesus', '-')
+                ->pluck('id')
+                ->toArray();
+
+            $bloodPackIds = array_merge($bloodPackIds, $alternativePackIds);
+        }
+
+        $availableStocks = BloodStock::whereIn('blood_pack_id', $bloodPackIds)
             ->whereIn('blood_status', [
                 BloodStockStatus::AVAILABLE,
                 BloodStockStatus::USED,
@@ -508,6 +522,7 @@ class BloodTransfusionDataService
 
         $options = $availableStocks->map(fn($stock) => [
             'id' => $stock->id,
+            'rhesus' => $stock->bloodPacks->blood_rhesus,
             'text' => $stock->bag_number,
             'expiry' => $stock->expiry_date,
         ])->values()->toArray();
