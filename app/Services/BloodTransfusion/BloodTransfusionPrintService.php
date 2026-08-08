@@ -159,7 +159,7 @@ class BloodTransfusionPrintService
           }
         },
         'details.bloodPack:id,public_id,storage_temperature_from,storage_temperature_to',
-        'details.bloodStock',
+        'details.bloodStock.bloodPacks',
         'details.bloodTransfusionDetailTests:id,public_id,bt_detail_id,result_by_user_id',
         'details.bloodTransfusionDetailTests.resultByUser:id,public_id,name',
       ])
@@ -213,8 +213,8 @@ class BloodTransfusionPrintService
               'storage_temp_from' => $detail->bloodPack->storage_temperature_from,
               'storage_temp_to' => $detail->bloodPack->storage_temperature_to,
               'blood_volume' => $detail->bloodStock->blood_volume,
-              'blood_group' => $transfusionData->patient->blood_group,
-              'blood_rhesus' => $transfusionData->patient->blood_rhesus,
+              'blood_group' => $detail->bloodStock->bloodPacks->blood_group,
+              'blood_rhesus' => $detail->bloodStock->bloodPacks->blood_rhesus,
               'component' => $detail->component,
               'aftap_date' => $detail->bloodStock->aftap_date,
               'process_date' => $detail->bloodStock->process_date,
