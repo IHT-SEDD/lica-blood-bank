@@ -12,7 +12,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->mergeConfigFrom(config_path('api/blood-component.php'), 'api.blood-component');
     }
 
     /**

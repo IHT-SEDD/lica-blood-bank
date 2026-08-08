@@ -50,5 +50,24 @@ Route::middleware('auth')->group(function () {
     Route::patch('/{id}', 'editCrossmatchResult')->name('update');
    });
   });
+
+  // Route group setting
+  Route::prefix('setting')->name('setting.')->group(function () {
+   // Setting - Config
+   Route::prefix('config')->name('config.')->group(function () {
+    // Blood Component
+    Route::prefix('blood-component')->name('blood-component.')->group(function () {
+     Route::get('/', 'settingConfigBloodComponentIndex')->name('index');
+     Route::get('/data', 'settingConfigBloodComponentData')->name('datatable');
+    });
+   });
+
+   // Fixing blood stock data
+   Route::prefix('blood-stock-data')->name('blood-stock-data.')->group(function () {
+    Route::get('/', 'fixBloodStockData')->name('index');
+    Route::get('/data', 'testDatatable')->name('test-table');
+    Route::patch('/{id}', 'editCrossmatchResult')->name('update');
+   });
+  });
  });
 });
