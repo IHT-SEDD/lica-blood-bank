@@ -151,7 +151,7 @@ class BloodTransfusionApiUpdateService
     }
     private function appendNewBloodComponents(BloodTransfusion $transfusion, array $bloodData): array
     {
-        dd($transfusion->patient);
+        // dd($transfusion->patient);
         // Ambil komponen yang sudah ada di DB
         $existingComponents = $transfusion->details()
             ->pluck('component')
