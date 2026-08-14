@@ -670,218 +670,15 @@ export class TableActionHandler {
             if (!data) return;
 
             const transfusionDetail = data.blood_transfusion_details?.[0];
-            const patient = transfusionDetail?.blood_transfusion?.patient;
-            const releasedBy = transfusionDetail?.blood_released_by_user;
-            const genderMap = { M: "Laki-laki", F: "Perempuan" };
 
-            // ---------- Tabel: patient_blood_before ----------
-            const beforeTable = document.querySelector(
-                '[data-table="patient_blood_before"]',
-            );
-            if (beforeTable) {
-                beforeTable.querySelector("#bag_number").textContent =
-                    data.bag_number ?? "-";
-                beforeTable.querySelector("#blood_status").innerHTML =
-                    BloodStockStatus(data.blood_status);
-                beforeTable.querySelector("#bdrs_no").textContent =
-                    transfusionDetail?.blood_transfusion?.lab_number ?? "-";
-                beforeTable.querySelector("#patient_name").textContent =
-                    patient?.name ?? "-";
-                beforeTable.querySelector("#gender").textContent =
-                    genderMap[patient?.gender] ?? patient?.gender ?? "-";
-                beforeTable.querySelector("#released_at").textContent =
-                    transfusionDetail?.blood_released_at ?? "-";
-                beforeTable.querySelector("#released_by").textContent =
-                    releasedBy?.name ?? "-";
-            }
-
-            // ---------- Tabel: patient_blood_new ----------
-            const newTable = document.querySelector(
-                '[data-table="patient_blood_new"]',
-            );
-            if (newTable) {
-                newTable.querySelector("#blood_status").innerHTML = "-";
-                newTable.querySelector("#bdrs_no").textContent =
-                    transfusionDetail?.blood_transfusion?.lab_number ?? "-";
-                newTable.querySelector("#patient_name").textContent =
-                    patient?.name ?? "-";
-                newTable.querySelector("#gender").textContent =
-                    genderMap[patient?.gender] ?? patient?.gender ?? "-";
-            }
-
-            // ---------- Reset semua state modal ----------
-            if (selectEl?.tomselect) {
-                selectEl.tomselect.clear();
-                selectEl.tomselect.enable();
-            }
-            if (cancelCheckbox) {
-                cancelCheckbox.checked = false;
-                cancelCheckbox.disabled = false;
-            }
-            if (cancelReasonEl) {
-                cancelReasonEl.value = "";
-            }
-            if (cancelReasonWrapper) {
-                cancelReasonWrapper.classList.add("d-none");
-            }
-            clearCancelReasonValidation();
-
-            // ---------- Reset confirm button ----------
             const confirmBtn = document.querySelector(ConfirmReturnSelector);
             if (confirmBtn) {
-                confirmBtn.disabled = true;
+                confirmBtn.disabled = false;
                 confirmBtn.dataset.id = data.public_id;
                 confirmBtn.dataset.bloodTransfusionId =
                     transfusionDetail?.blood_transfusion?.public_id ?? "";
-                confirmBtn.dataset.selectedBloodStockId = "";
-                confirmBtn.dataset.isCancelTransaction = "0";
-                confirmBtn.dataset.cancelReason = "";
             }
         });
-
-        // ---------- Listener: Checkbox is_cancel_transaction ----------
-        if (cancelCheckbox && selectEl) {
-            cancelCheckbox.addEventListener("change", () => {
-                const confirmBtn = document.querySelector(
-                    ConfirmReturnSelector,
-                );
-                const ts = selectEl.tomselect;
-                const newTable = document.querySelector(
-                    '[data-table="patient_blood_new"]',
-                );
-                const statusCell = newTable?.querySelector("#blood_status");
-
-                if (cancelCheckbox.checked) {
-                    // disable tomselect & clear, tampilkan textarea
-                    if (ts) {
-                        ts.clear();
-                        ts.disable();
-                    }
-                    cancelReasonWrapper?.classList.remove("d-none");
-                    if (statusCell) statusCell.innerHTML = "-";
-                    if (confirmBtn) {
-                        confirmBtn.dataset.selectedBloodStockId = "";
-                        confirmBtn.dataset.isCancelTransaction = "1";
-                    }
-                } else {
-                    // aktifkan kembali tomselect, sembunyikan textarea
-                    if (ts) ts.enable();
-                    cancelReasonWrapper?.classList.add("d-none");
-                    if (cancelReasonEl) cancelReasonEl.value = "";
-                    clearCancelReasonValidation();
-                    if (confirmBtn) {
-                        confirmBtn.dataset.isCancelTransaction = "0";
-                        confirmBtn.dataset.cancelReason = "";
-                    }
-                }
-                updateConfirmButtonState();
-            });
-        }
-
-        // ---------- Listener: Textarea cancel_reason ----------
-        if (cancelReasonEl) {
-            cancelReasonEl.addEventListener("input", (e) => {
-                const confirmBtn = document.querySelector(
-                    ConfirmReturnSelector,
-                );
-                if (confirmBtn) {
-                    confirmBtn.dataset.cancelReason = e.target.value.trim();
-                }
-                if (e.target.value.trim().length > 0) {
-                    clearCancelReasonValidation();
-                }
-                updateConfirmButtonState();
-            });
-        }
-
-        // ---------- Listener: TomSelect return_data_blood_stock ----------
-        if (selectEl) {
-            const attachTomSelectListener = () => {
-                const ts = selectEl.tomselect;
-                if (!ts) return;
-                ts.on("change", async (value) => {
-                    const confirmBtn = document.querySelector(
-                        ConfirmReturnSelector,
-                    );
-                    const newTable = document.querySelector(
-                        '[data-table="patient_blood_new"]',
-                    );
-                    const statusCell = newTable?.querySelector("#blood_status");
-                    if (!statusCell) return;
-                    if (!value) {
-                        // Value dikosongkan — aktifkan kembali checkbox
-                        if (cancelCheckbox) cancelCheckbox.disabled = false;
-                        if (confirmBtn)
-                            confirmBtn.dataset.selectedBloodStockId = "";
-                        updateConfirmButtonState();
-                        return;
-                    }
-
-                    try {
-                        const response = await fetch(
-                            `/utility/get/blood-stock/${value}`,
-                            {
-                                method: "GET",
-                                headers: {
-                                    "X-CSRF-TOKEN": this.#getCsrfToken(),
-                                    Accept: "application/json",
-                                },
-                            },
-                        );
-                        const result = await response.json();
-                        if (!response.ok) {
-                            statusCell.innerHTML = "-";
-                            if (confirmBtn) {
-                                confirmBtn.disabled = true;
-                                confirmBtn.dataset.selectedBloodStockId = "";
-                            }
-                            return;
-                        }
-
-                        statusCell.innerHTML = BloodStockStatus(
-                            result.blood_status,
-                        );
-
-                        if (confirmBtn) {
-                            confirmBtn.dataset.selectedBloodStockId =
-                                result.public_id ?? value;
-                            confirmBtn.dataset.isCancelTransaction = "0";
-                        }
-                        if (cancelCheckbox) {
-                            cancelCheckbox.checked = false;
-                            cancelCheckbox.disabled = true;
-                        }
-                        if (cancelReasonEl) cancelReasonEl.value = "";
-                        if (cancelReasonWrapper)
-                            cancelReasonWrapper.classList.add("d-none");
-
-                        clearCancelReasonValidation();
-                        updateConfirmButtonState();
-                    } catch (error) {
-                        console.error(error);
-                        statusCell.innerHTML = "-";
-                        if (confirmBtn) {
-                            confirmBtn.disabled = true;
-                            confirmBtn.dataset.selectedBloodStockId = "";
-                        }
-                    }
-                });
-            };
-            if (selectEl.tomselect) {
-                attachTomSelectListener();
-            } else {
-                const observer = new MutationObserver(() => {
-                    if (selectEl.tomselect) {
-                        observer.disconnect();
-                        attachTomSelectListener();
-                    }
-                });
-                observer.observe(selectEl, {
-                    attributes: true,
-                    attributeFilter: ["class"],
-                });
-            }
-        }
 
         // ---------- Listener: Tombol Konfirmasi ----------
         const confirmBtn = document.querySelector(ConfirmReturnSelector);
@@ -889,42 +686,16 @@ export class TableActionHandler {
         confirmBtn.addEventListener("click", async () => {
             const id = confirmBtn.dataset.id;
             const bloodTransfusionId = confirmBtn.dataset.bloodTransfusionId;
-            const isCancelTransaction =
-                confirmBtn.dataset.isCancelTransaction === "1";
-            const cancelReason = confirmBtn.dataset.cancelReason ?? "";
-
-            const selectedBloodStockId = isCancelTransaction
-                ? ""
-                : (confirmBtn.dataset.selectedBloodStockId ?? "");
             if (!id) return;
 
-            if (
-                isCancelTransaction &&
-                (!cancelReason || cancelReason.trim() === "")
-            ) {
-                setCancelReasonInvalid(
-                    "Alasan pembatalan transaksi wajib diisi!",
-                );
-                notyf.error({
-                    message: "Alasan pembatalan transaksi wajib diisi!",
-                });
-                return;
-            }
             try {
                 const response = await fetch(
                     StockBloodDataURL + `/${id}/return`,
                     {
                         method: "PATCH",
                         headers: {
-                            "Content-Type": "application/json",
                             "X-CSRF-TOKEN": this.#getCsrfToken(),
                         },
-                        body: JSON.stringify({
-                            blood_transfusion_id: bloodTransfusionId,
-                            new_blood_stock_id: selectedBloodStockId,
-                            is_cancel_transaction: isCancelTransaction,
-                            cancel_reason: cancelReason,
-                        }),
                     },
                 );
 

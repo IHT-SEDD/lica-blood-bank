@@ -39,6 +39,10 @@ class BloodTransfusionApiController extends Controller
     )]
     public function newRequest(NewBloodTransfusionRequest $request): JsonResponse
     {
+        globalLogger('info', '(API) Incoming blood transfusion request', [
+            'payload' => $request->all(),
+        ], 200, 'newbloodtransfusion');
+
         try {
             $validated = $request->validated();
             $orderNumber = $validated['transaksi']['no_order'];

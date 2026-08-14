@@ -22,10 +22,12 @@ export default defineConfig({
     server: {
         // Bind host ke 0.0.0.0 agar bisa diakses dari jaringan lokal, bukan hanya localhost
         host: "0.0.0.0",
-        port: 5173,
+        port: 5176,
+        cors: true,
         hmr: {
-            host: "localhost",
-            port: 5173,
+            host: "lica-blood-bank.public",
+            port: 5176,
+            protocol: "ws",
         },
     },
 });
