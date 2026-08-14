@@ -256,6 +256,12 @@ export const BloodTransfusionLogConfigTL = {
         title: "Labu Darah Incompatible Disetujui",
         tooltipTitle: "Labu darah dengan hasil incompatible berhasil disetujui",
     },
+    blood_stock_cancelled: {
+        icon: "heart-x",
+        colorClass: "text-danger fill-danger",
+        title: "Labu Darah Dibatalkan",
+        tooltipTitle: "Labu darah berhasil dibatalkan",
+    },
 
     fallback: {
         icon: "activity",
