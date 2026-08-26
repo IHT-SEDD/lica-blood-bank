@@ -30,11 +30,14 @@ class BloodStockWriteService
  // ---------- Edit data blood stock ----------
  public function editBloodStockData(Request $request, string $id)
  {
+  globalLogger('info', 'Data edit stok darah!', [
+   'id' => $id,
+   'payload' => $request->all(),
+  ], 200, 'editdatadev');
+
   DB::beginTransaction();
   try {
    $user = Auth::user();
-
-   dd($request->all());
 
    $stock = BloodStock::where('public_id', $id)->first();
    if (!$stock) {
@@ -362,154 +365,82 @@ class BloodStockWriteService
   DB::beginTransaction();
   try {
    $user = Auth::user();
-   $isCancelTransaction = filter_var($request->is_cancel_transaction, FILTER_VALIDATE_BOOLEAN);
 
-   // dd($request->all());
-   // --- Validasi apakah labu darah ada di sistem atau tidak
-   $oldBloodStock = BloodStock::where('public_id', $id)->first();
-   if (!$oldBloodStock) {
+   // --- 1. Cek apakah darah ada di sistem
+   $bloodStock = BloodStock::where('public_id', $id)->first();
+   if (!$bloodStock) {
     DB::rollBack();
     return response()->json(['message' => 'Data darah yang akan dikembalikan tidak ditemukan!'], 404);
    }
 
-   // --- Validasi apakah blood transfusi ada atau tidak
-   $bloodTransfusionData = BloodTransfusion::where('public_id', $request->blood_transfusion_id)->first();
-   if (!$bloodTransfusionData) {
-    DB::rollBack();
-    return response()->json(['message' => 'Data ID permintaan darah tidak ditemukan!'], 404);
-   }
-
-   // --- Validasi apakah blood transfusi detail ada atau tidak
-   $bloodTransfusionDetailData = BloodTransfusionDetail::where('blood_transfusion_id', $bloodTransfusionData->id)
-    ->where('blood_stock_id', $oldBloodStock->id)
-    ->with(['bloodTransfusion', 'bloodTransfusion.patient'])
+   // --- 2. Cek apakah darah tersebut digunakan pada BloodTransfusion atau tidak
+   $bloodTransfusionDetails = BloodTransfusionDetail::where('blood_stock_id', $bloodStock->id)
+    ->with(['bloodTransfusion', 'bloodTransfusion.patient', 'bloodStock'])
     ->get();
-   if ($bloodTransfusionDetailData->isEmpty()) {
+   if ($bloodTransfusionDetails->isEmpty()) {
     DB::rollBack();
-    return response()->json(['message' => 'Data detail permintaan darah tidak ditemukan!'], 404);
+    return response()->json(['message' => 'Data darah ini tidak sedang digunakan pada transaksi transfusi manapun!'], 404);
    }
 
-   // --- Validasi apakah labu darah pengganti ada atau tidak
-   $newBloodStock = null;
-   if (!$isCancelTransaction) {
-    $newBloodStock = BloodStock::where('public_id', $request->new_blood_stock_id)->with(['bloodPacks'])->first();
-    if (!$newBloodStock) {
-     DB::rollBack();
-     return response()->json(['message' => 'Data darah yang baru tidak ditemukan!'], 404);
-    }
-    if ($newBloodStock->blood_status !== BloodStockStatus::AVAILABLE) {
-     DB::rollBack();
-     return response()->json(['message' => 'Darah pengganti tidak tersedia atau sudah digunakan!'], 422);
-    }
-   }
+   // --- Tentukan status darah selanjutnya berdasarkan ada/tidaknya hasil crossmatch
+   $hasCrossmatch = $bloodTransfusionDetails->contains(function ($detail) {
+    return !empty($detail->crossmatch_result) || !empty($detail->crossmatch_finish_at);
+   });
+   $newBloodStatus = $hasCrossmatch ? BloodStockStatus::USED : BloodStockStatus::AVAILABLE;
 
-   $oldUsedAt = $oldBloodStock->used_at;
-   $firstDetail = $bloodTransfusionDetailData->first();
-   $patientName = $firstDetail?->bloodTransfusion?->patient?->name ?? null;
-
-   // --- Logic kondisi jika cancel transaksi
-   if ($isCancelTransaction) {
-    $relatedDetail = $bloodTransfusionDetailData->where('blood_stock_id', $oldBloodStock->id)->first();
-    $hasCrossmatch = !empty($relatedDetail?->crossmatch_result) || !empty($relatedDetail?->crossmatch_finish_at);
-    $bloodStatusOnCancel = $hasCrossmatch ? BloodStockStatus::USED : BloodStockStatus::AVAILABLE;
-
-    $oldBloodStock->update([
-     'blood_status' => $bloodStatusOnCancel,
-     'used_at' => $hasCrossmatch ? $oldBloodStock->used_at : null,
+   // --- Update bag_status pada setiap blood_transfusion_details terkait menjadi cancelled
+   $bloodTransfusionDetails->each(function ($detail) use ($user) {
+    $detail->update([
+     'bag_status' => 'cancelled', // sesuaikan dgn enum asli bila berbeda
     ]);
-    $bloodTransfusionData->update([
-     'status' => BloodTransfusionStatus::BLOOD_TRANSFUSION_CANCELED,
-     'canceled_by_user_id' => $user->id,
-     'cancel_reason' => $request->cancel_reason,
-     'canceled_at' => now(),
-    ]);
+
     BloodTransfusionLogActivity::create([
-     'blood_transfusion_public_id' => $bloodTransfusionData->public_id,
-     'payload' => $bloodTransfusionData->toArray(),
-     'status' => BloodTransfusionLogActivityStatus::CANCELED,
+     'blood_transfusion_public_id' => $detail->bloodTransfusion->public_id,
+     'payload' => $detail->fresh()->toArray(),
+     'status' => BloodTransfusionLogActivityStatus::BLOOD_CANCELLED,
      'description' => generateBloodTransfusionLogDescription(
-      BloodTransfusionLogActivityStatus::CANCELED,
-      $this->generateDescription($bloodTransfusionData),
-      $request->cancel_reason,
-      Auth::user()->username,
-     ),
-     'created_by_user_name' => Auth::user()->name,
-     'timestamp' => now(),
-    ]);
-    BloodStockLogActivity::create([
-     'blood_stock_public_id' => $oldBloodStock->public_id,
-     'payload' => json_encode($oldBloodStock->fresh()->toArray()),
-     'status' => $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-     'description' => generateBloodStockLogDescription(
-      $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-      $oldBloodStock->bag_number,
+      BloodTransfusionLogActivityStatus::BLOOD_CANCELLED,
+      $this->generateDescription($detail->bloodTransfusion),
+      $detail->bloodStock->bag_number,
       $user->username,
      ),
      'created_by_user_name' => $user->name,
      'timestamp' => now(),
     ]);
-   } else {
-    // --- Logic kondisi jika bukan cancel transaksi (return & replace)
-    $oldBloodStock->update([
-     'blood_status' => BloodStockStatus::AVAILABLE,
-     'used_at' => null,
-    ]);
-    $bloodTransfusionDetailData->each(function ($detail) use ($newBloodStock) {
-     $detail->update([
-      'blood_stock_id' => $newBloodStock->id,
-      'component' => $newBloodStock->bloodPacks->blood_component ?? $detail->component,
-     ]);
-    });
-    $newBloodStock->update([
-     'blood_status' => BloodStockStatus::TAKEN_OUT,
-     'used_at' => $oldUsedAt,
-    ]);
-    // --- Log darah dikembalikan
-    BloodStockLogActivity::create([
-     'blood_stock_public_id'  => $oldBloodStock->public_id,
-     'payload' => json_encode($oldBloodStock->fresh()->toArray()),
-     'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-     'description' => generateBloodStockLogDescription(
-      BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
-      $oldBloodStock->bag_number,
-      $user->username
-     ),
-     'created_by_user_name' => $user->name,
-     'timestamp' => now(),
-    ]);
-    // --- Log darah pengganti
-    BloodStockLogActivity::create([
-     'blood_stock_public_id'  => $newBloodStock->public_id,
-     'payload' => json_encode($newBloodStock->fresh()->toArray()),
-     'status' => BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
-     'description' => generateBloodStockLogDescription(
-      BloodStockLogActivityStatus::BLOOD_STOCK_TAKEN_OUT,
-      $newBloodStock->bag_number,
-      $user->username,
-      $patientName
-     ),
-     'created_by_user_name' => $user->name,
-     'timestamp' => now(),
-    ]);
-   }
+   });
+
+   // --- Update blood_status pada BloodStock
+   $bloodStock->update([
+    'blood_status' => $newBloodStatus,
+    'used_at' => $hasCrossmatch ? $bloodStock->used_at : null,
+   ]);
+
+   BloodStockLogActivity::create([
+    'blood_stock_public_id' => $bloodStock->public_id,
+    'payload' => json_encode($bloodStock->fresh()->toArray()),
+    'status' => $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+    'description' => generateBloodStockLogDescription(
+     $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+     $bloodStock->bag_number,
+     $user->username,
+    ),
+    'created_by_user_name' => $user->name,
+    'timestamp' => now(),
+   ]);
 
    DB::commit();
 
    globalLogger(
     'info',
-    $isCancelTransaction ? 'Blood transaction cancelled successfully!' : 'Blood stock returned to stock successfully!',
-    ['old_blood_stock' => $oldBloodStock->public_id, 'new_blood_stock' => $newBloodStock?->public_id, 'is_cancel_transaction' => $isCancelTransaction, 'returned_by' => $user->id,],
+    'Blood stock returned to stock successfully!',
+    ['blood_stock' => $bloodStock->public_id, 'returned_by' => $user->id],
     200,
     'returnbloodstock'
    );
+
    return response()->json([
-    'message' => $isCancelTransaction
-     ? 'Transaksi darah berhasil dibatalkan, dan darah berhasil dikembalikan ke stock!'
-     : 'Data stok darah berhasil dikembalikan ke stock!',
-    'data' => [
-     'old_blood_stock' => $oldBloodStock->fresh(),
-     'new_blood_stock' => $newBloodStock?->fresh(),
-    ],
+    'message' => 'Darah berhasil dikembalikan ke stock!',
+    'data' => $bloodStock->fresh(),
    ]);
   } catch (\Throwable $e) {
    DB::rollBack();

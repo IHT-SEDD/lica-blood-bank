@@ -298,6 +298,23 @@ return [
             'path' => storage_path('logs/blood-transfusion/blood-stock-blood-transfusion-data.log'),
             'level' => 'debug',
         ],
+
+        // Developments Loggings
+        'newdatadev' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/development/new-data.log'),
+            'level' => 'debug',
+        ],
+        'deletedatadev' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/development/delete-data.log'),
+            'level' => 'debug',
+        ],
+        'editdatadev' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/development/edit-data.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

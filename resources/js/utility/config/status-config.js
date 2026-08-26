@@ -105,6 +105,11 @@ export function TransfusionBloodStatus(status) {
                 <i class="ti ti-heart-pause align-middle me-2 fs-4"></i>
                 Ditahan
             </span>`;
+        case "cancelled":
+            return `<span class="badge badge-label fw-semibold badge-soft-danger">
+                <i class="ti ti-x align-middle me-2 fs-4"></i>
+                Dibatalkan
+            </span>`;
         default:
             return `<span class="badge badge-label fw-semibold badge-soft-secondary">
                 <i class="ti ti-droplet align-middle me-2 fs-4"></i>
