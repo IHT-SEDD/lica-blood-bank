@@ -114,9 +114,9 @@ class BloodStockController extends Controller
     {
         try {
             $data = $this->dataService->getDataLogById($id);
-            return response()->json($data)
-                ->setEtag(md5(json_encode($data)))
-                ->header('Cache-Control', 'public, max-age=600');
+            return response()->json($data);
+            // ->setEtag(md5(json_encode($data)))
+            // ->header('Cache-Control', 'public, max-age=600');
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'Data not found!'

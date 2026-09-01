@@ -1,12 +1,5 @@
 // ---------- Import Libraries ----------
-import {
-    GlobalAdvanceDatatable,
-    GlobalAdvanceFlatpickr,
-    GlobalDeleteDataConfirmation,
-    GlobalRestoreDataConfirmation,
-    GlobalEditData,
-    GlobalAdvanceTomselect,
-} from "../../../app";
+import { GlobalAdvanceFlatpickr, GlobalAdvanceTomselect } from "../../../app";
 import {
     GlobalRenderTimelineItem,
     DateTimeFormatter,
@@ -287,11 +280,11 @@ async function fetchDataBloodStockLog() {
     try {
         const res = await fetch(`${StockBloodLogDataURL}/${id}`, {
             method: "GET",
-            cache: "no-store",
-            headers: {
-                "Cache-Control": "no-cache",
-                Pragma: "no-cache",
-            },
+            // cache: "no-store",
+            // headers: {
+            //     "Cache-Control": "no-cache",
+            //     Pragma: "no-cache",
+            // },
         });
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
@@ -374,21 +367,21 @@ function EditBloodDate(id) {
 }
 
 // ---------- Select tom-select untuk data di modal return ----------
-function ReturnBloodStock() {
-    new GlobalAdvanceTomselect("#return_data_blood_stock", {
-        valueField: "id",
-        preload: true,
-        noResultsText: "No. labu tidak ditemukan",
-        blurOnItemAdd: false,
-        closeAfterSelect: false,
-        load: function (query, callback) {
-            fetch(`/utility/select/blood-stock?q=${encodeURIComponent(query)}`)
-                .then((res) => res.json())
-                .then((json) => callback(json.results))
-                .catch(() => callback());
-        },
-    });
-}
+// function ReturnBloodStock() {
+//     new GlobalAdvanceTomselect("#return_data_blood_stock", {
+//         valueField: "id",
+//         preload: true,
+//         noResultsText: "No. labu tidak ditemukan",
+//         blurOnItemAdd: false,
+//         closeAfterSelect: false,
+//         load: function (query, callback) {
+//             fetch(`/utility/select/blood-stock?q=${encodeURIComponent(query)}`)
+//                 .then((res) => res.json())
+//                 .then((json) => callback(json.results))
+//                 .catch(() => callback());
+//         },
+//     });
+// }
 
 document.addEventListener("DOMContentLoaded", async () => {
     const logData = await fetchDataBloodStockLog();
@@ -401,7 +394,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     EditStorageRack();
     EditBloodStatus();
     EditBloodPack();
-    ReturnBloodStock();
+    // ReturnBloodStock();
 
     // Date range picker
     DateRangeFilter();

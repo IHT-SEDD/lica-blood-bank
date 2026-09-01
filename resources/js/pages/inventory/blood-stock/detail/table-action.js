@@ -28,6 +28,7 @@ const ModalPermanentDeleteSelector = "permanent_delete_data_blood_stock_modal";
 const ActionPermanentDeleteSelector = ".btn-permanent-delete-stock-blood";
 const AttributePermanentDelete = "permanentDeleteId";
 const ConfirmPermanentDeleteSelector = "#confirm_permanent_delete";
+const FormReturnSelector = "return_data_stock_blood";
 
 const FormEditSelector = "edit_data_stock_blood";
 const ModalEditSelector = "edit_data_stock_blood_modal";
@@ -38,10 +39,6 @@ const ModalReturnSelector = "return_data_stock_blood_modal";
 const ActionReturnSelector = ".btn-return-stock-blood";
 const AttributeReturn = "returnId";
 const ConfirmReturnSelector = "#confirm_return";
-const CancelTransactionSelector = "#is_cancel_transaction";
-const CancelReasonSelector = "#cancel_reason";
-const CancelReasonWrapperSelector = "#cancel_transaction_reason_wrapper";
-const CancelReasonErrorSelector = "#cancel_reason_error";
 
 const ModalRestoreSelector = "restore_data_stock_blood_modal";
 const ActionRestoreSelector = ".btn-restore-stock-blood";
@@ -620,51 +617,6 @@ export class TableActionHandler {
             ModalConfirmID: ModalReturnSelector,
         });
 
-        const selectEl = document.querySelector("#return_data_blood_stock");
-        const cancelCheckbox = document.querySelector(
-            CancelTransactionSelector,
-        );
-        const cancelReasonEl = document.querySelector(CancelReasonSelector);
-        const cancelReasonWrapper = document.querySelector(
-            CancelReasonWrapperSelector,
-        );
-        const cancelReasonError = document.querySelector(
-            CancelReasonErrorSelector,
-        );
-
-        const updateConfirmButtonState = () => {
-            const confirmBtn = document.querySelector(ConfirmReturnSelector);
-            if (!confirmBtn) return;
-            const selectedBag = selectEl?.tomselect?.getValue?.() || "";
-            const isCancel = cancelCheckbox?.checked || false;
-            const reason = cancelReasonEl?.value?.trim() || "";
-
-            // Enabled jika: ada labu dipilih, ATAU cancel + ada alasan
-            if (selectedBag || (isCancel && reason.length > 0)) {
-                confirmBtn.disabled = false;
-            } else {
-                confirmBtn.disabled = true;
-            }
-        };
-        const clearCancelReasonValidation = () => {
-            if (cancelReasonEl) {
-                cancelReasonEl.classList.remove("is-invalid");
-            }
-            if (cancelReasonError) {
-                cancelReasonError.textContent = "";
-            }
-        };
-        const setCancelReasonInvalid = (
-            message = "Alasan pembatalan wajib diisi!",
-        ) => {
-            if (cancelReasonEl) {
-                cancelReasonEl.classList.add("is-invalid");
-            }
-            if (cancelReasonError) {
-                cancelReasonError.textContent = message;
-            }
-        };
-
         document.addEventListener("confirmation:open", (e) => {
             const { data } = e.detail;
             if (!data) return;
@@ -680,46 +632,86 @@ export class TableActionHandler {
             }
         });
 
-        // ---------- Listener: Tombol Konfirmasi ----------
-        const confirmBtn = document.querySelector(ConfirmReturnSelector);
-        if (!confirmBtn) return;
-        confirmBtn.addEventListener("click", async () => {
-            const id = confirmBtn.dataset.id;
-            const bloodTransfusionId = confirmBtn.dataset.bloodTransfusionId;
-            if (!id) return;
-
-            try {
-                const response = await fetch(
-                    StockBloodDataURL + `/${id}/return`,
-                    {
-                        method: "PATCH",
-                        headers: {
-                            "X-CSRF-TOKEN": this.#getCsrfToken(),
+        const ReturnStockBloodValidation = GlobalFormValidation.init(
+            "#" + FormReturnSelector,
+            {
+                reason_return: {
+                    validators: {
+                        notEmpty: {
+                            message: "Alasan pengembalian wajib diisi!",
                         },
                     },
-                );
+                },
+            },
+        );
 
-                const result = await response.json();
-                if (!response.ok) {
-                    notyf.error({
-                        message: result.message || "Gagal mengembalikan darah!",
-                    });
-                    return;
-                }
+        // ---------- Submit form ke url  ----------
+        const confirmBtn = document.querySelector(ConfirmReturnSelector);
+        if (!confirmBtn) return;
+        new GlobalSubmitForm({
+            formId: FormReturnSelector,
+            url: () => {
+                const id = confirmBtn.dataset.id;
+                if (!id) return;
+                return StockBloodDataURL + `/${id}/return`;
+            },
+            method: "PATCH",
+            validator: ReturnStockBloodValidation,
+            onSuccess: (data) => {
                 notyf.success({
-                    message:
-                        result.message ||
-                        "Darah berhasil dikembalikan ke stock!",
+                    message: "Darah berhasil dikembalikan ke stock!",
                 });
                 this.#getModalInstance(ModalReturnSelector)?.hide();
-                confirmBtn.dataset.id = "";
                 this.reloadTable();
-            } catch (error) {
-                console.error(error);
+            },
+            onError: (err) => {
+                console.error(err);
                 notyf.error({ message: "Gagal mengembalikan darah!" });
                 this.reloadTable();
-            }
+            },
+
+            resetOnSuccess: true,
         });
+
+        // ---------- Listener: Tombol Konfirmasi ----------
+        // const confirmBtn = document.querySelector(ConfirmReturnSelector);
+        // if (!confirmBtn) return;
+        // confirmBtn.addEventListener("click", async () => {
+        //     const id = confirmBtn.dataset.id;
+        //     if (!id) return;
+
+        //     try {
+        //         const response = await fetch(
+        //             StockBloodDataURL + `/${id}/return`,
+        //             {
+        //                 method: "PATCH",
+        //                 headers: {
+        //                     "X-CSRF-TOKEN": this.#getCsrfToken(),
+        //                 },
+        //             },
+        //         );
+
+        //         const result = await response.json();
+        //         if (!response.ok) {
+        //             notyf.error({
+        //                 message: result.message || "Gagal mengembalikan darah!",
+        //             });
+        //             return;
+        //         }
+        //         notyf.success({
+        //             message:
+        //                 result.message ||
+        //                 "Darah berhasil dikembalikan ke stock!",
+        //         });
+        //         this.#getModalInstance(ModalReturnSelector)?.hide();
+        //         confirmBtn.dataset.id = "";
+        //         this.reloadTable();
+        //     } catch (error) {
+        //         console.error(error);
+        //         notyf.error({ message: "Gagal mengembalikan darah!" });
+        //         this.reloadTable();
+        //     }
+        // });
     }
 
     init() {

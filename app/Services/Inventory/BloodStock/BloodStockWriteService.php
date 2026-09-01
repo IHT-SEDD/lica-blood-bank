@@ -7,6 +7,7 @@ use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionLogActivityStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Models\BloodPack;
+use App\Models\BloodReturn;
 use App\Models\BloodStock;
 use App\Models\BloodStockLogActivity;
 use App\Models\BloodTransfusion;
@@ -362,6 +363,12 @@ class BloodStockWriteService
  // ---------- Return data blood stock ----------
  public function returnBloodStockData(Request $request, string $id)
  {
+  $validated = $request->validate([
+   'reason_return' => 'required|string|max:1000',
+  ], [
+   'reason_return.required' => 'Alasan pengembalian wajib diisi!',
+  ]);
+
   DB::beginTransaction();
   try {
    $user = Auth::user();
@@ -388,8 +395,13 @@ class BloodStockWriteService
    });
    $newBloodStatus = $hasCrossmatch ? BloodStockStatus::USED : BloodStockStatus::AVAILABLE;
 
+   // Snapshot status SEBELUM diubah, untuk dicatat di BloodReturn
+   $previousBloodStatus = $bloodStock->blood_status;
+
+   // dd($request->all(), $validated, $previousBloodStatus);
+
    // --- Update bag_status pada setiap blood_transfusion_details terkait menjadi cancelled
-   $bloodTransfusionDetails->each(function ($detail) use ($user) {
+   $bloodTransfusionDetails->each(function ($detail) use ($user, $bloodStock, $previousBloodStatus, $validated) {
     $detail->update([
      'bag_status' => 'cancelled', // sesuaikan dgn enum asli bila berbeda
     ]);
@@ -407,6 +419,16 @@ class BloodStockWriteService
      'created_by_user_name' => $user->name,
      'timestamp' => now(),
     ]);
+
+    // --- Catat alasan pengembalian ke stock
+    BloodReturn::create([
+     'blood_stock_id' => $bloodStock->id,
+     'blood_transfusion_detail_id' => $detail->id,
+     'returned_from_status' => $previousBloodStatus,
+     'reason_return' => $validated['reason_return'],
+     'return_by_user_id' => $user->id,
+     'return_by_user_name' => $user->name,
+    ]);
    });
 
    // --- Update blood_status pada BloodStock
@@ -418,9 +440,9 @@ class BloodStockWriteService
    BloodStockLogActivity::create([
     'blood_stock_public_id' => $bloodStock->public_id,
     'payload' => json_encode($bloodStock->fresh()->toArray()),
-    'status' => $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+    'status' => BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
     'description' => generateBloodStockLogDescription(
-     $hasCrossmatch ? BloodStockLogActivityStatus::BLOOD_STOCK_UPDATED : BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
+     BloodStockLogActivityStatus::BLOOD_STOCK_RETURNED,
      $bloodStock->bag_number,
      $user->username,
     ),
@@ -441,7 +463,7 @@ class BloodStockWriteService
    return response()->json([
     'message' => 'Darah berhasil dikembalikan ke stock!',
     'data' => $bloodStock->fresh(),
-   ]);
+   ], 200);
   } catch (\Throwable $e) {
    DB::rollBack();
    globalLogger('error', 'Blood stock failed to return!', [
