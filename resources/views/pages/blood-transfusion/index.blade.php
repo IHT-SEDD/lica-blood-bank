@@ -63,7 +63,7 @@
   {{-- Title, Date Range Picker & Add New Blood Request :end --}}
 
   {{-- List Data :begin --}}
-  <div class="col-xxl-7 col-12">
+  <div class="col-xxl-8 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header justify-content-between align-items-center">
@@ -89,7 +89,7 @@
   {{-- List Data :end --}}
 
   {{-- Patient Details :begin --}}
-  <div class="col-xxl-5 col-12">
+  <div class="col-xxl-4 col-12">
     <div class="card">
       {{-- Card Header --}}
       <div class="card-header d-flex justify-content-between align-items-center border-dashed">
@@ -285,11 +285,15 @@ Darah', 'action' => 'arsip'])
 @include('pages.blood-transfusion.partials.blood-release-all-modal')
 @include('pages.blood-transfusion.partials.blood-unrelease-modal')
 @include('pages.blood-transfusion.partials.update-blood-modal')
+@include('pages.blood-transfusion.partials.transfusion-reaction-modal')
 @endsection
 
 @section('scripts')
 <script src="{{ asset('vendor/qz/rsvp.min.js')}}"></script>
 <script src="{{ asset('vendor/qz/qz-tray.js')}}"></script>
+<script>
+  window.clientConfig = @json(['blood_transfusion' => \App\Config\ClientConfig::module('blood_transfusion')]);
+</script>
 @vite([
 'resources/js/pages/blood-transfusion/index.js',
 'resources/js/pages/blood-transfusion/datatable-blood-pack.js',

@@ -2,17 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\BloodComponent;
-use App\Models\BloodPack;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
-use App\Models\Patient;
-use App\Models\Package;
-use App\Models\BloodTransfusionDetailTest;
 use App\Enums\BloodStockStatus;
-use App\Enums\BloodSComponent;
-use App\Enums\BloodTransfusionStatus;
 use App\Http\Requests\BloodTransfusion\StoreBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodTransfusionRequest;
 use App\Http\Requests\BloodTransfusion\UpdateBloodPacksRequest;
@@ -23,22 +16,21 @@ use App\Services\BloodTransfusion\BloodTransfusionPrintService;
 use App\Services\BloodTransfusion\BloodTransfusionWriteService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class BloodTransfusionController extends Controller
 {
 
     // ---------- Panggil semua service yang dibutuhkan :begin ----------
+    protected array $clientData;
     public function __construct(
         protected BloodTransfusionDataService $dataService,
         protected BloodTransfusionAddService $addService,
         protected BloodTransfusionDetailTestService $bloodTransfusionDetailTestService,
         protected BloodTransfusionPrintService $printService,
         private readonly BloodTransfusionWriteService $writeService,
-    ) {}
+    ) {
+        $this->clientData = config('app.client_data');
+    }
     // ---------- Panggil semua service yang dibutuhkan :end ----------
 
     // ---------- Halaman index ----------
@@ -532,7 +524,7 @@ class BloodTransfusionController extends Controller
     {
         try {
             $print = 'nota';
-            return $this->printService->nota($transfusionPublicID, $print);
+            return $this->printService->nota($transfusionPublicID, $print, $this->clientData);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Exception $e) {
@@ -550,7 +542,7 @@ class BloodTransfusionController extends Controller
     {
         try {
             $print = 'crossmatch-result';
-            return $this->printService->crossmatchResult($transfusionPublicID, $btDetailID, $print);
+            return $this->printService->crossmatchResult($transfusionPublicID, $btDetailID, $print, $this->clientData);
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'File not found!'], 404);
         } catch (\Exception $e) {
@@ -594,6 +586,31 @@ class BloodTransfusionController extends Controller
             return response()->json([
                 'message' => 'Data not found!'
             ], 404);
+        }
+    }
+
+    // ---------- Insert reaction transfusion ----------
+    public function addReactionTransfusion(Request $request, string $detailPublicId)
+    {
+        $request->validate([
+            'transfusion_result' => 'required|string|max:2000',
+            'transfusion_at' => 'required|date_format:Y-m-d H:i',
+        ], [
+            'transfusion_at.date_format' => 'Format tanggal & waktu transfusi tidak valid.',
+        ]);
+
+        try {
+            $this->addService->addReactionTransfusion($request, $detailPublicId);
+            return response()->json(['message' => 'Reaksi transfusi berhasil disimpan.']);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
+            return response()->json(['message' => 'Detail not found.'], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Gagal menyimpan reaksi transfusi.',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 }

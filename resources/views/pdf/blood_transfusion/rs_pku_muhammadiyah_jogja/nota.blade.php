@@ -4,13 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <style>
-    @media print {
-      @page {
-        size: 24.13cm 27.94cm !important;
-        margin: 0 !important;
-      }
-    }
-
     @page {
       size: 24.13cm 27.94cm;
       margin: 0;
@@ -51,9 +44,16 @@
     }
 
     .logo {
-      height: 90px;
+      height: 9%;
       width: auto;
       object-fit: contain;
+    }
+
+    .kop {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      object-position: center;
     }
 
     .title {
@@ -172,24 +172,9 @@
     <div class="header">
       <table>
         <tr>
-          <td width="100px" align="left">
-            <img class="logo" src="{{ asset('assets/images/logos/logo_rsud_indramayu.png') }}"
-              alt="Logo RSUD Indramayu - Full Color">
-          </td>
-          <td width="900px" align="center">
-            <div class="heading">{{ __('LABORATORIUM PATOLOGI KLINIK') }}</div>
-            <div class="heading-2">{{ __('BANK DARAH RUMAH SAKIT (LAYANAN DARAH TRANSFUSI)') }}</div>
-            <div class="heading-3">{{ __('Jl. Murah Nara No. 7 Indramayu Kode Pos 45222 Jawa Barat') }}</div>
-            <div class="subheading">{{ __('Telp: (0234) 272655, E-mail:rsudkabindramayu@yahoo.co.id, Faks:(0234)
-              275330') }}</div>
-          </td>
-        </tr>
-        <tr>
-          <td width="10%"></td>
-          <td width="90%" align="right">
-            <div class="subheading" style="margin-top: 20px;">
-              Penanggung Jawab: {{ $data->dokter_penanggung_jawab?->name ?? 'Indriani Silvia, dr,Sp.PK(K)., MKes' }}
-            </div>
+          <td width="100%">
+            <img class="kop" src="{{ asset('assets/images/rs_pku_muhammadiyah_jogja/kop-pku.jpeg') }}"
+              alt="Kop Surat RS PKU Muhammadiyah Jogja - Full Color">
           </td>
         </tr>
       </table>
@@ -200,13 +185,14 @@
       <tr>
         <td width="100%" align="center">
           <div class="heading-2">{{ __('SURAT TANDA PENERIMAAN DARAH') }}</div>
-          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
+          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT PKU MUHAMMADIYAH JOGJA') }}
+          </div>
         </td>
       </tr>
     </table>
 
     {{-- Detail Transaksi --}}
-    <table width="1000px">
+    <table width="100%">
       <!--- Nama --->
       <tr>
         <td width="30%">
@@ -251,7 +237,7 @@
           @if (!empty($data->lab_number))
           <div class="paragraph">{{ $data->lab_number ?? '-' }}</div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">260519001</div>
           @endif
         </td>
       </tr>
@@ -267,7 +253,7 @@
           @if (!empty($data->patient?->address))
           <div class="paragraph">{{ $data->patient?->address ?? '-' }}</div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">Jawa Barat, Indonesia</div>
           @endif
         </td>
       </tr>
@@ -285,7 +271,7 @@
             {{ $data->patient?->blood_group . $data->patient?->blood_rhesus ?? '-'}}
           </div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">B+</div>
           @endif
         </td>
       </tr>
@@ -303,7 +289,7 @@
             {{ $data->created_at ? \Carbon\Carbon::parse($data->created_at)->format('d F Y') : '-' }}
           </div>
           @else
-          <div class="paragraph">-</div>
+          <div class="paragraph">19 Mei 2026</div>
           @endif
         </td>
       </tr>
@@ -323,32 +309,21 @@
       <thead>
         <tr>
           <th class="text-center" style="width: 3%;">{{ __('No.') }}</th>
-          <th class="text-center" style="width: 20%;">{{ __('Detail') }}</th>
-          {{-- <th class="text-center" style="width: 20%;">{{ __('No. Labu') }}</th>
+          <th class="text-center" style="width: 20%;">{{ __('No. Labu') }}</th>
           <th class="text-center" style="width: 20%;">{{ __('Tanggal & Jam') }}</th>
           <th class="text-center" style="width: 28%;">{{ __('Penyerah') }}</th>
-          <th class="text-center" style="width: 28%;">{{ __('Penerima') }}</th> --}}
+          <th class="text-center" style="width: 28%;">{{ __('Penerima') }}</th>
         </tr>
       </thead>
 
       <tbody>
-        {{-- @foreach ($data->details as $detail)
-        <tr>
-          <td class="text-center">{{ $loop->iteration }}</td>
-          <td class="text-center">{{ $detail->bloodStock->bag_number }}</td>
-          <td class="text-center">{{ $detail->blood_released_at }}</td>
-          <td class="text-center">{{ $detail->bloodReleasedByUser?->name }}</td>
-          <td class="text-center">{{ $detail->blood_received_by }}</td>
-        </tr>
-        @endforeach --}}
-
         @foreach ($data->details as $i => $__)
         <tr>
-          <td class="text-center" style="height: 60px; vertical-align: middle;">{{ $loop->iteration }}</td>
-          <td class="text-center" style="height: 60px;"></td>
-          {{-- <td class="text-center"></td> --}}
-          {{-- <td class="text-center"></td>
-          <td class="text-center"></td> --}}
+          <td class="text-center">{{ $loop->iteration }}</td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
+          <td class="text-center"></td>
         </tr>
         @endforeach
       </tbody>

@@ -2,20 +2,14 @@
 
 namespace App\Services\BloodTransfusion;
 
-use App\Enums\BloodComponent;
-use App\Enums\BloodStockStatus;
-use App\Enums\ResultTest;
-use App\Models\BloodStock;
+
 use App\Models\BloodTransfusion;
 use App\Models\BloodTransfusionDetail;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -69,7 +63,7 @@ class BloodTransfusionPrintService
   }
 
   // ---------- Fungsi Print Nota ----------
-  public function nota(string $transfusionPublicID, string $print)
+  public function nota(string $transfusionPublicID, string $print, array $clientData)
   {
     try {
       DB::beginTransaction();
@@ -77,8 +71,9 @@ class BloodTransfusionPrintService
       $this->validatePrintTemplate($print);
       $printData = $this->queryTransfusionData($transfusionPublicID, null);
 
-      $html = view($this->printMap[$print], [
+      $html = view($this->resolvePrintView($this->printMap[$print]), [
         'data' => $printData,
+        'client' => $clientData,
       ])->render();
 
       $baseUrl = url('/');
@@ -97,7 +92,7 @@ class BloodTransfusionPrintService
   }
 
   // ---------- Fungsi Print Crossmatch Result ----------
-  public function crossmatchResult(string $transfusionPublicID, ?string $btDetailID, string $print)
+  public function crossmatchResult(string $transfusionPublicID, ?string $btDetailID, string $print, array $clientData)
   {
     try {
       DB::beginTransaction();
@@ -105,8 +100,9 @@ class BloodTransfusionPrintService
       $this->validatePrintTemplate($print);
       $printData = $this->queryTransfusionData($transfusionPublicID, $btDetailID);
 
-      $html = view($this->printMap[$print], [
+      $html = view($this->resolvePrintView($this->printMap[$print]), [
         'data' => $printData,
+        'client' => $clientData,
       ])->render();
 
       $baseUrl = url('/');
@@ -343,5 +339,47 @@ class BloodTransfusionPrintService
       'Content-Type' => 'application/pdf',
       'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
     ]);
+  }
+  private function resolvePrintView(string $basePrintView): string
+  {
+    $clientName = config('app.client_data.name');
+
+    if (!$clientName) {
+      return $basePrintView;
+    }
+
+    $clientSlug = Str::of($clientName)
+      ->lower()
+      ->replaceMatches('/[^a-z0-9]+/', '_')
+      ->trim('_');
+
+    // sisipkan slug client sebelum nama view terakhir
+    // "print.blood_transfusion.nota" -> "print.blood_transfusion.rs_pku_muhammadiyah_jogja.nota"
+    $segments = explode('.', $basePrintView);
+    $lastSegment = array_pop($segments);
+    $clientPrintView = implode('.', $segments) . '.' . $clientSlug . '.' . $lastSegment;
+
+    return View::exists($clientPrintView) ? $clientPrintView : $basePrintView;
+  }
+  private function resolvePdfView(string $basePdfView): string
+  {
+    $clientName = config('app.client_data.name');
+
+    if (!$clientName) {
+      return $basePdfView;
+    }
+
+    $clientSlug = Str::of($clientName)
+      ->lower()
+      ->replaceMatches('/[^a-z0-9]+/', '_')
+      ->trim('_');
+
+    // sisipkan slug client sebelum nama view terakhir
+    // "pdf.blood_transfusion.nota" -> "pdf.blood_transfusion.rs_pku_muhammadiyah_jogja.nota"
+    $segments = explode('.', $basePdfView);
+    $lastSegment = array_pop($segments);
+    $clientPdfView = implode('.', $segments) . '.' . $clientSlug . '.' . $lastSegment;
+
+    return View::exists($clientPdfView) ? $clientPdfView : $basePdfView;
   }
 }

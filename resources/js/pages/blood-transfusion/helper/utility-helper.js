@@ -1,10 +1,14 @@
 export const SelectorModalRelease = "blood_release_modal";
 export const SelectorModalReleaseAll = "blood_release_all_modal";
 export const SelectorModalUnRelease = "blood_unrelease_modal";
+export const SelectorModalReactionTransfusion = "transfusion_reaction_modal";
 
 export const SelectorConfirmBtnRelease = "confirm_release";
 export const SelectorConfirmBtnReleaseAll = "confirm_release_all";
 export const SelectorConfirmBtnUnRelease = "confirm_unrelease";
+export const SelectorConfirmBtnReactionTransfusion =
+    "confirm_reaction_transfusion";
+export const SelectorFlatpickReactionTransfusion = "#transfusion_reaction_at";
 
 // ---------- PRIVATE HELPERS ----------
 function scopedById(id, scope = document) {
@@ -101,7 +105,6 @@ export function updateConfirmButtonState(modalId) {
                 );
             break;
         }
-
         case SelectorModalUnRelease: {
             const bloodNumberInput = scopedById("blood_number", modalEl);
             const confirmBtn = document.getElementById(
@@ -113,7 +116,6 @@ export function updateConfirmButtonState(modalId) {
             if (confirmBtn) confirmBtn.disabled = !bloodNumberOk;
             break;
         }
-
         case SelectorModalReleaseAll: {
             const receivedByInput = scopedById(
                 "blood_received_by_all",
@@ -130,6 +132,25 @@ export function updateConfirmButtonState(modalId) {
                 bloodNumbersInput?.classList.contains("is-valid") ?? false;
             if (confirmBtn)
                 confirmBtn.disabled = !(receivedByOk && bloodNumberOk);
+            break;
+        }
+        case SelectorModalReactionTransfusion: {
+            const activeInput = getReactionTransfusionActiveInput(modalEl);
+            const transfusionAtInput = scopedById(
+                "transfusion_reaction_at",
+                modalEl,
+            );
+            const confirmBtn = document.getElementById(
+                SelectorConfirmBtnReactionTransfusion,
+            );
+
+            const reactionOk =
+                activeInput?.classList.contains("is-valid") ?? false;
+            const transfusionAtOk =
+                (transfusionAtInput?.value.trim().length ?? 0) > 0;
+
+            if (confirmBtn)
+                confirmBtn.disabled = !(reactionOk && transfusionAtOk);
             break;
         }
     }
@@ -203,6 +224,51 @@ export function resetModalUnRelease() {
     }
 
     const confirmBtn = document.getElementById(SelectorConfirmBtnUnRelease);
+    if (confirmBtn) confirmBtn.disabled = true;
+}
+export function resetModalReactionTransfusion() {
+    const modalEl = document.getElementById(SelectorModalReactionTransfusion);
+    if (!modalEl) return;
+
+    const textInput = scopedById("transfusion_reaction_text", modalEl);
+    if (textInput) {
+        textInput.value = "";
+        textInput.classList.remove("is-valid", "is-invalid");
+    }
+
+    const selectInput = scopedById("transfusion_reaction_select", modalEl);
+    if (selectInput) {
+        if (selectInput.tomselect) {
+            selectInput.tomselect.clear();
+        } else {
+            selectInput.value = "";
+        }
+        selectInput.classList.remove("is-valid", "is-invalid");
+        selectInput.closest(".ts-wrapper")?.classList.remove("is-invalid");
+    }
+
+    // Reset tanggal & waktu transfusi
+    const transfusionAtInput = scopedById("transfusion_reaction_at", modalEl);
+    if (transfusionAtInput) {
+        if (transfusionAtInput._flatpickr) {
+            transfusionAtInput._flatpickr.clear();
+        } else {
+            transfusionAtInput.value = "";
+        }
+        transfusionAtInput.classList.remove("is-valid", "is-invalid");
+    }
+
+    modalEl.querySelectorAll(".invalid-feedback").forEach((el) => el.remove());
+
+    const idInput = scopedById(
+        "transfusion_reaction_blood_transfusion_id",
+        modalEl,
+    );
+    if (idInput) idInput.value = "";
+
+    const confirmBtn = document.getElementById(
+        SelectorConfirmBtnReactionTransfusion,
+    );
     if (confirmBtn) confirmBtn.disabled = true;
 }
 
@@ -295,6 +361,62 @@ export function attachModalListenerUnRelease(expectedBagNumber) {
         updateConfirmButtonState(SelectorModalUnRelease);
     });
 }
+export function attachModalListenerReactionTransfusion() {
+    const modalEl = document.getElementById(SelectorModalReactionTransfusion);
+    if (!modalEl) return;
+
+    const viaSelect = toggleReactionTransfusionInputMode(modalEl);
+
+    // Reaction detail (select atau textarea)
+    if (viaSelect) {
+        const selectInput = scopedById("transfusion_reaction_select", modalEl);
+        if (selectInput) {
+            const handler = () => {
+                const hasValue = !!selectInput.value?.trim();
+                selectInput.classList.toggle("is-valid", hasValue);
+                selectInput.classList.toggle("is-invalid", !hasValue);
+                updateConfirmButtonState(SelectorModalReactionTransfusion);
+            };
+
+            if (selectInput.tomselect) {
+                selectInput.tomselect.off("change");
+                selectInput.tomselect.on("change", handler);
+            } else {
+                replaceAndListen(selectInput, handler);
+            }
+        }
+    } else {
+        replaceAndListen(
+            scopedById("transfusion_reaction_text", modalEl),
+            function () {
+                const hasValue = this.value.trim().length > 0;
+                this.classList.toggle("is-valid", hasValue);
+                this.classList.toggle("is-invalid", !hasValue);
+                updateConfirmButtonState(SelectorModalReactionTransfusion);
+            },
+        );
+    }
+
+    // Tanggal & waktu transfusi (flatpickr) — bind sekali saja per elemen
+    const transfusionAtInput = scopedById("transfusion_reaction_at", modalEl);
+    if (
+        transfusionAtInput &&
+        !transfusionAtInput.dataset.reactionListenerBound
+    ) {
+        transfusionAtInput.dataset.reactionListenerBound = "true";
+
+        const handler = () => {
+            const hasValue = transfusionAtInput.value.trim().length > 0;
+            transfusionAtInput.classList.toggle("is-valid", hasValue);
+            transfusionAtInput.classList.toggle("is-invalid", !hasValue);
+            updateConfirmButtonState(SelectorModalReactionTransfusion);
+        };
+
+        // Flatpickr mensinkronkan value ke input asli lalu memicu event native ini
+        transfusionAtInput.addEventListener("input", handler);
+        transfusionAtInput.addEventListener("change", handler);
+    }
+}
 
 // ---------- VALIDASI FORM ----------
 export function validateReleaseForm() {
@@ -369,4 +491,49 @@ export function validateNotReleaseForm() {
         return false;
     }
     return true;
+}
+
+// ---------- REACTION TRANSFUSION ----------
+export function isReactionViaSelect() {
+    return (
+        window.clientConfig?.blood_transfusion
+            ?.reaction_transfusion_via_select === true
+    );
+}
+export function toggleReactionTransfusionInputMode(modalEl) {
+    const viaMaster = isReactionViaSelect();
+    const selectWrapper = scopedById("reaction_via_select_wrapper", modalEl);
+    const textWrapper = scopedById("reaction_via_text_wrapper", modalEl);
+
+    if (selectWrapper) selectWrapper.classList.toggle("d-none", !viaMaster);
+    if (textWrapper) textWrapper.classList.toggle("d-none", viaMaster);
+
+    return viaMaster;
+}
+export function getReactionTransfusionActiveInput(modalEl) {
+    return isReactionViaSelect()
+        ? scopedById("transfusion_reaction_select", modalEl)
+        : scopedById("transfusion_reaction_text", modalEl);
+}
+export function getReactionTransfusionAtValue(modalEl) {
+    const input = scopedById("transfusion_reaction_at", modalEl);
+    return input?.value?.trim() ?? "";
+}
+export function renderReactionTransfusionPatientInfo(modalEl) {
+    if (!modalEl) return;
+
+    const data = window.currentTransfusionData ?? {};
+    const bagData = window.currentBagData ?? {};
+
+    const setText = (key, value) => {
+        const el = scopedById(`reaction_patient_${key}`, modalEl);
+        if (el) el.textContent = value || "-";
+    };
+
+    setText("name", data.patient?.name);
+    setText("bdrs_number", data.lab_number);
+    setText("order_number", data.order_number);
+    setText("bag_number", bagData.row_data?.bag_number);
+    setText("blood_group", data.patient?.blood_group);
+    setText("blood_rhesus", data.patient?.blood_rhesus);
 }

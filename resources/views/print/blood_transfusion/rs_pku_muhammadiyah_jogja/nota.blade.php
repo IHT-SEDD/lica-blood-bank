@@ -56,6 +56,13 @@
       object-fit: contain;
     }
 
+    .kop {
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+      object-position: center;
+    }
+
     .title {
       font-size: 22px;
       font-weight: bold;
@@ -172,24 +179,9 @@
     <div class="header">
       <table>
         <tr>
-          <td width="100px" align="left">
-            <img class="logo" src="{{ asset('assets/images/logos/logo_rsud_indramayu.png') }}"
-              alt="Logo RSUD Indramayu - Full Color">
-          </td>
-          <td width="900px" align="center">
-            <div class="heading">{{ __('LABORATORIUM PATOLOGI KLINIK') }}</div>
-            <div class="heading-2">{{ __('BANK DARAH RUMAH SAKIT (LAYANAN DARAH TRANSFUSI)') }}</div>
-            <div class="heading-3">{{ __('Jl. Murah Nara No. 7 Indramayu Kode Pos 45222 Jawa Barat') }}</div>
-            <div class="subheading">{{ __('Telp: (0234) 272655, E-mail:rsudkabindramayu@yahoo.co.id, Faks:(0234)
-              275330') }}</div>
-          </td>
-        </tr>
-        <tr>
-          <td width="10%"></td>
-          <td width="90%" align="right">
-            <div class="subheading" style="margin-top: 20px;">
-              Penanggung Jawab: {{ $data->dokter_penanggung_jawab?->name ?? 'Indriani Silvia, dr,Sp.PK(K)., MKes' }}
-            </div>
+          <td width="100%">
+            <img class="kop" src="{{ asset('assets/images/rs_pku_muhammadiyah_jogja/kop-pku.jpeg') }}"
+              alt="Kop Surat RS PKU Muhammadiyah Jogja - Full Color">
           </td>
         </tr>
       </table>
@@ -200,7 +192,7 @@
       <tr>
         <td width="100%" align="center">
           <div class="heading-2">{{ __('SURAT TANDA PENERIMAAN DARAH') }}</div>
-          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT INDRAMAYU') }}</div>
+          <div class="heading-2" style="margin-bottom: 10px;">{{ __('BANK DARAH RUMAH SAKIT PKU MUHAMMADIYAH JOGJA') }}</div>
         </td>
       </tr>
     </table>

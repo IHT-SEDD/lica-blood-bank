@@ -1,7 +1,7 @@
 import { GlobalAdvanceDatatable, GlobalAdvanceTomselect } from "../../../app";
 import {
-    BooleanStatus,
     CitoStatus,
+    FinishOrNotStatus,
     TransactionOrderStatus,
     TransfusionBloodStatus,
 } from "../../../utility/config/status-config";
@@ -194,6 +194,9 @@ async function validateBagNumber(inputEl) {
     ) {
         $(TABLE.bagRequest).DataTable().ajax.reload(null, false);
     }
+    if (listTestTableInstance && $.fn.DataTable.isDataTable(TABLE.test)) {
+        $(TABLE.test).DataTable().ajax.reload(null, false);
+    }
 }
 // ---------- OPEN MODAL UPDATE BLOOD ----------
 async function openUpdateBloodModal(btn) {
@@ -225,23 +228,28 @@ async function openUpdateBloodModal(btn) {
         return;
     }
 
+    // ---------- Cek apakah fitur rekomendasi diaktifkan untuk client ini ----------
+    const isRecommendationEnabled =
+        window.clientConfig?.blood_transfusion?.recommendation_blood_bag ===
+        true;
+
     // ---------- Cek rekomendasi: stok lain yang expiry lebih dekat ----------
-    // const matchedExpiry = matched.expiry ? new Date(matched.expiry) : null;
-    // const recommendation = matchedExpiry
-    //     ? (availableStocks
-    //           .filter((stock) => {
-    //               if (
-    //                   String(stock.id) === bagNumber ||
-    //                   stock.text?.includes(bagNumber)
-    //               )
-    //                   return false;
-    //               if (!stock.expiry) return false;
-    //               return new Date(stock.expiry) < matchedExpiry;
-    //           })
-    //           .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
-    //           .at(0) ?? null)
-    //     : null;
-    const recommendation = null;
+    const matchedExpiry = matched.expiry ? new Date(matched.expiry) : null;
+    const recommendation =
+        isRecommendationEnabled && matchedExpiry
+            ? (availableStocks
+                  .filter((stock) => {
+                      if (
+                          String(stock.id) === bagNumber ||
+                          stock.text?.includes(bagNumber)
+                      )
+                          return false;
+                      if (!stock.expiry) return false;
+                      return new Date(stock.expiry) < matchedExpiry;
+                  })
+                  .sort((a, b) => new Date(a.expiry) - new Date(b.expiry))
+                  .at(0) ?? null)
+            : null;
 
     // ---------- Simpan state ke modal ----------
     const modal = document.getElementById("update_blood_modal");
@@ -367,7 +375,13 @@ export function DatatableRequestBlood() {
             searchable: false,
             render: (row, data) => {
                 const status = TextFormatter.format(row.status);
-                return TransactionOrderStatus(status);
+                return (
+                    TransactionOrderStatus(status) +
+                    FinishOrNotStatus(
+                        row.row_data.is_all_crossmatch_finished,
+                        "Semua crossmatch telah selesai",
+                    )
+                );
             },
         },
         {
@@ -442,7 +456,7 @@ export function DatatableRequestBlood() {
         },
         columnDefs: [
             { targets: -1, responsivePriority: 1 },
-            { targets: 0, responsivePriority: 2 },
+            { targets: 0, responsivePriority: 2, width: "100px" },
         ],
         drawCallback: function () {
             const tooltipTriggerList = document.querySelectorAll(
@@ -543,6 +557,22 @@ export function DatatableListBagRequest() {
         },
         {
             data: null,
+            defaultContent: "",
+            orderable: false,
+            searchable: false,
+            title: "Reaksi Transfusi",
+            render: (row, data) => {
+                const reactionTransfusionExist =
+                    row.transfusion_result !== null ||
+                    row.transfusion_result !== "";
+                if (reactionTransfusionExist) {
+                    return `<span class="fs-6 fw-semibold">${row.transfusion_result}</span>`;
+                }
+                return "";
+            },
+        },
+        {
+            data: null,
             title: "Aksi",
             orderable: false,
             searchable: false,
@@ -559,6 +589,11 @@ export function DatatableListBagRequest() {
                         <li>
                             <button data-public-id="${data.public_id}" class="dropdown-item btn-print-barcode-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
                                 <i class="ti ti-printer fs-4 me-1"></i> Barcode
+                            </button>
+                        </li>
+                        <li class="${!data.crossmatch_result || data.crossmatch_result === "" ? "d-none" : ""}">
+                            <button data-public-id="${data.public_id}" class="dropdown-item btn-tranfusion-reaction-per-blood fw-medium ${!data.crossmatch_result || data.crossmatch_result === "" ? "disabled text-muted" : ""}" type="button">
+                                <i class="ti ti-pencil fs-4 me-1"></i> Reaksi
                             </button>
                         </li>
                         <li>
@@ -595,7 +630,7 @@ export function DatatableListBagRequest() {
             columnDefs: [
                 {
                     targets: 0,
-                    width: "200px",
+                    width: "150px",
                 },
             ],
             // drawCallback: () => initTomSelect(".select-bag-number"),

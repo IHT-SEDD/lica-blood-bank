@@ -21,11 +21,8 @@ import {
     initDeleteTransaction,
     initArchiveTransaction,
     initNotReleaseBloodPack,
+    initReactionTransfusion,
 } from "./helper/action-helper";
-import {
-    updateConfirmButtonState,
-    validateBloodNumber,
-} from "./helper/utility-helper";
 import {
     initPrintIncompatibleLetter,
     initPrintNota,
@@ -49,12 +46,10 @@ import {
     SelectorBtnAccept,
     SelectorBtnConfirm,
     SelectorBtnConfimDelete,
-    SelectorBtnPrintIncompLetter,
-    SelectorBtnPrintResult,
-    SelectorBtnPrintResultPerBlood,
     SelectorBtnPrintBarcodePerBlood,
     SelectorBtnDeletePerBlood,
     getSendResultBtn,
+    SelectorBtnReactionTransfusion,
 } from "./helper/button-state";
 
 // ---------- Global variable untuk memudahkan penyesuaian ----------
@@ -65,7 +60,6 @@ const TimelineContainerSelector = ".timeline-blood-transfusion-log";
 const DateFilterSelector = ".blood-transfusion-date-filter";
 const MonthFilterHistoryTestSelector = ".history-test-month-filter";
 const PRINT_URL = "/blood-transfusion/detail/print";
-const LogDataURL = "/blood-transfusion/detail/log";
 
 const ModalDeleteTransactionSelector = "delete_data_blood_transfusion_modal";
 const ActionDeleteTransactionSelector = ".btn-delete-blood-transfusion";
@@ -144,6 +138,8 @@ function FilterStatus() {
 // ---------- Menampilkan detail pasien dari row yang diklik ----------
 export function updatePatientDetailUI(data) {
     if (!data) return;
+    window.currentTransfusionData = data;
+
     const setElementText = (selector, text) => {
         const el = document.querySelector(
             `[data-patient-detail="${selector}"]`,
@@ -278,7 +274,8 @@ function initBagRequestRowClick() {
             // Block test list for rows with "Not Available Stock"
             if (!data.row_data.has_available_stock) {
                 notyf.error({
-                    message: "Gagal menampilkan data pemeriksaan",
+                    message:
+                        "Gagal menampilkan data pemeriksaan. Tidak ada labu darah yang tersedia",
                 });
                 return;
             }
@@ -355,6 +352,7 @@ function CheckInLabNumber() {
                 ) {
                     listRequestTableInstance.instance.ajax.reload(null, false);
                 }
+                fetchDataBloodStockLog();
             }
         } catch (error) {
             console.error(error);
@@ -579,74 +577,6 @@ function initBagRequestActionButtons() {
             });
         }
     };
-    const handlePrint = async (url) => {
-        showPageLoading();
-
-        try {
-            const res = await fetch(url, {
-                method: "GET",
-            });
-
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-
-                notyf.error({
-                    message:
-                        err?.message ?? `HTTP error! status: ${res.status}`,
-                });
-
-                hidePageLoading();
-                return;
-            }
-
-            const blob = await res.blob();
-            const blobUrl = URL.createObjectURL(blob);
-
-            let iframe = document.getElementById("__print_preview_iframe__");
-
-            if (iframe) iframe.remove();
-
-            iframe = document.createElement("iframe");
-
-            iframe.id = "__print_preview_iframe__";
-
-            iframe.style.cssText =
-                "position:fixed;top:0;left:0;width:100%;height:100%;border:none;opacity:0;pointer-events:none;z-index:-1;";
-
-            iframe.src = blobUrl;
-
-            iframe.onload = () => {
-                try {
-                    iframe.contentWindow.focus();
-                    iframe.contentWindow.print();
-                } catch (printErr) {
-                    console.error(printErr);
-
-                    notyf.error({
-                        message: "Failed to open print dialog.",
-                    });
-                } finally {
-                    hidePageLoading();
-
-                    reloadBagRequestTable();
-
-                    setTimeout(() => {
-                        URL.revokeObjectURL(blobUrl);
-                        iframe.remove();
-                    }, 30000);
-                }
-            };
-
-            document.body.appendChild(iframe);
-        } catch (err) {
-            console.error("[Print] Network error:", err);
-            notyf.error({
-                message: "Network error, failed to load print file.",
-            });
-
-            hidePageLoading();
-        }
-    };
     const handlePrintBarcode = async (url) => {
         showPageLoading();
 
@@ -704,6 +634,9 @@ function initBagRequestActionButtons() {
 
     // Unrelease
     initNotReleaseBloodPack({ doAction, SelectorBtnUnrelease });
+
+    // Reaction Transfusion
+    initReactionTransfusion({ doAction, SelectorBtnReactionTransfusion });
 
     // Print Incompatible Letter
     initPrintIncompatibleLetter({

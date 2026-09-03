@@ -213,6 +213,19 @@ export function BooleanStatus(status, labelTrue, labelFalse) {
     }
 }
 
+// ---------- FINISH OR NOT STATUS ----------
+export function FinishOrNotStatus(status, tooltipTrue) {
+    const trueStatus = status === "1" || status === true || status === 1;
+
+    if (trueStatus) {
+        return `<span style="font-size: 20px;" class="text-success" data-bs-title="${tooltipTrue ?? ""}" data-bs-toggle="tooltip" data-bs-trigger="hover">
+                <i class="ti ti-circle-check"></i>
+            </span>`;
+    } else {
+        return "";
+    }
+}
+
 // ---------- CITO STATUS ----------
 export function CitoStatus(status) {
     const trueStatus = status === "1" || status === true || status === 1;

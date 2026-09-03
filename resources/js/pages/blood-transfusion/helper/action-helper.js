@@ -1,6 +1,9 @@
 import {
     GlobalDataConfirmation,
     GlobalDeleteDataConfirmation,
+    GlobalFormValidation,
+    GlobalAdvanceTomselect,
+    GlobalAdvanceFlatpickr,
 } from "../../../app";
 import { DateTimeFormatter } from "../../../utility/ui";
 import {
@@ -8,9 +11,11 @@ import {
     SelectorModalRelease,
     SelectorModalReleaseAll,
     SelectorModalUnRelease,
+    SelectorModalReactionTransfusion,
     SelectorConfirmBtnRelease,
     SelectorConfirmBtnReleaseAll,
     SelectorConfirmBtnUnRelease,
+    SelectorConfirmBtnReactionTransfusion,
     // Reset
     resetModalRelease,
     resetModalReleaseAll,
@@ -25,7 +30,19 @@ import {
     validateNotReleaseForm,
     // Confirm button state
     updateConfirmButtonState,
+    // Reaction transfusion
+    isReactionViaSelect,
+    resetModalReactionTransfusion,
+    attachModalListenerReactionTransfusion,
+    renderReactionTransfusionPatientInfo,
+    getReactionTransfusionActiveInput,
+    SelectorFlatpickReactionTransfusion,
+    getReactionTransfusionAtValue,
 } from "./utility-helper";
+import {
+    listBagRequestTableInstance,
+    listTestTableInstance,
+} from "../datatable/datatables-helper";
 
 let _deleteTransactionInitialized = false;
 let _archiveTransactionInitialized = false;
@@ -233,12 +250,160 @@ function initNotReleaseModal({ doAction, btnOpenSelector, getUrl }) {
                 onSuccess: () => {
                     if (modalEl)
                         bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    if (
+                        listTestTableInstance &&
+                        $.fn.DataTable.isDataTable("#list-test-table")
+                    ) {
+                        $("#list-test-table")
+                            .DataTable()
+                            .ajax.reload(null, false);
+                    }
+                    if (
+                        listBagRequestTableInstance &&
+                        $.fn.DataTable.isDataTable("#list-bag-request-table")
+                    ) {
+                        $("#list-bag-request-table")
+                            .DataTable()
+                            .ajax.reload(null, false);
+                    }
                 },
             });
 
             this.innerHTML = originalText;
             this.disabled = false;
         });
+}
+function initReactionTransfusionModal({ doAction, btnOpenSelector, getUrl }) {
+    new GlobalAdvanceFlatpickr(SelectorFlatpickReactionTransfusion, {
+        allowInput: true,
+        enableTime: true,
+    });
+
+    // Buka modal
+    $(document)
+        .off("click", "." + btnOpenSelector)
+        .on("click", "." + btnOpenSelector, function (e) {
+            e.preventDefault();
+
+            const detailId = $(this).data("public-id");
+            if (!detailId) return;
+
+            const modalEl = document.getElementById(
+                SelectorModalReactionTransfusion,
+            );
+            if (!modalEl) return;
+
+            resetModalReactionTransfusion();
+
+            const idInput = modalEl.querySelector(
+                "#transfusion_reaction_blood_transfusion_id",
+            );
+            if (idInput) idInput.value = detailId;
+
+            // Render data pasien (nama, no BDRS, no order, no labu, gol. darah, rhesus)
+            renderReactionTransfusionPatientInfo(modalEl);
+
+            // Inisialisasi tomselect kalau mode via select aktif
+            if (isReactionViaSelect()) {
+                const selectEl = modalEl.querySelector(
+                    "#transfusion_reaction_select",
+                );
+                if (selectEl && !selectEl.tomselect) {
+                    // TODO: sesuaikan endpoint saat master data reaksi transfusi tersedia
+                    new GlobalAdvanceTomselect("#transfusion_reaction_select", {
+                        valueField: "id",
+                        preload: true,
+                        load: function (query, callback) {
+                            fetch(
+                                `/utility/select/transfusion-reaction?q=${encodeURIComponent(query)}`,
+                            )
+                                .then((res) => res.json())
+                                .then((json) => callback(json.results))
+                                .catch(() => callback());
+                        },
+                    });
+                }
+            }
+
+            attachModalListenerReactionTransfusion();
+
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+        });
+
+    // Konfirmasi submit
+    $(document)
+        .off("click", "#" + SelectorConfirmBtnReactionTransfusion)
+        .on(
+            "click",
+            "#" + SelectorConfirmBtnReactionTransfusion,
+            async function (e) {
+                e.preventDefault();
+
+                const modalEl = document.getElementById(
+                    SelectorModalReactionTransfusion,
+                );
+                if (!modalEl) return;
+
+                const fieldName = isReactionViaSelect()
+                    ? "transfusion_reaction_select"
+                    : "transfusion_reaction_text";
+
+                // Validasi menggunakan GlobalFormValidation
+                const validator = GlobalFormValidation.init(
+                    "#transfusion_reaction",
+                    {
+                        [fieldName]: {
+                            validators: {
+                                notEmpty: {
+                                    message:
+                                        "Harap masukan reaksi transfusi terlebih dahulu!",
+                                },
+                            },
+                        },
+                        transfusion_at: {
+                            validators: {
+                                notEmpty: {
+                                    message:
+                                        "Tanggal & waktu transfusi wajib diisi!",
+                                },
+                            },
+                        },
+                    },
+                );
+
+                if (validator?.validate() !== "Valid") return;
+
+                const activeInput = getReactionTransfusionActiveInput(modalEl);
+                const transfusionAtValue =
+                    getReactionTransfusionAtValue(modalEl);
+                const detailId = modalEl.querySelector(
+                    "#transfusion_reaction_blood_transfusion_id",
+                )?.value;
+                if (!detailId) return;
+
+                const body = {
+                    transfusion_result: activeInput?.value.trim(),
+                    transfusion_at: transfusionAtValue,
+                };
+
+                const originalText = this.innerHTML;
+                this.innerHTML =
+                    '<span class="spinner-border spinner-border-sm"></span> Processing...';
+                this.disabled = true;
+
+                await doAction({
+                    url: getUrl(detailId),
+                    body,
+                    successMessage: "Reaksi transfusi berhasil disimpan!",
+                    errorMessage: "Gagal menyimpan reaksi transfusi!",
+                    onSuccess: () =>
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide(),
+                });
+
+                this.innerHTML = originalText;
+                this.disabled = false;
+            },
+        );
 }
 
 // ---------- EXPORTS ----------
@@ -427,4 +592,15 @@ export function initArchiveTransaction({
             hidePageLoading();
         }
     }
+}
+export function initReactionTransfusion({
+    doAction,
+    SelectorBtnReactionTransfusion,
+}) {
+    initReactionTransfusionModal({
+        doAction,
+        btnOpenSelector: SelectorBtnReactionTransfusion,
+        getUrl: (detailId) =>
+            `/blood-transfusion/detail/${detailId}/reaction-transfusion`,
+    });
 }
