@@ -268,6 +268,12 @@ export const BloodTransfusionLogConfigTL = {
         title: "Labu Darah Dibatalkan",
         tooltipTitle: "Labu darah berhasil dibatalkan",
     },
+    reaction_transfusion_inserted: {
+        icon: "notes",
+        colorClass: "text-info fill-info",
+        title: "Reaksi Transfusi Ditambahkan",
+        tooltipTitle: "Reaksi transfusi berhasil ditambahkan",
+    },
 
     fallback: {
         icon: "activity",

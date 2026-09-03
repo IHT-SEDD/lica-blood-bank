@@ -90,6 +90,11 @@ return [
         'with' => [],
     ],
 
+    // ---------- L ----------
+    'level-reaction' => [
+        'type' => 'enum',
+    ],
+
     // ---------- O ----------
     'order-status' => [
         'type' => 'enum',

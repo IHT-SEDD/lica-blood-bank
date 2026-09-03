@@ -70,9 +70,4 @@ return [
         'model' => App\Models\TransfusionReaction::class,
         'label' => 'Reaksi Transfusi',
     ],
-    // 'package-test' => [
-    //     'view' => 'pages.master.package-test.index',
-    //     'model' => App\Models\PackageTest::class,
-    //     'with' => ['test', 'package']
-    // ],
 ];

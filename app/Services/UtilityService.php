@@ -272,6 +272,9 @@ class UtilityService
       case 'incoming-stock-status':
         $data = collect(\App\Enums\IncomingBloodStatus::toSelect());
         break;
+      case 'level-reaction':
+        $data = collect(\App\Enums\LevelReactionTransfusion::toSelect());
+        break;
       case 'blood-rhesus':
         $data = collect(['+', '-'])->map(fn($item) => [
           'id' => $item,

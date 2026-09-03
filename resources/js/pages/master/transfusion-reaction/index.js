@@ -1,4 +1,8 @@
-import { GlobalSubmitForm, GlobalFormValidation } from "../../../app";
+import {
+    GlobalSubmitForm,
+    GlobalFormValidation,
+    GlobalAdvanceTomselect,
+} from "../../../app";
 
 // ---------- Global variable untuk memudahkan penyesuaian :begin ----------
 const FormAddSelector = "add_new_transfusion-reaction"; // id selector untuk form add new
@@ -7,6 +11,31 @@ const FormEditSelector = "edit_data_transfusion-reaction"; // id selector untuk 
 const ReloadDatatableSelector = "master-transfusion-reaction-reload"; // reload datatable index
 const ModalEditSelector = "edit_data_master_transfusion-reaction_modal"; // id selector untuk modal edit
 // ---------- Global variable untuk memudahkan penyesuaian :end ----------
+
+// ---------- State gobal :begin ----------
+let selectLevel = null;
+// ---------- State gobal :end ----------
+
+function SelectLevel() {
+    const wrapperSelectLevel = new GlobalAdvanceTomselect("#select-level", {
+        valueField: "id",
+        preload: true,
+        noResultsText: "Tingkatan tidak ditemukan",
+        load: function (query, callback) {
+            fetch(
+                `/utility/select/level-reaction?q=${encodeURIComponent(query)}`,
+            )
+                .then((response) => response.json())
+                .then((json) => {
+                    callback(json.results);
+                })
+                .catch(() => {
+                    callback();
+                });
+        },
+    });
+    selectLevel = wrapperSelectLevel.getInstances()[0];
+}
 
 // ---------- Handle form penambahan user baru :begin ----------
 function AddNewTransfusionReaction() {
@@ -17,7 +46,54 @@ function AddNewTransfusionReaction() {
             name: {
                 validators: {
                     notEmpty: {
-                        message: "Name is required",
+                        message: "Nama reaksi wajib diisi",
+                    },
+                },
+            },
+            category: {
+                validators: {
+                    notEmpty: {
+                        message: "Kategori reaksi wajib diisi",
+                    },
+                },
+            },
+            level: {
+                validators: {
+                    notEmpty: {
+                        message: "Tingkatan reaksi wajib dipilih",
+                    },
+                },
+            },
+            indicator: {
+                validators: {
+                    notEmpty: {
+                        message: "Indikasi reaksi wajib diisi",
+                    },
+                },
+            },
+            time_begin: {
+                validators: {
+                    isNumberIfPresent: {
+                        message: "Waktu awal harus berupa angka",
+                    },
+                    compareNumber: {
+                        field: "time_end",
+                        operator: "lte",
+                        message:
+                            "Waktu awal tidak boleh lebih dari waktu akhir",
+                    },
+                },
+            },
+            time_end: {
+                validators: {
+                    isNumberIfPresent: {
+                        message: "Waktu akhir harus berupa angka",
+                    },
+                    compareNumber: {
+                        field: "time_begin",
+                        operator: "gte",
+                        message:
+                            "Waktu akhir tidak boleh kurang dari waktu awal",
                     },
                 },
             },
@@ -60,7 +136,28 @@ function EditDataTransfusionReaction() {
             name: {
                 validators: {
                     notEmpty: {
-                        message: "Name is required",
+                        message: "Nama reaksi wajib diisi",
+                    },
+                },
+            },
+            category: {
+                validators: {
+                    notEmpty: {
+                        message: "Kategori reaksi wajib diisi",
+                    },
+                },
+            },
+            level: {
+                validators: {
+                    notEmpty: {
+                        message: "Tingkatan reaksi wajib dipilih",
+                    },
+                },
+            },
+            indicator: {
+                validators: {
+                    notEmpty: {
+                        message: "Indikasi reaksi wajib diisi",
                     },
                 },
             },
@@ -98,8 +195,26 @@ function EditDataTransfusionReaction() {
 }
 // ---------- Handle form pembaharuan data user :begin ----------
 
+function bindCrossFieldClear(formSelector, fieldA, fieldB) {
+    const form = document.querySelector(formSelector);
+    if (!form) return;
+    const inputA = form.querySelector(`[name="${fieldA}"]`);
+    const inputB = form.querySelector(`[name="${fieldB}"]`);
+    if (!inputA || !inputB) return;
+
+    const clear = (el) => {
+        el.classList.remove("is-invalid");
+        el.parentNode.querySelector(".invalid-feedback")?.remove();
+    };
+
+    inputA.addEventListener("input", () => clear(inputB));
+    inputB.addEventListener("input", () => clear(inputA));
+}
+
 document.addEventListener("DOMContentLoaded", function () {
-    // SelectRole();
+    SelectLevel();
     AddNewTransfusionReaction();
     EditDataTransfusionReaction();
+    bindCrossFieldClear("#" + FormAddSelector, "time_begin", "time_end");
+    bindCrossFieldClear("#" + FormEditSelector, "time_begin", "time_end");
 });

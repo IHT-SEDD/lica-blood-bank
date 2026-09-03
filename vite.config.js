@@ -99,6 +99,7 @@ export default defineConfig(({ mode }) => {
             port: serverPort,
             strictPort: true,
             cors: true,
+            allowedHosts: ["lica-blood-bank.public:8080"],
             watch: {
                 ignored: ["**/storage/framework/views/**"],
             },

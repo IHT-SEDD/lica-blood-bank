@@ -568,7 +568,7 @@ export function DatatableListBagRequest() {
                 if (reactionTransfusionExist) {
                     return `<span class="fs-6 fw-semibold">${row.transfusion_result}</span>`;
                 }
-                return "";
+                return "-";
             },
         },
         {

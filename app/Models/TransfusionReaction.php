@@ -14,19 +14,25 @@ class TransfusionReaction extends Model
     protected $fillable = [
         'public_id',
         'is_active',
-        'name'
+        'name',
+        'category',
+        'level',
+        'time_begin',
+        'time_end',
+        'indicator',
+        'general_code',
     ];
 
     protected $hidden = [
         'id',
     ];
 
-    protected static function boot()
+    protected static function booted()
     {
-        parent::boot();
-
-        static::creating(function ($transfusionReaction) {
-            $transfusionReaction->public_id = Str::uuid();
+        static::creating(function ($model) {
+            if (empty($model->public_id)) {
+                $model->public_id = (string) \Illuminate\Support\Str::uuid();
+            }
         });
     }
 }
