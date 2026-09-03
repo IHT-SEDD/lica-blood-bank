@@ -533,7 +533,7 @@ export function renderReactionTransfusionPatientInfo(modalEl) {
     setText("name", data.patient?.name);
     setText("bdrs_number", data.lab_number);
     setText("order_number", data.order_number);
-    setText("bag_number", bagData.row_data?.bag_number);
+    setText("bag_number", bagData.blood_stock?.bag_number);
     setText("blood_group", data.patient?.blood_group);
     setText("blood_rhesus", data.patient?.blood_rhesus);
 }

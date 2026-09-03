@@ -262,8 +262,7 @@ function initBagRequestRowClick() {
         .on("click", "#list-bag-request-table tbody tr", function (e) {
             // Ignore clicks on interactive elements (dropdowns, selects, buttons)
             if (
-                $(e.target).closest(".dropdown, select, button, .ts-wrapper")
-                    .length > 0
+                $(e.target).closest(".dropdown, select, .ts-wrapper").length > 0
             )
                 return;
             if (!listBagRequestTableInstance) return;

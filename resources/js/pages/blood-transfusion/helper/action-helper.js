@@ -309,13 +309,12 @@ function initReactionTransfusionModal({ doAction, btnOpenSelector, getUrl }) {
                     "#transfusion_reaction_select",
                 );
                 if (selectEl && !selectEl.tomselect) {
-                    // TODO: sesuaikan endpoint saat master data reaksi transfusi tersedia
                     new GlobalAdvanceTomselect("#transfusion_reaction_select", {
                         valueField: "id",
                         preload: true,
                         load: function (query, callback) {
                             fetch(
-                                `/utility/select/transfusion-reaction?q=${encodeURIComponent(query)}`,
+                                `/utility/select/reaction-transfusion?q=${encodeURIComponent(query)}`,
                             )
                                 .then((res) => res.json())
                                 .then((json) => callback(json.results))
