@@ -402,6 +402,9 @@ export function DatatableRequestBlood() {
             render: (data, type, row) => {
                 const hasLabNumber = row.lab_number !== null;
                 const isDeleted = row.deleted_at !== null;
+                const isCanArchive =
+                    window.clientConfig?.blood_transfusion
+                        ?.archive_transfusion === true;
                 const isComplete = row.finish_at !== null;
                 const canDelete = !isDeleted && !isComplete;
                 return `<button aria-expanded="false" class="btn btn-sm btn-soft-primary datatable-action-toggle" data-bs-toggle="dropdown" data-bs-auto-close="true" type="button">
@@ -415,7 +418,7 @@ export function DatatableRequestBlood() {
                             </button>
                         </li>
                         <li>
-                            <button id="archive-data-${data.public_id}" data-archive-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-blood-transfusion ${isDeleted ? "disabled text-muted" : ""}" type="button">
+                            <button id="archive-data-${data.public_id}" data-archive-id="${data.public_id}" class="dropdown-item fw-medium btn-archive-blood-transfusion ${isDeleted ? "disabled text-muted" : ""} ${isCanArchive ? "" : "d-none disabled text-muted"}" type="button">
                             <i class="ti ti-archive align-middle me-1 fs-4"></i>
                                 Arsipkan
                             </button>

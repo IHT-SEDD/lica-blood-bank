@@ -11,9 +11,15 @@ return [
  |
  */
  'default' => [
+  // Blood transfusion
   'blood_transfusion' => [
    'recommendation_blood_bag' => false,
    'reaction_transfusion_via_select' => false,
+   'archive_transfusion' => false,
+  ],
+  // Sidebar navigations
+  'sidenav' => [
+   'archive_page' => false,
   ],
  ],
 
@@ -29,16 +35,27 @@ return [
  |
  */
  'clients' => [
+  // RS PKU MUHAMMADIYAH JOGJA
   'rs_pku_muhammadiyah_jogja' => [
    'blood_transfusion' => [
     'recommendation_blood_bag' => true,
     'reaction_transfusion_via_select' => false,
+    'archive_transfusion' => false,
+   ],
+   'sidenav' => [
+    'archive_page' => false,
    ],
   ],
+
+  // RSUD INDRAMAYU
   'rsud_indramayu' => [
    'blood_transfusion' => [
     'recommendation_blood_bag' => false,
     'reaction_transfusion_via_select' => false,
+    'archive_transfusion' => false,
+   ],
+   'sidenav' => [
+    'archive_page' => false,
    ],
   ],
  ],
