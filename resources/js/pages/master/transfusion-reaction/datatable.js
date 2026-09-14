@@ -77,31 +77,45 @@ function MasterTransfusionReactionTable() {
                 return meta.row + 1;
             },
         },
-        { data: "name", title: "Transfusion Reaction" },
+        { data: "name", title: "Nama" },
+        { data: "category", title: "Kategori" },
+        { data: "indicator", title: "Indikasi" },
+        { data: "level", title: "Tingkatan" },
+        {
+            data: null,
+            title: "Waktu",
+            render: (row) => {
+                if (row.time_begin != null && row.time_end != null) {
+                    return `${row.time_begin} - ${row.time_end}`;
+                }
+                return "";
+            },
+        },
+        { data: "general_code", title: "Kode" },
         {
             data: "created_at",
-            title: "Created At",
+            title: "Ditambahkan",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "updated_at",
-            title: "Updated At",
+            title: "Diperbaharui",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: "deleted_at",
-            title: "Deleted At",
+            title: "Dihapus",
             render: (data) => {
                 return DateTimeFormatter.human(data);
             },
         },
         {
             data: null,
-            title: "Action",
+            title: "Aksi",
             render: (data, type, row, meta) => {
                 const isDeleted = row.deleted_at !== null;
 
@@ -136,7 +150,6 @@ function MasterTransfusionReactionTable() {
                 url: MasterDataURL,
                 data: function (d) {
                     const filters = getFilters();
-                    d.role = filters.role;
                     d.start_date = filters.start_date;
                     d.end_date = filters.end_date;
                 },
@@ -147,10 +160,16 @@ function MasterTransfusionReactionTable() {
                 {
                     targets: -1,
                     responsivePriority: 1,
+                    width: "100px",
+                },
+                {
+                    targets: 1,
+                    width: "200px",
                 },
                 {
                     targets: 0,
                     responsivePriority: 2,
+                    width: "50px",
                 },
             ],
         },
@@ -346,10 +365,6 @@ function RestoreDataTransfusionReactionActionModal() {
 document.addEventListener("DOMContentLoaded", function () {
     // Datatable
     MasterTransfusionReactionTable();
-
-    // Select function
-    // FilterRole();
-    // EditRole();
 
     // Date range picker
     DateRangeFilter();

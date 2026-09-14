@@ -90,6 +90,11 @@ return [
         'with' => [],
     ],
 
+    // ---------- L ----------
+    'level-reaction' => [
+        'type' => 'enum',
+    ],
+
     // ---------- O ----------
     'order-status' => [
         'type' => 'enum',
@@ -150,6 +155,11 @@ return [
     ],
     'result-test' => [
         'type' => 'enum',
+    ],
+    'reaction-transfusion' => [
+        'model' => App\Models\TransfusionReaction::class,
+        'label' => 'name',
+        'with' => [],
     ],
 
     // ---------- S ----------

@@ -21,6 +21,7 @@ enum BloodTransfusionLogActivityStatus: string
     case BLOOD_DONT_RELEASE = 'blood_stock_not_released';
     case BLOOD_CANCELLED = 'blood_stock_cancelled';
     case APPROVE_INCOMPATIBLE = 'blood_stock_approved_incompatible';
+    case REACTION_TRANSFUSION = 'reaction_transfusion_inserted';
 
     public function label(): string
     {
@@ -42,6 +43,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::BLOOD_DONT_RELEASE => '(DARAH TIDAK DIKELUARKAN)',
             self::BLOOD_CANCELLED => '(DARAH DIBATALKAN)',
             self::APPROVE_INCOMPATIBLE => '(INCOMPATIBLE DI APPROVE)',
+            self::REACTION_TRANSFUSION => '(REAKSI TRANSFUSI DITAMBAHKAN)',
         };
     }
 
@@ -65,6 +67,7 @@ enum BloodTransfusionLogActivityStatus: string
             self::BLOOD_DONT_RELEASE => 'Transaksi %s: Darah dengan no. labu %s, tidak dikeluarkan oleh user dengan username %s',
             self::BLOOD_CANCELLED => 'Transaksi %s: Darah dengan no. labu %s, dibatalkan oleh user dengan username %s',
             self::APPROVE_INCOMPATIBLE => 'Transaksi %s: Hasil incompatible disetujui oleh user dengan username %s, untuk darah dengan no. labu %s',
+            self::REACTION_TRANSFUSION => 'Transaksi %s: Reaksi transfusi berhasil ditambahkan oleh user dengan username %s, untuk darah dengan no. labu %s',
         };
     }
 }

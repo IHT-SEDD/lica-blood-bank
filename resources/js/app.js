@@ -692,6 +692,57 @@ export class GlobalFormValidation {
                                 break;
                             }
                         }
+
+                        // ------------------------------ Sama seperti isNumber, tapi lolos jika kosong (field opsional) ------------------------------
+                        if (rule === "isNumberIfPresent") {
+                            if (value !== "" && isNaN(value)) {
+                                this.showError(input, message);
+                                isValid = false;
+                                break;
+                            }
+                        }
+
+                        // ------------------------------ Bandingkan value dengan field lain (opsional, hanya cek jika keduanya terisi) ------------------------------
+                        if (rule === "compareNumber") {
+                            const targetFieldName = fieldRules[rule].field;
+                            const operator = fieldRules[rule].operator;
+                            const targetInput = form.querySelector(
+                                `[name="${targetFieldName}"]`,
+                            );
+                            const targetValue = targetInput?.value.trim() ?? "";
+
+                            if (
+                                value !== "" &&
+                                targetValue !== "" &&
+                                !isNaN(value) &&
+                                !isNaN(targetValue)
+                            ) {
+                                const numValue = Number(value);
+                                const numTarget = Number(targetValue);
+
+                                let isInvalid = false;
+                                switch (operator) {
+                                    case "lte":
+                                        isInvalid = numValue > numTarget;
+                                        break;
+                                    case "gte":
+                                        isInvalid = numValue < numTarget;
+                                        break;
+                                    case "lt":
+                                        isInvalid = numValue >= numTarget;
+                                        break;
+                                    case "gt":
+                                        isInvalid = numValue <= numTarget;
+                                        break;
+                                }
+
+                                if (isInvalid) {
+                                    this.showError(input, message);
+                                    isValid = false;
+                                    break;
+                                }
+                            }
+                        }
                     }
                 });
 

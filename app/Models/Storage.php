@@ -30,7 +30,7 @@ class Storage extends Model
     {
         static::creating(function ($storage) {
             if (empty($storage->public_id)) {
-                $storage->public_id = (string) Str::uuid();
+            $storage->public_id = (string) Str::uuid();
             }
         });
     }

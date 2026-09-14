@@ -138,4 +138,53 @@ class BloodTransfusionAddService
             ];
         }
     }
+
+    // ---------- Insert Reaction Transfusion ----------
+    public function addReactionTransfusion(Request $request, string $detailPublicId): void
+    {
+        DB::beginTransaction();
+        try {
+            $detail = BloodTransfusionDetail::with([
+                'bloodTransfusion',
+                'bloodTransfusion.patient',
+                'bloodStock',
+            ])->where('public_id', $detailPublicId)->firstOrFail();
+
+            $transfusionAt = \Carbon\Carbon::createFromFormat(
+                'Y-m-d H:i',
+                $request->transfusion_at,
+            );
+
+            $detail->update([
+                'transfusion_result' => $request->transfusion_result,
+                'transfusion_at' => $transfusionAt ?? now(),
+            ]);
+
+            $bagNumberReaction = $detail->bloodStock?->bag_number ?? '-';
+            $description = match (true) {
+                !empty($detail->bloodTransfusion?->order_number) => 'dengan nomor order ' . $detail->bloodTransfusion?->order_number,
+                !empty($detail->bloodTransfusion?->lab_number) => 'dengan nomor BDRS ' . $detail->bloodTransfusion?->lab_number,
+                default => 'dengan nomor rekam medis ' . $detail->bloodTransfusion?->patient->medrec,
+            };
+
+            BloodTransfusionLogActivity::create([
+                'blood_transfusion_public_id' => $detail->bloodTransfusion?->public_id,
+                'payload' => $detail,
+                'status' => BloodTransfusionLogActivityStatus::REACTION_TRANSFUSION,
+                'description' => generateBloodTransfusionLogDescription(
+                    BloodTransfusionLogActivityStatus::REACTION_TRANSFUSION,
+                    $description,
+                    Auth::user()->username,
+                    $bagNumberReaction
+                ),
+                'created_by_user_name' => Auth::user()->name,
+                'timestamp' => now(),
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
+    }
 }

@@ -153,6 +153,12 @@ export const BloodStockLogConfigTL = {
         title: "Stok Darah Dimusnahkan",
         tooltipTitle: "Stok darah telah dimusnahkan",
     },
+    blood_stock_returned: {
+        icon: "droplets",
+        colorClass: "text-info fill-primary",
+        title: "Stok Darah Dikembalikan",
+        tooltipTitle: "Stok darah telah dikembalikan ke stock",
+    },
     expired: {
         icon: "calendar-x",
         colorClass: "text-danger fill-danger",
@@ -261,6 +267,12 @@ export const BloodTransfusionLogConfigTL = {
         colorClass: "text-danger fill-danger",
         title: "Labu Darah Dibatalkan",
         tooltipTitle: "Labu darah berhasil dibatalkan",
+    },
+    reaction_transfusion_inserted: {
+        icon: "notes",
+        colorClass: "text-info fill-info",
+        title: "Reaksi Transfusi Ditambahkan",
+        tooltipTitle: "Reaksi transfusi berhasil ditambahkan",
     },
 
     fallback: {

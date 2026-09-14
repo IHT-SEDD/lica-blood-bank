@@ -123,4 +123,19 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Client Data
+    |--------------------------------------------------------------------------
+    |
+    | This value determines the "client data" your application is currently
+    | running in. This may determine how you prefer to configure various
+    | data the application utilizes. Set this in your ".env" file.
+    |
+    */
+    'client_data' => [
+        'name' => env('CLIENT_NAME', 'LICA Blood Bank'),
+        'address' => env('CLIENT_ADDRESS', ''),
+        'contact' => env('CLIENT_CONTACT', ''),
+    ],
 ];
