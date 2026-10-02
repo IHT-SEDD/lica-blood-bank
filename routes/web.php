@@ -12,14 +12,24 @@ use App\Http\Controllers\IntegrationController;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
-// --------------------------------------------------------------------------
-// Default Routes -> welcome
-// --------------------------------------------------------------------------
-Route::get('/', function () {
-    return view('welcome');
-})->middleware(['auth', 'verified'])->name('welcome');
-
 Route::middleware('auth')->group(function () {
+    // --------------------------------------------------------------------------
+    // MFA
+    // --------------------------------------------------------------------------
+    Route::prefix('mfa')->name('mfa.')->controller(UtilityController::class)->group(function () {
+        Route::get('enrollment', 'displayOtpenrollment')->name('enrollment');
+        Route::post('enrollment', 'confirmOtpEnrollment')->name('enrollment.confirm');
+        Route::get('challenge', 'displayMfaChallenge')->name('challenge');
+        Route::post('challenge', 'verifyOtp')->name('verify');
+    });
+
+    // --------------------------------------------------------------------------
+    // Default Routes -> welcome
+    // --------------------------------------------------------------------------
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('welcome');
+
     // --------------------------------------------------------------------------
     // Master Group Routes -> master.*
     // --------------------------------------------------------------------------

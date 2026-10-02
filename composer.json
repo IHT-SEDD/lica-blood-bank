@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bacon/bacon-qr-code": "^3.1",
         "barryvdh/laravel-dompdf": "^3.1",
         "dedoc/scramble": "^0.13.23",
         "doctrine/dbal": "^4.4",
@@ -19,6 +20,8 @@
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "3.1.67",
         "picqer/php-barcode-generator": "^3.2",
+        "pragmarx/google2fa-laravel": "3.0",
+        "pragmarx/google2fa-qrcode": "^3.0",
         "spatie/laravel-permission": "^7.3",
         "yajra/laravel-datatables-oracle": "^12.7"
     },

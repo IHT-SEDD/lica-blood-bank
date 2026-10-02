@@ -41,6 +41,7 @@ class User extends Authenticatable
         'id',
         'password',
         'remember_token',
+        'mfa_secret',
     ];
 
     /**
@@ -53,6 +54,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'mfa_confirmed_at' => 'datetime',
+            'mfa_secret' => 'encrypted',
         ];
     }
 
