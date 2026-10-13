@@ -31,7 +31,7 @@ $donorCol = $isUptd ? $menuCol : $menuCol . ' d-none';
     {{-- Header :end --}}
 
     {{-- Menu List :begin --}}
-    <div class="row justify-content-center">
+    <div class="row px-5 justify-content-center">
       {{-- Tranfusion Menu :begin --}}
       <a href="{{ route('blood-transfusion.index') }}" class="{{ $menuCol }}">
         <div class="card card-hovered h-100 rounded-4">

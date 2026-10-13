@@ -545,6 +545,7 @@ function initBagRequestActionButtons() {
                 headers: {
                     "Content-Type": "application/json",
                     "X-CSRF-TOKEN": csrfToken,
+                    Accept: "application/json",
                 },
             };
 
@@ -556,6 +557,7 @@ function initBagRequestActionButtons() {
             if (!response.ok) {
                 notyf.error({
                     message: result.message || errorMessage,
+                    duration: 8000,
                 });
                 return;
             }

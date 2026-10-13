@@ -131,17 +131,20 @@ function initReleaseModal({
                 '<span class="spinner-border spinner-border-sm"></span> Processing...';
             this.disabled = true;
 
-            await doAction({
-                url: getUrl(),
-                body,
-                successMessage: "Darah berhasil dikeluarkan!",
-                errorMessage: "Gagal mengeluarkan darah!",
-                onSuccess: () =>
-                    bootstrap.Modal.getOrCreateInstance(modalEl).hide(),
-            });
-
-            this.innerHTML = originalText;
-            this.disabled = false;
+            try {
+                const success = await doAction({
+                    url: getUrl(),
+                    body,
+                    successMessage: "Darah berhasil dikeluarkan!",
+                    errorMessage: "Gagal mengeluarkan darah!",
+                    onSuccess: () => {
+                        bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+                    },
+                });
+            } finally {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
         });
 }
 function initReleaseAllModal({ doAction, btnOpenSelector, getUrl }) {
