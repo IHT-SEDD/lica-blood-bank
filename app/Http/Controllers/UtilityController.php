@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Setting;
 use App\Services\UtilityService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use PragmaRX\Google2FAQRCode\Google2FA;

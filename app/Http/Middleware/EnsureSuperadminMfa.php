@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,6 +21,11 @@ class EnsureSuperadminMfa
         // Tamu -> biarkan middleware 'auth' yang menangani
         // Non-superadmin -> MFA tidak wajib
         if (! $user || ! $user->hasRole('superadmin')) {
+            return $next($request);
+        }
+
+        // MFA dimatikan lewat pengaturan -> tidak perlu verifikasi
+        if (! Setting::getBool('mfa_enabled', true)) {
             return $next($request);
         }
 
