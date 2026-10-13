@@ -1,3 +1,8 @@
+@php
+// Normalisasi: tidak peka huruf besar/kecil dan spasi; kosong dianggap BDRS
+$isUptd = strtoupper(trim((string) config('app.client_data.type'))) === 'UPTD';
+@endphp
+
 {{-- Topbar :begin --}}
 <header class="app-topbar">
     <div class="container-fluid topbar-menu">
@@ -58,12 +63,14 @@
             @endif
 
             {{-- Donor Menu --}}
+            @if ($isUptd)
             @if (!request()->is('donor*'))
             <div class="topbar-item d-none d-lg-flex">
                 <a href="{{ route('donor.index') }}" class="topbar-link btn shadow-none btn-link px-2">
                     {{ __('Donor') }}
                 </a>
             </div>
+            @endif
             @endif
 
             {{-- Master Menu --}}
