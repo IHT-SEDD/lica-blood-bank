@@ -2,6 +2,12 @@ export class LayoutCustomizer {
     constructor() {
         this.html = document.documentElement;
         this.config = {};
+        this.sidenavKey = window.sidenavKey || "other";
+    }
+
+    // Config sidenav untuk halaman yang sedang aktif
+    get sidenavConfig() {
+        return this.config.sidenavs[this.sidenavKey];
     }
 
     init() {
@@ -68,7 +74,7 @@ export class LayoutCustomizer {
     }
 
     changeSidenavColor(color) {
-        this.config.sidenav.color = color;
+        this.sidenavConfig.color = color;
         this.html.setAttribute("data-sidenav-color", color);
         this.setSwitchFromConfig();
     }
@@ -76,7 +82,7 @@ export class LayoutCustomizer {
     changeSidenavSize(size, save = true) {
         this.html.setAttribute("data-sidenav-size", size);
         if (save) {
-            this.config.sidenav.size = size;
+            this.sidenavConfig.size = size;
             this.setSwitchFromConfig();
         }
     }
@@ -100,7 +106,7 @@ export class LayoutCustomizer {
     }
 
     changeSidenavUser(showUser) {
-        this.config.sidenav.user = showUser;
+        this.sidenavConfig.user = showUser;
         if (showUser) {
             this.html.setAttribute("data-sidenav-user", showUser);
         } else {
@@ -111,20 +117,25 @@ export class LayoutCustomizer {
 
     resetTheme() {
         this.config = JSON.parse(JSON.stringify(window.defaultConfig));
+        const s = this.sidenavConfig;
         this.changeSkin(this.config.skin);
-        this.changeSidenavColor(this.config.sidenav.color);
-        this.changeSidenavSize(this.config.sidenav.size);
+        this.changeSidenavColor(s.color);
+        this.changeSidenavSize(s.size);
         this.changeTheme(this.config.theme);
         this.changeLayoutPosition(this.config.layout.position);
         this.changeTopbarColor(this.config.topbar.color);
-        this.changeSidenavUser(this.config.sidenav.user);
+        this.changeSidenavUser(s.user);
         this._adjustLayout();
     }
 
     setSwitchFromConfig() {
         const config = this.config;
+        const sidenav = this.sidenavConfig;
 
-        sessionStorage.setItem("__SIMPLE_CONFIG__", JSON.stringify(config));
+        sessionStorage.setItem(
+            "__LICA_BLOOD_BANK_CONFIG__",
+            JSON.stringify(config),
+        );
 
         document
             .querySelectorAll(".right-bar input[type=checkbox]")
@@ -137,15 +148,15 @@ export class LayoutCustomizer {
             if (el) el.checked = state;
         };
 
-        toggle('input[name="sidebar-user"]', config.sidenav.user === true);
+        toggle('input[name="sidebar-user"]', sidenav.user === true);
 
         [
             ["data-skin", config.skin],
             ["data-bs-theme", config.theme],
             ["data-layout-position", config.layout.position],
             ["data-topbar-color", config.topbar.color],
-            ["data-sidenav-color", config.sidenav.color],
-            ["data-sidenav-size", config.sidenav.size],
+            ["data-sidenav-color", sidenav.color],
+            ["data-sidenav-size", sidenav.size],
         ].forEach(([name, val]) => {
             const el = select(name, val);
             if (el) el.checked = true;
@@ -275,15 +286,10 @@ export class LayoutCustomizer {
     }
 
     _adjustLayout() {
-        const width = window.innerWidth;
-        const size = this.config.sidenav.size;
-
-        if (width <= 1199) {
+        if (window.innerWidth <= 1199) {
             this.changeSidenavSize("offcanvas", false);
-        } else if (this._isSidenavCollapsePage()) {
-            this.changeSidenavSize("collapse", false);
         } else {
-            this.changeSidenavSize(size);
+            this.changeSidenavSize(this.sidenavConfig.size);
         }
     }
 

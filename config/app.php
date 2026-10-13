@@ -137,5 +137,6 @@ return [
         'name' => env('CLIENT_NAME', 'LICA Blood Bank'),
         'address' => env('CLIENT_ADDRESS', ''),
         'contact' => env('CLIENT_CONTACT', ''),
+        'type' => env('CLIENT_TYPE', ''),
     ],
 ];

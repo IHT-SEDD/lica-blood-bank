@@ -3,13 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Playground\EditCrossmatchResult;
+use App\Models\Setting;
+use App\Models\SettingLogActivity;
+use App\Services\Playground\Configuration\Application\ApplicationWriteService;
 use App\Services\Playground\DataService;
 use App\Services\Playground\DatatableService;
 use App\Services\Playground\PrintTestService;
 use App\Services\Playground\WriteService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DevPlaygroundController extends Controller
 {
@@ -18,12 +23,19 @@ class DevPlaygroundController extends Controller
         protected DatatableService $datatableService,
         protected DataService $dataService,
         protected WriteService $writeService,
+        protected ApplicationWriteService $applicationWriteService,
     ) {}
 
     // Index halaman utama
     public function index()
     {
         return view('pages.playground.index');
+    }
+
+    // Index API
+    public function ApiIndex()
+    {
+        return view('pages.playground.api.index');
     }
 
     // ---------- [INDEX] UJI COBA SECTION ----------
@@ -131,5 +143,37 @@ class DevPlaygroundController extends Controller
     public function settingConfigBloodComponentData(Request $request)
     {
         return $this->datatableService->listConfigBloodComponentTable($request);
+    }
+
+    // Fungsi untuk mengubah status MFA (Multi-Factor Authentication) di pengaturan
+    public function updateMfaStatus(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user?->hasRole('superadmin'), 403);
+
+        $request->validate([
+            'enabled' => ['required', 'boolean'],
+        ]);
+
+        $enabled = $request->boolean('enabled');
+
+        $changed = $this->applicationWriteService->updateMfaStatus(
+            $user,
+            $enabled,
+            $request->ip(),
+            $request->userAgent()
+        );
+
+        if (! $changed) {
+            return back()->with(
+                'info',
+                $enabled ? 'MFA sudah dalam keadaan aktif.' : 'MFA sudah dalam keadaan nonaktif.'
+            );
+        }
+
+        return back()->with(
+            'success',
+            $enabled ? 'MFA berhasil diaktifkan.' : 'MFA berhasil dimatikan.'
+        );
     }
 }
