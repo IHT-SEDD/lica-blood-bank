@@ -37,25 +37,39 @@ return [
  'clients' => [
   // RS PKU MUHAMMADIYAH JOGJA
   'rs_pku_muhammadiyah_jogja' => [
+   // Sidebar navigations
+   'sidenav' => [
+    'archive_page' => false,
+   ],
+   // Blood transfusion
    'blood_transfusion' => [
     'recommendation_blood_bag' => true,
     'reaction_transfusion_via_select' => false,
     'archive_transfusion' => false,
    ],
-   'sidenav' => [
-    'archive_page' => false,
+   // Donor
+   'donor' => [
+    'is_uptd' => true,
+    'auto_generate_donor_card_number' => true,
    ],
   ],
 
   // RSUD INDRAMAYU
   'rsud_indramayu' => [
+   // Sidebar navigations
+   'sidenav' => [
+    'archive_page' => false,
+   ],
+   // Blood transfusion
    'blood_transfusion' => [
     'recommendation_blood_bag' => false,
     'reaction_transfusion_via_select' => false,
     'archive_transfusion' => false,
    ],
-   'sidenav' => [
-    'archive_page' => false,
+   // Donor
+   'donor' => [
+    'is_uptd' => false,
+    'auto_generate_donor_card_number' => false,
    ],
   ],
  ],

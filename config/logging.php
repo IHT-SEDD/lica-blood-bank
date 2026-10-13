@@ -315,6 +315,13 @@ return [
             'path' => storage_path('logs/development/edit-data.log'),
             'level' => 'debug',
         ],
+
+        // EMSIFA API Loggings
+        'emsifaapicheck' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/api/emsifa/check.log'),
+            'level' => 'debug',
+        ],
     ],
 
 ];

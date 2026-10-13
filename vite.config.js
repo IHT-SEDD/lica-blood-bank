@@ -97,7 +97,7 @@ export default defineConfig(({ mode }) => {
         server: {
             host: env.VITE_APP_HOST,
             port: serverPort,
-            strictPort: true,
+            // strictPort: true,
             cors: true,
             allowedHosts: true,
             watch: {

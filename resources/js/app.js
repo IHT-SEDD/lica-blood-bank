@@ -55,8 +55,6 @@ import Choices from "choices.js";
 import { log } from "handlebars/runtime";
 
 // ---------------------- Import init function for app ----------------------
-
-// Common
 class App {
     init() {
         initComponents();

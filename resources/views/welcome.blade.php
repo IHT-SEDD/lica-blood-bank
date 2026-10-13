@@ -1,10 +1,18 @@
+@php
+// Normalisasi: tidak peka huruf besar/kecil dan spasi; kosong dianggap BDRS
+$isUptd = strtoupper(trim((string) config('app.client_data.type'))) === 'UPTD';
+
+$menuCol = $isUptd ? 'col-xl-2 col-md-6' : 'col-xl-3 col-md-6';
+$donorCol = $isUptd ? $menuCol : $menuCol . ' d-none';
+@endphp
+
 @extends('layouts.base', ['title' => 'Welcome'])
 
 @section('content')
 @include('layouts.shared.topbar-blank')
 
 <div class="overflow-hidden align-items-center d-flex">
-  <div class="container">
+  <div>
     {{-- Header :begin --}}
     <div class="row justify-content-center py-4">
       <div class="col-xxl-5 col-xl-7 text-center pb-1 mb-2">
@@ -22,11 +30,10 @@
     </div>
     {{-- Header :end --}}
 
-
     {{-- Menu List :begin --}}
     <div class="row justify-content-center">
       {{-- Tranfusion Menu :begin --}}
-      <a href="{{ route('blood-transfusion.index') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('blood-transfusion.index') }}" class="{{ $menuCol }}">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
@@ -62,7 +69,7 @@
       {{-- Tranfusion Menu :end --}}
 
       {{-- Inventory Menu :begin --}}
-      <a href="{{ route('inventory.index') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('inventory.index') }}" class="{{ $menuCol }}">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
@@ -105,7 +112,7 @@
       {{-- Inventory Menu :end --}}
 
       {{-- Donor Menu :begin --}}
-      <a href="#" class="col-xl-3 col-md-6 d-none">
+      <a href="{{ route('donor.index') }}" class="{{ $donorCol }}">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
@@ -139,7 +146,7 @@
 
       @role('superadmin')
       {{-- Master Menu :begin --}}
-      <a href="{{ route('master.index', 'storage') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('master.index', 'storage') }}" class="{{ $menuCol }}">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
@@ -175,7 +182,7 @@
       {{-- Master Menu :end --}}
 
       {{-- Dev Playground :begin --}}
-      <a href="{{ route('playground.index') }}" class="col-xl-3 col-md-6">
+      <a href="{{ route('playground.index') }}" class="{{ $menuCol }}">
         <div class="card card-hovered h-100 rounded-4">
           <div class="card-body rounded-top-4 p-4 text-center">
             {{-- Title & Subtitle --}}
