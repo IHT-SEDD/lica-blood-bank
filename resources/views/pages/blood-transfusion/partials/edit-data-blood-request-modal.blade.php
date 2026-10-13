@@ -53,7 +53,7 @@
             </div>
 
             {{-- Room --}}
-            <div class="col-xxl-6 col-md-6 col-12 mt-2">
+            <div class="col-xxl-12 col-md-6 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-room">{{ __('Room') }}</label>
                 <span class="text-danger">*</span>
                 <select class="form-control" id="edit_data_select-room" name="room_id"
@@ -61,7 +61,7 @@
             </div>
 
             {{-- Doctor --}}
-            <div class="col-xxl-6 col-md-12 col-12 mt-2">
+            <div class="col-xxl-12 col-md-12 col-12 mt-2">
                 <label class="form-label" for="edit_data_select-doctor">{{ __('Doctor') }}</label>
                 <span class="text-danger">*</span>
                 <select class="form-control" id="edit_data_select-doctor" name="doctor_id"

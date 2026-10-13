@@ -268,6 +268,9 @@ class BloodTransfusionWriteService
                 if (!$bloodStock) {
                     throw new \Exception('Data stok darah tidak ditemukan!');
                 }
+                if ($detail->bloodTransfusion->blood_request_at >= $bloodStock->expiry_date) {
+                    throw new \Exception('Darah tidak bisa dikeluarkan, karena sudah expired pada tanggal dibutuhkan!');
+                }
                 if (strtolower(trim($bloodStock->bag_number)) !== strtolower(trim($request->blood_number))) {
                     throw new \Exception('Nomor darah tidak sesuai dengan labu darah pasien ini!');
                 }

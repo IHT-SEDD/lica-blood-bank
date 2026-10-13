@@ -16,6 +16,7 @@ use App\Services\BloodTransfusion\BloodTransfusionPrintService;
 use App\Services\BloodTransfusion\BloodTransfusionWriteService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BloodTransfusionController extends Controller
 {
@@ -392,10 +393,7 @@ class BloodTransfusionController extends Controller
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->json(['message' => 'Detail not found.'], 404);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Darah gagal dikeluarkan.',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(['message' => $e->getMessage()], 422);
         }
     }
 
@@ -414,40 +412,52 @@ class BloodTransfusionController extends Controller
                 ->where('blood_transfusion_id', $bloodTransfusionId)
                 ->where('blood_release_status', false)
                 ->get();
-            foreach ($details as $detail) {
-                $matchedNumber = collect($request->blood_numbers)
-                    ->first(
-                        fn($num) =>
-                        strtolower(trim($num)) === strtolower(trim($detail->bloodStock?->bag_number ?? ''))
-                    );
-                if (!$matchedNumber) {
-                    throw new \RuntimeException(
-                        "Nomor darah untuk labu {$detail->bloodStock?->bag_number} tidak ditemukan!"
-                    );
-                }
 
-                $perDetailRequest = new \Illuminate\Http\Request();
-                $perDetailRequest->replace([
-                    'blood_received_by' => $request->blood_received_by,
-                    'blood_number' => $matchedNumber,
-                ]);
-
-                $this->writeService->releaseBloodPack($perDetailRequest, $detail->public_id);
+            $expiredBags = $details
+                ->filter(function ($detail) {
+                    $stock = $detail->bloodStock;
+                    return $stock
+                        && $detail->bloodTransfusion->blood_request_at >= $stock->expiry_date;
+                })
+                ->map(fn($detail) => $detail->bloodStock->bag_number)
+                ->values();
+            if ($expiredBags->isNotEmpty()) {
+                throw new \RuntimeException(
+                    'Semua darah gagal dikeluarkan, karena ada labu yang sudah expired pada tanggal dibutuhkan: '
+                        . $expiredBags->implode(', ') . '.'
+                );
             }
-            return response()->json([
-                'message' => 'Semua labu darah berhasil dikeluarkan',
-            ]);
+
+            DB::transaction(function () use ($details, $request) {
+                foreach ($details as $detail) {
+                    $bagNumber = $detail->bloodStock?->bag_number ?? '';
+
+                    $matchedNumber = collect($request->blood_numbers)->first(
+                        fn($num) => strtolower(trim($num)) === strtolower(trim($bagNumber))
+                    );
+
+                    if (!$matchedNumber) {
+                        throw new \RuntimeException(
+                            "Nomor darah untuk labu {$bagNumber} tidak ditemukan!"
+                        );
+                    }
+
+                    $perDetailRequest = new \Illuminate\Http\Request();
+                    $perDetailRequest->replace([
+                        'blood_received_by' => $request->blood_received_by,
+                        'blood_number' => $matchedNumber,
+                    ]);
+
+                    $this->writeService->releaseBloodPack($perDetailRequest, $detail->public_id);
+                }
+            });
+            return response()->json(['message' => 'Semua labu darah berhasil dikeluarkan']);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException) {
             return response()->json(['message' => 'Detail not found.'], 404);
-        } catch (\RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 422);
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Semua labu darah gagal dikeluarkan',
-                'error' => $e->getMessage(),
-            ], 500);
+            return response()->json(['message' => $e->getMessage()], 422);
         }
     }
 

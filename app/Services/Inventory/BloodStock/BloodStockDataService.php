@@ -80,7 +80,13 @@ class BloodStockDataService
         'blood_packs.danger_quantity'
       );
 
-    $this->applyDateFilter($query, $request);
+    $this->applyDateFilter($query, $request, 'blood_stocks.created_at');
+
+    logger()->info('bloodStockTable', [
+      'request' => $request->all(),
+      'sql' => $query->toSql(),
+      'bindings' => $query->getBindings(),
+    ]);
 
     return DataTables::eloquent($query)
       ->filter(function ($query) use ($request) {
@@ -95,18 +101,19 @@ class BloodStockDataService
       })
       ->order(function ($query) use ($request) {
         $columns = [
-          0 => 'blood_group',
-          1 => 'blood_rhesus',
-          2 => 'blood_component',
+          0 => 'blood_packs.blood_group',
+          1 => 'blood_packs.blood_rhesus',
+          2 => 'blood_packs.blood_component',
           3 => 'total_blood_data',
           4 => 'updated_at',
         ];
         $order = $request->input('order.0.column');
         $dir = $request->input('order.0.dir', 'asc');
+
         if (isset($columns[$order])) {
           $query->orderBy($columns[$order], $dir);
         } else {
-          $query->orderByAsc('updated_at');
+          $query->orderBy('updated_at', 'asc');
         }
       })
       ->toJson();
@@ -285,23 +292,22 @@ class BloodStockDataService
   // ---------- Fungsi untuk export data ke Excel :end ----------
 
   // ---------- Helper: untuk menerima dan menerapkan filter tanggal pada data ----------
-  protected function applyDateFilter(Builder $query, Request $request)
+  protected function applyDateFilter(Builder $query, Request $request, string $column = 'created_at')
   {
-    $start = $request->start_date;
-    $end = $request->end_date;
+    $startRaw = $request->input('start_date');
+    $endRaw   = $request->input('end_date');
 
-    if ($start && $end) {
-      try {
-        $startDate = Carbon::createFromFormat('d-m-Y', $start)->startOfDay();
-        $endDate = Carbon::createFromFormat('d-m-Y', $end)->endOfDay();
-        $table = $query->getModel()->getTable();
-
-        if (Schema::hasColumn($table, 'created_at')) {
-          $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
-      } catch (\Exception $e) {
-        logger()->error('Date filter error: ' . $e->getMessage());
-      }
+    if (!$startRaw || !$endRaw) {
+      return $query;
     }
+
+    try {
+      $start = Carbon::createFromFormat('d-m-Y', $startRaw)->startOfDay();
+      $end   = Carbon::createFromFormat('d-m-Y', $endRaw)->endOfDay();
+    } catch (\Throwable $e) {
+      return $query; // format tidak valid: abaikan filter
+    }
+
+    return $query->whereBetween($column, [$start, $end]);
   }
 }

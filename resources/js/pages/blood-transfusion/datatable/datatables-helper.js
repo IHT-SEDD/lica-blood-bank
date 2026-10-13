@@ -326,7 +326,7 @@ export function DatatableRequestBlood() {
     if (isTableInitialized(TABLE.request)) return;
     const REQUESTCOLUMNS = [
         {
-            data: "blood_request_at",
+            data: "created_at",
             title: "Tgl. Permintaan",
             render: (data) => {
                 const bloodRequestAt = DateTimeFormatter.shortDateTime(data);
