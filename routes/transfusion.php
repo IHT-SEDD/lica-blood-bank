@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
           Route::post('release', 'releaseBloodPack')->name('release-blood-pack');
           Route::post('release-all', 'releaseAllBloodPack')->name('release-all-blood-pack');
           Route::post('unrelease', 'unreleaseBloodPack')->name('unrelease-blood-pack');
+          Route::post('reaction-transfusion', 'addReactionTransfusion')->name('reaction-transfusion');
         });
       });
 

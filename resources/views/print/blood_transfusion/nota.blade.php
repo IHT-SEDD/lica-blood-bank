@@ -179,12 +179,9 @@
           <td width="900px" align="center">
             <div class="heading">{{ __('LABORATORIUM PATOLOGI KLINIK') }}</div>
             <div class="heading-2">{{ __('BANK DARAH RUMAH SAKIT (LAYANAN DARAH TRANSFUSI)') }}</div>
-            <div class="heading-3">
-              {{ __('Jl. Murah Nara No. 7 Indramayu Kode Pos 45222 Jawa Barat') }}
-            </div>
-            <div class="subheading">
-              {{ __('Telp: (0234) 272655, E-mail:rsudkabindramayu@yahoo.co.id, Faks:(0234) 275330') }}
-            </div>
+            <div class="heading-3">{{ __('Jl. Murah Nara No. 7 Indramayu Kode Pos 45222 Jawa Barat') }}</div>
+            <div class="subheading">{{ __('Telp: (0234) 272655, E-mail:rsudkabindramayu@yahoo.co.id, Faks:(0234)
+              275330') }}</div>
           </td>
         </tr>
         <tr>

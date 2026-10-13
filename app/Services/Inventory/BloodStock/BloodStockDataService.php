@@ -244,7 +244,7 @@ class BloodStockDataService
         ->select('public_id')
     )
       ->orderByDesc('timestamp')
-      ->limit(200)
+      ->limit(100)
       ->get();
   }
 

@@ -58,13 +58,13 @@
             @endif
 
             {{-- Donor Menu --}}
-            {{-- @if (!request()->is('donor*'))
+            @if (!request()->is('donor*'))
             <div class="topbar-item d-none d-lg-flex">
-                <a href="#!" class="topbar-link btn shadow-none btn-link px-2">
+                <a href="{{ route('donor.index') }}" class="topbar-link btn shadow-none btn-link px-2">
                     {{ __('Donor') }}
                 </a>
             </div>
-            @endif --}}
+            @endif
 
             {{-- Master Menu --}}
             @if (!request()->is('master*') && auth()->user()->hasRole('superadmin'))
@@ -221,6 +221,13 @@
 
                         <div class="dropdown-divider"></div>
 
+                        {{-- Profile --}}
+                        {{-- <a href="{{ route('profile.index') }}"
+                            class="dropdown-item {{ request()->is('profile/*') ? 'active' : '' }}">
+                            <i class="ti ti-user-circle me-2 fs-17 align-middle"></i>
+                            <span class="align-middle">Profile</span>
+                        </a> --}}
+
                         {{-- Lock Screen --}}
                         <form method="POST" action="{{ route('lock') }}">
                             @csrf
@@ -242,7 +249,6 @@
                             </button>
                         </form>
                         @endauth
-
 
                         @guest
                         {{-- Header --}}

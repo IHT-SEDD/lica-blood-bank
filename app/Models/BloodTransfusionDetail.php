@@ -21,7 +21,6 @@ class BloodTransfusionDetail extends Model
         'crossmatch_result',
         'crossmatch_finish_at',
         'transfusion_result',
-        'transfusion_text',
         'transfusion_at',
         'is_print_incompatible_letter',
         'print_incompatible_letter_at',

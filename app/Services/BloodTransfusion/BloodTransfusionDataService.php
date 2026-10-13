@@ -39,7 +39,7 @@ class BloodTransfusionDataService
     // ---------- Fungsi Tabel Blood Request ----------
     public function bloodRequestTable(Request $request): JsonResponse
     {
-        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor'])
+        $query = BloodTransfusion::with(['patient', 'room', 'insurance', 'doctor', 'details'])
             ->withoutTrashed()
             ->whereNull('archived_at');
         $this->applyDateRangeFilter($query, $request->input('date_range'));
@@ -445,6 +445,8 @@ class BloodTransfusionDataService
             'lab_number' => $item->lab_number ?? '-',
             'diagnosis' => $item->diagnosis ?? '-',
             'is_cito' => false,
+            'is_all_crossmatch_finished' => $item->details->isNotEmpty()
+                && $item->details->every(fn($detail) => !is_null($detail->crossmatch_finish_at)),
             'status' => $item->status,
             'patient' => [
                 'medrec' => $item->patient->medrec ?? '-',

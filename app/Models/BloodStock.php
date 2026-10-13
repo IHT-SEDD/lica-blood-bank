@@ -82,7 +82,7 @@ class BloodStock extends Model
                     'blood_status' => BloodStockStatus::EXPIRED,
                 ],
                 'status' => BloodStockStatus::EXPIRED,
-                'description' => 'Blood stock marked as expired automatically.',
+                'description' => 'Blood stock with bag number ' . $bloodStock->bag_number . ' marked as expired automatically.',
                 'created_by_user_name' => 'System',
                 'timestamp' => now(),
             ]);
@@ -111,5 +111,10 @@ class BloodStock extends Model
     public function bloodTransfusionDetails(): HasMany
     {
         return $this->HasMany(BloodTransfusionDetail::class, 'blood_stock_id');
+    }
+
+    public function bloodReturns(): HasMany
+    {
+        return $this->hasMany(BloodReturn::class, 'blood_stock_id');
     }
 }

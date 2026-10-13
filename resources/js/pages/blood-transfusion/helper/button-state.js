@@ -8,6 +8,8 @@ export const SelectorBtnSendResult = "btn-send-result";
 export const SelectorBtnPrintResultPerBlood = "btn-print-result-per-blood";
 export const SelectorBtnPrintBarcodePerBlood = "btn-print-barcode-per-blood";
 export const SelectorBtnDeletePerBlood = "btn-delete-per-blood";
+export const SelectorBtnReactionTransfusion =
+    "btn-tranfusion-reaction-per-blood";
 export const SelectorBtnPrintIncompLetter = "btn-print-incompletter";
 
 export const SelectorBtnRelease = "btn-release-blood-pack";

@@ -10,48 +10,35 @@
   <h1 class="fw-bold uppercase">{{ __('Developer Playground') }}</h1>
  </div>
 
- <div class="col-12">
-  <div class="row">
-   <!-- Navs -->
-   <div class="col-sm-2 mt-2 mt-sm-0">
-    <div aria-orientation="vertical" class="nav flex-column nav-pills nav-pills-primary" id="nav-tab-dev-playground"
-     role="tablist">
-     <!-- Testing -->
-     <a aria-controls="nav-pills-testing" aria-selected="true" class="nav-link fw-semibold active show"
-      data-bs-toggle="pill" href="#nav-pills-testing-left" id="nav-pills-testing-tab-left" role="tab">
-      Uji Coba / Testing
-     </a>
-     <!-- Update -->
-     <a aria-controls="nav-pills-update" aria-selected="false" class="nav-link fw-semibold" data-bs-toggle="pill"
-      href="#nav-pills-update-left" id="nav-pills-update-tab-left" role="tab">
-      Penyesuaian / Updates
-     </a>
-     <!-- Setting -->
-     <a aria-controls="nav-pills-setting" aria-selected="false" class="nav-link fw-semibold" data-bs-toggle="pill"
-      href="#nav-pills-setting-left" id="nav-pills-setting-tab-left" role="tab">
-      Pengaturan / Settings
-     </a>
+ <div class="col-2">
+  <ul class="side-nav">
+   <li class="side-nav-title mt-2">API Endpoints</li>
+   <li class="side-nav-item">
+    <a data-bs-toggle="collapse" href="#sidebarApis" aria-expanded="false" aria-controls="sidebarApis"
+     class="side-nav-link {{ request()->Is('master*') ? 'active' : '' }}">
+     <span class="menu-icon"><i data-lucide="notebook-text"></i></span>
+     <span class="menu-text">SIMRS</span>
+     <span class="menu-arrow"></span>
+    </a>
+
+    <div class="collapse" id="sidebarApis">
+     <ul class="sub-menu">
+      <li class="side-nav-item">
+       <a href="#" class="side-nav-link">
+        <span class="menu-icon"><i data-lucide="dot"></i></span>
+        <span class="menu-text">{{ Str::headline('New Blood Request') }}</span>
+       </a>
+      </li>
+      <li class="side-nav-item">
+       <a href="#" class="side-nav-link">
+        <span class="menu-icon"><i data-lucide="dot"></i></span>
+        <span class="menu-text">{{ Str::headline('Send Result') }}</span>
+       </a>
+      </li>
+     </ul>
     </div>
-   </div>
-   <!-- Contents -->
-   <div class="col-sm-10">
-    <div class="tab-content" id="nav-tab-dev-playground-content">
-     <!-- Testing Tab -->
-     <div aria-labelledby="nav-pills-testing-tab" class="tab-pane fade active show" id="nav-pills-testing-left"
-      role="tabpanel">
-      @include('pages.playground.partials.testing-tab-content')
-     </div>
-     <!-- Update Tab -->
-     <div aria-labelledby="nav-pills-update-tab" class="tab-pane fade" id="nav-pills-update-left" role="tabpanel">
-      @include('pages.playground.partials.update-tab-content')
-     </div>
-     <!-- Settings Tab -->
-     <div aria-labelledby="nav-pills-setting-tab" class="tab-pane fade" id="nav-pills-setting-left" role="tabpanel">
-      @include('pages.playground.partials.setting-tab-content')
-     </div>
-    </div>
-   </div>
-  </div>
+   </li>
+  </ul>
  </div>
 </div>
 @endsection

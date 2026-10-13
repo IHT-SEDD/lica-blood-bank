@@ -12,14 +12,24 @@ use App\Http\Controllers\IntegrationController;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Support\Facades\Route;
 
-// --------------------------------------------------------------------------
-// Default Routes -> welcome
-// --------------------------------------------------------------------------
-Route::get('/', function () {
-    return view('welcome');
-})->middleware(['auth', 'verified'])->name('welcome');
-
 Route::middleware('auth')->group(function () {
+    // --------------------------------------------------------------------------
+    // MFA Group Routes -> mfa.*
+    // --------------------------------------------------------------------------
+    Route::prefix('mfa')->name('mfa.')->controller(UtilityController::class)->group(function () {
+        Route::get('enrollment', 'displayOtpenrollment')->name('enrollment');
+        Route::post('enrollment', 'confirmOtpEnrollment')->name('enrollment.confirm');
+        Route::get('challenge', 'displayMfaChallenge')->name('challenge');
+        Route::post('challenge', 'verifyOtp')->name('verify');
+    });
+
+    // --------------------------------------------------------------------------
+    // Default Routes -> welcome
+    // --------------------------------------------------------------------------
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('welcome');
+
     // --------------------------------------------------------------------------
     // Master Group Routes -> master.*
     // --------------------------------------------------------------------------
@@ -72,9 +82,12 @@ Route::middleware('auth')->group(function () {
         Route::get('get/{data}/{id}', 'getDataById')->name('get-data');
     });
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    // --------------------------------------------------------------------------
+    // Profile Group Routes -> profile.*
+    // --------------------------------------------------------------------------
+    Route::prefix('profile')->name('profile.')->controller(ProfileController::class)->group(function () {
+        Route::get('/', 'index')->name('index');
+    });
 });
 
 // ---------- Breeze Auth Routes ----------
@@ -85,7 +98,11 @@ require __DIR__ . '/ui-theme.php';
 require __DIR__ . '/inventory.php';
 // ---------- Blood Transfusion Modules Routes ----------
 require __DIR__ . '/transfusion.php';
+// ---------- Donor Modules Routes ----------
+require __DIR__ . '/donor.php';
 // ---------- System Modules Routes ----------
 require __DIR__ . '/system.php';
+// ---------- Playground Modules Routes ----------
+require __DIR__ . '/playground.php';
 // ---------- Print Routes ----------
 require __DIR__ . '/print.php';
