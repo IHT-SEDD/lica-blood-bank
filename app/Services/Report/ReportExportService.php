@@ -8,23 +8,27 @@ use App\Enums\BloodStockStatus;
 use App\Enums\BloodTransfusionStatus;
 use App\Enums\OrderBloodStatus;
 use App\Exports\Report\BloodExpire\ReportBloodExpireExport;
+use App\Exports\Report\BloodRelease\ReportBloodReleaseExport;
 use App\Exports\Report\BloodUsage\ReportBloodUsageExport;
 use App\Exports\Report\ExpeditionBook\ExpeditionBookExport;
 use App\Exports\Report\BloodRequest\BloodRequestExport;
 use App\Exports\Report\BloodStock\ReportBloodStockExport;
+use App\Exports\Report\BloodTAT\ReportBloodTATExport;
 use App\Exports\Report\Incompatible\ReportIncompatibleExport;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
+use App\Models\BloodTransfusionDetail;
 use App\Models\OrderBlood;
 use App\Models\Room;
 use App\Models\Vendor;
+use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
-class ReportWriteService
+class ReportExportService
 {
     // ---------- Fungsi export ----------
     public function exportExcel(string $report, Request $request)
@@ -32,6 +36,8 @@ class ReportWriteService
         switch ($report) {
             case 'blood-usage':
                 return $this->excelBloodUsage($request, $report);
+            case 'blood-release':
+                return $this->excelBloodRelease($request, $report);
             case 'blood-expire':
                 return $this->excelBloodExpire($request, $report);
             case 'expedition-book':
@@ -42,6 +48,8 @@ class ReportWriteService
                 return $this->excelBloodStock($request, $report);
             case 'incompatible':
                 return $this->excelIncompatible($request, $report);
+            case 'blood-tat':
+                return $this->excelBloodTAT($request, $report);
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -642,6 +650,172 @@ class ReportWriteService
         return compact('title', 'components', 'bloodGroups', 'dataIncompatibles', 'startDate', 'endDate');
     }
 
+    // ---------- Excel Blood Release ----------
+    public function excelBloodRelease(Request $request, string $report)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodComponent = $request->blood_component;
+        $paramFilenameExcel = [];
+
+        $details = BloodTransfusionDetail::withoutTrashed()
+            ->with(['bloodStock', 'bloodPack'])
+            ->whereBetween('blood_transfusion_details.created_at', [$startDate, $endDate])
+            ->when($bloodComponent, function ($query) use ($bloodComponent) {
+                $query->whereHas('bloodPack', fn($q) => $q->where('blood_component', $bloodComponent));
+            })
+            ->whereHas('bloodStock', function ($query) {
+                $query->where('blood_status', BloodStockStatus::TAKEN_OUT);
+            })
+            ->get();
+
+        if (!empty($bloodComponent)) {
+            $paramFilenameExcel = ['blood_component' => BloodComponent::from($bloodComponent)->label()];
+        }
+
+        $reportData  = $this->prepareBloodReleaseData($details, $startDate, $endDate);
+        $fileName    = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $storagePath = 'report/blood_release/' . $fileName;
+
+        Excel::store(new ReportBloodReleaseExport($reportData), $storagePath, 'public');
+        return Excel::download(new ReportBloodReleaseExport($reportData), $fileName);
+    }
+    public function prepareBloodReleaseData(Collection $details, Carbon $startDate, Carbon $endDate): array
+    {
+        $components = collect(BloodComponent::cases())
+            ->mapWithKeys(fn(BloodComponent $c) => [$c->value => $c->exportLabel()])
+            ->all();
+        $bloodTypes = collect(['A', 'B', 'O', 'AB'])
+            ->flatMap(fn($g) => [$g . '+', $g . '-'])
+            ->all();
+
+        $original = Carbon::getLocale();
+        Carbon::setLocale('id');
+        $bulanLabel = strtoupper($startDate->translatedFormat('F Y'));
+        Carbon::setLocale($original);
+        $title = 'LAPORAN DARAH DIKELUARKAN BDRS INDRAMAYU BULAN ' . $bulanLabel;
+
+        $releaseDates = collect(CarbonPeriod::create($startDate->copy()->startOfDay(), $endDate->copy()->startOfDay()))
+            ->map(fn($d) => $d->toDateString())
+            ->all();
+
+        $emptyTypes = array_fill_keys($bloodTypes, 0);
+        $emptyComps = array_fill_keys(array_keys($components), $emptyTypes);
+
+        $rows = [];
+        foreach ($releaseDates as $date) {
+            $rows[$date] = array_merge($emptyComps, ['_total' => 0]);
+        }
+        $totals = array_merge($emptyComps, ['_grand' => 0]);
+
+        foreach ($details as $detail) {
+            $pack = $detail->bloodPack;
+            $comp = $pack?->blood_component?->value;
+            if (!$comp || !$pack->blood_group || !$pack->blood_rhesus) continue;
+
+            $type = $pack->blood_group->value . $pack->blood_rhesus;
+            $date = Carbon::parse($detail->created_at)->toDateString();
+            if (!isset($rows[$date][$comp][$type])) continue;
+
+            $rows[$date][$comp][$type]++;
+            $rows[$date]['_total']++;
+            $totals[$comp][$type]++;
+            $totals['_grand']++;
+        }
+
+        return compact('title', 'components', 'bloodTypes', 'releaseDates', 'rows', 'totals');
+    }
+
+    // ---------- Excel Blood TAT ----------
+    public function excelBloodTAT(Request $request, string $report)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodComponent = $request->blood_component;
+        $paramFilenameExcel = [];
+
+        // Query sama persis dengan datatableBloodTAT di ReportDataService
+        $details = BloodTransfusionDetail::with([
+            'bloodStock:id,blood_pack_id,bag_number,used_at,created_at',
+            'bloodStock.bloodPacks:id,blood_group,blood_rhesus,blood_component',
+        ])
+            ->select(['id', 'blood_stock_id', 'blood_released_at'])
+            ->whereHas('bloodStock', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+                $query->where('blood_status', BloodStockStatus::TAKEN_OUT);
+            })
+            ->when($bloodComponent, function ($query) use ($bloodComponent) {
+                $query->whereHas('bloodPack', fn($q) => $q->where('blood_component', $bloodComponent));
+            })
+            ->get();
+
+        if (!empty($bloodComponent)) {
+            $paramFilenameExcel = ['blood_component' => BloodComponent::from($bloodComponent)->label()];
+        }
+
+        $reportData  = $this->prepareBloodTATData($details, $startDate, $endDate);
+        $fileName    = $this->buildFileName($startDate, $endDate, $report, $paramFilenameExcel);
+        $storagePath = 'report/blood_tat/' . $fileName;
+
+        Excel::store(new ReportBloodTATExport($reportData), $storagePath, 'public');
+        return Excel::download(new ReportBloodTATExport($reportData), $fileName);
+    }
+    public function prepareBloodTATData(Collection $details, Carbon $startDate, Carbon $endDate): array
+    {
+        // Judul: "BULAN JUNI 2026" jika dalam 1 bulan, selain itu tampilkan periode
+        $original = Carbon::getLocale();
+        Carbon::setLocale('id');
+        if ($startDate->isSameMonth($endDate)) {
+            $periodeLabel = 'BULAN ' . strtoupper($startDate->translatedFormat('F Y'));
+        } else {
+            $periodeLabel = 'PERIODE ' . strtoupper($startDate->translatedFormat('d F Y'))
+                . ' - ' . strtoupper($endDate->translatedFormat('d F Y'));
+        }
+        Carbon::setLocale($original);
+        $title = 'LAPORAN TAT LABU DARAH BDRS INDRAMAYU ' . $periodeLabel;
+
+        $tatSeconds = [];
+
+        $rows = $details
+            ->map(function ($detail) use (&$tatSeconds) {
+                $stock = $detail->bloodStock;
+                $pack  = $stock?->bloodPacks;
+
+                $enteredAt  = $stock?->created_at ? Carbon::parse($stock->created_at) : null;
+                $usedAt     = $stock?->used_at ? Carbon::parse($stock->used_at) : null;
+                $releasedAt = $detail->blood_released_at ? Carbon::parse($detail->blood_released_at) : null;
+
+                // TAT = blood_released_at - bloodStock.created_at (detik)
+                $seconds = null;
+                if ($enteredAt && $releasedAt) {
+                    $diff = $releasedAt->getTimestamp() - $enteredAt->getTimestamp();
+                    if ($diff >= 0) {
+                        $seconds = $diff;
+                        $tatSeconds[] = $diff;
+                    }
+                }
+
+                return [
+                    'sort_key'       => $releasedAt?->getTimestamp() ?? PHP_INT_MAX,
+                    'released_date'  => $releasedAt?->format('d-m-Y') ?? '-',
+                    'bag_number'     => $stock?->bag_number ?? '-',
+                    'component'      => $pack?->blood_component?->exportLabel() ?? '-',
+                    'blood_type'     => $pack ? ($pack->blood_group?->value . $pack->blood_rhesus) : '-',
+                    'entered_at'     => $enteredAt?->format('d-m-Y H:i:s') ?? '-',
+                    'used_at'        => $usedAt?->format('d-m-Y H:i:s') ?? '-',
+                    'released_at'    => $releasedAt?->format('d-m-Y H:i:s') ?? '-',
+                    'tat'            => $this->formatTAT($seconds),
+                ];
+            })
+            ->sortBy('sort_key')
+            ->values()
+            ->all();
+
+        $averageTat = $this->formatTAT(
+            count($tatSeconds) ? (int) round(array_sum($tatSeconds) / count($tatSeconds)) : null
+        );
+
+        return compact('title', 'rows', 'averageTat');
+    }
+
     // ---------- HELPERS ----------
     protected function getDateRange(Request $request): array
     {
@@ -694,6 +868,20 @@ class ReportWriteService
                     return 'Laporan Hasil Incompatible - ' . $params['room_name'] . ' - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
                 }
                 return 'Laporan Hasil Incompatible - ' . $startDate->format('d-m-Y') . ' - ' . $endDate->format('d-m-Y') . '.xlsx';
+            case 'blood-release':
+                $start = $startDate->translatedFormat('d F Y');
+                $end = $endDate->translatedFormat('d F Y');
+                if (!empty($params['blood_component'])) {
+                    return 'Laporan Darah Dikeluarkan - ' . $params['blood_component'] . ' - ' . $start . ' - ' . $end . '.xlsx';
+                }
+                return 'Laporan Darah Dikeluarkan - ' . $start . ' - ' . $end . '.xlsx';
+            case 'blood-tat':
+                $start = $startDate->translatedFormat('d F Y');
+                $end = $endDate->translatedFormat('d F Y');
+                if (!empty($params['blood_component'])) {
+                    return 'Laporan TAT Labu Darah - ' . $params['blood_component'] . ' - ' . $start . ' - ' . $end . '.xlsx';
+                }
+                return 'Laporan TAT Labu Darah - ' . $start . ' - ' . $end . '.xlsx';
             default:
                 abort(404, "Report '{$report}' not found.");
         }
@@ -719,5 +907,18 @@ class ReportWriteService
         }
 
         return $result;
+    }
+    private function formatTAT(?int $seconds): string
+    {
+        if ($seconds === null) {
+            return '-';
+        }
+
+        return sprintf(
+            '%02d Jam %02d Menit %02d Detik',
+            intdiv($seconds, 3600),
+            intdiv($seconds % 3600, 60),
+            $seconds % 60
+        );
     }
 }

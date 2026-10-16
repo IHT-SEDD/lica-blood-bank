@@ -10,12 +10,14 @@
 
  <div class="collapse" id="sidebarReport">
   <ul class="sub-menu">
-   @foreach(config('report') as $key => $item)
+   @foreach(collect(config('report'))->sortBy('label') as $key => $item)
    <li class="side-nav-item">
     <a href="{{ route('report.index', $key) }}"
      class="side-nav-link {{ request()->is('report/'.$key.'*') ? 'active' : '' }}">
      <span class="menu-icon"><i data-lucide="dot"></i></span>
-     <span class="menu-text" data-lang="{{ $key }}">{{ Str::headline($item['label']) }}</span>
+     <span class="menu-text" data-lang="{{ $key }}">
+      {{ Str::headline($item['label']) }}
+     </span>
     </a>
    </li>
    @endforeach

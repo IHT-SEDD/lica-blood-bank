@@ -10,7 +10,7 @@
 
  <div class="collapse" id="sidebarMasters">
   <ul class="sub-menu">
-   @foreach(config('master') as $key => $item)
+   @foreach(collect(config('master'))->sortBy('label') as $key => $item)
    <li class="side-nav-item">
     <a href="{{ route('master.index', $key) }}"
      class="side-nav-link {{ request()->is('master/'.$key.'*') ? 'active' : '' }}">

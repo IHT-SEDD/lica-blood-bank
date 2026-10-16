@@ -6,6 +6,16 @@ return [
         'label' => 'Buku Expedisi',
         'deskripsi' => 'Buku ekspedisi',
     ],
+    'blood-release' => [
+        'view' => 'pages.report.blood-release.index',
+        'label' => 'Darah Dikeluarkan',
+        'deskripsi' => 'Laporan terkait jenis darah yang telah dikeluarkan pada sistem.',
+    ],
+    'blood-tat' => [
+        'view' => 'pages.report.blood-tat.index',
+        'label' => 'TAT Darah',
+        'deskripsi' => 'Laporan terkait turn around time labu darah pada sistem.',
+    ],
     'blood-expire' => [
         'view' => 'pages.report.blood-expire.index',
         'label' => 'Darah Kadaluarsa',
