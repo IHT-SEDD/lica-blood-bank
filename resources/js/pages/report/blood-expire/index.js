@@ -5,7 +5,7 @@ import { ReportBloodExpireTable, reloadTable } from "./datatable";
 // ---------- Global variable untuk memudahkan penyesuaian ----------
 const ReloadDatatableSelector = "report-blood-expire-reload";
 
-const MonthFilterSelector = ".report-blood-expire-table-month-filter";
+const MonthFilterSelector = ".report-blood-expire-table-date-filter";
 const FilterBloodComponentSelector = "#filter-blood-expire-blood-component";
 
 const ExportURL = "/report/export/";

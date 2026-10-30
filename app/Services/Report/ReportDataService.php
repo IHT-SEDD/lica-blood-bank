@@ -9,6 +9,7 @@ use App\Enums\OrderBloodStatus;
 use App\Models\BloodDestroy;
 use App\Models\BloodStock;
 use App\Models\BloodTransfusion;
+use App\Models\BloodTransfusionDetail;
 use App\Models\OrderBlood;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -26,6 +27,8 @@ class ReportDataService
                 return $this->datatableBloodUsage($request);
             case 'blood-stock':
                 return $this->datatableBloodStock($request);
+            case 'blood-release':
+                return $this->datatableBloodRelease($request);
             case 'blood-expire':
                 return $this->datatableBloodExpire($request);
             case 'blood-destroy':
@@ -34,6 +37,8 @@ class ReportDataService
                 return $this->datatableExpeditionBook($request);
             case 'blood-request':
                 return $this->datatableBloodRequest($request);
+            case 'blood-tat':
+                return $this->datatableBloodTAT($request);
             case 'incompatible':
                 return $this->datatableIncompatible($request);
             default:
@@ -536,6 +541,92 @@ class ReportDataService
                 ]);
             }
         });
+
+        return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Blood Release ----------
+    private function datatableBloodRelease(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodComponent = $request->blood_component;
+
+        // urutan sesuai file Excel: A, B, O, AB x (+, -)
+        $bloodTypes = collect(['A', 'B', 'O', 'AB'])
+            ->flatMap(fn($g) => [$g . '+', $g . '-'])
+            ->all();
+        $emptyTypes = array_fill_keys($bloodTypes, 0);
+        $allComponents = BloodComponent::cases();
+
+        $details = BloodTransfusionDetail::withoutTrashed()
+            ->with(['bloodStock', 'bloodPack'])
+            ->whereBetween('blood_transfusion_details.created_at', [$startDate, $endDate])
+            ->when($bloodComponent, function ($query) use ($bloodComponent) {
+                $query->whereHas('bloodPack', fn($q) => $q->where('blood_component', $bloodComponent));
+            })
+            ->whereHas('bloodStock', function ($query) {
+                $query->where('blood_status', BloodStockStatus::TAKEN_OUT);
+            })
+            ->get();
+
+        $data = $details
+            ->filter(fn($d) => $d->bloodPack?->blood_component
+                && $d->bloodPack?->blood_group
+                && $d->bloodPack?->blood_rhesus)
+            ->groupBy(fn($d) => Carbon::parse($d->created_at)->toDateString())
+            ->sortKeys()
+            ->map(function ($rowsOnDate, $date) use ($emptyTypes, $allComponents) {
+                // siapkan counter kosong untuk semua komponen
+                $counter = [];
+                foreach ($allComponents as $component) {
+                    $counter[$component->value] = $emptyTypes;
+                }
+
+                // satu kali loop untuk menghitung
+                foreach ($rowsOnDate as $detail) {
+                    $pack = $detail->bloodPack;
+                    $componentKey = $pack->blood_component->value;
+                    $typeKey = $pack->blood_group->value . $pack->blood_rhesus;
+
+                    if (isset($counter[$componentKey][$typeKey])) {
+                        $counter[$componentKey][$typeKey]++;
+                    }
+                }
+
+                $components = collect($allComponents)->map(fn(BloodComponent $component) => [
+                    'component'   => $component->value,
+                    'label'       => $component->exportLabel(),
+                    'blood_types' => $counter[$component->value], // {"A+":0,"A-":2,...}
+                    'total'       => array_sum($counter[$component->value]),
+                ]);
+
+                return [
+                    'date'       => $date,
+                    'components' => $components->all(),
+                    'total'      => $components->sum('total'),
+                ];
+            })
+            ->values();
+
+        return DataTables::of($data)->toJson();
+    }
+
+    // ---------- Datatable Blood Release ----------
+    private function datatableBloodTAT(Request $request)
+    {
+        [$startDate, $endDate] = $this->getDateRange($request);
+        $bloodComponent = $request->blood_component;
+
+        $data = BloodTransfusionDetail::with(['bloodStock:id,blood_pack_id,bag_number,used_at,created_at', 'bloodStock.bloodPacks:id,blood_group,blood_rhesus,blood_component'])
+            ->select(['id', 'blood_stock_id', 'blood_released_at'])
+            ->whereHas('bloodStock', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+                $query->where('blood_status', BloodStockStatus::TAKEN_OUT);
+            })
+            ->when($bloodComponent, function ($query) use ($bloodComponent) {
+                $query->whereHas('bloodPack', fn($q) => $q->where('blood_component', $bloodComponent));
+            })
+            ->get();
 
         return DataTables::of($data)->toJson();
     }

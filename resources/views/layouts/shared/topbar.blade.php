@@ -87,7 +87,7 @@ $isUptd = strtoupper(trim((string) config('app.client_data.type'))) === 'UPTD';
 
                     {{-- Dropdown Menu :begin --}}
                     <ul class="dropdown-menu">
-                        @foreach(config('master') as $key => $item)
+                        @foreach(collect(config('master'))->sortBy('label') as $key => $item)
                         <li>
                             <a class="dropdown-item {{ request()->is('master/'.$key.'*') ? 'active' : '' }}"
                                 href="{{ route('master.index', $key) }}">
@@ -116,7 +116,7 @@ $isUptd = strtoupper(trim((string) config('app.client_data.type'))) === 'UPTD';
 
                     {{-- Dropdown Menu :begin --}}
                     <ul class="dropdown-menu">
-                        @foreach(config('report') as $key => $item)
+                        @foreach(collect(config('report'))->sortBy('label') as $key => $item)
                         <li>
                             <a class="dropdown-item {{ request()->is('report/'.$key.'*') ? 'active' : '' }}"
                                 href="{{ route('report.index', $key) }}">

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Services\Report\ReportDataService;
-use App\Services\Report\ReportWriteService;
+use App\Services\Report\ReportExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -12,7 +12,7 @@ class ReportController extends Controller
 {
     public function __construct(
         private readonly ReportDataService $dataService,
-        private readonly ReportWriteService $writeService
+        private readonly ReportExportService $exportService
     ) {}
 
     public function index(string $report)
@@ -42,6 +42,6 @@ class ReportController extends Controller
     // ---------- Fungsi export data ke Excel ----------
     public function exportExcel(string $report, Request $request)
     {
-        return $this->writeService->exportExcel($report, $request);
+        return $this->exportService->exportExcel($report, $request);
     }
 }
