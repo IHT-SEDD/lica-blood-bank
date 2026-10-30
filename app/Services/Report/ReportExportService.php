@@ -157,7 +157,7 @@ class ReportExportService
             : Carbon::now()->startOfMonth();
         $startDate = $monthYear->copy()->startOfMonth();
         $endDate = $monthYear->copy()->endOfMonth();
-        $vendor = $request->vendor;
+        $vendor = $request->vendor_public_id;
         $paramFilenameExcel = [];
 
         $query = OrderBlood::withoutTrashed()
